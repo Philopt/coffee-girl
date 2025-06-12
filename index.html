@@ -60,11 +60,11 @@ window.onload = function(){
 
     // buttons
     btnSell=this.add.text(80,500,'Sell',{font:'18px sans-serif',fill:'#fff',backgroundColor:'#006400',padding:{x:12,y:6}})
-      .setInteractive().setVisible(false).setDepth(12).on('pointerdown',()=>handleAction('sell'));
+      .setInteractive().setVisible(false).setDepth(12).on('pointerdown',()=>handleAction.call(this,'sell'));
     btnGive=this.add.text(200,500,'Give Free',{font:'18px sans-serif',fill:'#fff',backgroundColor:'#008000',padding:{x:12,y:6}})
-      .setInteractive().setVisible(false).setDepth(12).on('pointerdown',()=>handleAction('give'));
+      .setInteractive().setVisible(false).setDepth(12).on('pointerdown',()=>handleAction.call(this,'give'));
     btnRef=this.add.text(360,500,'Refuse',{font:'18px sans-serif',fill:'#fff',backgroundColor:'#800000',padding:{x:12,y:6}})
-      .setInteractive().setVisible(false).setDepth(12).on('pointerdown',()=>handleAction('refuse'));
+      .setInteractive().setVisible(false).setDepth(12).on('pointerdown',()=>handleAction.call(this,'refuse'));
 
     // report
     reportBg=this.add.rectangle(240,200,220,80,0xffffff).setStrokeStyle(2,0x000).setVisible(false).setDepth(10);

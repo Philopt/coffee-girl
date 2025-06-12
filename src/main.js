@@ -37,8 +37,8 @@ window.onload = function(){
     bg.setDisplaySize(this.scale.width,this.scale.height);
 
     // HUD
-    moneyText=this.add.text(20,20,'🪙 '+money.toFixed(2),{font:'20px sans-serif',fill:'#000'}).setDepth(1);
-    loveText=this.add.text(20,50,'❤️ '+love,{font:'20px sans-serif',fill:'#000'}).setDepth(1);
+    moneyText=this.add.text(20,20,'🪙 '+money.toFixed(2),{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
+    loveText=this.add.text(20,50,'❤️ '+love,{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
     versionText=this.add.text(10,630,'v'+VERSION,{font:'12px sans-serif',fill:'#000'})
       .setOrigin(0,1).setDepth(1);
     speedBtn=this.add.text(460,20,'1x',{font:'20px sans-serif',fill:'#000',backgroundColor:'#ddd',padding:{x:6,y:4}})
@@ -47,7 +47,11 @@ window.onload = function(){
 
     // truck & girl
     const truck=this.add.image(520,245,'truck').setScale(0.924).setDepth(2);
+
+    const girl=this.add.image(520,260,'girl').setScale(0.5).setDepth(3)
+
     const girl=this.add.image(520,230,'girl').setScale(0.5).setDepth(3)
+
       .setVisible(false);
 
     const intro=this.tweens.createTimeline({callbackScope:this,
@@ -180,16 +184,23 @@ window.onload = function(){
     const done=()=>{ if(--pending<=0) finish(); };
 
     if(type!=='refuse'){
+      const showTip=tip>0;
       reportLine1.setStyle({fill:'#fff'})
         .setText(`$${cost.toFixed(2)}`)
         .setPosition(customer.x,customer.y).setVisible(true);
-      reportLine2.setText(`Tip ${tipPct}%`)
-        .setStyle({fontSize:'14px',fill:'#ddf'})
-        .setPosition(customer.x,customer.y+18).setVisible(true);
-      reportLine3.setText(`$${tip.toFixed(2)}`)
-        .setStyle({fontSize:'16px',fill:'#fff'})
-        .setPosition(customer.x,customer.y+36).setVisible(true);
+      if(showTip){
+        reportLine2.setText(`Tip ${tipPct}%`)
+          .setStyle({fontSize:'14px',fill:'#ddf'})
+          .setPosition(customer.x,customer.y+18).setVisible(true);
+        reportLine3.setText(`$${tip.toFixed(2)}`)
+          .setStyle({fontSize:'16px',fill:'#fff'})
+          .setPosition(customer.x,customer.y+36).setVisible(true);
+      }else{
+        reportLine2.setVisible(false).alpha=1;
+        reportLine3.setVisible(false).alpha=1;
+      }
 
+      const moving=[reportLine1];
       const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
           reportLine1.setVisible(false).alpha=1;
           reportLine2.setVisible(false).alpha=1;
@@ -199,11 +210,22 @@ window.onload = function(){
           done();
       }});
       tl.add({targets:reportLine1,x:midX,y:midY,duration:dur(300),completeDelay:dur(300),onComplete:()=>{
+
+            if(type==='give'){
+              reportLine1.setText(`$${cost.toFixed(2)} LOSS`).setColor('#f88');
+            }else{
+              reportLine1.setText(`$${cost.toFixed(2)} PAID`).setColor('#8f8');
+            }
+
             reportLine1.setText(`$${cost.toFixed(2)} PAID`).setColor('#8f8');
+
         }});
-      tl.add({targets:reportLine2,x:midX,y:midY+18,duration:dur(300),completeDelay:dur(300)},0);
-      tl.add({targets:reportLine3,x:midX,y:midY+36,duration:dur(300),completeDelay:dur(300)},0);
-      tl.add({targets:[reportLine1,reportLine2,reportLine3],x:moneyText.x,y:moneyText.y,alpha:0,duration:dur(400)});
+      if(showTip){
+        tl.add({targets:reportLine2,x:midX,y:midY+18,duration:dur(300),completeDelay:dur(300)},0);
+        tl.add({targets:reportLine3,x:midX,y:midY+36,duration:dur(300),completeDelay:dur(300)},0);
+        moving.push(reportLine2,reportLine3);
+      }
+      tl.add({targets:moving,x:moneyText.x,y:moneyText.y,alpha:0,duration:dur(400)});
       tl.play();
     }
 
@@ -216,8 +238,13 @@ window.onload = function(){
   function animateLoveChange(delta, customer, cb){
     const count=Math.abs(delta);
     const emoji=delta>0?'❤️':'😠';
+
+    const baseX=customer.x-80;
+    const baseY=customer.y+40;
+
     const baseX=loveText.x-60;
     const baseY=loveText.y+30;
+
     const hearts=[];
     for(let i=0;i<count;i++){
       const h=this.add.text(customer.x,customer.y,emoji,{font:'24px sans-serif',fill:'#fff'})

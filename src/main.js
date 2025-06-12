@@ -216,8 +216,6 @@ window.onload = function(){
             if(type==='give'){
               reportLine1.setText(`$${cost.toFixed(2)} LOSS`).setColor('#f88');
             }else{
-              reportLine1.setText(`$${cost.toFixed(2)} PAID`).setColor('#8f8');
-
             }
 
         }});

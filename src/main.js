@@ -231,13 +231,17 @@ window.onload = function(){
       reportLine1.setStyle({fill:'#fff'})
         .setText(`$${(unitCost*qty).toFixed(2)}`)
         .setPosition(customer.x,customer.y).setVisible(true);
+        .setText(`$${cost.toFixed(2)}`)
+        .setScale(1)
+        .setPosition(type==='give'?moneyText.x:customer.x,
+                     type==='give'?moneyText.y:customer.y)
+        .setVisible(true);
       if(showTip){
-        reportLine2.setText(`Tip ${tipPct}%`)
-          .setStyle({fontSize:'14px',fill:'#ddf'})
-          .setPosition(customer.x,customer.y+18).setVisible(true);
-        reportLine3.setText(`$${tip.toFixed(2)}`)
+        reportLine2.setText(`$${tip.toFixed(2)} ${tipPct}% TIP`)
           .setStyle({fontSize:'16px',fill:'#fff'})
-          .setPosition(customer.x,customer.y+36).setVisible(true);
+          .setScale(1)
+          .setPosition(customer.x,customer.y+24).setVisible(true);
+        reportLine3.setVisible(false).alpha=1;
       }else{
         reportLine2.setVisible(false).alpha=1;
         reportLine3.setVisible(false).alpha=1;
@@ -252,18 +256,19 @@ window.onload = function(){
           moneyText.setText('🪙 '+money.toFixed(2));
           done();
       }});
-      tl.add({targets:reportLine1,x:midX,y:midY,duration:dur(300),completeDelay:dur(300),onComplete:()=>{
-
+      tl.add({targets:reportLine1,x:midX,y:midY,duration:dur(300),completeDelay:dur(1000),onComplete:()=>{
             if(type==='give'){
               reportLine1.setText(`$${(unitCost*qty).toFixed(2)} LOSS`).setColor('#f88');
             }else{
+              reportLine1.setText(`$${cost.toFixed(2)} PAID`).setColor('#8f8').setScale(1.2);
+              if(showTip){
+                reportLine2.setColor('#8f8');
+              }
             }
-
         }});
       if(showTip){
-        tl.add({targets:reportLine2,x:midX,y:midY+18,duration:dur(300),completeDelay:dur(300)},0);
-        tl.add({targets:reportLine3,x:midX,y:midY+36,duration:dur(300),completeDelay:dur(300)},0);
-        moving.push(reportLine2,reportLine3);
+        tl.add({targets:reportLine2,x:midX,y:midY+24,duration:dur(300),completeDelay:dur(1000)},0);
+        moving.push(reportLine2);
       }
       tl.add({targets:moving,x:moneyText.x,y:moneyText.y,alpha:0,duration:dur(400)});
       tl.play();

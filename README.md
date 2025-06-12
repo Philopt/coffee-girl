@@ -26,16 +26,14 @@ Have fun clicking!
 
 ## Running tests
 
-Install dependencies and run the headless test:
+Install dependencies and run the automated check:
 
 ```bash
 npm install
 npm test
 ```
 
-If you set `PUPPETEER_SKIP_DOWNLOAD=1` when running `npm install`, Puppeteer will not download its bundled browser. In that case, ensure Chrome or Chromium is installed locally and available on your `PATH` so `npm test` can launch it.
-
-This uses Puppeteer to launch the game in a headless browser and checks that all assets load without errors.
+The test script starts a local server and verifies the page responds without errors.
 
 ## License
 

@@ -135,66 +135,56 @@ window.onload = function(){
       });
     };
 
-    // price slide in
+    // animated report using timelines
+    const midX=240, midY=210;
+
+    let pending=(type!=='refuse'?1:0)+(lD!==0?1:0);
+    const done=()=>{ if(--pending<=0) finish(); };
+
     if(type!=='refuse'){
       reportLine1.setStyle({fill:'#000'})
         .setText(`$${cost.toFixed(2)}`)
-        .setPosition(480,moneyText.y).setVisible(true);
-      this.tweens.add({targets:reportLine1,x:240,duration:500,callbackScope:this,
-        onComplete:()=>{
-          reportLine1.setText(`Paid $${cost.toFixed(2)}`)
-            .setColor('#008000');
-        }
-      });
+        .setPosition(customer.x,customer.y).setVisible(true);
+      reportLine2.setText(`Tip ${tipPct}%`)
+        .setStyle({fontSize:'14px',fill:'#000'})
+        .setPosition(customer.x,customer.y+18).setVisible(true);
+      reportLine3.setText(`$${tip.toFixed(2)}`)
+        .setStyle({fontSize:'16px',fill:'#000'})
+        .setPosition(customer.x,customer.y+36).setVisible(true);
 
-      this.time.delayedCall(250,()=>{
-        reportLine2.setText(`Tip ${tipPct}%`)
-          .setStyle({fontSize:'14px',fill:'#000'})
-          .setPosition(480,reportLine1.y+18).setVisible(true);
-        reportLine3.setText(`$${tip.toFixed(2)}`)
-          .setStyle({fontSize:'16px',fill:'#000'})
-          .setPosition(480,reportLine2.y+18).setVisible(true);
-        this.tweens.add({targets:[reportLine2,reportLine3],x:240,duration:500});
-      },[],this);
+      const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
+          reportLine1.setVisible(false).alpha=1;
+          reportLine2.setVisible(false).alpha=1;
+          reportLine3.setVisible(false).alpha=1;
+          money=+(money+mD).toFixed(2);
+          moneyText.setText('🪙 '+money.toFixed(2));
+          done();
+      }});
+      tl.add({targets:reportLine1,x:midX,y:midY,duration:500,onComplete:()=>{
+            reportLine1.setText(`Paid $${cost.toFixed(2)}`).setColor('#008000');
+        }});
+      tl.add({targets:reportLine2,x:midX,y:midY+18,duration:500},0);
+      tl.add({targets:reportLine3,x:midX,y:midY+36,duration:500},0);
+      tl.add({targets:[reportLine1,reportLine2,reportLine3],duration:1000});
+      tl.add({targets:[reportLine1,reportLine2,reportLine3],x:moneyText.x,y:moneyText.y,alpha:0,duration:600});
+      tl.play();
     }
 
     if(lD!==0){
       reportLine4.setText(lD>0?'❤️'.repeat(lD):'😠'.repeat(-lD))
-        .setPosition(480,loveText.y).setVisible(true);
-      this.tweens.add({targets:reportLine4,x:240,duration:500});
+        .setPosition(customer.x,customer.y).setVisible(true);
+      const tl2=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
+          reportLine4.setVisible(false).alpha=1;
+          love+=lD;
+          loveText.setText('❤️ '+love);
+          done();
+      }});
+      tl2.add({targets:reportLine4,x:midX,y:midY,duration:500});
+      tl2.add({targets:reportLine4,duration:1000});
+      tl2.add({targets:reportLine4,x:loveText.x,y:loveText.y,alpha:0,duration:600});
+      tl2.play();
     }
-
-    this.time.delayedCall(1000,()=>{
-      let pending=(type!=='refuse'?1:0)+(lD!==0?1:0);
-      const done=()=>{ if(--pending<=0) finish(); };
-
-      if(type!=='refuse'){
-        this.tweens.add({targets:[reportLine1,reportLine2,reportLine3],
-          x:moneyText.x,alpha:0,duration:600,callbackScope:this,
-          onComplete:()=>{
-            reportLine1.setVisible(false).alpha=1;
-            reportLine2.setVisible(false).alpha=1;
-            reportLine3.setVisible(false).alpha=1;
-            money=+(money+mD).toFixed(2);
-            moneyText.setText('🪙 '+money.toFixed(2));
-            done();
-          }
-        });
-      }
-
-      if(lD!==0){
-        this.tweens.add({targets:reportLine4,x:loveText.x,alpha:0,duration:600,
-          callbackScope:this,
-          onComplete:()=>{
-            reportLine4.setVisible(false).alpha=1;
-            love+=lD;
-            loveText.setText('❤️ '+love);
-            done();
-          }
-        });
-      }
-      if(pending===0) finish();
-    },[],this);
+    if(pending===0) finish();
   }
 
   function showEnd(msg){

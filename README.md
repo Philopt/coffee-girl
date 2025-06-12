@@ -24,6 +24,17 @@ If the game fails to start, check your browser's console for errors.
 
 Have fun clicking!
 
+## Running tests
+
+Install dependencies and run the headless test:
+
+```bash
+npm install
+npm test
+```
+
+This uses Puppeteer to launch the game in a headless browser and checks that all assets load without errors.
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).

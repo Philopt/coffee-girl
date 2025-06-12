@@ -27,7 +27,7 @@ window.onload = function(){
 
   let moneyText, loveText;
   let dialogBg, dialogText, dialogCoins, btnSell, btnGive, btnRef;
-  let reportBg, reportLine1, reportLine2, reportLine3;
+  let reportBg, reportLine1, reportLine2, reportLine3, reportLine4;
 
   function preload(){
     this.load.image('bg','assets/bg.png');
@@ -66,11 +66,18 @@ window.onload = function(){
     btnRef=this.add.text(360,500,'Refuse',{font:'18px sans-serif',fill:'#fff',backgroundColor:'#800000',padding:{x:12,y:6}})
       .setInteractive().setVisible(false).setDepth(12).on('pointerdown',()=>handleAction.call(this,'refuse'));
 
-    // report
-    reportBg=this.add.rectangle(240,200,220,80,0xffffff).setStrokeStyle(2,0x000).setVisible(false).setDepth(10);
-    reportLine1=this.add.text(240,180,'',{font:'16px sans-serif',fill:'#000'}).setOrigin(0.5).setVisible(false).setDepth(11);
-    reportLine2=this.add.text(240,200,'',{font:'16px sans-serif',fill:'#000'}).setOrigin(0.5).setVisible(false).setDepth(11);
-    reportLine3=this.add.text(240,220,'',{font:'16px sans-serif',fill:'#000'}).setOrigin(0.5).setVisible(false).setDepth(11);
+    // report positioned like a small receipt
+    const rX=360, rY=150;
+    reportBg=this.add.rectangle(rX,rY,180,120,0xffffff)
+      .setStrokeStyle(2,0x000).setVisible(false).setDepth(10);
+    reportLine1=this.add.text(rX,rY-30,'',{font:'14px sans-serif',fill:'#000'})
+      .setOrigin(0.5).setVisible(false).setDepth(11);
+    reportLine2=this.add.text(rX,rY-10,'',{font:'14px sans-serif',fill:'#000'})
+      .setOrigin(0.5).setVisible(false).setDepth(11);
+    reportLine3=this.add.text(rX,rY+10,'',{font:'14px sans-serif',fill:'#000'})
+      .setOrigin(0.5).setVisible(false).setDepth(11);
+    reportLine4=this.add.text(rX,rY+30,'',{font:'14px sans-serif',fill:'#000'})
+      .setOrigin(0.5).setVisible(false).setDepth(11);
 
     this.time.delayedCall(SPAWN_DELAY,spawnCustomer,[],this);
   }
@@ -113,21 +120,26 @@ window.onload = function(){
     money=+(money+mD).toFixed(2); love+=lD;
     moneyText.setText('🪙 '+money.toFixed(2)); loveText.setText('❤️ '+love);
 
-    // show report
+    // show report in receipt style
+    const cost=(req==='coffee'?COFFEE_COST:WATER_COST);
     reportBg.setVisible(true);
-    reportLine1.setText(type==='sell'?`+$${COFFEE_COST.toFixed(2)}`:(type==='give'?`-$${(-mD).toFixed(2)}`:''));
-    reportLine2.setText(type==='sell'?`Tip +$${tip.toFixed(2)}`:'');
-    reportLine3.setText(lD > 0 ? '❤️'.repeat(lD) : (lD < 0 ? ('😠'.repeat(-lD)) : ''));
-    reportLine1.setVisible(true); reportLine2.setVisible(type==='sell'); reportLine3.setVisible(true);
+    reportLine1.setText(`Price: $${cost.toFixed(2)}`);
+    reportLine2.setText(`Paid: $${(type==='sell'?cost:0).toFixed(2)}`);
+    const tipPct=type==='sell'?lD*15:0;
+    reportLine3.setText(`Tip: ${tipPct}% $${(type==='sell'?tip:0).toFixed(2)}`);
+    reportLine4.setText(lD>0?'❤️'.repeat(lD):(lD<0?'😠'.repeat(-lD):''));
+    reportLine1.setVisible(true); reportLine2.setVisible(true);
+    reportLine3.setVisible(true); reportLine4.setVisible(true);
 
-    // float up and hide in 400ms
-    this.tweens.add({ targets: [reportBg, reportLine1, reportLine2, reportLine3],
-      y: '-=50', alpha:0, duration:400, callbackScope:this,
-      onComplete: ()=>{ 
+    // float up and hide slowly over 3s
+    this.tweens.add({ targets: [reportBg, reportLine1, reportLine2, reportLine3, reportLine4],
+      y: '-=50', alpha:0, duration:3000, callbackScope:this,
+      onComplete: ()=>{
         reportBg.setVisible(false).alpha=1; reportBg.y+=50;
         reportLine1.setVisible(false).alpha=1; reportLine1.y+=50;
         reportLine2.setVisible(false).alpha=1; reportLine2.y+=50;
         reportLine3.setVisible(false).alpha=1; reportLine3.y+=50;
+        reportLine4.setVisible(false).alpha=1; reportLine4.y+=50;
       }
     });
 

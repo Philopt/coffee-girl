@@ -120,16 +120,8 @@ window.onload = function(){
     reportLine3.setText(lD > 0 ? '❤️'.repeat(lD) : (lD < 0 ? ('😠'.repeat(-lD)) : ''));
     reportLine1.setVisible(true); reportLine2.setVisible(type==='sell'); reportLine3.setVisible(true);
 
-    // float up and hide in 400ms
-    this.tweens.add({ targets: [reportBg, reportLine1, reportLine2, reportLine3],
-      y: '-=50', alpha:0, duration:400, callbackScope:this,
-      onComplete: ()=>{ 
-        reportBg.setVisible(false).alpha=1; reportBg.y+=50;
-        reportLine1.setVisible(false).alpha=1; reportLine1.y+=50;
-        reportLine2.setVisible(false).alpha=1; reportLine2.y+=50;
-        reportLine3.setVisible(false).alpha=1; reportLine3.y+=50;
-      }
-    });
+    // float up and hide
+    floatReport.call(this);
 
     // exit customer and next spawn
     this.tweens.add({ targets: customer, x: (type==='refuse'? -50:520), duration:600, callbackScope:this,
@@ -141,6 +133,25 @@ window.onload = function(){
         if(love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
         this.time.delayedCall(SPAWN_DELAY, spawnCustomer, [], this);
       }
+    });
+  }
+
+  function floatReport(){
+    this.tweens.add({
+      targets: [reportBg, reportLine1, reportLine2, reportLine3],
+      y: '-=50',
+      alpha: { from: 1, to: 0 },
+      delay: 500,
+      duration: 500,
+      callbackScope: this,
+      onComplete: resetReport
+    });
+  }
+
+  function resetReport(){
+    [reportBg, reportLine1, reportLine2, reportLine3].forEach(o => {
+      o.setVisible(false).setAlpha(1);
+      o.y += 50;
     });
   }
 

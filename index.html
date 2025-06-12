@@ -199,10 +199,24 @@ window.onload = function(){
 
   function showEnd(msg){
     clearDialog();
-    this.add.rectangle(240,320,480,240,0xffffff).setStrokeStyle(2,0x000).setDepth(20);
-    this.add.text(240,320,msg,{font:'24px sans-serif',fill:'#000',align:'center',wordWrap:{width:440}})
+    const bg=this.add.rectangle(240,320,480,240,0xffffff).setStrokeStyle(2,0x000).setDepth(20);
+    const txt=this.add.text(240,300,msg,{font:'24px sans-serif',fill:'#000',align:'center',wordWrap:{width:440}})
       .setOrigin(0.5).setDepth(21);
+    const btn=this.add.text(240,350,'Restart',{font:'20px sans-serif',fill:'#fff',backgroundColor:'#006400',padding:{x:14,y:8}})
+      .setOrigin(0.5).setDepth(22).setInteractive()
+      .on('pointerdown',()=>{
+        bg.destroy(); txt.destroy(); btn.destroy();
+        restartGame.call(this);
+      });
     gameOver=true;
+  }
+
+  function restartGame(){
+    money=10.00; love=10; coins=0; req='coffee';
+    moneyText.setText('🪙 '+money.toFixed(2));
+    loveText.setText('❤️ '+love);
+    gameOver=false;
+    this.time.delayedCall(SPAWN_DELAY, spawnCustomer, [], this);
   }
 
 };

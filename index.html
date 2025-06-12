@@ -79,14 +79,14 @@ window.onload = function(){
       .setInteractive().setVisible(false).setDepth(12).on('pointerdown',()=>handleAction.call(this,'refuse'));
 
     // sliding report texts
-    reportLine1=this.add.text(480,moneyText.y,'',{font:'16px sans-serif',fill:'#000'})
+    reportLine1=this.add.text(480,moneyText.y,'',{font:'16px sans-serif',fill:'#fff'})
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
-    reportLine2=this.add.text(480,moneyText.y+20,'',{font:'16px sans-serif',fill:'#000'})
+    reportLine2=this.add.text(480,moneyText.y+20,'',{font:'16px sans-serif',fill:'#fff'})
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
-    reportLine3=this.add.text(480,loveText.y,'',{font:'16px sans-serif',fill:'#000'})
+    reportLine3=this.add.text(480,loveText.y,'',{font:'16px sans-serif',fill:'#fff'})
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
-    reportLine4=this.add.text(0,0,'',{font:'14px sans-serif',fill:'#000'})
-      .setVisible(false);
+    reportLine4=this.add.text(0,0,'',{font:'14px sans-serif',fill:'#fff'})
+      .setVisible(false).setDepth(11);
   }
 
   function spawnCustomer(){
@@ -160,20 +160,20 @@ window.onload = function(){
     };
 
     // animated report using timelines
-    const midX=240, midY=210;
+    const midX=240, midY=120;
 
     let pending=(type!=='refuse'?1:0)+(lD!==0?1:0);
     const done=()=>{ if(--pending<=0) finish(); };
 
     if(type!=='refuse'){
-      reportLine1.setStyle({fill:'#000'})
+      reportLine1.setStyle({fill:'#fff'})
         .setText(`$${cost.toFixed(2)}`)
         .setPosition(customer.x,customer.y).setVisible(true);
       reportLine2.setText(`Tip ${tipPct}%`)
-        .setStyle({fontSize:'14px',fill:'#000'})
+        .setStyle({fontSize:'14px',fill:'#ddf'})
         .setPosition(customer.x,customer.y+18).setVisible(true);
       reportLine3.setText(`$${tip.toFixed(2)}`)
-        .setStyle({fontSize:'16px',fill:'#000'})
+        .setStyle({fontSize:'16px',fill:'#fff'})
         .setPosition(customer.x,customer.y+36).setVisible(true);
 
       const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
@@ -184,12 +184,12 @@ window.onload = function(){
           moneyText.setText('🪙 '+money.toFixed(2));
           done();
       }});
-      tl.add({targets:reportLine1,x:midX,y:midY,duration:500,completeDelay:1000,onComplete:()=>{
-            reportLine1.setText(`Paid $${cost.toFixed(2)}`).setColor('#008000');
+      tl.add({targets:reportLine1,x:midX,y:midY,duration:300,completeDelay:300,onComplete:()=>{
+            reportLine1.setText(`Paid $${cost.toFixed(2)}`).setColor('#8f8');
         }});
-      tl.add({targets:reportLine2,x:midX,y:midY+18,duration:500,completeDelay:1000},0);
-      tl.add({targets:reportLine3,x:midX,y:midY+36,duration:500,completeDelay:1000},0);
-      tl.add({targets:[reportLine1,reportLine2,reportLine3],x:moneyText.x,y:moneyText.y,alpha:0,duration:600});
+      tl.add({targets:reportLine2,x:midX,y:midY+18,duration:300,completeDelay:300},0);
+      tl.add({targets:reportLine3,x:midX,y:midY+36,duration:300,completeDelay:300},0);
+      tl.add({targets:[reportLine1,reportLine2,reportLine3],x:moneyText.x,y:moneyText.y,alpha:0,duration:400});
       tl.play();
     }
 
@@ -202,8 +202,8 @@ window.onload = function(){
           loveText.setText('❤️ '+love);
           done();
       }});
-      tl2.add({targets:reportLine4,x:midX,y:midY,duration:500,completeDelay:1000});
-      tl2.add({targets:reportLine4,x:loveText.x,y:loveText.y,alpha:0,duration:600});
+      tl2.add({targets:reportLine4,x:midX,y:midY,duration:300,completeDelay:300});
+      tl2.add({targets:reportLine4,x:loveText.x,y:loveText.y,alpha:0,duration:400});
       tl2.play();
     }
     if(pending===0) finish();

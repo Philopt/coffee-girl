@@ -47,7 +47,11 @@ window.onload = function(){
 
     // truck & girl
     const truck=this.add.image(520,245,'truck').setScale(0.924).setDepth(2);
+
     const girl=this.add.image(520,260,'girl').setScale(0.5).setDepth(3)
+
+    const girl=this.add.image(520,230,'girl').setScale(0.5).setDepth(3)
+
       .setVisible(false);
 
     const intro=this.tweens.createTimeline({callbackScope:this,
@@ -206,11 +210,15 @@ window.onload = function(){
           done();
       }});
       tl.add({targets:reportLine1,x:midX,y:midY,duration:dur(300),completeDelay:dur(300),onComplete:()=>{
+
             if(type==='give'){
               reportLine1.setText(`$${cost.toFixed(2)} LOSS`).setColor('#f88');
             }else{
               reportLine1.setText(`$${cost.toFixed(2)} PAID`).setColor('#8f8');
             }
+
+            reportLine1.setText(`$${cost.toFixed(2)} PAID`).setColor('#8f8');
+
         }});
       if(showTip){
         tl.add({targets:reportLine2,x:midX,y:midY+18,duration:dur(300),completeDelay:dur(300)},0);
@@ -230,8 +238,13 @@ window.onload = function(){
   function animateLoveChange(delta, customer, cb){
     const count=Math.abs(delta);
     const emoji=delta>0?'❤️':'😠';
+
     const baseX=customer.x-80;
     const baseY=customer.y+40;
+
+    const baseX=loveText.x-60;
+    const baseY=loveText.y+30;
+
     const hearts=[];
     for(let i=0;i<count;i++){
       const h=this.add.text(customer.x,customer.y,emoji,{font:'24px sans-serif',fill:'#fff'})

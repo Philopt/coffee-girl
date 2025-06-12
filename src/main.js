@@ -241,9 +241,6 @@ window.onload = function(){
     const baseX=customer.x-80;
     const baseY=customer.y+40;
 
-    const baseX=loveText.x-60;
-    const baseY=loveText.y+30;
-
     const hearts=[];
     for(let i=0;i<count;i++){
       const h=this.add.text(customer.x,customer.y,emoji,{font:'24px sans-serif',fill:'#fff'})

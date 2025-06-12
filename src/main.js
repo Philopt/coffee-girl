@@ -48,11 +48,7 @@ window.onload = function(){
     // truck & girl
     const truck=this.add.image(520,245,'truck').setScale(0.924).setDepth(2);
 
-    const girl=this.add.image(520,260,'girl').setScale(0.5).setDepth(3)
-
-    const girl=this.add.image(520,230,'girl').setScale(0.5).setDepth(3)
-
-      .setVisible(false);
+    const girl=this.add.image(520,260,'girl').setScale(0.5).setDepth(3).setVisible(false);
 
     const intro=this.tweens.createTimeline({callbackScope:this,
       onComplete:()=>this.time.delayedCall(dur(SPAWN_DELAY),spawnCustomer,[],this)});

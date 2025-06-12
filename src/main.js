@@ -268,7 +268,8 @@ window.onload = function(){
         tl.add({targets:reportLine2,x:midX,y:midY+24,duration:dur(300),completeDelay:dur(1000)},0);
         moving.push(reportLine2);
       }
-      tl.add({targets:moving,x:moneyText.x,y:moneyText.y,alpha:0,duration:dur(400)});
+      const endDelay = showTip ? 0 : dur(300);
+      tl.add({targets:moving,x:moneyText.x,y:moneyText.y,alpha:0,duration:dur(400),delay:endDelay});
       tl.play();
     }
 

@@ -190,7 +190,7 @@ window.onload = function(){
                      type==='give'?moneyText.y:customer.y)
         .setVisible(true);
       if(showTip){
-        reportLine2.setText(`$${tip.toFixed(2)} ${tipPct}% TIP`)
+        reportLine2.setText(`$${tip.toFixed(2)} TIP`)
           .setStyle({fontSize:'16px',fill:'#fff'})
           .setScale(1)
           .setPosition(customer.x,customer.y+24).setVisible(true);
@@ -209,20 +209,19 @@ window.onload = function(){
           moneyText.setText('🪙 '+money.toFixed(2));
           done();
       }});
-      tl.add({targets:reportLine1,x:midX,y:midY,duration:dur(300),completeDelay:dur(1000),onComplete:()=>{
+
+      tl.add({targets:reportLine1,x:midX,y:midY,duration:dur(300),onComplete:()=>{
             if(type==='give'){
-              reportLine1.setText(`$${cost.toFixed(2)} LOSS`).setColor('#f88');
+              reportLine1.setText(`$${cost.toFixed(2)} LOSS`).setColor('#f88').setFontStyle('bold').setScale(1.4);
             }else{
               reportLine1.setText(`$${cost.toFixed(2)} PAID`).setColor('#8f8').setScale(1.2);
-              if(showTip){
-                reportLine2.setColor('#8f8');
-              }
             }
         }});
       if(showTip){
-        tl.add({targets:reportLine2,x:midX,y:midY+24,duration:dur(300),completeDelay:dur(1000)},0);
+        tl.add({targets:reportLine2,x:midX,y:midY+24,duration:dur(300),delay:dur(250),onComplete:()=>{reportLine2.setColor('#8f8');}},300);
         moving.push(reportLine2);
       }
+      tl.add({targets:moving,x:midX,y:midY,duration:dur(1000)},300);
       tl.add({targets:moving,x:moneyText.x,y:moneyText.y,alpha:0,duration:dur(400)});
       tl.play();
     }

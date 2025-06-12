@@ -30,12 +30,12 @@ window.onload = function(){
   let reportBg, reportLine1, reportLine2, reportLine3;
 
   function preload(){
-    this.load.image('bg','assets/BG.PNG');
-    this.load.image('truck','assets/Truck.PNG');
-    this.load.image('girl','assets/CoffeeGirl.PNG');
+    this.load.image('bg','assets/bg.png');
+    this.load.image('truck','assets/truck.png');
+    this.load.image('girl','assets/coffeegirl.png');
     for(let r=0;r<5;r++)for(let c=0;c<6;c++){
       const k=`new_kid_${r}_${c}`; keys.push(k);
-      this.load.image(k,`assets/GenZ/${k}.png`);
+      this.load.image(k,`assets/genz/${k}.png`);
     }
   }
 

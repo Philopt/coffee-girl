@@ -17,8 +17,9 @@ window.onload = function(){
   const COFFEE_COST=5.00, WATER_COST=5.58;
   const VERSION='54';
   const SPAWN_DELAY=500;
+  const QUEUE_SPACING=70;
   const MAX_M=100, MAX_L=100;
-  let money=10.00, love=10, gameOver=false, customer=null, coins=0, req='coffee';
+  let money=10.00, love=10, gameOver=false, customerQueue=[], coins=0, req='coffee';
   const keys=[];
 
   const config={ type:Phaser.AUTO, parent:'game-container', backgroundColor:'#f2e5d7',
@@ -57,11 +58,13 @@ window.onload = function(){
     const girl=this.add.image(520,210,'girl').setScale(0.5).setDepth(3)
       .setVisible(false);
 
-    const intro=this.tweens.createTimeline({callbackScope:this,
-      onComplete:()=>this.time.delayedCall(SPAWN_DELAY,spawnCustomer,[],this)});
-    intro.add({targets:[truck,girl],x:240,duration:800});
-    intro.add({targets:girl,y:292,duration:500,onStart:()=>girl.setVisible(true)});
-    intro.play();
+    this.tweens.timeline({callbackScope:this,
+      tweens:[
+        {targets:[truck,girl],x:240,duration:800},
+        {targets:girl,y:292,duration:500,onStart:()=>girl.setVisible(true)}
+      ],
+      onComplete:()=>this.time.delayedCall(SPAWN_DELAY,spawnCustomer,[],this)
+    });
 
     // dialog
     dialogBg=this.add.rectangle(240,460,460,120,0xffffff).setStrokeStyle(2,0x000).setVisible(false).setDepth(10);
@@ -89,15 +92,23 @@ window.onload = function(){
   }
 
   function spawnCustomer(){
-    if(gameOver||customer) return;
-    coins=Phaser.Math.Between(1,10);
-    req=coins<COFFEE_COST?'water':'coffee';
+    if(gameOver||customerQueue.length>=3) return;
+    const c={};
+    c.coins=Phaser.Math.Between(1,10);
+    c.req=c.coins<COFFEE_COST?'water':'coffee';
     const k=Phaser.Utils.Array.GetRandom(keys);
-    customer=this.add.sprite(240,700,k).setScale(0.7).setDepth(4);
-    this.tweens.add({targets:customer,y:332,duration:800,callbackScope:this,onComplete:showDialog});
+    const startY=700;
+    c.sprite=this.add.sprite(240,startY,k).setScale(0.7).setDepth(4);
+    const targetY=332+QUEUE_SPACING*customerQueue.length;
+    customerQueue.push(c);
+    this.tweens.add({targets:c.sprite,y:targetY,duration:800,callbackScope:this,
+      onComplete:()=>{ if(customerQueue[0]===c) { coins=c.coins; req=c.req; showDialog.call(this); } }});
   }
 
   function showDialog(){
+    if(customerQueue.length===0) return;
+    const c=customerQueue[0];
+    coins=c.coins; req=c.req;
     dialogBg.setVisible(true);
     dialogText.setText(`${req.charAt(0).toUpperCase()+req.slice(1)} costs $${(req==='coffee'?COFFEE_COST:WATER_COST).toFixed(2)}.`)
       .setVisible(true);
@@ -127,15 +138,25 @@ window.onload = function(){
     const cost=(req==='coffee'?COFFEE_COST:WATER_COST);
     const tipPct=type==='sell'?lD*15:0;
 
+    const current=customerQueue[0];
+    const customer=current.sprite;
+    customerQueue.shift();
     const finish=()=>{
-      this.tweens.add({ targets: customer, x: (type==='refuse'? -50:520), duration:600, callbackScope:this,
+      this.tweens.add({ targets: current.sprite, x: (type==='refuse'? -50:520), duration:600, callbackScope:this,
         onComplete:()=>{
-          customer.destroy(); customer=null;
+          current.sprite.destroy();
           if(money<=0){showEnd.call(this,'Game Over\nYou are fired');return;}
           if(love<=0){showEnd.call(this,'Game Over 😠');return;}
           if(money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
           if(love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
-          this.time.delayedCall(SPAWN_DELAY, spawnCustomer, [], this);
+          Phaser.Actions.Call(customerQueue,(c,idx)=>{
+            this.tweens.add({targets:c.sprite,y:332+QUEUE_SPACING*idx,duration:500});
+          });
+          if(customerQueue.length>0){
+            this.time.delayedCall(600,showDialog,[],this);
+          }else{
+            this.time.delayedCall(SPAWN_DELAY, spawnCustomer, [], this);
+          }
         }
       });
     };
@@ -165,12 +186,11 @@ window.onload = function(){
           moneyText.setText('🪙 '+money.toFixed(2));
           done();
       }});
-      tl.add({targets:reportLine1,x:midX,y:midY,duration:500,onComplete:()=>{
+      tl.add({targets:reportLine1,x:midX,y:midY,duration:500,completeDelay:1000,onComplete:()=>{
             reportLine1.setText(`Paid $${cost.toFixed(2)}`).setColor('#008000');
         }});
-      tl.add({targets:reportLine2,x:midX,y:midY+18,duration:500},0);
-      tl.add({targets:reportLine3,x:midX,y:midY+36,duration:500},0);
-      tl.add({targets:[reportLine1,reportLine2,reportLine3],duration:1000});
+      tl.add({targets:reportLine2,x:midX,y:midY+18,duration:500,completeDelay:1000},0);
+      tl.add({targets:reportLine3,x:midX,y:midY+36,duration:500,completeDelay:1000},0);
       tl.add({targets:[reportLine1,reportLine2,reportLine3],x:moneyText.x,y:moneyText.y,alpha:0,duration:600});
       tl.play();
     }
@@ -184,8 +204,7 @@ window.onload = function(){
           loveText.setText('❤️ '+love);
           done();
       }});
-      tl2.add({targets:reportLine4,x:midX,y:midY,duration:500});
-      tl2.add({targets:reportLine4,duration:1000});
+      tl2.add({targets:reportLine4,x:midX,y:midY,duration:500,completeDelay:1000});
       tl2.add({targets:reportLine4,x:loveText.x,y:loveText.y,alpha:0,duration:600});
       tl2.play();
     }
@@ -210,6 +229,8 @@ window.onload = function(){
     money=10.00; love=10; coins=0; req='coffee';
     moneyText.setText('🪙 '+money.toFixed(2));
     loveText.setText('❤️ '+love);
+    Phaser.Actions.Call(customerQueue,c=>c.sprite.destroy());
+    customerQueue=[];
     gameOver=false;
     this.time.delayedCall(SPAWN_DELAY, spawnCustomer, [], this);
   }

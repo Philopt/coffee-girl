@@ -176,6 +176,7 @@ window.onload = function(){
     let mD=0, lD=0, tip=0;
     const unitCost=(req==='coffee'?COFFEE_COST:WATER_COST);
     const qty=orderQty||1;
+    const cost=unitCost*qty;
     if(type==='sell'){
       lD=Phaser.Math.Between(0,2);
       tip=+(unitCost*0.15*lD*qty).toFixed(2);
@@ -230,11 +231,8 @@ window.onload = function(){
       const showTip=tip>0;
       reportLine1.setStyle({fill:'#fff'})
         .setText(`$${(unitCost*qty).toFixed(2)}`)
-        .setPosition(customer.x,customer.y).setVisible(true);
-        .setText(`$${cost.toFixed(2)}`)
+        .setPosition(customer.x, customer.y)
         .setScale(1)
-        .setPosition(type==='give'?moneyText.x:customer.x,
-                     type==='give'?moneyText.y:customer.y)
         .setVisible(true);
       if(showTip){
         reportLine2.setText(`$${tip.toFixed(2)} ${tipPct}% TIP`)

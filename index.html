@@ -70,16 +70,19 @@ window.onload = function(){
       .setInteractive().setVisible(false).setDepth(12).on('pointerdown',()=>handleAction.call(this,'refuse'));
 
     // report positioned like a small receipt
-    const rX=330, rY=120;
-    reportBg=this.add.rectangle(rX,rY,160,100,0xffffff)
+
+
+    const rX=360, rY=150;
+    reportBg=this.add.rectangle(rX,rY,180,120,0xffffff)
       .setStrokeStyle(2,0x000).setVisible(false).setDepth(10);
-    reportLine1=this.add.text(rX,rY-25,'',{font:'13px sans-serif',fill:'#000'})
+    reportLine1=this.add.text(rX,rY-30,'',{font:'14px sans-serif',fill:'#000'})
       .setOrigin(0.5).setVisible(false).setDepth(11);
-    reportLine2=this.add.text(rX,rY-5,'',{font:'13px sans-serif',fill:'#000'})
+    reportLine2=this.add.text(rX,rY-10,'',{font:'14px sans-serif',fill:'#000'})
       .setOrigin(0.5).setVisible(false).setDepth(11);
-    reportLine3=this.add.text(rX,rY+15,'',{font:'13px sans-serif',fill:'#000'})
+    reportLine3=this.add.text(rX,rY+10,'',{font:'14px sans-serif',fill:'#000'})
       .setOrigin(0.5).setVisible(false).setDepth(11);
-    reportLine4=this.add.text(rX,rY+35,'',{font:'13px sans-serif',fill:'#000'})
+    reportLine4=this.add.text(rX,rY+30,'',{font:'14px sans-serif',fill:'#000'})
+ main
       .setOrigin(0.5).setVisible(false).setDepth(11);
 
     this.time.delayedCall(SPAWN_DELAY,spawnCustomer,[],this);
@@ -126,26 +129,30 @@ window.onload = function(){
     // show report in receipt style
     const cost=(req==='coffee'?COFFEE_COST:WATER_COST);
     reportBg.setVisible(true);
-    reportLine1.setText(`$${cost.toFixed(2)}`);
-    reportLine2.setText(type==='sell'?'Paid':'Unpaid')
-      .setColor(type==='sell'?'#008000':'#800000');
+
+
+    reportLine1.setText(`Price: $${cost.toFixed(2)}`);
+    reportLine2.setText(`Paid: $${(type==='sell'?cost:0).toFixed(2)}`);
+ main
     const tipPct=type==='sell'?lD*15:0;
     reportLine3.setText(`Tip: ${tipPct}% $${(type==='sell'?tip:0).toFixed(2)}`);
     reportLine4.setText(lD>0?'❤️'.repeat(lD):(lD<0?'😠'.repeat(-lD):''));
     reportLine1.setVisible(true); reportLine2.setVisible(true);
     reportLine3.setVisible(true); reportLine4.setVisible(true);
 
-    this.time.delayedCall(1000,()=>{
-      this.tweens.add({ targets:[reportBg,reportLine1,reportLine2,reportLine3,reportLine4],
-        alpha:0, duration:3000, callbackScope:this,
-        onComplete:()=>{
-          reportBg.setVisible(false).alpha=1;
-          reportLine1.setVisible(false).alpha=1;
-          reportLine2.setVisible(false).alpha=1;
-          reportLine3.setVisible(false).alpha=1;
-          reportLine4.setVisible(false).alpha=1;
-        }
-      });
+
+
+    // float up and hide slowly over 3s
+    this.tweens.add({ targets: [reportBg, reportLine1, reportLine2, reportLine3, reportLine4],
+      y: '-=50', alpha:0, duration:3000, callbackScope:this,
+      onComplete: ()=>{
+        reportBg.setVisible(false).alpha=1; reportBg.y+=50;
+        reportLine1.setVisible(false).alpha=1; reportLine1.y+=50;
+        reportLine2.setVisible(false).alpha=1; reportLine2.y+=50;
+        reportLine3.setVisible(false).alpha=1; reportLine3.y+=50;
+        reportLine4.setVisible(false).alpha=1; reportLine4.y+=50;
+      }
+ main
     });
 
     // exit customer and next spawn

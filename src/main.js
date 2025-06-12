@@ -47,13 +47,13 @@ window.onload = function(){
 
     // truck & girl
     const truck=this.add.image(520,245,'truck').setScale(0.924).setDepth(2);
-    const girl=this.add.image(520,210,'girl').setScale(0.5).setDepth(3)
+    const girl=this.add.image(520,230,'girl').setScale(0.5).setDepth(3)
       .setVisible(false);
 
     const intro=this.tweens.createTimeline({callbackScope:this,
       onComplete:()=>this.time.delayedCall(dur(SPAWN_DELAY),spawnCustomer,[],this)});
-    intro.add({targets:[truck,girl],x:240,duration:dur(800)});
-    intro.add({targets:girl,y:292,duration:dur(500),onStart:()=>girl.setVisible(true)});
+    intro.add({targets:[truck,girl],x:240,duration:dur(600)});
+    intro.add({targets:girl,y:292,duration:dur(300),onStart:()=>girl.setVisible(true)});
     intro.play();
 
     // dialog
@@ -64,19 +64,22 @@ window.onload = function(){
 
     // buttons
     btnSell=this.add.text(80,500,'Sell',{font:'18px sans-serif',fill:'#fff',backgroundColor:'#006400',padding:{x:12,y:6}})
-      .setInteractive().setVisible(false).setDepth(12).on('pointerdown',()=>handleAction.call(this,'sell'));
+      .setInteractive().setVisible(false).setDepth(12).setShadow(0,0,'#000',2,true,true)
+      .on('pointerdown',()=>handleAction.call(this,'sell'));
     btnGive=this.add.text(200,500,'Give Free',{font:'18px sans-serif',fill:'#fff',backgroundColor:'#008000',padding:{x:12,y:6}})
-      .setInteractive().setVisible(false).setDepth(12).on('pointerdown',()=>handleAction.call(this,'give'));
+      .setInteractive().setVisible(false).setDepth(12).setShadow(0,0,'#000',2,true,true)
+      .on('pointerdown',()=>handleAction.call(this,'give'));
     btnRef=this.add.text(360,500,'Refuse',{font:'18px sans-serif',fill:'#fff',backgroundColor:'#800000',padding:{x:12,y:6}})
-      .setInteractive().setVisible(false).setDepth(12).on('pointerdown',()=>handleAction.call(this,'refuse'));
+      .setInteractive().setVisible(false).setDepth(12).setShadow(0,0,'#000',2,true,true)
+      .on('pointerdown',()=>handleAction.call(this,'refuse'));
 
     // emoji icons behind buttons
     iconSell=this.add.text(0,0,'💵',{font:'60px sans-serif',fill:'#000'})
-      .setOrigin(0.5).setAlpha(0.3).setDepth(11).setVisible(false);
+      .setOrigin(0.5).setAlpha(0.3).setDepth(13).setVisible(false);
     iconGive=this.add.text(0,0,'💝',{font:'60px sans-serif',fill:'#000'})
-      .setOrigin(0.5).setAlpha(0.3).setDepth(11).setVisible(false);
+      .setOrigin(0.5).setAlpha(0.3).setDepth(13).setVisible(false);
     iconRef=this.add.text(0,0,'✋',{font:'60px sans-serif',fill:'#000'})
-      .setOrigin(0.5).setAlpha(0.3).setDepth(11).setVisible(false);
+      .setOrigin(0.5).setAlpha(0.3).setDepth(13).setVisible(false);
 
     // position icons behind their buttons
     const centerPos=(btn)=>[btn.x+btn.width/2, btn.y+btn.height/2];
@@ -196,7 +199,7 @@ window.onload = function(){
           done();
       }});
       tl.add({targets:reportLine1,x:midX,y:midY,duration:dur(300),completeDelay:dur(300),onComplete:()=>{
-            reportLine1.setText(`Paid $${cost.toFixed(2)}`).setColor('#8f8');
+            reportLine1.setText(`$${cost.toFixed(2)} PAID`).setColor('#8f8');
         }});
       tl.add({targets:reportLine2,x:midX,y:midY+18,duration:dur(300),completeDelay:dur(300)},0);
       tl.add({targets:reportLine3,x:midX,y:midY+36,duration:dur(300),completeDelay:dur(300)},0);
@@ -205,19 +208,35 @@ window.onload = function(){
     }
 
     if(lD!==0){
-      reportLine4.setText(lD>0?'❤️'.repeat(lD):'😠'.repeat(-lD))
-        .setPosition(customer.x,customer.y).setVisible(true);
-      const tl2=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
-          reportLine4.setVisible(false).alpha=1;
-          love+=lD;
-          loveText.setText('❤️ '+love);
-          done();
-      }});
-      tl2.add({targets:reportLine4,x:midX,y:midY,duration:dur(300),completeDelay:dur(300)});
-      tl2.add({targets:reportLine4,x:loveText.x,y:loveText.y,alpha:0,duration:dur(400)});
-      tl2.play();
+      animateLoveChange.call(this,lD,customer,done);
     }
     if(pending===0) finish();
+  }
+
+  function animateLoveChange(delta, customer, cb){
+    const count=Math.abs(delta);
+    const emoji=delta>0?'❤️':'😠';
+    const baseX=loveText.x-60;
+    const baseY=loveText.y+30;
+    const hearts=[];
+    for(let i=0;i<count;i++){
+      const h=this.add.text(customer.x,customer.y,emoji,{font:'24px sans-serif',fill:'#fff'})
+        .setOrigin(0.5).setDepth(11);
+      hearts.push(h);
+      this.tweens.add({targets:h,x:baseX+i*20,y:baseY,duration:dur(400),ease:'Cubic.easeOut'});
+    }
+    const popOne=(idx)=>{
+      if(idx>=hearts.length){ if(cb) cb(); return; }
+      const h=hearts[idx];
+      this.tweens.add({targets:h,x:loveText.x,y:loveText.y,scale:1.2,angle:360,alpha:0,
+        duration:dur(250),onComplete:()=>{
+          love+=delta>0?1:-1;
+          loveText.setText('❤️ '+love);
+          h.destroy();
+          popOne(idx+1);
+        }});
+    };
+    this.time.delayedCall(dur(400),()=>popOne(0),[],this);
   }
 
   function showEnd(msg){

@@ -117,7 +117,7 @@ window.onload = function(){
     reportBg.setVisible(true);
     reportLine1.setText(type==='sell'?`+$${COFFEE_COST.toFixed(2)}`:(type==='give'?`-$${(-mD).toFixed(2)}`:''));
     reportLine2.setText(type==='sell'?`Tip +$${tip.toFixed(2)}`:'');
-    reportLine3.setText(lD>0?'❤️'.repeat(lD):(lD<0?('😠'.repeat(-lD)):'')));
+    reportLine3.setText(lD > 0 ? '❤️'.repeat(lD) : (lD < 0 ? ('😠'.repeat(-lD)) : ''));
     reportLine1.setVisible(true); reportLine2.setVisible(type==='sell'); reportLine3.setVisible(true);
 
     // float up and hide in 400ms

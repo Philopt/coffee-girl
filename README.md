@@ -4,7 +4,7 @@ Coffee Clicker is a small browser game built with [Phaser](https://phaser.io/). 
 
 ## Getting Started
 
-1. Run a simple local HTTP server:
+1. From the repository root, run a simple local HTTP server:
 
    ```bash
    python3 -m http.server
@@ -14,11 +14,13 @@ Coffee Clicker is a small browser game built with [Phaser](https://phaser.io/). 
 
    The game must be accessed via `http://` either locally or on any static host. Opening `index.html` directly will not load all assets correctly.
 
-The game uses Phaser via the CDN:
+The game uses [Phaser](https://phaser.io/). It will load `lib/phaser.min.js` by default. If you prefer the CDN version, replace the script tag in `index.html` with:
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
 ```
+
+If the game fails to start, check your browser's console for errors.
 
 Have fun clicking!
 

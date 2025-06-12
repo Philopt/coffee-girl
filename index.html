@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-  <title>Coffee Clicker Game v53</title>
+  <title>Coffee Club</title>
   <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
   <style>
     html, body, #game-container { margin:0; padding:0; width:100%; height:100%; overflow:hidden; }
@@ -15,6 +15,7 @@
 <script>
 window.onload = function(){
   const COFFEE_COST=5.00, WATER_COST=5.58;
+  const VERSION='54';
   const SPAWN_DELAY=500;
   const MAX_M=100, MAX_L=100;
   let money=10.00, love=10, gameOver=false, customer=null, coins=0, req='coffee';
@@ -25,7 +26,7 @@ window.onload = function(){
     pixelArt:true, scene:{ preload, create } };
   new Phaser.Game(config);
 
-  let moneyText, loveText;
+  let moneyText, loveText, versionText;
   let dialogBg, dialogText, dialogCoins, btnSell, btnGive, btnRef;
   let reportBg, reportLine1, reportLine2, reportLine3, reportLine4;
 
@@ -47,6 +48,8 @@ window.onload = function(){
     // HUD
     moneyText=this.add.text(20,20,'🪙 '+money.toFixed(2),{font:'20px sans-serif',fill:'#000'}).setDepth(1);
     loveText=this.add.text(20,50,'❤️ '+love,{font:'20px sans-serif',fill:'#000'}).setDepth(1);
+    versionText=this.add.text(10,630,'v'+VERSION,{font:'12px sans-serif',fill:'#000'})
+      .setOrigin(0,1).setDepth(1);
 
     // truck & girl
     this.add.image(240,245,'truck').setScale(0.924).setDepth(2);
@@ -67,6 +70,8 @@ window.onload = function(){
       .setInteractive().setVisible(false).setDepth(12).on('pointerdown',()=>handleAction.call(this,'refuse'));
 
     // report positioned like a small receipt
+
+
     const rX=360, rY=150;
     reportBg=this.add.rectangle(rX,rY,180,120,0xffffff)
       .setStrokeStyle(2,0x000).setVisible(false).setDepth(10);
@@ -77,6 +82,7 @@ window.onload = function(){
     reportLine3=this.add.text(rX,rY+10,'',{font:'14px sans-serif',fill:'#000'})
       .setOrigin(0.5).setVisible(false).setDepth(11);
     reportLine4=this.add.text(rX,rY+30,'',{font:'14px sans-serif',fill:'#000'})
+ main
       .setOrigin(0.5).setVisible(false).setDepth(11);
 
     this.time.delayedCall(SPAWN_DELAY,spawnCustomer,[],this);
@@ -123,13 +129,18 @@ window.onload = function(){
     // show report in receipt style
     const cost=(req==='coffee'?COFFEE_COST:WATER_COST);
     reportBg.setVisible(true);
+
+
     reportLine1.setText(`Price: $${cost.toFixed(2)}`);
     reportLine2.setText(`Paid: $${(type==='sell'?cost:0).toFixed(2)}`);
+ main
     const tipPct=type==='sell'?lD*15:0;
     reportLine3.setText(`Tip: ${tipPct}% $${(type==='sell'?tip:0).toFixed(2)}`);
     reportLine4.setText(lD>0?'❤️'.repeat(lD):(lD<0?'😠'.repeat(-lD):''));
     reportLine1.setVisible(true); reportLine2.setVisible(true);
     reportLine3.setVisible(true); reportLine4.setVisible(true);
+
+
 
     // float up and hide slowly over 3s
     this.tweens.add({ targets: [reportBg, reportLine1, reportLine2, reportLine3, reportLine4],
@@ -141,6 +152,7 @@ window.onload = function(){
         reportLine3.setVisible(false).alpha=1; reportLine3.y+=50;
         reportLine4.setVisible(false).alpha=1; reportLine4.y+=50;
       }
+ main
     });
 
     // exit customer and next spawn

@@ -58,13 +58,11 @@ window.onload = function(){
     const girl=this.add.image(520,210,'girl').setScale(0.5).setDepth(3)
       .setVisible(false);
 
-    this.tweens.timeline({callbackScope:this,
-      tweens:[
-        {targets:[truck,girl],x:240,duration:800},
-        {targets:girl,y:292,duration:500,onStart:()=>girl.setVisible(true)}
-      ],
-      onComplete:()=>this.time.delayedCall(SPAWN_DELAY,spawnCustomer,[],this)
-    });
+    const intro=this.tweens.createTimeline({callbackScope:this,
+      onComplete:()=>this.time.delayedCall(SPAWN_DELAY,spawnCustomer,[],this)});
+    intro.add({targets:[truck,girl],x:240,duration:800});
+    intro.add({targets:girl,y:292,duration:500,onStart:()=>girl.setVisible(true)});
+    intro.play();
 
     // dialog
     dialogBg=this.add.rectangle(240,460,460,120,0xffffff).setStrokeStyle(2,0x000).setVisible(false).setDepth(10);

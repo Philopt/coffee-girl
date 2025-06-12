@@ -140,7 +140,7 @@ window.onload = function(){
     if(type!=='refuse'){
       reportLine1.setStyle({fill:'#000'}).setText(`$${cost.toFixed(2)}`)
         .setPosition(480,moneyText.y).setVisible(true);
-      this.tweens.add({ targets: reportLine1, x:240, duration:500, callbackScope:this,
+      this.tweens.add({ targets: reportLine1, x:moneyText.x, duration:500, callbackScope:this,
         onComplete:()=>{
           reportLine1.setText(`Paid $${(type==='sell'?cost:0).toFixed(2)}`).setColor('#008000');
         }
@@ -149,21 +149,21 @@ window.onload = function(){
       this.time.delayedCall(500,()=>{
         reportLine2.setText(`Tip: ${tipPct}% $${(type==='sell'?tip:0).toFixed(2)}`)
           .setPosition(480,moneyText.y+20).setColor('#000').setVisible(true);
-        this.tweens.add({ targets:reportLine2, x:240, duration:500 });
+        this.tweens.add({ targets:reportLine2, x:moneyText.x, duration:500 });
       },[],this);
     }
 
     if(lD!==0){
       reportLine3.setText(lD>0?'❤️'.repeat(lD):'😠'.repeat(-lD))
         .setPosition(480,loveText.y).setVisible(true);
-      this.tweens.add({ targets:reportLine3, x:240, duration:500, delay:500 });
+      this.tweens.add({ targets:reportLine3, x:moneyText.x, duration:500, delay:500 });
     }
 
     this.time.delayedCall(1500,()=>{
       const targets=[];
       if(type!=='refuse'){ targets.push(reportLine1,reportLine2); }
       if(lD!==0) targets.push(reportLine3);
-      this.tweens.add({ targets, x:moneyText.x, alpha:0, duration:600, callbackScope:this,
+      this.tweens.add({ targets, alpha:0, duration:600, callbackScope:this,
         onComplete:()=>{
           if(type!=='refuse'){
             reportLine1.setVisible(false).alpha=1;

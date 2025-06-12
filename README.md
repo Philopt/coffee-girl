@@ -21,3 +21,7 @@ The game uses Phaser via the CDN:
 
 Have fun clicking!
 
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+

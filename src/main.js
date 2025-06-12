@@ -1,11 +1,12 @@
 window.onload = function(){
   const COFFEE_COST=5.00, WATER_COST=5.58;
-  const VERSION='54';
+  const VERSION='55';
   const SPAWN_DELAY=300;
   const QUEUE_SPACING=70;
   const MAX_M=100, MAX_L=100;
   let speed=1;
-  let money=10.00, love=10, gameOver=false, customerQueue=[], coins=0, req='coffee';
+  let money=10.00, love=10, gameOver=false, customerQueue=[], coins=0, req='coffee', orderQty=1;
+  let loveLevel=1;
   const keys=[];
 
   const dur=v=>v/speed;
@@ -15,10 +16,33 @@ window.onload = function(){
     pixelArt:true, scene:{ preload, create } };
   new Phaser.Game(config);
 
-  let moneyText, loveText, versionText, speedBtn;
+  let moneyText, loveText, loveLevelText, queueLevelText, versionText, speedBtn;
   let dialogBg, dialogText, dialogCoins, btnSell, btnGive, btnRef;
   let iconSell, iconGive, iconRef;
   let reportLine1, reportLine2, reportLine3, reportLine4;
+
+  function calcLoveLevel(v){
+    if(v>=100) return 4;
+    if(v>=50) return 3;
+    if(v>=20) return 2;
+    return 1;
+  }
+
+  function queueCapacityForLevel(lv){
+    if(lv===1) return 1;
+    if(lv===2) return 2;
+    return 3;
+  }
+
+  function updateLevelDisplay(){
+    loveLevel=calcLoveLevel(love);
+    if(loveLevelText){
+      loveLevelText.setText(loveLevel);
+    }
+    if(queueLevelText){
+      queueLevelText.setText('Queue Lv. '+loveLevel);
+    }
+  }
 
   function preload(){
     this.load.image('bg','assets/bg.png');
@@ -39,6 +63,9 @@ window.onload = function(){
     // HUD
     moneyText=this.add.text(20,20,'🪙 '+money.toFixed(2),{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
     loveText=this.add.text(20,50,'❤️ '+love,{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
+    loveLevelText=this.add.text(loveText.x+22,loveText.y+8,loveLevel,{font:'12px sans-serif',fill:'#800'}).setDepth(1);
+    queueLevelText=this.add.text(460,340,'Queue Lv. '+loveLevel,{font:'16px sans-serif',fill:'#000'}).setOrigin(1,0.5).setDepth(1);
+    updateLevelDisplay();
     versionText=this.add.text(10,630,'v'+VERSION,{font:'12px sans-serif',fill:'#000'})
       .setOrigin(0,1).setDepth(1);
     speedBtn=this.add.text(460,20,'1x',{font:'20px sans-serif',fill:'#000',backgroundColor:'#ddd',padding:{x:6,y:4}})
@@ -102,26 +129,37 @@ window.onload = function(){
   }
 
   function spawnCustomer(){
-    if(gameOver||customerQueue.length>=3) return;
+    const level=calcLoveLevel(love);
+    const maxQ=queueCapacityForLevel(level);
+    if(gameOver||customerQueue.length>=maxQ) return;
     const c={};
     c.coins=Phaser.Math.Between(1,10);
     c.req=c.coins<COFFEE_COST?'water':'coffee';
+    c.qty=(level>=3?2:1);
     const k=Phaser.Utils.Array.GetRandom(keys);
     const startY=700;
     c.sprite=this.add.sprite(240,startY,k).setScale(0.7).setDepth(4);
+    if(level>=3){
+      const k2=Phaser.Utils.Array.GetRandom(keys);
+      c.friend=this.add.sprite(280,startY,k2).setScale(0.7).setDepth(4);
+    }
     const targetY=332+QUEUE_SPACING*customerQueue.length;
     customerQueue.push(c);
     this.tweens.add({targets:c.sprite,y:targetY,duration:dur(800),callbackScope:this,
-      onComplete:()=>{ if(customerQueue[0]===c) { coins=c.coins; req=c.req; showDialog.call(this); } }});
+      onComplete:()=>{ if(customerQueue[0]===c) { coins=c.coins; req=c.req; orderQty=c.qty; showDialog.call(this); } }});
+    if(c.friend){
+      this.tweens.add({targets:c.friend,y:targetY,duration:dur(800)});
+    }
   }
 
   function showDialog(){
     if(customerQueue.length===0) return;
     const c=customerQueue[0];
-    coins=c.coins; req=c.req;
+    coins=c.coins; req=c.req; orderQty=c.qty||1;
     dialogBg.setVisible(true);
-    dialogText.setText(`${req.charAt(0).toUpperCase()+req.slice(1)} $${(req==='coffee'?COFFEE_COST:WATER_COST).toFixed(2)}`)
-      .setVisible(true);
+    let txt=`${req.charAt(0).toUpperCase()+req.slice(1)} $${(req==='coffee'?COFFEE_COST:WATER_COST).toFixed(2)}`;
+    if(orderQty>1) txt+=` x${orderQty}`;
+    dialogText.setText(txt).setVisible(true);
     dialogCoins.setText(`🪙${coins}`).setVisible(true);
     btnSell.setVisible(req==='coffee'); btnGive.setVisible(true); btnRef.setVisible(true);
     iconSell.setVisible(req==='coffee'); iconGive.setVisible(true); iconRef.setVisible(true);
@@ -136,35 +174,42 @@ window.onload = function(){
   function handleAction(type){
     clearDialog();
     let mD=0, lD=0, tip=0;
+    const unitCost=(req==='coffee'?COFFEE_COST:WATER_COST);
+    const qty=orderQty||1;
     if(type==='sell'){
       lD=Phaser.Math.Between(0,2);
-      tip=+(COFFEE_COST*0.15*lD).toFixed(2);
-      mD=COFFEE_COST+tip;
+      tip=+(unitCost*0.15*lD*qty).toFixed(2);
+      mD=unitCost*qty+tip;
     } else if(type==='give'){
       lD=Phaser.Math.Between(2,4);
+      mD=-unitCost*qty;
     } else {
       lD=-Phaser.Math.Between(1,3);
     }
 
-    const cost=(req==='coffee'?COFFEE_COST:WATER_COST);
-    if(type==='give'){
-      mD=-cost;
-    }
     const tipPct=type==='sell'?lD*15:0;
 
     const current=customerQueue[0];
     const customer=current.sprite;
+    const friend=current.friend;
     customerQueue.shift();
     const finish=()=>{
-      this.tweens.add({ targets: current.sprite, x: (type==='refuse'? -50:520), duration:dur(600), callbackScope:this,
+      const targets=[current.sprite];
+      if(friend) targets.push(friend);
+      this.tweens.add({ targets: targets, x: (type==='refuse'? -50:520), duration:dur(600), callbackScope:this,
         onComplete:()=>{
           current.sprite.destroy();
+          if(friend) friend.destroy();
           if(money<=0){showEnd.call(this,'Game Over\nYou are fired');return;}
           if(love<=0){showEnd.call(this,'Game Over 😠');return;}
           if(money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
           if(love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
+          orderQty=1;
           Phaser.Actions.Call(customerQueue,(c,idx)=>{
             this.tweens.add({targets:c.sprite,y:332+QUEUE_SPACING*idx,duration:dur(500)});
+            if(c.friend){
+              this.tweens.add({targets:c.friend,y:332+QUEUE_SPACING*idx,duration:dur(500)});
+            }
           });
           if(customerQueue.length>0){
             this.time.delayedCall(dur(600),showDialog,[],this);
@@ -184,7 +229,7 @@ window.onload = function(){
     if(type!=='refuse'){
       const showTip=tip>0;
       reportLine1.setStyle({fill:'#fff'})
-        .setText(`$${cost.toFixed(2)}`)
+        .setText(`$${(unitCost*qty).toFixed(2)}`)
         .setPosition(customer.x,customer.y).setVisible(true);
       if(showTip){
         reportLine2.setText(`Tip ${tipPct}%`)
@@ -210,7 +255,7 @@ window.onload = function(){
       tl.add({targets:reportLine1,x:midX,y:midY,duration:dur(300),completeDelay:dur(300),onComplete:()=>{
 
             if(type==='give'){
-              reportLine1.setText(`$${cost.toFixed(2)} LOSS`).setColor('#f88');
+              reportLine1.setText(`$${(unitCost*qty).toFixed(2)} LOSS`).setColor('#f88');
             }else{
             }
 
@@ -251,6 +296,7 @@ window.onload = function(){
         duration:dur(250),onComplete:()=>{
           love+=delta>0?1:-1;
           loveText.setText('❤️ '+love);
+          updateLevelDisplay();
           h.destroy();
           popOne(idx+1);
         }});
@@ -276,7 +322,8 @@ window.onload = function(){
     money=10.00; love=10; coins=0; req='coffee';
     moneyText.setText('🪙 '+money.toFixed(2));
     loveText.setText('❤️ '+love);
-    Phaser.Actions.Call(customerQueue,c=>c.sprite.destroy());
+    updateLevelDisplay();
+    Phaser.Actions.Call(customerQueue,c=>{ c.sprite.destroy(); if(c.friend) c.friend.destroy(); });
     customerQueue=[];
     gameOver=false;
     this.time.delayedCall(dur(SPAWN_DELAY), spawnCustomer, [], this);

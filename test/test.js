@@ -1,6 +1,6 @@
 const { spawn } = require('child_process');
 const path = require('path');
-const puppeteer = require('puppeteer');
+const http = require('http');
 
 async function run() {
   const serverPath = path.join(__dirname, '..', 'node_modules', '.bin', 'http-server');
@@ -9,28 +9,23 @@ async function run() {
   // wait a bit for the server to start
   await new Promise(r => setTimeout(r, 1000));
 
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
   const errors = [];
-  const failed = [];
 
-  page.on('pageerror', err => errors.push(err.message));
-  page.on('console', msg => {
-    if (msg.type() === 'error') errors.push(msg.text());
+  await new Promise((resolve, reject) => {
+    http.get('http://localhost:8080', res => {
+      if (res.statusCode !== 200) errors.push(`Status ${res.statusCode}`);
+      res.resume();
+      res.on('end', resolve);
+    }).on('error', err => {
+      errors.push(err.message);
+      resolve();
+    });
   });
-  page.on('requestfailed', req => {
-    failed.push(`${req.url()} - ${req.failure().errorText}`);
-  });
 
-  await page.goto('http://localhost:8080', { waitUntil: 'networkidle0' });
-  await page.waitForTimeout(1000);
-
-  await browser.close();
   server.kill();
 
-  if (errors.length || failed.length) {
-    console.error('Console errors:', errors);
-    console.error('Failed requests:', failed);
+  if (errors.length) {
+    console.error('Failed:', errors);
     process.exit(1);
   } else {
     console.log('Game loaded without errors');

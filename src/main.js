@@ -1,33 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-  <title>Coffee Club</title>
-  <script src="lib/phaser.min.js"></script>
-  <style>
-    html, body, #game-container { margin:0; padding:0; width:100%; height:100%; overflow:hidden; }
-    body { background:#f2e5d7; }
-  </style>
-</head>
-<body>
-  <div id="game-container"></div>
-<script>
 window.onload = function(){
   const COFFEE_COST=5.00, WATER_COST=5.58;
   const VERSION='54';
-  const SPAWN_DELAY=500;
+  const SPAWN_DELAY=300;
   const QUEUE_SPACING=70;
   const MAX_M=100, MAX_L=100;
+  let speed=1;
   let money=10.00, love=10, gameOver=false, customerQueue=[], coins=0, req='coffee';
   const keys=[];
+
+  const dur=v=>v/speed;
 
   const config={ type:Phaser.AUTO, parent:'game-container', backgroundColor:'#f2e5d7',
     scale:{ mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH, width:480, height:640 },
     pixelArt:true, scene:{ preload, create } };
   new Phaser.Game(config);
 
-  let moneyText, loveText, versionText;
+  let moneyText, loveText, versionText, speedBtn;
   let dialogBg, dialogText, dialogCoins, btnSell, btnGive, btnRef;
   let reportLine1, reportLine2, reportLine3, reportLine4;
 
@@ -48,20 +36,23 @@ window.onload = function(){
     bg.setDisplaySize(this.scale.width,this.scale.height);
 
     // HUD
-    moneyText=this.add.text(20,20,'🪙 '+money.toFixed(2),{font:'24px sans-serif',fill:'#fff'}).setDepth(1);
-    loveText=this.add.text(20,50,'❤️ '+love,{font:'24px sans-serif',fill:'#fff'}).setDepth(1);
+    moneyText=this.add.text(20,20,'🪙 '+money.toFixed(2),{font:'20px sans-serif',fill:'#000'}).setDepth(1);
+    loveText=this.add.text(20,50,'❤️ '+love,{font:'20px sans-serif',fill:'#000'}).setDepth(1);
     versionText=this.add.text(10,630,'v'+VERSION,{font:'12px sans-serif',fill:'#000'})
       .setOrigin(0,1).setDepth(1);
+    speedBtn=this.add.text(460,20,'1x',{font:'20px sans-serif',fill:'#000',backgroundColor:'#ddd',padding:{x:6,y:4}})
+      .setOrigin(1,0).setDepth(1).setInteractive()
+      .on('pointerdown',()=>{ speed++; speedBtn.setText(speed+'x'); });
 
     // truck & girl
     const truck=this.add.image(520,245,'truck').setScale(0.924).setDepth(2);
-    const girl=this.add.image(520,220,'girl').setScale(0.5).setDepth(3)
+    const girl=this.add.image(520,210,'girl').setScale(0.5).setDepth(3)
       .setVisible(false);
 
     const intro=this.tweens.createTimeline({callbackScope:this,
-      onComplete:()=>this.time.delayedCall(SPAWN_DELAY,spawnCustomer,[],this)});
-    intro.add({targets:[truck,girl],x:240,duration:600});
-    intro.add({targets:girl,y:292,duration:300,onStart:()=>girl.setVisible(true)});
+      onComplete:()=>this.time.delayedCall(dur(SPAWN_DELAY),spawnCustomer,[],this)});
+    intro.add({targets:[truck,girl],x:240,duration:dur(800)});
+    intro.add({targets:girl,y:292,duration:dur(500),onStart:()=>girl.setVisible(true)});
     intro.play();
 
     // dialog
@@ -80,13 +71,13 @@ window.onload = function(){
 
     // sliding report texts
     reportLine1=this.add.text(480,moneyText.y,'',{font:'16px sans-serif',fill:'#fff'})
-      .setOrigin(0,0.5).setVisible(false).setDepth(13);
+      .setOrigin(0,0.5).setVisible(false).setDepth(11);
     reportLine2=this.add.text(480,moneyText.y+20,'',{font:'16px sans-serif',fill:'#fff'})
-      .setOrigin(0,0.5).setVisible(false).setDepth(13);
+      .setOrigin(0,0.5).setVisible(false).setDepth(11);
     reportLine3=this.add.text(480,loveText.y,'',{font:'16px sans-serif',fill:'#fff'})
-      .setOrigin(0,0.5).setVisible(false).setDepth(13);
+      .setOrigin(0,0.5).setVisible(false).setDepth(11);
     reportLine4=this.add.text(0,0,'',{font:'14px sans-serif',fill:'#fff'})
-      .setVisible(false).setDepth(13);
+      .setVisible(false).setDepth(11);
   }
 
   function spawnCustomer(){
@@ -99,7 +90,7 @@ window.onload = function(){
     c.sprite=this.add.sprite(240,startY,k).setScale(0.7).setDepth(4);
     const targetY=332+QUEUE_SPACING*customerQueue.length;
     customerQueue.push(c);
-    this.tweens.add({targets:c.sprite,y:targetY,duration:800,callbackScope:this,
+    this.tweens.add({targets:c.sprite,y:targetY,duration:dur(800),callbackScope:this,
       onComplete:()=>{ if(customerQueue[0]===c) { coins=c.coins; req=c.req; showDialog.call(this); } }});
   }
 
@@ -140,7 +131,7 @@ window.onload = function(){
     const customer=current.sprite;
     customerQueue.shift();
     const finish=()=>{
-      this.tweens.add({ targets: current.sprite, x: (type==='refuse'? -50:520), duration:600, callbackScope:this,
+      this.tweens.add({ targets: current.sprite, x: (type==='refuse'? -50:520), duration:dur(600), callbackScope:this,
         onComplete:()=>{
           current.sprite.destroy();
           if(money<=0){showEnd.call(this,'Game Over\nYou are fired');return;}
@@ -148,20 +139,19 @@ window.onload = function(){
           if(money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
           if(love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
           Phaser.Actions.Call(customerQueue,(c,idx)=>{
-            this.tweens.add({targets:c.sprite,y:332+QUEUE_SPACING*idx,duration:500});
+            this.tweens.add({targets:c.sprite,y:332+QUEUE_SPACING*idx,duration:dur(500)});
           });
           if(customerQueue.length>0){
-            this.time.delayedCall(600,showDialog,[],this);
+            this.time.delayedCall(dur(600),showDialog,[],this);
           }else{
-            this.time.delayedCall(SPAWN_DELAY, spawnCustomer, [], this);
+            this.time.delayedCall(dur(SPAWN_DELAY), spawnCustomer, [], this);
           }
         }
       });
     };
 
     // animated report using timelines
-    const moneyX=160, moneyY=40;
-    const loveX=120, loveY=110;
+    const midX=240, midY=120;
 
     let pending=(type!=='refuse'?1:0)+(lD!==0?1:0);
     const done=()=>{ if(--pending<=0) finish(); };
@@ -170,16 +160,12 @@ window.onload = function(){
       reportLine1.setStyle({fill:'#fff'})
         .setText(`$${cost.toFixed(2)}`)
         .setPosition(customer.x,customer.y).setVisible(true);
-      reportLine2.setText(`TIP ${tipPct}%`)
+      reportLine2.setText(`Tip ${tipPct}%`)
         .setStyle({fontSize:'14px',fill:'#ddf'})
         .setPosition(customer.x,customer.y+18).setVisible(true);
-      if(tip>0){
-        reportLine3.setText(`+$${tip.toFixed(2)}`)
-          .setStyle({fontSize:'16px',fill:'#fff'})
-          .setPosition(customer.x,customer.y-18).setVisible(true);
-      } else {
-        reportLine3.setVisible(false);
-      }
+      reportLine3.setText(`$${tip.toFixed(2)}`)
+        .setStyle({fontSize:'16px',fill:'#fff'})
+        .setPosition(customer.x,customer.y+36).setVisible(true);
 
       const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
           reportLine1.setVisible(false).alpha=1;
@@ -189,45 +175,27 @@ window.onload = function(){
           moneyText.setText('🪙 '+money.toFixed(2));
           done();
       }});
-      tl.add({targets:reportLine1,x:moneyX,y:moneyY,duration:300,completeDelay:300,onComplete:()=>{
-            reportLine1.setText(`$${cost.toFixed(2)} PAID`).setColor('#8f8');
+      tl.add({targets:reportLine1,x:midX,y:midY,duration:dur(300),completeDelay:dur(300),onComplete:()=>{
+            reportLine1.setText(`Paid $${cost.toFixed(2)}`).setColor('#8f8');
         }});
-      tl.add({targets:reportLine2,x:moneyX,y:moneyY+18,duration:300,completeDelay:300},0);
-      if(tip>0){
-        tl.add({targets:reportLine3,x:moneyX,y:moneyY-18,duration:300,completeDelay:300},0);
-        tl.add({targets:reportLine3,scale:1.1,duration:200,yoyo:true});
-        tl.add({targets:reportLine3,x:moneyText.x,y:moneyText.y,alpha:0,duration:400});
-        tl.add({targets:[reportLine1,reportLine2],x:moneyText.x,y:moneyText.y,alpha:0,duration:400},'-=200');
-      } else {
-        tl.add({targets:[reportLine1,reportLine2],x:moneyText.x,y:moneyText.y,alpha:0,duration:400});
-      }
+      tl.add({targets:reportLine2,x:midX,y:midY+18,duration:dur(300),completeDelay:dur(300)},0);
+      tl.add({targets:reportLine3,x:midX,y:midY+36,duration:dur(300),completeDelay:dur(300)},0);
+      tl.add({targets:[reportLine1,reportLine2,reportLine3],x:moneyText.x,y:moneyText.y,alpha:0,duration:dur(400)});
       tl.play();
     }
 
     if(lD!==0){
-      if(lD>0){
-        const tl2=this.tweens.createTimeline({callbackScope:this,onComplete:done});
-        for(let i=0;i<lD;i++){
-          const heart=this.add.text(customer.x,customer.y,'❤️',{font:'16px sans-serif',fill:'#fff'})
-            .setOrigin(0.5).setDepth(13);
-          tl2.add({targets:heart,x:loveX,y:loveY,duration:300,delay:i*200});
-          tl2.add({targets:heart,x:loveText.x,y:loveText.y,scale:1.1,duration:400,
-            yoyo:true,onComplete:()=>{heart.destroy(); love++; loveText.setText('❤️ '+love);}});
-        }
-        tl2.play();
-      } else {
-        reportLine4.setText('😠'.repeat(-lD))
-          .setPosition(customer.x,customer.y).setVisible(true);
-        const tl2=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
-            reportLine4.setVisible(false).alpha=1;
-            love+=lD;
-            loveText.setText('❤️ '+love);
-            done();
-        }});
-        tl2.add({targets:reportLine4,x:loveX,y:loveY,duration:300});
-        tl2.add({targets:reportLine4,x:loveText.x,y:loveText.y,alpha:0,duration:400});
-        tl2.play();
-      }
+      reportLine4.setText(lD>0?'❤️'.repeat(lD):'😠'.repeat(-lD))
+        .setPosition(customer.x,customer.y).setVisible(true);
+      const tl2=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
+          reportLine4.setVisible(false).alpha=1;
+          love+=lD;
+          loveText.setText('❤️ '+love);
+          done();
+      }});
+      tl2.add({targets:reportLine4,x:midX,y:midY,duration:dur(300),completeDelay:dur(300)});
+      tl2.add({targets:reportLine4,x:loveText.x,y:loveText.y,alpha:0,duration:dur(400)});
+      tl2.play();
     }
     if(pending===0) finish();
   }
@@ -253,11 +221,7 @@ window.onload = function(){
     Phaser.Actions.Call(customerQueue,c=>c.sprite.destroy());
     customerQueue=[];
     gameOver=false;
-    this.time.delayedCall(SPAWN_DELAY, spawnCustomer, [], this);
+    this.time.delayedCall(dur(SPAWN_DELAY), spawnCustomer, [], this);
   }
 
 };
-</script>
-  <script src="src/main.js"></script>
-</body>
-</html>

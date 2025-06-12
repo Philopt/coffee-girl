@@ -145,13 +145,15 @@ window.onload = function(){
       tip=+(COFFEE_COST*0.15*lD).toFixed(2);
       mD=COFFEE_COST+tip;
     } else if(type==='give'){
-      const cost=(req==='coffee'?COFFEE_COST:WATER_COST);
-      mD=-cost; lD=Phaser.Math.Between(2,4);
+      lD=Phaser.Math.Between(2,4);
     } else {
       lD=-Phaser.Math.Between(1,3);
     }
 
     const cost=(req==='coffee'?COFFEE_COST:WATER_COST);
+    if(type==='give'){
+      mD=-cost;
+    }
     const tipPct=type==='sell'?lD*15:0;
 
     const current=customerQueue[0];

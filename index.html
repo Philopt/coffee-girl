@@ -82,7 +82,6 @@ window.onload = function(){
     reportLine3=this.add.text(rX,rY+10,'',{font:'14px sans-serif',fill:'#000'})
       .setOrigin(0.5).setVisible(false).setDepth(11);
     reportLine4=this.add.text(rX,rY+30,'',{font:'14px sans-serif',fill:'#000'})
- main
       .setOrigin(0.5).setVisible(false).setDepth(11);
 
     this.time.delayedCall(SPAWN_DELAY,spawnCustomer,[],this);
@@ -133,7 +132,6 @@ window.onload = function(){
 
     reportLine1.setText(`Price: $${cost.toFixed(2)}`);
     reportLine2.setText(`Paid: $${(type==='sell'?cost:0).toFixed(2)}`);
- main
     const tipPct=type==='sell'?lD*15:0;
     reportLine3.setText(`Tip: ${tipPct}% $${(type==='sell'?tip:0).toFixed(2)}`);
     reportLine4.setText(lD>0?'❤️'.repeat(lD):(lD<0?'😠'.repeat(-lD):''));
@@ -152,7 +150,6 @@ window.onload = function(){
         reportLine3.setVisible(false).alpha=1; reportLine3.y+=50;
         reportLine4.setVisible(false).alpha=1; reportLine4.y+=50;
       }
- main
     });
 
     // exit customer and next spawn

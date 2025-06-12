@@ -28,7 +28,7 @@ window.onload = function(){
 
   let moneyText, loveText, versionText;
   let dialogBg, dialogText, dialogCoins, btnSell, btnGive, btnRef;
-  let reportBg, reportLine1, reportLine2, reportLine3, reportLine4;
+  let reportLine1, reportLine2, reportLine3, reportLine4;
 
   function preload(){
     this.load.image('bg','assets/bg.png');
@@ -71,7 +71,6 @@ window.onload = function(){
       .setInteractive().setVisible(false).setDepth(12).on('pointerdown',()=>handleAction.call(this,'refuse'));
 
     // sliding report texts
-    reportBg=this.add.rectangle(0,0,0,0,0xffffff).setVisible(false);
     reportLine1=this.add.text(480,moneyText.y,'',{font:'16px sans-serif',fill:'#000'})
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
     reportLine2=this.add.text(480,moneyText.y+20,'',{font:'16px sans-serif',fill:'#000'})
@@ -200,7 +199,6 @@ window.onload = function(){
 
   function showEnd(msg){
     clearDialog();
-    reportBg.setVisible(false);
     this.add.rectangle(240,320,480,240,0xffffff).setStrokeStyle(2,0x000).setDepth(20);
     this.add.text(240,320,msg,{font:'24px sans-serif',fill:'#000',align:'center',wordWrap:{width:440}})
       .setOrigin(0.5).setDepth(21);

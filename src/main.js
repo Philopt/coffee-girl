@@ -17,6 +17,7 @@ window.onload = function(){
 
   let moneyText, loveText, versionText, speedBtn;
   let dialogBg, dialogText, dialogCoins, btnSell, btnGive, btnRef;
+  let iconSell, iconGive, iconRef;
   let reportLine1, reportLine2, reportLine3, reportLine4;
 
   function preload(){
@@ -57,9 +58,9 @@ window.onload = function(){
 
     // dialog
     dialogBg=this.add.rectangle(240,460,460,120,0xffffff).setStrokeStyle(2,0x000).setVisible(false).setDepth(10);
-    dialogText=this.add.text(240,440,'',{font:'18px sans-serif',fill:'#000',align:'center',wordWrap:{width:420}})
+    dialogText=this.add.text(240,440,'',{font:'24px sans-serif',fill:'#000',align:'center',wordWrap:{width:420}})
                      .setOrigin(0.5).setVisible(false).setDepth(11);
-    dialogCoins=this.add.text(240,470,'',{font:'24px sans-serif',fill:'#000'}).setOrigin(0.5).setVisible(false).setDepth(11);
+    dialogCoins=this.add.text(240,470,'',{font:'28px sans-serif',fill:'#000'}).setOrigin(0.5).setVisible(false).setDepth(11);
 
     // buttons
     btnSell=this.add.text(80,500,'Sell',{font:'18px sans-serif',fill:'#fff',backgroundColor:'#006400',padding:{x:12,y:6}})
@@ -68,6 +69,23 @@ window.onload = function(){
       .setInteractive().setVisible(false).setDepth(12).on('pointerdown',()=>handleAction.call(this,'give'));
     btnRef=this.add.text(360,500,'Refuse',{font:'18px sans-serif',fill:'#fff',backgroundColor:'#800000',padding:{x:12,y:6}})
       .setInteractive().setVisible(false).setDepth(12).on('pointerdown',()=>handleAction.call(this,'refuse'));
+
+    // emoji icons behind buttons
+    iconSell=this.add.text(0,0,'💵',{font:'60px sans-serif',fill:'#000'})
+      .setOrigin(0.5).setAlpha(0.3).setDepth(11).setVisible(false);
+    iconGive=this.add.text(0,0,'💝',{font:'60px sans-serif',fill:'#000'})
+      .setOrigin(0.5).setAlpha(0.3).setDepth(11).setVisible(false);
+    iconRef=this.add.text(0,0,'✋',{font:'60px sans-serif',fill:'#000'})
+      .setOrigin(0.5).setAlpha(0.3).setDepth(11).setVisible(false);
+
+    // position icons behind their buttons
+    const centerPos=(btn)=>[btn.x+btn.width/2, btn.y+btn.height/2];
+    const [sx,sy]=centerPos(btnSell);
+    iconSell.setPosition(sx,sy);
+    const [gx,gy]=centerPos(btnGive);
+    iconGive.setPosition(gx,gy);
+    const [rx,ry]=centerPos(btnRef);
+    iconRef.setPosition(rx,ry);
 
     // sliding report texts
     reportLine1=this.add.text(480,moneyText.y,'',{font:'16px sans-serif',fill:'#fff'})
@@ -99,15 +117,17 @@ window.onload = function(){
     const c=customerQueue[0];
     coins=c.coins; req=c.req;
     dialogBg.setVisible(true);
-    dialogText.setText(`${req.charAt(0).toUpperCase()+req.slice(1)} costs $${(req==='coffee'?COFFEE_COST:WATER_COST).toFixed(2)}.`)
+    dialogText.setText(`${req.charAt(0).toUpperCase()+req.slice(1)} $${(req==='coffee'?COFFEE_COST:WATER_COST).toFixed(2)}`)
       .setVisible(true);
     dialogCoins.setText(`🪙${coins}`).setVisible(true);
     btnSell.setVisible(req==='coffee'); btnGive.setVisible(true); btnRef.setVisible(true);
+    iconSell.setVisible(req==='coffee'); iconGive.setVisible(true); iconRef.setVisible(true);
   }
 
   function clearDialog(){
     dialogBg.setVisible(false); dialogText.setVisible(false); dialogCoins.setVisible(false);
     btnSell.setVisible(false); btnGive.setVisible(false); btnRef.setVisible(false);
+    iconSell.setVisible(false); iconGive.setVisible(false); iconRef.setVisible(false);
   }
 
   function handleAction(type){

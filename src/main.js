@@ -65,6 +65,18 @@ window.onload = function(){
     return `$${d}${cents}`;
   }
 
+  function flashMoney(obj, scene){
+    let on=true;
+    scene.time.addEvent({
+      repeat:5,
+      delay:dur(60),
+      callback:()=>{
+        obj.setColor(on?'#fff':'#0f0');
+        on=!on;
+      }
+    });
+  }
+
   const config={ type:Phaser.AUTO, parent:'game-container', backgroundColor:'#f2e5d7',
     scale:{ mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH, width:480, height:640 },
     pixelArt:true, scene:{ preload, create } };
@@ -185,7 +197,13 @@ window.onload = function(){
     if (spawnTimer) {
       spawnTimer.remove(false);
     }
-    const delay = SPAWN_DELAY + Phaser.Math.Between(0, SPAWN_VARIANCE);
+    const needed = queueLimit() - (queue.length + wanderers.length);
+    let delay;
+    if(needed > 0){
+      delay = 500;
+    }else{
+      delay = SPAWN_DELAY + Phaser.Math.Between(0, SPAWN_VARIANCE);
+    }
     // use real-time delay to ensure customers never spawn too quickly,
     // regardless of game speed adjustments
     spawnTimer = scene.time.delayedCall(delay, spawnCustomer, [], scene);
@@ -194,7 +212,8 @@ window.onload = function(){
   function showSideC(){
     if(sideCText) return;
     const y=this.scale.height*0.15;
-    sideCText=this.add.text(this.scale.width/2,y,'Side B',
+    const x=this.scale.width*0.67;
+    sideCText=this.add.text(x,y,'Side C',
         {font:'bold 64px serif',fill:'#002a8a'})
       .setOrigin(0.5)
       .setDepth(4)
@@ -267,9 +286,9 @@ window.onload = function(){
 
     // dialog
     dialogBg=this.add.rectangle(240,460,460,120,0xffffff).setStrokeStyle(2,0x000).setVisible(false).setDepth(10);
-    dialogText=this.add.text(240,440,'',{font:'24px sans-serif',fill:'#000',align:'center',wordWrap:{width:420}})
+    dialogText=this.add.text(240,440,'',{font:'20px sans-serif',fill:'#000',align:'center',wordWrap:{width:420}})
                      .setOrigin(0.5).setVisible(false).setDepth(11);
-    dialogCoins=this.add.text(240,470,'',{font:'24px sans-serif',fill:'#000'})
+    dialogCoins=this.add.text(240,470,'',{font:'20px sans-serif',fill:'#000'})
       .setOrigin(0.5).setVisible(false).setDepth(11);
     dialogPriceLabel=this.add.text(240,456,'',{font:'14px sans-serif',fill:'#000',align:'center'})
       .setOrigin(0.5).setVisible(false).setDepth(11);
@@ -396,14 +415,14 @@ window.onload = function(){
     this.tweens.add({targets:bubble,y:c.sprite.y-70,alpha:0,duration:dur(600),onComplete:()=>{bubble.destroy(); activeBubble=null;}});
     dialogText
       .setOrigin(0,0.5)
-      .setPosition(dialogBg.x-dialogBg.width/2+60,440)
+      .setPosition(dialogBg.x-dialogBg.width/2+40,440)
       .setText(`I want ${itemStr}`)
       .setVisible(true);
     dialogCoins
       .setOrigin(0,0.5)
-      .setPosition(dialogBg.x-dialogBg.width/2+60,470)
-      .setStyle({fontSize:'24px'})
-      .setText(`I have $${c.orders[0].coins.toFixed(2)}`)
+      .setPosition(dialogBg.x-dialogBg.width/2+40,470)
+      .setStyle({fontSize:'20px'})
+      .setText(`I have $${c.orders[0].coins}`)
       .setVisible(true);
     const totalCost=c.orders.reduce((s,o)=>s+o.price*o.qty,0);
     dialogPriceLabel
@@ -495,6 +514,8 @@ window.onload = function(){
 
     if(type==='sell'){
       const t=dialogPriceValue;
+      const destX=moneyText.x+moneyText.width-15;
+      const destY=moneyText.y+10;
       t.setVisible(true);
       t.setDepth(paidStamp.depth+1);
       t.setText(receipt(totalCost));
@@ -510,6 +531,7 @@ window.onload = function(){
         this.tweens.add({targets:t,y:oy-30,duration:dur(100),yoyo:true});
       };
       flashPrice();
+      flashMoney(t,this);
 
       let delay=dur(300);
       if(tip>0){
@@ -537,11 +559,13 @@ window.onload = function(){
             moneyText.setText('🪙 '+receipt(money));
             done();
         }});
-        tl.add({targets:t,x:moneyText.x,y:moneyText.y,alpha:0,duration:dur(400)});
+        tl.add({targets:t,x:destX,y:destY,scale:0,alpha:0,duration:dur(400)});
         tl.play();
       },[],this);
     } else if(type==='give'){
       const t=dialogPriceValue;
+      const destX=moneyText.x+moneyText.width-15;
+      const destY=moneyText.y+10;
       t.setVisible(true);
       lossStamp
         .setText('LOSS')
@@ -560,7 +584,8 @@ window.onload = function(){
             moneyText.setText('🪙 '+receipt(money));
             done();
         }});
-        tl.add({targets:t,x:moneyText.x,y:moneyText.y,alpha:0,duration:dur(400)});
+        flashMoney(t,this);
+        tl.add({targets:t,x:destX,y:destY,scale:0,alpha:0,duration:dur(400)});
         tl.play();
       },[],this);
     } else if(type!=='refuse'){
@@ -580,6 +605,8 @@ window.onload = function(){
       }
       reportLine3.setVisible(false).alpha=1;
 
+      const destX=moneyText.x+moneyText.width-15;
+      const destY=moneyText.y+10;
       const moving=[reportLine1];
       const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
           reportLine1.setVisible(false).alpha=1;
@@ -610,9 +637,12 @@ window.onload = function(){
         moving.push(reportLine2);
       }
 
+      flashMoney(reportLine1,this);
+      if(showTip) flashMoney(reportLine2,this);
+
       tl.add({targets:moving,duration:dur(2000)});
       const endDelay = showTip ? 0 : dur(300);
-      tl.add({targets:moving,x:moneyText.x,y:moneyText.y,alpha:0,duration:dur(400),delay:endDelay});
+      tl.add({targets:moving,x:destX,y:destY,scale:0,alpha:0,duration:dur(400),delay:endDelay});
 
       tl.play();
     }

@@ -126,6 +126,18 @@ window.onload = function(){
     },[],scene);
   }
 
+  function blinkButton(btn, onComplete){
+    btn.disableInteractive();
+    this.tweens.add({
+      targets: btn,
+      alpha: 0,
+      yoyo: true,
+      duration: dur(80),
+      repeat: 1,
+      onComplete: onComplete
+    });
+  }
+
   const config={ type:Phaser.AUTO, parent:'game-container', backgroundColor:'#f2e5d7',
     scale:{ mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH, width:480, height:640 },
     pixelArt:true, scene:{ preload, create } };
@@ -343,33 +355,32 @@ window.onload = function(){
     dialogPriceValue=this.add.text(240,480,'',{font:'32px sans-serif',fill:'#000'})
       .setOrigin(0.5).setVisible(false).setDepth(11);
 
-    // buttons
-    btnSell=this.add.text(80,500,'Sell',{font:'18px sans-serif',fill:'#fff',backgroundColor:'#006400',padding:{x:12,y:6}})
-      .setInteractive().setVisible(false).setDepth(12).setShadow(0,0,'#000',2,true,true)
-      .on('pointerdown',()=>handleAction.call(this,'sell'));
-    btnGive=this.add.text(200,500,'Give Free',{font:'18px sans-serif',fill:'#fff',backgroundColor:'#008000',padding:{x:12,y:6}})
-      .setInteractive().setVisible(false).setDepth(12).setShadow(0,0,'#000',2,true,true)
-      .on('pointerdown',()=>handleAction.call(this,'give'));
-    btnRef=this.add.text(360,500,'Refuse',{font:'18px sans-serif',fill:'#fff',backgroundColor:'#800000',padding:{x:12,y:6}})
-      .setInteractive().setVisible(false).setDepth(12).setShadow(0,0,'#000',2,true,true)
-      .on('pointerdown',()=>handleAction.call(this,'refuse'));
+    // helper to create a rounded rectangle button with consistent sizing
+    const createButton=(x,label,color,handler)=>{
+      const width=120, height=40, radius=8;
+      const g=this.add.graphics();
+      g.fillStyle(color,1).setShadow(2,2,'#000',4);
+      g.fillRoundedRect(-width/2,-height/2,width,height,radius);
+      const t=this.add.text(0,0,label,{font:'20px sans-serif',fill:'#fff'}).setOrigin(0.5);
+      const c=this.add.container(x,500,[g,t]).setSize(width,height).setDepth(12).setVisible(false);
+      c.setInteractive(new Phaser.Geom.Rectangle(-width/2,-height/2,width,height),Phaser.Geom.Rectangle.Contains)
+        .on('pointerdown',()=>blinkButton.call(this,c,handler));
+      return c;
+    };
 
-    // emoji icons behind buttons
-    iconSell=this.add.text(0,0,'💵',{font:'60px sans-serif',fill:'#000'})
-      .setOrigin(0.5).setAlpha(0.3).setDepth(13).setVisible(false);
-    iconGive=this.add.text(0,0,'💝',{font:'60px sans-serif',fill:'#000'})
-      .setOrigin(0.5).setAlpha(0.3).setDepth(13).setVisible(false);
-    iconRef=this.add.text(0,0,'✋',{font:'60px sans-serif',fill:'#000'})
-      .setOrigin(0.5).setAlpha(0.3).setDepth(13).setVisible(false);
+    // buttons evenly spaced
+    btnSell=createButton(120,'SELL',0x006400,()=>handleAction.call(this,'sell'));
+    btnGive=createButton(240,'GIVE FREE',0x008000,()=>handleAction.call(this,'give'));
+    btnRef=createButton(360,'REFUSE',0x800000,()=>handleAction.call(this,'refuse'));
 
-    // position icons behind their buttons
-    const centerPos=(btn)=>[btn.x+btn.width/2, btn.y+btn.height/2];
-    const [sx,sy]=centerPos(btnSell);
-    iconSell.setPosition(sx,sy);
-    const [gx,gy]=centerPos(btnGive);
-    iconGive.setPosition(gx,gy);
-    const [rx,ry]=centerPos(btnRef);
-    iconRef.setPosition(rx,ry);
+    // emoji icons behind buttons (smaller & less transparent)
+    iconSell=this.add.text(btnSell.x,btnSell.y,'💵',{font:'40px sans-serif',fill:'#000'})
+      .setOrigin(0.5).setAlpha(0.5).setDepth(13).setVisible(false);
+    iconGive=this.add.text(btnGive.x,btnGive.y,'💝',{font:'40px sans-serif',fill:'#000'})
+      .setOrigin(0.5).setAlpha(0.5).setDepth(13).setVisible(false);
+    iconRef=this.add.text(btnRef.x,btnRef.y,'✋',{font:'40px sans-serif',fill:'#000'})
+      .setOrigin(0.5).setAlpha(0.5).setDepth(13).setVisible(false);
+
 
     // sliding report texts
     reportLine1=this.add.text(480,moneyText.y,'',{font:'16px sans-serif',fill:'#fff'})

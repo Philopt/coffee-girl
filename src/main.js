@@ -181,7 +181,11 @@ window.onload = function(){
         if(d<minDist){ closestIdx=i; minDist=d; }
       }
       const c=wanderers.splice(closestIdx,1)[0];
-      if(c.walkTween) c.walkTween.stop();
+      if(c.walkTween){
+        c.walkTween.stop();
+        c.walkTween.remove();
+        c.walkTween=null;
+      }
       const idx=queue.length;
       c.atOrder=false;
       queue.push(c);

@@ -12,6 +12,7 @@ window.onload = function(){
   const MAX_SPEED=3;
   let speed=1;
   let money=10.00, love=10, gameOver=false, customerQueue=[], wanderers=[];
+  let spawnTimer = null;
   let loveLevel=1;
   const keys=[];
 
@@ -152,8 +153,11 @@ window.onload = function(){
   }
 
   function scheduleNextSpawn(scene){
+    if (spawnTimer) {
+      spawnTimer.remove(false);
+    }
     const delay = SPAWN_DELAY + Phaser.Math.Between(0, SPAWN_VARIANCE);
-    scene.time.delayedCall(dur(delay), spawnCustomer, [], scene);
+    spawnTimer = scene.time.delayedCall(dur(delay), spawnCustomer, [], scene);
   }
 
   function preload(){
@@ -589,12 +593,20 @@ window.onload = function(){
   }
 
   function restartGame(){
+    if (spawnTimer) {
+      spawnTimer.remove(false);
+      spawnTimer = null;
+    }
     money=10.00; love=10;
     moneyText.setText('🪙 '+receipt(money));
     loveText.setText('❤️ '+love);
     updateLevelDisplay();
     Phaser.Actions.Call(customerQueue,c=>{ c.sprite.destroy(); if(c.friend) c.friend.destroy(); });
     customerQueue=[];
+    Phaser.Actions.Call(wanderers,c=>{ c.sprite.destroy(); if(c.friend) c.friend.destroy(); });
+    wanderers=[];
+    speed = 1;
+    if (speedBtn) speedBtn.setText('1x');
     gameOver=false;
     scheduleNextSpawn(this);
   }

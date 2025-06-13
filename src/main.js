@@ -55,6 +55,7 @@
   let spawnTimer = null;
   let loveLevel=1;
   const keys=[];
+  const requiredAssets=['bg','truck','girl','lady_falcon','falcon_end','revolt_end'];
 
   const dur=v=>v;
 
@@ -325,20 +326,33 @@
   }
 
   function preload(){
-    this.load.image('bg','assets/bg.png');
-    this.load.image('truck','assets/truck.png');
-    this.load.image('girl','assets/coffeegirl.png');
-    this.load.spritesheet('lady_falcon','assets/lady_falcon.png',{frameWidth:64,frameHeight:64});
-    this.load.image('falcon_end','assets/ladyfalconend.png');
-    this.load.image('revolt_end','assets/revolt.png');
+    const loader=this.load;
+    loader.on('loaderror', file=>{
+      console.error('Asset failed to load:', file.key || file.src);
+    });
+    loader.image('bg','assets/bg.png');
+    loader.image('truck','assets/truck.png');
+    loader.image('girl','assets/coffeegirl.png');
+    loader.spritesheet('lady_falcon','assets/lady_falcon.png',{frameWidth:64,frameHeight:64});
+    loader.image('falcon_end','assets/ladyfalconend.png');
+    loader.image('revolt_end','assets/revolt.png');
     for(let r=0;r<5;r++)for(let c=0;c<6;c++){
       if(r===0 && c===3) continue; // skip missing sprite
-      const k=`new_kid_${r}_${c}`; keys.push(k);
-      this.load.image(k,`assets/genz/${k}.png`);
+      const k=`new_kid_${r}_${c}`;
+      keys.push(k);
+      requiredAssets.push(k);
+      loader.image(k,`assets/genz/${k}.png`);
     }
   }
 
   function create(){
+    const missing=requiredAssets.filter(key=>!this.textures.exists(key));
+    if(missing.length){
+      const msg='Missing assets: '+missing.join(', ');
+      console.error(msg);
+      this.add.text(240,320,msg,{font:'16px sans-serif',fill:'#f00',align:'center',wordWrap:{width:460}})
+        .setOrigin(0.5).setDepth(30);
+    }
     // background
     let bg=this.add.image(0,0,'bg').setOrigin(0).setDepth(0);
     bg.setDisplaySize(this.scale.width,this.scale.height);

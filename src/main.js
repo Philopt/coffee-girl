@@ -250,7 +250,7 @@ window.onload = function(){
     this.load.image('bg','assets/bg.png');
     this.load.image('truck','assets/truck.png');
     this.load.image('girl','assets/coffeegirl.png');
-    this.load.image('lady_falcon','assets/lady_falcon.png');
+    this.load.spritesheet('lady_falcon','assets/lady_falcon.png',{frameWidth:64,frameHeight:64});
     for(let r=0;r<5;r++)for(let c=0;c<6;c++){
       if(r===0 && c===3) continue; // skip missing sprite
       const k=`new_kid_${r}_${c}`; keys.push(k);
@@ -273,6 +273,14 @@ window.onload = function(){
     truck=this.add.image(520,245,'truck').setScale(0.924).setDepth(2);
 
     girl=this.add.image(520,260,'girl').setScale(0.5).setDepth(3).setVisible(false);
+
+    // create lady falcon animation
+    this.anims.create({
+      key:'falcon_fly',
+      frames:this.anims.generateFrameNumbers('lady_falcon',{start:0,end:1}),
+      frameRate:6,
+      repeat:-1
+    });
 
     playIntro(this);
 
@@ -713,9 +721,10 @@ window.onload = function(){
 
   function showFalconAttack(cb){
     const scene=this;
-    const falcon=scene.add.image(-40,-40,'lady_falcon')
-      .setScale(0.6)
+    const falcon=scene.add.sprite(-40,-40,'lady_falcon',0)
+      .setScale(1.2)
       .setDepth(20);
+    falcon.anims.play('falcon_fly');
     const targetX=girl.x;
     const targetY=girl.y-40;
     scene.tweens.add({

@@ -741,14 +741,14 @@ window.onload = function(){
         }});
         for(let i=0;i<5;i++){
           tl.add({targets:falcon,y:targetY+10,duration:dur(80),yoyo:true});
-          tl.add({targets:girl,y:girl.y+5,duration:dur(80),yoyo:true},0);
+          tl.add({targets:girl,y:girl.y+5,duration:dur(80),yoyo:true},'<');
           const debris=createDebrisEmoji(scene);
           tl.add({targets:debris,
                   x:debris.x+Phaser.Math.Between(-30,30),
                   y:debris.y-Phaser.Math.Between(20,40),
                   alpha:0,
                   duration:dur(300),
-                  onComplete:()=>debris.destroy()},0);
+                  onComplete:()=>debris.destroy()},'<');
         }
         tl.play();
       }

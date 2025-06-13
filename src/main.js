@@ -4,6 +4,8 @@ window.onload = function(){
   const SPAWN_DELAY=300;
   const SPAWN_VARIANCE=500;
   const QUEUE_SPACING=50;
+  const QUEUE_X=240;
+  const FRIEND_OFFSET=40;
   const MAX_M=100, MAX_L=100;
   let speed=1;
   let money=10.00, love=10, gameOver=false, customerQueue=[];
@@ -38,9 +40,9 @@ window.onload = function(){
   function repositionQueue(scene){
     Phaser.Actions.Call(customerQueue,(c,idx)=>{
       const targetY=332+QUEUE_SPACING*idx;
-      scene.tweens.add({targets:c.sprite,y:targetY,duration:dur(500)});
+      scene.tweens.add({targets:c.sprite,x:QUEUE_X,y:targetY,duration:dur(500)});
       if(c.friend){
-        scene.tweens.add({targets:c.friend,y:targetY,duration:dur(500)});
+        scene.tweens.add({targets:c.friend,x:QUEUE_X+FRIEND_OFFSET,y:targetY,duration:dur(500)});
       }
     });
   }
@@ -185,24 +187,25 @@ window.onload = function(){
     const startY=700;
     const startScale=1.1;
     const k=Phaser.Utils.Array.GetRandom(keys);
-    c.orders.push(createOrder(0));
+    const order=createOrder(0);
     c.sprite=this.add.sprite(startX,startY,k).setScale(startScale).setDepth(4);
 
     if(level>=3 && Phaser.Math.Between(1,100)<=love){
       const k2=Phaser.Utils.Array.GetRandom(keys);
-      c.orders.push(createOrder(2));
-      c.friend=this.add.sprite(startX+40,startY,k2).setScale(startScale).setDepth(4);
+      order.qty+=1;
+      c.friend=this.add.sprite(startX+FRIEND_OFFSET,startY,k2).setScale(startScale).setDepth(4);
     }
+    c.orders.push(order);
 
     const targetY=332+QUEUE_SPACING*customerQueue.length;
     customerQueue.push(c);
-    const dist=Phaser.Math.Distance.Between(startX,startY,240,targetY);
+    const dist=Phaser.Math.Distance.Between(startX,startY,QUEUE_X,targetY);
     let moveDur=1200+dist*4;
     if(customerQueue.length===1) moveDur=800+dist*3;
-    this.tweens.add({targets:c.sprite,x:240,y:targetY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn',callbackScope:this,
+    this.tweens.add({targets:c.sprite,x:QUEUE_X,y:targetY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn',callbackScope:this,
       onComplete:()=>{ startGiveUpTimer(c,this); if(customerQueue[0]===c) { showDialog.call(this); } }});
     if(c.friend){
-      this.tweens.add({targets:c.friend,x:280,y:targetY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn'});
+      this.tweens.add({targets:c.friend,x:QUEUE_X+FRIEND_OFFSET,y:targetY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn'});
     }
     if(customerQueue.length<maxQ){
       scheduleNextSpawn(this);

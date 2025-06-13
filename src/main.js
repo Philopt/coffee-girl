@@ -2,10 +2,11 @@ window.onload = function(){
   const COFFEE_COST=5.00, WATER_COST=5.58;
   const VERSION='55';
   const SPAWN_DELAY=300;
+  const SPAWN_VARIANCE=500;
   const QUEUE_SPACING=70;
   const MAX_M=100, MAX_L=100;
   let speed=1;
-  let money=10.00, love=10, gameOver=false, customerQueue=[], coins=0, req='coffee', orderQty=1;
+  let money=10.00, love=10, gameOver=false, customerQueue=[];
   let loveLevel=1;
   const keys=[];
 
@@ -44,6 +45,11 @@ window.onload = function(){
     }
   }
 
+  function scheduleNextSpawn(scene){
+    const delay = SPAWN_DELAY + Phaser.Math.Between(0, SPAWN_VARIANCE);
+    scene.time.delayedCall(dur(delay), spawnCustomer, [], scene);
+  }
+
   function preload(){
     this.load.image('bg','assets/bg.png');
     this.load.image('truck','assets/truck.png');
@@ -78,7 +84,7 @@ window.onload = function(){
     const girl=this.add.image(520,260,'girl').setScale(0.5).setDepth(3).setVisible(false);
 
     const intro=this.tweens.createTimeline({callbackScope:this,
-      onComplete:()=>this.time.delayedCall(dur(SPAWN_DELAY),spawnCustomer,[],this)});
+      onComplete:()=>scheduleNextSpawn(this)});
     intro.add({targets:[truck,girl],x:240,duration:dur(600)});
     intro.add({targets:girl,y:292,duration:dur(300),onStart:()=>girl.setVisible(true)});
     intro.play();
@@ -132,37 +138,54 @@ window.onload = function(){
     const level=calcLoveLevel(love);
     const maxQ=queueCapacityForLevel(level);
     if(gameOver||customerQueue.length>=maxQ) return;
-    const c={};
-    c.coins=Phaser.Math.Between(1,10);
-    c.req=c.coins<COFFEE_COST?'water':'coffee';
-    c.qty=(level>=3?2:1);
-    const k=Phaser.Utils.Array.GetRandom(keys);
+    const createOrder=(extra)=>{
+      const coins=Phaser.Math.Between(1,10)+extra;
+      const req=coins<COFFEE_COST?'water':'coffee';
+      const qty=(level>=3?2:1);
+      return {coins, req, qty};
+    };
+
+    const c={ orders:[] };
+    const startX=Phaser.Math.Between(-40,520);
     const startY=700;
-    c.sprite=this.add.sprite(240,startY,k).setScale(0.7).setDepth(4);
-    if(level>=3){
+    const startScale=1.1;
+    const k=Phaser.Utils.Array.GetRandom(keys);
+    c.orders.push(createOrder(0));
+    c.sprite=this.add.sprite(startX,startY,k).setScale(startScale).setDepth(4);
+
+    if(level>=3 && Phaser.Math.Between(1,100)<=love){
       const k2=Phaser.Utils.Array.GetRandom(keys);
-      c.friend=this.add.sprite(280,startY,k2).setScale(0.7).setDepth(4);
+      c.orders.push(createOrder(2));
+      c.friend=this.add.sprite(startX+40,startY,k2).setScale(startScale).setDepth(4);
     }
+
     const targetY=332+QUEUE_SPACING*customerQueue.length;
     customerQueue.push(c);
-    this.tweens.add({targets:c.sprite,y:targetY,duration:dur(800),callbackScope:this,
-      onComplete:()=>{ if(customerQueue[0]===c) { coins=c.coins; req=c.req; orderQty=c.qty; showDialog.call(this); } }});
+    this.tweens.add({targets:c.sprite,x:240,y:targetY,scale:0.7,duration:dur(800),callbackScope:this,
+      onComplete:()=>{ if(customerQueue[0]===c) { showDialog.call(this); } }});
     if(c.friend){
-      this.tweens.add({targets:c.friend,y:targetY,duration:dur(800)});
+      this.tweens.add({targets:c.friend,x:280,y:targetY,scale:0.7,duration:dur(800)});
+    }
+    if(customerQueue.length<maxQ){
+      scheduleNextSpawn(this);
     }
   }
 
   function showDialog(){
     if(customerQueue.length===0) return;
     const c=customerQueue[0];
-    coins=c.coins; req=c.req; orderQty=c.qty||1;
     dialogBg.setVisible(true);
-    let txt=`${req.charAt(0).toUpperCase()+req.slice(1)} $${(req==='coffee'?COFFEE_COST:WATER_COST).toFixed(2)}`;
-    if(orderQty>1) txt+=` x${orderQty}`;
-    dialogText.setText(txt).setVisible(true);
-    dialogCoins.setText(`🪙${coins}`).setVisible(true);
-    btnSell.setVisible(req==='coffee'); btnGive.setVisible(true); btnRef.setVisible(true);
-    iconSell.setVisible(req==='coffee'); iconGive.setVisible(true); iconRef.setVisible(true);
+    const lines=c.orders.map(o=>{
+      let t=`${o.req.charAt(0).toUpperCase()+o.req.slice(1)} $${(o.req==='coffee'?COFFEE_COST:WATER_COST).toFixed(2)}`;
+      if(o.qty>1) t+=` x${o.qty}`;
+      return t;
+    });
+    dialogText.setText(lines.join('\n')).setVisible(true);
+    const totalCoins=c.orders.reduce((s,o)=>s+o.coins,0);
+    dialogCoins.setText(`🪙${totalCoins}`).setVisible(true);
+    const hasCoffee=c.orders.some(o=>o.req==='coffee');
+    btnSell.setVisible(hasCoffee); btnGive.setVisible(true); btnRef.setVisible(true);
+    iconSell.setVisible(hasCoffee); iconGive.setVisible(true); iconRef.setVisible(true);
   }
 
   function clearDialog(){
@@ -173,24 +196,23 @@ window.onload = function(){
 
   function handleAction(type){
     clearDialog();
+    const current=customerQueue[0];
+    const orderCount=current.orders.length;
+    const totalCost=current.orders.reduce((s,o)=>s+(o.req==='coffee'?COFFEE_COST:WATER_COST)*o.qty,0);
+
     let mD=0, lD=0, tip=0;
-    const unitCost=(req==='coffee'?COFFEE_COST:WATER_COST);
-    const qty=orderQty||1;
-    const cost=unitCost*qty;
     if(type==='sell'){
-      lD=Phaser.Math.Between(0,2);
-      tip=+(unitCost*0.15*lD*qty).toFixed(2);
-      mD=unitCost*qty+tip;
+      lD=Phaser.Math.Between(0,2)*orderCount;
+      tip=+(totalCost*0.15*lD).toFixed(2);
+      mD=totalCost+tip;
     } else if(type==='give'){
-      lD=Phaser.Math.Between(2,4);
-      mD=-unitCost*qty;
+      lD=Phaser.Math.Between(2,4)*orderCount;
+      mD=-totalCost;
     } else {
-      lD=-Phaser.Math.Between(1,3);
+      lD=-Phaser.Math.Between(1,3)*orderCount;
     }
 
     const tipPct=type==='sell'?lD*15:0;
-
-    const current=customerQueue[0];
     const customer=current.sprite;
     const friend=current.friend;
     customerQueue.shift();
@@ -205,7 +227,6 @@ window.onload = function(){
           if(love<=0){showEnd.call(this,'Game Over 😠');return;}
           if(money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
           if(love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
-          orderQty=1;
           Phaser.Actions.Call(customerQueue,(c,idx)=>{
             this.tweens.add({targets:c.sprite,y:332+QUEUE_SPACING*idx,duration:dur(500)});
             if(c.friend){
@@ -215,7 +236,7 @@ window.onload = function(){
           if(customerQueue.length>0){
             this.time.delayedCall(dur(600),showDialog,[],this);
           }else{
-            this.time.delayedCall(dur(SPAWN_DELAY), spawnCustomer, [], this);
+            scheduleNextSpawn(this);
           }
         }
       });
@@ -230,7 +251,7 @@ window.onload = function(){
     if(type!=='refuse'){
       const showTip=tip>0;
       reportLine1.setStyle({fill:'#fff'})
-        .setText(`$${(unitCost*qty).toFixed(2)}`)
+        .setText(`$${totalCost.toFixed(2)}`)
         .setPosition(customer.x, customer.y)
         .setScale(1)
         .setVisible(true);
@@ -256,9 +277,9 @@ window.onload = function(){
       }});
       tl.add({targets:reportLine1,x:midX,y:midY,duration:dur(300),onComplete:()=>{
             if(type==='give'){
-              reportLine1.setText(`$${(unitCost*qty).toFixed(2)} LOSS`).setColor('#f88');
+              reportLine1.setText(`$${totalCost.toFixed(2)} LOSS`).setColor('#f88');
             }else{
-              reportLine1.setText(`$${cost.toFixed(2)} PAID`).setColor('#8f8').setScale(1.2);
+              reportLine1.setText(`$${totalCost.toFixed(2)} PAID`).setColor('#8f8').setScale(1.2);
               if(showTip){
                 reportLine2.setColor('#8f8');
               }
@@ -268,7 +289,7 @@ window.onload = function(){
         tl.add({targets:reportLine2,x:midX,y:midY+24,duration:dur(300)},0);
         moving.push(reportLine2);
       }
-      tl.add({targets:moving,duration:dur(1000)});
+      tl.add({targets:moving,duration:dur(2000)});
       const endDelay = showTip ? 0 : dur(300);
       tl.add({targets:moving,x:moneyText.x,y:moneyText.y,alpha:0,duration:dur(400),delay:endDelay});
       tl.play();
@@ -324,14 +345,14 @@ window.onload = function(){
   }
 
   function restartGame(){
-    money=10.00; love=10; coins=0; req='coffee';
+    money=10.00; love=10;
     moneyText.setText('🪙 '+money.toFixed(2));
     loveText.setText('❤️ '+love);
     updateLevelDisplay();
     Phaser.Actions.Call(customerQueue,c=>{ c.sprite.destroy(); if(c.friend) c.friend.destroy(); });
     customerQueue=[];
     gameOver=false;
-    this.time.delayedCall(dur(SPAWN_DELAY), spawnCustomer, [], this);
+    scheduleNextSpawn(this);
   }
 
 };

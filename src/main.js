@@ -107,6 +107,7 @@ window.onload = function(){
   let activeBubble=null;
   let sideCText;
   let spawnCount=0;
+  let endOverlay=null;
 
   function calcLoveLevel(v){
     if(v>=100) return 4;
@@ -786,11 +787,13 @@ window.onload = function(){
     scene.time.removeAllEvents();
     if (spawnTimer) { spawnTimer.remove(false); spawnTimer=null; }
     clearDialog();
-    let bgY=320;
+    if(endOverlay){ endOverlay.destroy(); }
+    endOverlay=this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
+    let bgY=360;
     let img=null;
     if(/lady falcon reclaims the coffee truck/i.test(msg)){
-      img=this.add.image(240,160,'falcon_end').setScale(1.2).setDepth(20);
-      bgY=440;
+      img=this.add.image(240,200,'falcon_end').setScale(1.2).setDepth(20);
+      bgY=480;
     }
     const bg=this.add.rectangle(240,bgY,480,240,0xffffff).setStrokeStyle(2,0x000).setDepth(20);
     const lines=msg.split('\n');
@@ -806,10 +809,11 @@ window.onload = function(){
     }
     const txt=this.add.text(240,offset,lines.slice(startIdx).join('\n'),{font:'24px sans-serif',fill:'#000',align:'center',wordWrap:{width:440}})
       .setOrigin(0.5).setDepth(21);
-    const btn=this.add.text(240,bgY+60,'Restart',{font:'20px sans-serif',fill:'#fff',backgroundColor:'#006400',padding:{x:14,y:8}})
+    const btn=this.add.text(240,bgY+80,'Try Again',{font:'20px sans-serif',fill:'#fff',backgroundColor:'#006400',padding:{x:14,y:8}})
       .setOrigin(0.5).setDepth(22).setInteractive()
       .on('pointerdown',()=>{
         bg.destroy(); txt.destroy(); btn.destroy(); if(titleText) titleText.destroy(); if(img) img.destroy();
+        if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
         restartGame.call(this);
       });
     gameOver=true;
@@ -824,6 +828,7 @@ window.onload = function(){
       spawnTimer = null;
     }
     clearDialog();
+    if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
     if(sideCText){ sideCText.destroy(); sideCText=null; }
     if(activeBubble){ activeBubble.destroy(); activeBubble=null; }
     reportLine1.setVisible(false);

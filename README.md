@@ -46,6 +46,7 @@ The test script starts a local server and verifies the page responds without err
 
 This project is licensed under the [MIT License](LICENSE).
 
-The `Press Start 2P` font included in `assets/fonts` is licensed under the
-[SIL Open Font License](assets/fonts/OFL.txt).
+The `Press Start 2P` font is licensed under the
+[SIL Open Font License](assets/fonts/OFL.txt). The license text is included in
+`assets/fonts/OFL.txt` for reference.
 

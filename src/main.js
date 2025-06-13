@@ -15,6 +15,17 @@ window.onload = function(){
 
   const dur=v=>v/speed;
 
+  const supers={
+    '0':'\u2070','1':'\u00b9','2':'\u00b2','3':'\u00b3','4':'\u2074',
+    '5':'\u2075','6':'\u2076','7':'\u2077','8':'\u2078','9':'\u2079'
+  };
+
+  function receipt(value){
+    const [d,c]=value.toFixed(2).split('.');
+    const cents=c.split('').map(ch=>supers[ch]||ch).join('');
+    return `$${d}${cents}`;
+  }
+
   const config={ type:Phaser.AUTO, parent:'game-container', backgroundColor:'#f2e5d7',
     scale:{ mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH, width:480, height:640 },
     pixelArt:true, scene:{ preload, create } };
@@ -165,7 +176,7 @@ window.onload = function(){
     bg.setDisplaySize(this.scale.width,this.scale.height);
 
     // HUD
-    moneyText=this.add.text(20,20,'🪙 '+money.toFixed(2),{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
+    moneyText=this.add.text(20,20,'🪙 '+receipt(money),{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
     loveText=this.add.text(20,50,'❤️ '+love,{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
     // position level number centered over the heart icon
     loveLevelText=this.add.text(loveText.x+12,loveText.y+8,loveLevel,
@@ -290,6 +301,10 @@ window.onload = function(){
     let moveDur=1200+dist*4;
     c.walkTween = this.tweens.add({targets:c.sprite,x:QUEUE_X,y:backY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn',callbackScope:this,
       onComplete:()=>{ c.walkTween=null; arriveAtBack(c,this); }});
+    if(customerQueue.length===1) moveDur=800+dist*3;
+    c.walkTween = this.tweens.add({targets:c.sprite,x:QUEUE_X,y:targetY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn',callbackScope:this,
+      onComplete:()=>{ c.walkTween=null; startGiveUpTimer(c,this); if(customerQueue[0]===c) { showDialog.call(this); } }});
+
     if(c.friend){
       this.tweens.add({targets:c.friend,x:QUEUE_X+FRIEND_OFFSET,y:backY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn'});
     }
@@ -417,15 +432,14 @@ window.onload = function(){
         .setScale(1)
         .setVisible(true);
       if(showTip){
-        reportLine2.setText(`$${tip.toFixed(2)} ${tipPct}% TIP`)
+        reportLine2.setText(`${receipt(tip)} ${tipPct}% TIP`)
           .setStyle({fontSize:'16px',fill:'#fff'})
           .setScale(1)
           .setPosition(customer.x,customer.y+24).setVisible(true);
-        reportLine3.setVisible(false).alpha=1;
       }else{
-        reportLine2.setVisible(false).alpha=1;
-        reportLine3.setVisible(false).alpha=1;
+        reportLine2.setVisible(false);
       }
+      reportLine3.setVisible(false).alpha=1;
 
       const moving=[reportLine1];
       const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
@@ -433,21 +447,38 @@ window.onload = function(){
           reportLine2.setVisible(false).alpha=1;
           reportLine3.setVisible(false).alpha=1;
           money=+(money+mD).toFixed(2);
-          moneyText.setText('🪙 '+money.toFixed(2));
+          moneyText.setText('🪙 '+receipt(money));
           done();
       }});
       tl.add({targets:reportLine1,x:midX,y:midY,duration:dur(300),onComplete:()=>{
+            const word=type==='give'? 'LOSS':'PAID';
+            const color=type==='give'? '#f88':'#8f8';
+            reportLine1.setColor(color);
+            if(showTip){
+              reportLine2.setColor(color);
+
             if(type==='give'){
               reportLine1.setText(`$${totalCost.toFixed(2)} LOSS`).setColor('#f88');
+
             }
+            reportLine3.setText(word)
+              .setStyle({fontSize:'20px'})
+              .setColor(color)
+              .setPosition(midX,midY)
+              .setOrigin(0.5)
+              .setAlpha(1)
+              .setVisible(true);
+            this.tweens.add({targets:reportLine3,alpha:0,duration:dur(600)});
         }});
       if(showTip){
         tl.add({targets:reportLine2,x:midX,y:midY+24,duration:dur(300)},0);
         moving.push(reportLine2);
       }
+
       tl.add({targets:moving,duration:dur(2000)});
       const endDelay = showTip ? 0 : dur(300);
       tl.add({targets:moving,x:moneyText.x,y:moneyText.y,alpha:0,duration:dur(400),delay:endDelay});
+
       tl.play();
     }
 

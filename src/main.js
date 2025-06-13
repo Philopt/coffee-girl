@@ -296,6 +296,7 @@ window.onload = function(){
     this.load.image('girl','assets/coffeegirl.png');
     this.load.spritesheet('lady_falcon','assets/lady_falcon.png',{frameWidth:64,frameHeight:64});
     this.load.image('falcon_end','assets/ladyfalconend.png');
+    this.load.image('revolt_end','assets/CustomerRevolt.png');
     for(let r=0;r<5;r++)for(let c=0;c<6;c++){
       if(r===0 && c===3) continue; // skip missing sprite
       const k=`new_kid_${r}_${c}`; keys.push(k);
@@ -566,7 +567,12 @@ window.onload = function(){
             });
             return;
           }
-          if(love<=0){showEnd.call(this,'Game Over 😠');return;}
+          if(love<=0){
+            showCustomerRevolt.call(this,()=>{
+              showEnd.call(this,'Game Over\nCustomer Revolt');
+            });
+            return;
+          }
           if(money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
           if(love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
           scheduleNextSpawn(this);
@@ -822,6 +828,32 @@ window.onload = function(){
     }
   }
 
+  function showCustomerRevolt(cb){
+    const scene=this;
+    const attackers=[];
+    for(let i=0;i<3;i++){
+      const k=Phaser.Utils.Array.GetRandom(keys);
+      const a=scene.add.sprite(girl.x+(i-1)*30,girl.y-20,k)
+        .setScale(0.6)
+        .setDepth(20);
+      attackers.push(a);
+    }
+    const driver=attackers[0];
+    const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
+        attackers.forEach(a=>a.destroy());
+        if(cb) cb();
+      }});
+    for(let i=0;i<8;i++){
+      tl.add({targets:attackers,y:'-=15',duration:dur(80),yoyo:true});
+      tl.add({targets:girl,duration:dur(40),onStart:()=>girl.setTint(0xff0000),onComplete:()=>girl.clearTint()},'<');
+    }
+    tl.add({targets:attackers.filter(a=>a!==driver),alpha:0,duration:dur(200)});
+    tl.add({targets:driver,x:truck.x-40,y:truck.y,duration:dur(300)});
+    tl.add({targets:truck,y:'-=5',duration:dur(80),yoyo:true,repeat:3});
+    tl.add({targets:truck,x:-200,duration:dur(800)});
+    tl.play();
+  }
+
   function showEnd(msg){
     const scene=this;
     scene.tweens.killAll();
@@ -834,6 +866,9 @@ window.onload = function(){
     let img=null;
     if(/lady falcon reclaims the coffee truck/i.test(msg)){
       img=this.add.image(240,200,'falcon_end').setScale(1.2).setDepth(20);
+      bgY=480;
+    } else if(/customer revolt/i.test(msg)){
+      img=this.add.image(240,200,'revolt_end').setScale(1.2).setDepth(20);
       bgY=480;
     }
     const bg=this.add.rectangle(240,bgY,480,240,0xffffff).setStrokeStyle(2,0x000).setDepth(20);

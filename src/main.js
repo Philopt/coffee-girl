@@ -6,9 +6,10 @@ window.onload = function(){
   const QUEUE_SPACING=50;
   const QUEUE_X=240;
   const FRIEND_OFFSET=40;
+  const WANDER_Y=600;
   const MAX_M=100, MAX_L=100;
   let speed=1;
-  let money=10.00, love=10, gameOver=false, customerQueue=[];
+  let money=10.00, love=10, gameOver=false, customerQueue=[], wanderers=[];
   let loveLevel=1;
   const keys=[];
 
@@ -46,6 +47,20 @@ window.onload = function(){
         scene.tweens.add({targets:c.friend,x:QUEUE_X+FRIEND_OFFSET,y:targetY,duration:dur(500)});
       }
     });
+    tryJoinWanderer(scene);
+  }
+
+  function tryJoinWanderer(scene){
+    const level=calcLoveLevel(love);
+    const maxQ=queueCapacityForLevel(level);
+    if(customerQueue.length>=maxQ||wanderers.length===0) return;
+    const w=wanderers.shift();
+    if(w.walkTween) w.walkTween.stop();
+    const targetY=332+QUEUE_SPACING*customerQueue.length;
+    customerQueue.push(w);
+    const dist=Phaser.Math.Distance.Between(w.sprite.x,w.sprite.y,QUEUE_X,targetY);
+    scene.tweens.add({targets:w.sprite,x:QUEUE_X,y:targetY,scale:0.7,duration:dur(800+dist*2),ease:'Sine.easeIn',callbackScope:scene,
+      onComplete:()=>{ startGiveUpTimer(w,scene); if(customerQueue[0]===w){ showDialog.call(scene); } }});
   }
 
   function startGiveUpTimer(c, scene){
@@ -191,7 +206,11 @@ window.onload = function(){
   function spawnCustomer(){
     const level=calcLoveLevel(love);
     const maxQ=queueCapacityForLevel(level);
-    if(gameOver||customerQueue.length>=maxQ) return;
+    if(gameOver) return;
+    if(customerQueue.length<maxQ){
+      tryJoinWanderer(this);
+      if(customerQueue.length>=maxQ) return;
+    }
     const createOrder=(extra)=>{
       const coins=Phaser.Math.Between(1,10)+extra;
       const req=coins<COFFEE_COST?'water':'coffee';
@@ -200,11 +219,26 @@ window.onload = function(){
     };
 
     const c={ orders:[] };
-    const startX=Phaser.Math.Between(-40,520);
-    const startY=700;
     const startScale=1.1;
     const k=Phaser.Utils.Array.GetRandom(keys);
     const order=createOrder(0);
+    if(customerQueue.length>=maxQ){
+      const dir=Phaser.Math.Between(0,1)?1:-1;
+      const startX=dir===1?-40:520;
+      const targetX=dir===1?520:-40;
+      c.orders.push(order);
+      c.sprite=this.add.sprite(startX,WANDER_Y,k).setScale(startScale).setDepth(4);
+      c.walkTween=this.tweens.add({targets:c.sprite,x:targetX,duration:dur(6000),onComplete:()=>{
+          const idx=wanderers.indexOf(c);
+          if(idx>=0) wanderers.splice(idx,1);
+          c.sprite.destroy();
+      }});
+      wanderers.push(c);
+      scheduleNextSpawn(this);
+      return;
+    }
+    const startX=Phaser.Math.Between(-40,520);
+    const startY=700;
     c.sprite=this.add.sprite(startX,startY,k).setScale(startScale).setDepth(4);
 
     if(level>=3 && Phaser.Math.Between(1,100)<=love){
@@ -251,8 +285,14 @@ window.onload = function(){
   }
 
   function clearDialog(keepPrice=false){
-    dialogBg.setVisible(false); dialogText.setVisible(false);
-    if(!keepPrice) dialogCoins.setVisible(false);
+    if(!keepPrice){
+      dialogBg.setVisible(false);
+      dialogText.setVisible(false);
+      dialogCoins.setVisible(false);
+    }else{
+      dialogBg.setVisible(true);
+      dialogText.setVisible(true);
+    }
     btnSell.setVisible(false); btnGive.setVisible(false); btnRef.setVisible(false);
     iconSell.setVisible(false); iconGive.setVisible(false); iconRef.setVisible(false);
   }
@@ -280,6 +320,7 @@ window.onload = function(){
     const friend=current.friend;
     if(current.giveUpTimer){ current.giveUpTimer.remove(false); }
     customerQueue.shift();
+    repositionQueue(this);
     const finish=()=>{
       const targets=[current.sprite];
       if(friend) targets.push(friend);
@@ -319,6 +360,8 @@ window.onload = function(){
         paidStamp.setVisible(false);
         const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
             t.setVisible(false).setScale(1);
+            dialogBg.setVisible(false);
+            dialogText.setVisible(false);
             money=+(money+mD).toFixed(2);
             moneyText.setText('🪙 '+money.toFixed(2));
             done();

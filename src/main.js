@@ -522,14 +522,14 @@ window.onload = function(){
       }else{
         t.setText(`$${totalCost.toFixed(2)}`);
       }
-      dialogBg.setVisible(false);
-      dialogText.setVisible(false);
-      p.setVisible(false);
       this.time.delayedCall(dur(1000),()=>{
         paidStamp.setVisible(false);
         tipText.setVisible(false);
         const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
             t.setVisible(false);
+            dialogBg.setVisible(false);
+            dialogText.setVisible(false);
+            p.setVisible(false);
             money=+(money+mD).toFixed(2);
             moneyText.setText('🪙 '+receipt(money));
             done();

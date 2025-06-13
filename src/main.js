@@ -49,6 +49,7 @@ window.onload = function(){
   let paidStamp, lossStamp;
   let truck, girl;
   let activeBubble=null;
+  let sideCText;
 
   function calcLoveLevel(v){
     if(v>=100) return 4;
@@ -143,6 +144,18 @@ window.onload = function(){
     spawnTimer = scene.time.delayedCall(delay, spawnCustomer, [], scene);
   }
 
+  function showSideC(){
+    const y=this.scale.height*0.15;
+    sideCText=this.add.text(this.scale.width/2,y,'Side C',
+        {font:'bold 64px sans-serif',fill:'#fff'})
+      .setOrigin(0.5)
+      .setDepth(4);
+    this.tweens.add({targets:sideCText,alpha:0,duration:10000,onComplete:()=>{
+        sideCText.destroy();
+        sideCText=null;
+    }});
+  }
+
   function playIntro(scene){
     if(!truck || !girl) return;
     truck.setPosition(520,245);
@@ -151,6 +164,7 @@ window.onload = function(){
       onComplete:()=>{
         spawnCustomer.call(scene);
         scheduleNextSpawn(scene);
+        scene.time.delayedCall(1000,showSideC,[],scene);
       }});
     intro.add({targets:[truck,girl],x:240,duration:dur(600)});
     intro.add({targets:girl,y:292,duration:dur(300),onStart:()=>girl.setVisible(true)});

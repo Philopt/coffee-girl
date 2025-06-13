@@ -24,6 +24,12 @@ If the game fails to start, check your browser's console for errors.
 
 Have fun clicking!
 
+## Controls
+
+When you choose to sell or give a drink, the button briefly blinks.
+After the animation finishes, the button automatically becomes
+clickable again so you can quickly serve the next customer.
+
 ## Menu
 
 Customers can now order any of the following drinks:

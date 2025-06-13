@@ -134,7 +134,10 @@ window.onload = function(){
       yoyo: true,
       duration: dur(80),
       repeat: 1,
-      onComplete: onComplete
+      onComplete: () => {
+        btn.setInteractive();
+        if (onComplete) onComplete();
+      }
     });
   }
 

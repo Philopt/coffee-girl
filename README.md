@@ -24,13 +24,6 @@ If the game fails to start, check your browser's console for errors.
 
 Have fun clicking!
 
-## Fonts
-
-The game uses the retro, pixel-style **Press Start 2P** typeface from Google Fonts.
-Download `PressStart2P-Regular.ttf` and place it in `assets/fonts/` so the game
-can load it correctly. The font license is provided in
-`assets/fonts/OFL.txt`.
-
 ## Running tests
 
 Install dependencies and run the automated check:

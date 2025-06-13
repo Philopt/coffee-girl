@@ -1,8 +1,18 @@
-const { spawn } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
 const path = require('path');
+const fs = require('fs');
 const http = require('http');
 
 async function run() {
+  const fontPath = path.join(__dirname, '..', 'assets', 'fonts', 'PressStart2P-Regular.ttf');
+  if (!fs.existsSync(fontPath)) {
+    const url = 'https://raw.githubusercontent.com/google/fonts/main/ofl/pressstart2p/PressStart2P-Regular.ttf';
+    const res = spawnSync('curl', ['-L', '-o', fontPath, url]);
+    if (res.status !== 0) {
+      console.warn('Font download failed');
+    }
+  }
+
   const serverPath = path.join(__dirname, '..', 'node_modules', '.bin', 'http-server');
   const server = spawn(serverPath, ['-p', '8080', '-c-1'], { stdio: 'inherit' });
 

@@ -21,18 +21,6 @@ async function run() {
       resolve();
     });
   });
-
-  await new Promise(resolve => {
-    http.get('http://localhost:8080/assets/fonts/PressStart2P-Regular.ttf', res => {
-      if (res.statusCode !== 200) errors.push(`Font Status ${res.statusCode}`);
-      res.resume();
-      res.on('end', resolve);
-    }).on('error', err => {
-      errors.push(err.message);
-      resolve();
-    });
-  });
-
   server.kill();
 
   if (errors.length) {

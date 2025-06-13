@@ -34,11 +34,11 @@ window.onload = function(){
   const ORDER_X=230; // ordering spot
   const ORDER_Y=310; // ordering spot Y
   // base position for the waiting line to the left of the order spot
-  const QUEUE_X=ORDER_X-QUEUE_SPACING;
+  const QUEUE_X=ORDER_X-QUEUE_SPACING-10; // nudge line left of ordering spot
   // each waiting customer stands slightly higher than the one in front
   const QUEUE_OFFSET=8;
-  // vertical position of the first waiting customer
-  const QUEUE_Y=ORDER_Y-10;
+  // vertical position of the first waiting customer (slightly lower than order spot)
+  const QUEUE_Y=ORDER_Y+5;
   const FRIEND_OFFSET=40;
   const WANDER_TOP=ORDER_Y+50; // wander up to 50px below the order window
   const WANDER_BOTTOM=580; // near bottom of the screen

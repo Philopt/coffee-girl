@@ -32,11 +32,12 @@ window.onload = function(){
   const SPAWN_VARIANCE=1500;
   const QUEUE_SPACING=36;
   // waiting spot to the left of the truck
-  const QUEUE_X=200; // moved left
-  const ORDER_X=210; // moved left
-  const QUEUE_Y=310; // slightly higher
+  const QUEUE_X=220; // base position for the waiting line
+  const QUEUE_OFFSET=8; // stack each waiting customer slightly left
+  const ORDER_X=230; // ordering spot shifted right
+  const QUEUE_Y=320; // matches new order position
   // step forward when ordering
-  const ORDER_Y=300; // adjusted up
+  const ORDER_Y=310; // moved down a bit
   const FRIEND_OFFSET=40;
   const WANDER_TOP=ORDER_Y+50; // wander up to 50px below the order window
   const WANDER_BOTTOM=580; // near bottom of the screen
@@ -185,7 +186,7 @@ window.onload = function(){
       queue.push(c);
       activeCustomer=queue[0];
       const targetY=QUEUE_Y+idx*QUEUE_SPACING;
-      const targetX = idx===0 ? ORDER_X : QUEUE_X;
+      const targetX = idx===0 ? ORDER_X : QUEUE_X - QUEUE_OFFSET*(idx-1);
       const dist=Phaser.Math.Distance.Between(c.sprite.x,c.sprite.y,targetX,targetY);
       c.sprite.setDepth(5);
       c.walkTween=scene.tweens.add({targets:c.sprite,x:targetX,y:targetY,scale:scaleForY(targetY),duration:dur(1200+dist*4),ease:'Sine.easeIn',callbackScope:scene,
@@ -201,7 +202,7 @@ window.onload = function(){
     let willShow=false;
     queue.forEach((cust, idx)=>{
       const ty=QUEUE_Y+idx*QUEUE_SPACING;
-      const tx=idx===0?ORDER_X:QUEUE_X;
+      const tx=idx===0?ORDER_X:QUEUE_X - QUEUE_OFFSET*(idx-1);
       if(cust.sprite.y!==ty || cust.sprite.x!==tx){
         const cfg={targets:cust.sprite,x:tx,y:ty,scale:scaleForY(ty),duration:dur(300)};
         if(idx===0){

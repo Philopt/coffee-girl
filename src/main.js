@@ -21,6 +21,7 @@ window.onload = function(){
   let dialogBg, dialogText, dialogCoins, btnSell, btnGive, btnRef;
   let iconSell, iconGive, iconRef;
   let reportLine1, reportLine2, reportLine3, reportLine4;
+  let paidStamp;
 
   function calcLoveLevel(v){
     if(v>=100) return 4;
@@ -167,6 +168,8 @@ window.onload = function(){
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
     reportLine4=this.add.text(0,0,'',{font:'14px sans-serif',fill:'#fff'})
       .setVisible(false).setDepth(11);
+    paidStamp=this.add.text(0,0,'PAID',{font:'24px sans-serif',fill:'#0a0'})
+      .setOrigin(0.5).setDepth(12).setVisible(false);
   }
 
   function spawnCustomer(){
@@ -213,27 +216,32 @@ window.onload = function(){
     if(customerQueue.length===0) return;
     const c=customerQueue[0];
     dialogBg.setVisible(true);
-    const lines=c.orders.map(o=>{
-      let t=`${o.req.charAt(0).toUpperCase()+o.req.slice(1)} $${(o.req==='coffee'?COFFEE_COST:WATER_COST).toFixed(2)}`;
-      if(o.qty>1) t+=` x${o.qty}`;
-      return t;
-    });
-    dialogText.setText(lines.join('\n')).setVisible(true);
-    const totalCoins=c.orders.reduce((s,o)=>s+o.coins,0);
-    dialogCoins.setText(`🪙${totalCoins}`).setVisible(true);
+    const itemStr=c.orders.map(o=>`${o.qty>1?o.qty+' ':''}${o.req}`).join(' and ');
+    dialogText
+      .setOrigin(0,0.5)
+      .setPosition(dialogBg.x-dialogBg.width/2+20,440)
+      .setText(`I want ${itemStr}`)
+      .setVisible(true);
+    const totalCost=c.orders.reduce((s,o)=>s+(o.req==='coffee'?COFFEE_COST:WATER_COST)*o.qty,0);
+    dialogCoins
+      .setOrigin(1,0.5)
+      .setPosition(dialogBg.x+dialogBg.width/2-20,440)
+      .setText(`Total $${totalCost.toFixed(2)}`)
+      .setVisible(true);
     const hasCoffee=c.orders.some(o=>o.req==='coffee');
     btnSell.setVisible(hasCoffee); btnGive.setVisible(true); btnRef.setVisible(true);
     iconSell.setVisible(hasCoffee); iconGive.setVisible(true); iconRef.setVisible(true);
   }
 
-  function clearDialog(){
-    dialogBg.setVisible(false); dialogText.setVisible(false); dialogCoins.setVisible(false);
+  function clearDialog(keepPrice=false){
+    dialogBg.setVisible(false); dialogText.setVisible(false);
+    if(!keepPrice) dialogCoins.setVisible(false);
     btnSell.setVisible(false); btnGive.setVisible(false); btnRef.setVisible(false);
     iconSell.setVisible(false); iconGive.setVisible(false); iconRef.setVisible(false);
   }
 
   function handleAction(type){
-    clearDialog();
+    clearDialog(type==='sell');
     const current=customerQueue[0];
     const orderCount=current.orders.length;
     const totalCost=current.orders.reduce((s,o)=>s+(o.req==='coffee'?COFFEE_COST:WATER_COST)*o.qty,0);
@@ -282,7 +290,26 @@ window.onload = function(){
     let pending=(type!=='refuse'?1:0)+(lD!==0?1:0);
     const done=()=>{ if(--pending<=0) finish(); };
 
-    if(type!=='refuse'){
+    if(type==='sell'){
+      const t=dialogCoins;
+      t.setScale(1.2).setVisible(true);
+      paidStamp
+        .setText('PAID')
+        .setPosition(t.x,t.y)
+        .setAngle(Phaser.Math.Between(-15,15))
+        .setVisible(true);
+      this.time.delayedCall(dur(1000),()=>{
+        paidStamp.setVisible(false);
+        const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
+            t.setVisible(false).setScale(1);
+            money=+(money+mD).toFixed(2);
+            moneyText.setText('🪙 '+money.toFixed(2));
+            done();
+        }});
+        tl.add({targets:t,x:moneyText.x,y:moneyText.y,duration:dur(400)});
+        tl.play();
+      },[],this);
+    } else if(type!=='refuse'){
       const showTip=tip>0;
       reportLine1.setStyle({fill:'#fff'})
         .setText(`$${totalCost.toFixed(2)}`)
@@ -312,11 +339,6 @@ window.onload = function(){
       tl.add({targets:reportLine1,x:midX,y:midY,duration:dur(300),onComplete:()=>{
             if(type==='give'){
               reportLine1.setText(`$${totalCost.toFixed(2)} LOSS`).setColor('#f88');
-            }else{
-              reportLine1.setText(`$${totalCost.toFixed(2)} PAID`).setColor('#8f8').setScale(1.2);
-              if(showTip){
-                reportLine2.setColor('#8f8');
-              }
             }
         }});
       if(showTip){

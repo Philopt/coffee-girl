@@ -1,4 +1,5 @@
-window.onload = function(){
+(() => {
+  function init(){
   // full drink menu with prices
   const MENU=[
     {name:"Lady Roaster Drip", price:3.90},
@@ -1027,4 +1028,11 @@ window.onload = function(){
     playIntro(this);
   }
 
-};
+  }
+
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    init();
+  } else {
+    window.addEventListener('load', init);
+  }
+})();

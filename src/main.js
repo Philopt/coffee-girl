@@ -389,12 +389,11 @@ window.onload = function(){
   }
 
   function spawnCustomer(){
-    const level=calcLoveLevel(love);
     if(gameOver) return;
     const createOrder=()=>{
       const coins=Phaser.Math.Between(0,20);
       const item=Phaser.Utils.Array.GetRandom(MENU);
-      const qty=(level>=3?2:1);
+      const qty=1; // single drink for every customer
       return {coins, req:item.name, price:item.price, qty};
     };
 
@@ -424,15 +423,7 @@ window.onload = function(){
         if(idx>=0) wanderers.splice(idx,1);
         c.sprite.destroy();
       }});
-    if(level>=3 && Phaser.Math.Between(1,100)<=love){
-      const k2=Phaser.Utils.Array.GetRandom(keys);
-      order.qty+=1;
-      c.friend=this.add.sprite(startX+FRIEND_OFFSET,startY,k2).setScale(distScale).setDepth(4);
-      this.tweens.add({targets:c.friend,x:targetX,duration:dur(12000),onUpdate:(tw,t)=>{
-          const p=tw.progress;
-          t.y=startY+Math.sin(p*Math.PI*freq)*amp;
-        }});
-    }
+    // Friends no longer tag along
     wanderers.push(c);
     lureNextWanderer(this);
     scheduleNextSpawn(this);

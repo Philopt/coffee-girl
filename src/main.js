@@ -296,7 +296,7 @@ window.onload = function(){
     this.load.image('girl','assets/coffeegirl.png');
     this.load.spritesheet('lady_falcon','assets/lady_falcon.png',{frameWidth:64,frameHeight:64});
     this.load.image('falcon_end','assets/ladyfalconend.png');
-    this.load.image('revolt_end','assets/CustomerRevolt.png');
+    this.load.image('revolt_end','assets/revolve.png');
     for(let r=0;r<5;r++)for(let c=0;c<6;c++){
       if(r===0 && c===3) continue; // skip missing sprite
       const k=`new_kid_${r}_${c}`; keys.push(k);

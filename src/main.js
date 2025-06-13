@@ -135,7 +135,7 @@ window.onload = function(){
       duration: dur(80),
       repeat: 1,
       onComplete: () => {
-        btn.setInteractive();
+        if (btn.input) btn.input.enabled = true;  // restore interactivity
         if (onComplete) onComplete();
       }
     });

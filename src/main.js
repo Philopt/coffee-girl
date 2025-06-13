@@ -206,7 +206,10 @@ window.onload = function(){
     truck.setPosition(520,245);
     girl.setPosition(520,260).setVisible(false);
     const intro=scene.tweens.createTimeline({callbackScope:scene,
-      onComplete:()=>scheduleNextSpawn(scene)});
+      onComplete:()=>{
+        spawnCustomer.call(scene);
+        scheduleNextSpawn(scene);
+      }});
     intro.add({targets:[truck,girl],x:240,duration:dur(600)});
     intro.add({targets:girl,y:292,duration:dur(300),onStart:()=>girl.setVisible(true)});
     intro.play();

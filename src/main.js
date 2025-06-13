@@ -37,7 +37,8 @@ window.onload = function(){
   const QUEUE_Y=360;
   const FRIEND_OFFSET=40;
   const WANDER_Y=600;
-  const MAX_WANDERERS=1;
+  // base number of customers that can linger nearby
+  const BASE_WAITERS=2;
   const WALK_OFF_BASE=1000;
   const WALK_OFF_SLOW=200;
   const MAX_M=100, MAX_L=100;
@@ -85,6 +86,10 @@ window.onload = function(){
     return 1;
   }
 
+  function maxWanderers(){
+    return BASE_WAITERS + calcLoveLevel(love) - 1;
+  }
+
 
   function wanderOff(c, scene){
     const dir = Phaser.Math.Between(0,1)?1:-1;
@@ -98,8 +103,7 @@ window.onload = function(){
   }
 
   function lureNextWanderer(scene){
-    const level=calcLoveLevel(love);
-    if(wanderers.length && queue.length < level){
+    if(wanderers.length && queue.length === 0){
       const c=wanderers.shift();
       if(c.walkTween) c.walkTween.stop();
       const idx=queue.length;
@@ -324,9 +328,9 @@ window.onload = function(){
     const k=Phaser.Utils.Array.GetRandom(keys);
     const order=createOrder();
 
-    const queueFull = queue.length >= level;
+    const queueFull = queue.length >= 1;
     if(queueFull){
-      if(wanderers.length>=MAX_WANDERERS){
+      if(wanderers.length>=maxWanderers()){
         scheduleNextSpawn(this);
         return;
       }

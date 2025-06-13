@@ -250,6 +250,7 @@ window.onload = function(){
     this.load.image('bg','assets/bg.png');
     this.load.image('truck','assets/truck.png');
     this.load.image('girl','assets/coffeegirl.png');
+    this.load.image('lady_falcon','assets/lady_falcon.png');
     for(let r=0;r<5;r++)for(let c=0;c<6;c++){
       if(r===0 && c===3) continue; // skip missing sprite
       const k=`new_kid_${r}_${c}`; keys.push(k);
@@ -265,7 +266,7 @@ window.onload = function(){
     // HUD
     moneyText=this.add.text(20,20,'🪙 '+receipt(money),{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
     loveText=this.add.text(20,50,'❤️ '+love,{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
-    queueLevelText=this.add.text(316,296,'Lv. '+loveLevel,{font:'16px sans-serif',fill:'#000'})
+    queueLevelText=this.add.text(296,316,'Lv. '+loveLevel,{font:'16px sans-serif',fill:'#000'})
       .setOrigin(0.5).setDepth(1);
     updateLevelDisplay();
     // truck & girl
@@ -480,6 +481,9 @@ window.onload = function(){
     if(type==='sell'){
       lD=Phaser.Math.Between(0,2)*orderCount;
       tip=+(totalCost*0.15*lD).toFixed(2);
+      const coins=current.orders[0].coins;
+      const maxTip=Math.max(0, coins-totalCost);
+      if(tip>maxTip) tip=+maxTip.toFixed(2);
       mD=totalCost+tip;
     } else if(type==='give'){
       lD=Phaser.Math.Between(2,4)*orderCount;
@@ -503,7 +507,12 @@ window.onload = function(){
           if(friend) friend.destroy();
           queue.shift();
           moveQueueForward.call(this);
-          if(money<=0){showEnd.call(this,'Game Over\nYou are fired');return;}
+          if(money<=0){
+            showFalconAttack.call(this,()=>{
+              showEnd.call(this,'Game Over\nYou lost all the money.\nLady Falcon reclaims the coffee truck.');
+            });
+            return;
+          }
           if(love<=0){showEnd.call(this,'Game Over 😠');return;}
           if(money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
           if(love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
@@ -573,8 +582,7 @@ window.onload = function(){
       const destX=moneyText.x+moneyText.width-15;
       const destY=moneyText.y+10;
       t.setVisible(true)
-        .setDepth(lossStamp.depth+1)
-        .setColor('#f00');
+        .setDepth(lossStamp.depth+1);
       lossStamp
         .setText('LOSS')
         .setScale(1.8)
@@ -701,6 +709,40 @@ window.onload = function(){
       tl.play();
     };
     this.time.delayedCall(dur(400),()=>popOne(0),[],this);
+  }
+
+  function showFalconAttack(cb){
+    const scene=this;
+    const falcon=scene.add.image(-40,-40,'lady_falcon')
+      .setScale(0.6)
+      .setDepth(20);
+    const targetX=girl.x;
+    const targetY=girl.y-40;
+    scene.tweens.add({
+      targets:falcon,
+      x:targetX,
+      y:targetY,
+      duration:dur(600),
+      ease:'Cubic.easeIn',
+      onComplete:()=>{
+        const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
+            falcon.destroy();
+            if(cb) cb();
+        }});
+        for(let i=0;i<3;i++){
+          tl.add({targets:falcon,y:targetY+10,duration:dur(80),yoyo:true});
+          tl.add({targets:girl,y:girl.y+5,duration:dur(80),yoyo:true},0);
+          tl.add({targets:createAttackEmoji(scene),alpha:0,duration:dur(300)},0);
+        }
+        tl.play();
+      }
+    });
+
+    function createAttackEmoji(s){
+      const e=s.add.text(girl.x,girl.y-50,'💢',{font:'20px sans-serif',fill:'#f00'})
+        .setOrigin(0.5).setDepth(21);
+      return e;
+    }
   }
 
   function showEnd(msg){

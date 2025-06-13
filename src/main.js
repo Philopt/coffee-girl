@@ -387,6 +387,7 @@ window.onload = function(){
       .setPosition(dialogBg.x+dialogBg.width/2-60,470)
       .setStyle({fontSize:'32px'})
       .setText(`$${totalCost.toFixed(2)}`)
+      .setAlpha(1)
       .setVisible(true);
     tipText.setVisible(false);
     const hasCoffee=c.orders.some(o=>o.req==='coffee');
@@ -465,23 +466,37 @@ window.onload = function(){
     if(type==='sell'){
       const t=dialogPriceValue;
       t.setVisible(true);
-      t.setText(receipt(totalCost + tip));
+      t.setDepth(paidStamp.depth+1);
+      t.setText(receipt(totalCost));
       paidStamp
         .setText('PAID')
         .setScale(1.8)
-        .setPosition(t.x,t.y)
+        .setPosition(t.x - 20, t.y)
         .setAngle(Phaser.Math.Between(-15,15))
         .setVisible(true);
+
+      const flashPrice=()=>{
+        const oy=t.y;
+        this.tweens.add({targets:t,y:oy-30,duration:dur(100),yoyo:true});
+      };
+      flashPrice();
+
+      let delay=dur(300);
       if(tip>0){
-        tipText
-          .setText('TIP')
-          .setScale(1.6)
-          .setPosition(paidStamp.x + 40, paidStamp.y + 20)
-          .setVisible(true);
+        this.time.delayedCall(delay,()=>{
+          tipText
+            .setText('TIP')
+            .setScale(1.6)
+            .setPosition(paidStamp.x, paidStamp.y-40)
+            .setVisible(true);
+          t.setText(receipt(totalCost + tip));
+          flashPrice();
+        },[],this);
+        delay+=dur(300);
       } else {
         tipText.setVisible(false);
       }
-      const delay = tip>0 ? dur(1200) : dur(1000);
+      delay+=dur(1000);
       this.time.delayedCall(delay,()=>{
         paidStamp.setVisible(false);
         tipText.setVisible(false);

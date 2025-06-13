@@ -66,7 +66,7 @@ window.onload = function(){
     return `$${d}${cents}`;
   }
 
-  function flashMoney(obj, scene){
+  function flashMoney(obj, scene, color='#0f0'){
     let on=true;
     obj.setStyle({stroke:'#000', strokeThickness:3});
     const flashes=5;
@@ -74,7 +74,7 @@ window.onload = function(){
       repeat:flashes,
       delay:dur(60),
       callback:()=>{
-        obj.setColor(on?'#fff':'#0f0');
+        obj.setColor(on?'#fff':color);
         on=!on;
       }
     });
@@ -89,7 +89,7 @@ window.onload = function(){
     pixelArt:true, scene:{ preload, create } };
   new Phaser.Game(config);
 
-  let moneyText, loveText, loveLevelText, queueLevelText, versionText, speedBtn;
+  let moneyText, loveText, queueLevelText, versionText, speedBtn;
   let dialogBg, dialogText, dialogCoins, dialogPriceLabel, dialogPriceValue,
       btnSell, btnGive, btnRef;
   let iconSell, iconGive, iconRef;
@@ -182,19 +182,6 @@ window.onload = function(){
 
   function updateLevelDisplay(){
     const newLevel=calcLoveLevel(love);
-    if(loveLevelText){
-      loveLevelText.setText(newLevel);
-      if(newLevel>loveLevel){
-        const scene=loveLevelText.scene;
-        loveLevelText.setColor('#fff');
-        scene.time.delayedCall(dur(1000),()=>loveLevelText.setColor('#800'),[],scene);
-        const sp=scene.add.text(loveLevelText.x,loveLevelText.y,'✨',
-            {font:'18px sans-serif',fill:'#fff'})
-          .setOrigin(0.5).setDepth(loveLevelText.depth+1);
-        scene.tweens.add({targets:sp,y:loveLevelText.y-20,alpha:0,
-            duration:dur(600),onComplete:()=>sp.destroy()});
-      }
-    }
     if(queueLevelText){
       queueLevelText.setText('Lv. '+newLevel);
       if(newLevel!==loveLevel){
@@ -278,12 +265,7 @@ window.onload = function(){
     // HUD
     moneyText=this.add.text(20,20,'🪙 '+receipt(money),{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
     loveText=this.add.text(20,50,'❤️ '+love,{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
-    // position level number centered over the heart icon
-    loveLevelText=this.add.text(loveText.x+12,loveText.y+13,loveLevel,
-        {font:'12px sans-serif',fill:'#800'})
-      .setOrigin(0.5)
-      .setDepth(1);
-    queueLevelText=this.add.text(320,292,'Lv. '+loveLevel,{font:'16px sans-serif',fill:'#000'})
+    queueLevelText=this.add.text(316,296,'Lv. '+loveLevel,{font:'16px sans-serif',fill:'#000'})
       .setOrigin(0.5).setDepth(1);
     updateLevelDisplay();
     versionText=this.add.text(10,630,'v'+VERSION,{font:'12px sans-serif',fill:'#000'})
@@ -425,7 +407,12 @@ window.onload = function(){
       return;
     }
     dialogBg.setVisible(true);
-    const itemStr=c.orders.map(o=>`${o.qty>1?o.qty+' ':''}${o.req}`).join(' and ');
+    const itemStr=c.orders.map(o=>{
+      return o.qty>1 ? `${o.qty} ${o.req}` : o.req;
+    }).join(' and ');
+    const wantLine=(c.orders.length===1 && c.orders[0].qty===1)
+      ? `I want a ${c.orders[0].req}`
+      : `I want ${itemStr}`;
     if(activeBubble){
       activeBubble.destroy();
       activeBubble=null;
@@ -437,15 +424,16 @@ window.onload = function(){
     dialogText
       .setOrigin(0,0.5)
       .setPosition(dialogBg.x-dialogBg.width/2+40,440)
-      .setText(`I want ${itemStr}`)
+      .setText(wantLine)
       .setVisible(true);
+    const totalCost=c.orders.reduce((s,o)=>s+o.price*o.qty,0);
+    const canAfford = c.orders[0].coins >= totalCost;
     dialogCoins
       .setOrigin(0,0.5)
       .setPosition(dialogBg.x-dialogBg.width/2+40,470)
       .setStyle({fontSize:'20px'})
-      .setText(`I have $${c.orders[0].coins}`)
+      .setText(canAfford?`I have $${c.orders[0].coins}`:`But I only have $${c.orders[0].coins}`)
       .setVisible(true);
-    const totalCost=c.orders.reduce((s,o)=>s+o.price*o.qty,0);
     dialogPriceLabel
       .setOrigin(1,0.5)
       .setPosition(dialogBg.x+dialogBg.width/2-60,440)
@@ -461,7 +449,6 @@ window.onload = function(){
       .setScale(1)
       .setAlpha(1)
       .setVisible(true);
-    const canAfford = c.orders[0].coins >= totalCost;
     tipText.setVisible(false);
     btnSell.setVisible(canAfford);
     if (canAfford) btnSell.setInteractive(); else btnSell.disableInteractive();
@@ -598,7 +585,7 @@ window.onload = function(){
       lossStamp
         .setText('LOSS')
         .setScale(1.8)
-        .setPosition(t.x, t.y)
+        .setPosition(t.x - 20, t.y)
         .setAngle(Phaser.Math.Between(-15,15))
         .setVisible(true);
       this.time.delayedCall(dur(1000),()=>{
@@ -612,7 +599,7 @@ window.onload = function(){
             moneyText.setText('🪙 '+receipt(money));
             done();
         }});
-        flashMoney(t,this);
+        flashMoney(t,this,'#f00');
         tl.add({targets:t,x:destX,y:destY,scale:0,alpha:0,duration:dur(400)});
         tl.play();
       },[],this);

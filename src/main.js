@@ -251,6 +251,7 @@ window.onload = function(){
     this.load.image('truck','assets/truck.png');
     this.load.image('girl','assets/coffeegirl.png');
     this.load.spritesheet('lady_falcon','assets/lady_falcon.png',{frameWidth:64,frameHeight:64});
+    this.load.image('falcon_end','assets/ladyfalconend.png');
     for(let r=0;r<5;r++)for(let c=0;c<6;c++){
       if(r===0 && c===3) continue; // skip missing sprite
       const k=`new_kid_${r}_${c}`; keys.push(k);
@@ -749,6 +750,7 @@ window.onload = function(){
                   alpha:0,
                   duration:dur(300),
                   onComplete:()=>debris.destroy()},'<');
+          scene.time.delayedCall(dur(350),()=>debris.destroy(),[],scene);
         }
         tl.play();
       }
@@ -770,9 +772,15 @@ window.onload = function(){
 
   function showEnd(msg){
     clearDialog();
-    const bg=this.add.rectangle(240,320,480,240,0xffffff).setStrokeStyle(2,0x000).setDepth(20);
+    let bgY=320;
+    let img=null;
+    if(/lady falcon reclaims the coffee truck/i.test(msg)){
+      img=this.add.image(240,160,'falcon_end').setScale(1.5).setDepth(20);
+      bgY=380;
+    }
+    const bg=this.add.rectangle(240,bgY,480,240,0xffffff).setStrokeStyle(2,0x000).setDepth(20);
     const lines=msg.split('\n');
-    let offset=280;
+    let offset=bgY-40;
     let titleText=null;
     let startIdx=0;
     if(lines[0].toLowerCase().startsWith('game over')){
@@ -784,10 +792,10 @@ window.onload = function(){
     }
     const txt=this.add.text(240,offset,lines.slice(startIdx).join('\n'),{font:'24px sans-serif',fill:'#000',align:'center',wordWrap:{width:440}})
       .setOrigin(0.5).setDepth(21);
-    const btn=this.add.text(240,380,'Restart',{font:'20px sans-serif',fill:'#fff',backgroundColor:'#006400',padding:{x:14,y:8}})
+    const btn=this.add.text(240,bgY+60,'Restart',{font:'20px sans-serif',fill:'#fff',backgroundColor:'#006400',padding:{x:14,y:8}})
       .setOrigin(0.5).setDepth(22).setInteractive()
       .on('pointerdown',()=>{
-        bg.destroy(); txt.destroy(); btn.destroy(); if(titleText) titleText.destroy();
+        bg.destroy(); txt.destroy(); btn.destroy(); if(titleText) titleText.destroy(); if(img) img.destroy();
         restartGame.call(this);
       });
     gameOver=true;

@@ -445,13 +445,17 @@ window.onload = function(){
       .setPosition(dialogBg.x+dialogBg.width/2-60,470)
       .setStyle({fontSize:'32px'})
       .setText(`$${totalCost.toFixed(2)}`)
+      .setColor('#000')
       .setScale(1)
       .setAlpha(1)
       .setVisible(true);
+    const canAfford = c.orders[0].coins >= totalCost;
     tipText.setVisible(false);
-    const hasOrder=true;
-    btnSell.setVisible(hasOrder); btnGive.setVisible(true); btnRef.setVisible(true);
-    iconSell.setVisible(hasOrder); iconGive.setVisible(true); iconRef.setVisible(true);
+    btnSell.setVisible(canAfford);
+    if (canAfford) btnSell.setInteractive(); else btnSell.disableInteractive();
+    btnGive.setVisible(true).setInteractive();
+    btnRef.setVisible(true).setInteractive();
+    iconSell.setVisible(canAfford); iconGive.setVisible(true); iconRef.setVisible(true);
   }
 
   function clearDialog(keepPrice=false){
@@ -460,7 +464,7 @@ window.onload = function(){
       dialogText.setVisible(false);
       dialogCoins.setVisible(false);
       dialogPriceLabel.setVisible(false);
-      dialogPriceValue.setVisible(false);
+      dialogPriceValue.setVisible(false).setColor('#000');
     }else{
       dialogBg.setVisible(true);
       dialogText.setVisible(false);
@@ -468,7 +472,9 @@ window.onload = function(){
       dialogPriceLabel.setVisible(true);
       dialogPriceValue.setVisible(true);
     }
-    btnSell.setVisible(false); btnGive.setVisible(false); btnRef.setVisible(false);
+    btnSell.setVisible(false).disableInteractive();
+    btnGive.setVisible(false).disableInteractive();
+    btnRef.setVisible(false).disableInteractive();
     iconSell.setVisible(false); iconGive.setVisible(false); iconRef.setVisible(false);
     tipText.setVisible(false);
   }

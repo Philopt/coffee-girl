@@ -55,6 +55,7 @@ window.onload = function(){
 
   function repositionQueue(scene, join=true){
     Phaser.Actions.Call(customerQueue,(c,idx)=>{
+      if(c.approaching) return;
       const targetY=332+QUEUE_SPACING*idx;
       scene.tweens.add({targets:c.sprite,x:QUEUE_X,y:targetY,duration:dur(500)});
       if(c.friend){
@@ -74,6 +75,7 @@ window.onload = function(){
     const w=wanderers.splice(idx,1)[0];
     if(w.walkTween) w.walkTween.stop();
     const targetY=332+QUEUE_SPACING*customerQueue.length;
+    w.approaching = true;
     customerQueue.push(w);
     const dist=Phaser.Math.Distance.Between(w.sprite.x,w.sprite.y,QUEUE_X,targetY);
     w.sprite.setDepth(5);

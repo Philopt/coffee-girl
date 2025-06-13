@@ -60,7 +60,8 @@ window.onload = function(){
     Phaser.Actions.Call(customerQueue,(c,idx)=>{
       if(c.approaching) return;
       const targetY=332+QUEUE_SPACING*idx;
-      scene.tweens.add({targets:c.sprite,x:QUEUE_X,y:targetY,duration:dur(500)});
+      if(c.walkTween) c.walkTween.stop();
+      c.walkTween=scene.tweens.add({targets:c.sprite,x:QUEUE_X,y:targetY,duration:dur(500),onComplete:()=>{c.walkTween=null;}});
       if(c.friend){
         scene.tweens.add({targets:c.friend,x:QUEUE_X+FRIEND_OFFSET,y:targetY,duration:dur(500)});
       }
@@ -118,7 +119,8 @@ window.onload = function(){
       return;
     }
     wanderers.splice(wanderers.indexOf(c),1);
-    const targetY=332+QUEUE_SPACING*customerQueue.length;
+    const idx = customerQueue.length;
+    const targetY=332+QUEUE_SPACING*idx;
     customerQueue.push(c);
     const dist=Phaser.Math.Distance.Between(c.sprite.x,c.sprite.y,QUEUE_X,targetY);
     c.sprite.setDepth(5);
@@ -407,7 +409,8 @@ window.onload = function(){
       const targets=[current.sprite];
       if(friend) targets.push(friend);
       targets.forEach(t=>t.setDepth(5));
-      this.tweens.add({ targets: targets, x: (type==='refuse'? -50:520), alpha:0, duration:dur(600), callbackScope:this,
+      const extra = customerQueue.length * WALK_OFF_SLOW;
+      this.tweens.add({ targets: targets, x: (type==='refuse'? -50:520), alpha:0, duration:dur(WALK_OFF_BASE+extra), callbackScope:this,
         onComplete:()=>{
           current.sprite.destroy();
           if(friend) friend.destroy();
@@ -415,18 +418,18 @@ window.onload = function(){
           if(love<=0){showEnd.call(this,'Game Over 😠');return;}
           if(money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
           if(love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
-            repositionQueue(this,false);
-            repositionQueue(this);
-            if(customerQueue.length>0){
-              const next=customerQueue[0];
-              if(next.walkTween){
-                next.walkTween.once('complete',()=>{ showDialog.call(this); });
-              }else{
-                this.time.delayedCall(dur(600),showDialog,[],this);
-              }
+          repositionQueue(this,false);
+          repositionQueue(this);
+          if(customerQueue.length>0){
+            const next=customerQueue[0];
+            if(next.walkTween){
+              next.walkTween.once('complete',()=>{ showDialog.call(this); });
             }else{
-              scheduleNextSpawn(this);
+              showDialog.call(this);
             }
+          }else{
+            scheduleNextSpawn(this);
+          }
         }
       });
     };

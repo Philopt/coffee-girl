@@ -449,9 +449,23 @@ window.onload = function(){
     const c=activeCustomer;
     if(!c.atOrder && (c.sprite.y!==ORDER_Y || c.sprite.x!==ORDER_X)){
       c.atOrder=true;
-      const targets=[c.sprite];
-      if(c.friend) targets.push(c.friend);
-      this.tweens.add({targets:targets,x:ORDER_X,y:ORDER_Y,scale:scaleForY(ORDER_Y),duration:dur(300),onComplete:()=>{showDialog.call(this);}});
+      this.tweens.add({
+        targets: c.sprite,
+        x: ORDER_X,
+        y: ORDER_Y,
+        scale: scaleForY(ORDER_Y),
+        duration: dur(300),
+        onComplete: ()=>{ showDialog.call(this); }
+      });
+      if(c.friend){
+        this.tweens.add({
+          targets: c.friend,
+          x: ORDER_X + FRIEND_OFFSET,
+          y: ORDER_Y,
+          scale: scaleForY(ORDER_Y),
+          duration: dur(300)
+        });
+      }
       return;
     }
     dialogBg.setVisible(true);

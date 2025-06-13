@@ -391,8 +391,7 @@ window.onload = function(){
     const done=()=>{ if(--pending<=0) finish(); };
 
     if(type==='sell'){
-      const t=dialogCoins;
-      const p=dialogPriceValue;
+      const t=dialogPriceValue;
       t.setVisible(true);
       paidStamp
         .setText('PAID')
@@ -422,7 +421,7 @@ window.onload = function(){
             t.setVisible(false);
             dialogBg.setVisible(false);
             dialogText.setVisible(false);
-            p.setVisible(false);
+            dialogPriceValue.setVisible(false);
             money=+(money+mD).toFixed(2);
             moneyText.setText('🪙 '+receipt(money));
             done();
@@ -431,7 +430,7 @@ window.onload = function(){
         tl.play();
       },[],this);
     } else if(type==='give'){
-      const t=dialogCoins;
+      const t=dialogPriceValue;
       t.setVisible(true);
       lossStamp
         .setText('LOSS')

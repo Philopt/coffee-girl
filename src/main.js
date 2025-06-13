@@ -1,6 +1,6 @@
 window.onload = function(){
   const COFFEE_COST=5.00, WATER_COST=5.58;
-  const VERSION='55';
+  const VERSION='56';
   const SPAWN_DELAY=300;
   const QUEUE_SPACING=70;
   const MAX_M=100, MAX_L=100;
@@ -284,27 +284,40 @@ window.onload = function(){
     const count=Math.abs(delta);
     const emoji=delta>0?'❤️':'😠';
 
-    const baseX=customer.x-80;
-    const baseY=customer.y+40;
+    const baseX=customer.x - 20*(count-1)/2;
+    const baseY=customer.y + 40;
 
     const hearts=[];
     for(let i=0;i<count;i++){
       const h=this.add.text(customer.x,customer.y,emoji,{font:'24px sans-serif',fill:'#fff'})
         .setOrigin(0.5).setDepth(11);
       hearts.push(h);
-      this.tweens.add({targets:h,x:baseX+i*20,y:baseY,duration:dur(400),ease:'Cubic.easeOut'});
+      const targetX=baseX+i*20;
+      // sparkle or anger flash
+      if(delta>0){
+        const sp=this.add.text(customer.x,customer.y,'✨',{font:'18px sans-serif',fill:'#fff'})
+          .setOrigin(0.5).setDepth(10);
+        this.tweens.add({targets:sp,scale:1.5,alpha:0,duration:dur(300),onComplete:()=>sp.destroy()});
+      }else{
+        const ang=this.add.text(customer.x,customer.y,'💢',{font:'20px sans-serif',fill:'#f00'})
+          .setOrigin(0.5).setDepth(12);
+        this.tweens.add({targets:ang,alpha:0,duration:dur(300),onComplete:()=>ang.destroy()});
+      }
+      this.tweens.add({targets:h,x:targetX,y:baseY,duration:dur(400),ease:'Cubic.easeOut'});
     }
     const popOne=(idx)=>{
       if(idx>=hearts.length){ if(cb) cb(); return; }
       const h=hearts[idx];
-      this.tweens.add({targets:h,x:loveText.x,y:loveText.y,scale:1.2,angle:360,alpha:0,
-        duration:dur(250),onComplete:()=>{
-          love+=delta>0?1:-1;
-          loveText.setText('❤️ '+love);
-          updateLevelDisplay();
-          h.destroy();
-          popOne(idx+1);
+      const tl=this.tweens.createTimeline({callbackScope:this});
+      tl.add({targets:h,x:loveText.x,y:loveText.y,scaleX:0,scaleY:1.2,duration:dur(125)});
+      tl.add({targets:h,scaleX:1,alpha:0,duration:dur(125),onComplete:()=>{
+            love+=delta>0?1:-1;
+            loveText.setText('❤️ '+love);
+            updateLevelDisplay();
+            h.destroy();
+            popOne(idx+1);
         }});
+      tl.play();
     };
     this.time.delayedCall(dur(400),()=>popOne(0),[],this);
   }

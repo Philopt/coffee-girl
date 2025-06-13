@@ -1,6 +1,6 @@
 window.onload = function(){
   const COFFEE_COST=5.00, WATER_COST=5.58;
-  const VERSION='56';
+  const VERSION='57';
   const SPAWN_DELAY=300;
   const SPAWN_VARIANCE=500;
   const QUEUE_SPACING=50;
@@ -54,13 +54,19 @@ window.onload = function(){
     const level=calcLoveLevel(love);
     const maxQ=queueCapacityForLevel(level);
     if(customerQueue.length>=maxQ||wanderers.length===0) return;
-    const w=wanderers.shift();
+    let idx=0;
+    while(idx<wanderers.length && wanderers[idx].approaching) idx++;
+    if(idx>=wanderers.length) return;
+    const w=wanderers.splice(idx,1)[0];
     if(w.walkTween) w.walkTween.stop();
     const targetY=332+QUEUE_SPACING*customerQueue.length;
     customerQueue.push(w);
     const dist=Phaser.Math.Distance.Between(w.sprite.x,w.sprite.y,QUEUE_X,targetY);
-    scene.tweens.add({targets:w.sprite,x:QUEUE_X,y:targetY,scale:0.7,duration:dur(800+dist*2),ease:'Sine.easeIn',callbackScope:scene,
-      onComplete:()=>{ startGiveUpTimer(w,scene); if(customerQueue[0]===w){ showDialog.call(scene); } }});
+    w.walkTween = scene.tweens.add({targets:w.sprite,x:QUEUE_X,y:targetY,scale:0.7,duration:dur(800+dist*2),ease:'Sine.easeIn',callbackScope:scene,
+      onComplete:()=>{ w.walkTween=null; startGiveUpTimer(w,scene); if(customerQueue[0]===w){ showDialog.call(scene); } }});
+    if(w.friend){
+      scene.tweens.add({targets:w.friend,x:QUEUE_X+FRIEND_OFFSET,y:targetY,scale:0.7,duration:dur(800+dist*2),ease:'Sine.easeIn'});
+    }
   }
 
   function startGiveUpTimer(c, scene){
@@ -77,6 +83,36 @@ window.onload = function(){
         }});
       }
     }, [], scene);
+  }
+
+  function wanderOff(c, scene){
+    const dir = Phaser.Math.Between(0,1)?1:-1;
+    const targetX = dir===1?520:-40;
+    const targets=[c.sprite];
+    if(c.friend) targets.push(c.friend);
+    wanderers.splice(wanderers.indexOf(c),1);
+    scene.tweens.add({targets:targets,x:targetX,duration:dur(1000),onComplete:()=>{
+        targets.forEach(t=>t.destroy());
+    }});
+  }
+
+  function arriveAtBack(c, scene){
+    c.approaching=false;
+    const level=calcLoveLevel(love);
+    const maxQ=queueCapacityForLevel(level);
+    if(customerQueue.length>=maxQ){
+      wanderOff(c, scene);
+      return;
+    }
+    wanderers.splice(wanderers.indexOf(c),1);
+    const targetY=332+QUEUE_SPACING*customerQueue.length;
+    customerQueue.push(c);
+    const dist=Phaser.Math.Distance.Between(c.sprite.x,c.sprite.y,QUEUE_X,targetY);
+    c.walkTween = scene.tweens.add({targets:c.sprite,x:QUEUE_X,y:targetY,scale:0.7,duration:dur(400+dist),ease:'Sine.easeIn',callbackScope:scene,
+      onComplete:()=>{ c.walkTween=null; startGiveUpTimer(c,scene); if(customerQueue[0]===c){ showDialog.call(scene); } }});
+    if(c.friend){
+      scene.tweens.add({targets:c.friend,x:QUEUE_X+FRIEND_OFFSET,y:targetY,scale:0.7,duration:dur(400+dist),ease:'Sine.easeIn'});
+    }
   }
 
   function updateLevelDisplay(){
@@ -209,7 +245,6 @@ window.onload = function(){
     if(gameOver) return;
     if(customerQueue.length<maxQ){
       tryJoinWanderer(this);
-      if(customerQueue.length>=maxQ) return;
     }
     const createOrder=(extra)=>{
       const coins=Phaser.Math.Between(1,10)+extra;
@@ -248,19 +283,17 @@ window.onload = function(){
     }
     c.orders.push(order);
 
-    const targetY=332+QUEUE_SPACING*customerQueue.length;
-    customerQueue.push(c);
-    const dist=Phaser.Math.Distance.Between(startX,startY,QUEUE_X,targetY);
+    const backY=332+QUEUE_SPACING*maxQ;
+    c.approaching=true;
+    wanderers.unshift(c);
+    const dist=Phaser.Math.Distance.Between(startX,startY,QUEUE_X,backY);
     let moveDur=1200+dist*4;
-    if(customerQueue.length===1) moveDur=800+dist*3;
-    this.tweens.add({targets:c.sprite,x:QUEUE_X,y:targetY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn',callbackScope:this,
-      onComplete:()=>{ startGiveUpTimer(c,this); if(customerQueue[0]===c) { showDialog.call(this); } }});
+    c.walkTween = this.tweens.add({targets:c.sprite,x:QUEUE_X,y:backY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn',callbackScope:this,
+      onComplete:()=>{ c.walkTween=null; arriveAtBack(c,this); }});
     if(c.friend){
-      this.tweens.add({targets:c.friend,x:QUEUE_X+FRIEND_OFFSET,y:targetY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn'});
+      this.tweens.add({targets:c.friend,x:QUEUE_X+FRIEND_OFFSET,y:backY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn'});
     }
-    if(customerQueue.length<maxQ){
-      scheduleNextSpawn(this);
-    }
+    scheduleNextSpawn(this);
   }
 
   function showDialog(){
@@ -332,12 +365,17 @@ window.onload = function(){
           if(love<=0){showEnd.call(this,'Game Over 😠');return;}
           if(money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
           if(love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
-          repositionQueue(this);
-          if(customerQueue.length>0){
-            this.time.delayedCall(dur(600),showDialog,[],this);
-          }else{
-            scheduleNextSpawn(this);
-          }
+            repositionQueue(this);
+            if(customerQueue.length>0){
+              const next=customerQueue[0];
+              if(next.walkTween){
+                next.walkTween.once('complete',()=>{ showDialog.call(this); });
+              }else{
+                this.time.delayedCall(dur(600),showDialog,[],this);
+              }
+            }else{
+              scheduleNextSpawn(this);
+            }
         }
       });
     };
@@ -350,18 +388,20 @@ window.onload = function(){
 
     if(type==='sell'){
       const t=dialogCoins;
-      t.setScale(1.2).setVisible(true);
+      t.setVisible(true);
       paidStamp
         .setText('PAID')
+        .setScale(1.8)
         .setPosition(t.x,t.y)
         .setAngle(Phaser.Math.Between(-15,15))
         .setVisible(true);
       this.time.delayedCall(dur(1000),()=>{
         paidStamp.setVisible(false);
+        t.setText(`$${totalCost.toFixed(2)}`);
+        dialogBg.setVisible(false);
+        dialogText.setVisible(false);
         const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
-            t.setVisible(false).setScale(1);
-            dialogBg.setVisible(false);
-            dialogText.setVisible(false);
+            t.setVisible(false);
             money=+(money+mD).toFixed(2);
             moneyText.setText('🪙 '+money.toFixed(2));
             done();

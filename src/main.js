@@ -361,8 +361,6 @@ window.onload = function(){
       repeat:-1
     });
 
-    playIntro(this);
-
     // dialog
     dialogBg=this.add.rectangle(240,460,460,120,0xffffff).setStrokeStyle(2,0x000).setVisible(false).setDepth(10);
     dialogText=this.add.text(240,440,'',{font:'20px sans-serif',fill:'#000',align:'center',wordWrap:{width:420}})
@@ -416,6 +414,8 @@ window.onload = function(){
       .setOrigin(0.5).setDepth(12).setVisible(false);
     lossStamp=this.add.text(0,0,'LOSS',{font:'24px sans-serif',fill:'#a00'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
+
+    playIntro(this);
   }
 
   function spawnCustomer(){
@@ -462,6 +462,10 @@ window.onload = function(){
   }
 
   function showDialog(){
+    if(!dialogBg || !dialogText || !dialogCoins || !dialogPriceLabel ||
+       !dialogPriceValue || !btnSell || !btnGive || !btnRef){
+      return;
+    }
     activeCustomer=queue[0]||null;
     if(!activeCustomer) return;
     const c=activeCustomer;

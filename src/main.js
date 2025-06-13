@@ -50,6 +50,7 @@ window.onload = function(){
   let truck, girl;
   let activeBubble=null;
   let sideCText;
+  let spawnCount=0;
 
   function calcLoveLevel(v){
     if(v>=100) return 4;
@@ -145,15 +146,20 @@ window.onload = function(){
   }
 
   function showSideC(){
+    if(sideCText) return;
     const y=this.scale.height*0.15;
     sideCText=this.add.text(this.scale.width/2,y,'Side C',
         {font:'bold 64px sans-serif',fill:'#fff'})
       .setOrigin(0.5)
-      .setDepth(4);
-    this.tweens.add({targets:sideCText,alpha:0,duration:10000,onComplete:()=>{
-        sideCText.destroy();
-        sideCText=null;
-    }});
+      .setDepth(4)
+      .setAlpha(0);
+    this.tweens.timeline({
+      targets: sideCText,
+      tweens: [
+        { alpha: 1, duration: 20000 },
+        { alpha: 0, duration: 20000, onComplete:()=>{ sideCText.destroy(); sideCText=null; } }
+      ]
+    });
   }
 
   function playIntro(scene){
@@ -164,7 +170,6 @@ window.onload = function(){
       onComplete:()=>{
         spawnCustomer.call(scene);
         scheduleNextSpawn(scene);
-        scene.time.delayedCall(1000,showSideC,[],scene);
       }});
     intro.add({targets:[truck,girl],x:240,duration:dur(600)});
     intro.add({targets:girl,y:292,duration:dur(300),onStart:()=>girl.setVisible(true)});
@@ -338,6 +343,11 @@ window.onload = function(){
       this.tweens.add({targets:c.friend,x:QUEUE_X+FRIEND_OFFSET,y:targetY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn'});
     }
     scheduleNextSpawn(this);
+
+    spawnCount++;
+    if(spawnCount===2){
+      this.time.delayedCall(500,showSideC,[],this);
+    }
   }
 
   function showDialog(){
@@ -393,7 +403,8 @@ window.onload = function(){
       dialogPriceValue.setVisible(false);
     }else{
       dialogBg.setVisible(true);
-      dialogText.setVisible(true);
+      dialogText.setVisible(false);
+      dialogCoins.setVisible(false);
       dialogPriceLabel.setVisible(true);
       dialogPriceValue.setVisible(true);
     }
@@ -454,6 +465,7 @@ window.onload = function(){
     if(type==='sell'){
       const t=dialogPriceValue;
       t.setVisible(true);
+      t.setText(receipt(totalCost + tip));
       paidStamp
         .setText('PAID')
         .setScale(1.8)
@@ -461,30 +473,27 @@ window.onload = function(){
         .setAngle(Phaser.Math.Between(-15,15))
         .setVisible(true);
       if(tip>0){
-        t.setText(receipt(totalCost+tip));
-        this.time.delayedCall(dur(200),()=>{
-          tipText
-            .setText('TIP')
-            .setScale(1.8)
-            .setPosition(paidStamp.x,paidStamp.y)
-            .setAngle(Phaser.Math.Between(-15,15))
-            .setVisible(true);
-          t.setVisible(false);
-        },[],this);
-      }else{
-        t.setText(`$${totalCost.toFixed(2)}`);
+        tipText
+          .setText('TIP')
+          .setScale(1.6)
+          .setPosition(paidStamp.x + 40, paidStamp.y + 20)
+          .setVisible(true);
+      } else {
+        tipText.setVisible(false);
       }
       const delay = tip>0 ? dur(1200) : dur(1000);
       this.time.delayedCall(delay,()=>{
         paidStamp.setVisible(false);
         tipText.setVisible(false);
-        dialogBg.setVisible(false);
-        dialogText.setVisible(false);
-        dialogPriceValue.setVisible(false);
-        t.setVisible(false);
-        money=+(money+mD).toFixed(2);
-        moneyText.setText('🪙 '+receipt(money));
-        done();
+        const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
+            clearDialog();
+            t.setVisible(false);
+            money=+(money+mD).toFixed(2);
+            moneyText.setText('🪙 '+receipt(money));
+            done();
+        }});
+        tl.add({targets:t,x:moneyText.x,y:moneyText.y,alpha:0,duration:dur(400)});
+        tl.play();
       },[],this);
     } else if(type==='give'){
       const t=dialogPriceValue;
@@ -501,12 +510,13 @@ window.onload = function(){
         dialogBg.setVisible(false);
         dialogText.setVisible(false);
         const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
+            clearDialog();
             t.setVisible(false);
             money=+(money+mD).toFixed(2);
             moneyText.setText('🪙 '+receipt(money));
             done();
         }});
-        tl.add({targets:t,x:moneyText.x,y:moneyText.y,duration:dur(400)});
+        tl.add({targets:t,x:moneyText.x,y:moneyText.y,alpha:0,duration:dur(400)});
         tl.play();
       },[],this);
     } else if(type!=='refuse'){
@@ -643,6 +653,7 @@ window.onload = function(){
     queue=[];
     Phaser.Actions.Call(wanderers,c=>{ c.sprite.destroy(); if(c.friend) c.friend.destroy(); });
     wanderers=[];
+    spawnCount=0;
     speed = 1;
     if (speedBtn) speedBtn.setText('1x');
     gameOver=false;

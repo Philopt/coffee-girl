@@ -26,7 +26,7 @@ window.onload = function(){
     {name:"Iced Rose Tea", price:5.70},
     {name:"Iced Starry Night Tea", price:5.70}
   ];
-  const VERSION='60';
+
   // spawn new customers slowly to keep things manageable
   // at least a few seconds between arrivals
   const SPAWN_DELAY=2000;
@@ -45,15 +45,15 @@ window.onload = function(){
   const WALK_OFF_BASE=1000;
   const WALK_OFF_SLOW=200;
   const MAX_M=100, MAX_L=100;
-  const MAX_SPEED=3;
-  let speed=1;
+
+
   let money=10.00, love=10, gameOver=false;
   let queue=[], activeCustomer=null, wanderers=[];
   let spawnTimer = null;
   let loveLevel=1;
   const keys=[];
 
-  const dur=v=>v/speed;
+  const dur=v=>v;
 
   const supers={
     '0':'\u2070','1':'\u00b9','2':'\u00b2','3':'\u00b3','4':'\u2074',
@@ -89,7 +89,7 @@ window.onload = function(){
     pixelArt:true, scene:{ preload, create } };
   new Phaser.Game(config);
 
-  let moneyText, loveText, queueLevelText, versionText, speedBtn;
+  let moneyText, loveText, queueLevelText;
   let dialogBg, dialogText, dialogCoins, dialogPriceLabel, dialogPriceValue,
       btnSell, btnGive, btnRef;
   let iconSell, iconGive, iconRef;
@@ -268,15 +268,6 @@ window.onload = function(){
     queueLevelText=this.add.text(316,296,'Lv. '+loveLevel,{font:'16px sans-serif',fill:'#000'})
       .setOrigin(0.5).setDepth(1);
     updateLevelDisplay();
-    versionText=this.add.text(10,630,'v'+VERSION,{font:'12px sans-serif',fill:'#000'})
-      .setOrigin(0,1).setDepth(1);
-    speedBtn=this.add.text(460,20,'1x',{font:'20px sans-serif',fill:'#000',backgroundColor:'#ddd',padding:{x:6,y:4}})
-      .setOrigin(1,0).setDepth(1).setInteractive()
-      .on('pointerdown',()=>{
-        speed = speed < MAX_SPEED ? speed + 1 : 1;
-        speedBtn.setText(speed+'x');
-      });
-
     // truck & girl
     truck=this.add.image(520,245,'truck').setScale(0.924).setDepth(2);
 
@@ -581,7 +572,9 @@ window.onload = function(){
       const t=dialogPriceValue;
       const destX=moneyText.x+moneyText.width-15;
       const destY=moneyText.y+10;
-      t.setVisible(true);
+      t.setVisible(true)
+        .setDepth(lossStamp.depth+1)
+        .setColor('#f00');
       lossStamp
         .setText('LOSS')
         .setScale(1.8)
@@ -743,8 +736,6 @@ window.onload = function(){
     Phaser.Actions.Call(wanderers,c=>{ c.sprite.destroy(); if(c.friend) c.friend.destroy(); });
     wanderers=[];
     spawnCount=0;
-    speed = 1;
-    if (speedBtn) speedBtn.setText('1x');
     gameOver=false;
     playIntro(this);
   }

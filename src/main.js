@@ -330,6 +330,12 @@
     loader.on('loaderror', file=>{
       console.error('Asset failed to load:', file.key || file.src);
     });
+    loader.once('complete', () => {
+      // intro runs after the scene's create method, ensuring all
+      // game objects exist before we animate the truck.
+      this.events.once('create', () =>
+        this.time.delayedCall(dur(10), () => playIntro(this)));
+    });
     loader.image('bg','assets/bg.png');
     loader.image('truck','assets/truck.png');
     loader.image('girl','assets/coffeegirl.png');
@@ -429,9 +435,6 @@
       .setOrigin(0.5).setDepth(12).setVisible(false);
     lossStamp=this.add.text(0,0,'LOSS',{font:'24px sans-serif',fill:'#a00'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
-
-    // defer intro slightly so scene objects are fully ready
-    this.time.delayedCall(dur(10), () => playIntro(this));
   }
 
   function spawnCustomer(){

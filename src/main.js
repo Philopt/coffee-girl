@@ -307,7 +307,7 @@ window.onload = function(){
     const c={ orders:[] };
     const startScale=1.1;
     const k=Phaser.Utils.Array.GetRandom(keys);
-    const order=createOrder(0);
+    const order=createOrder();
     if(customerQueue.length>=maxQ){
       if(wanderers.length>=MAX_WANDERERS){
         scheduleNextSpawn(this);

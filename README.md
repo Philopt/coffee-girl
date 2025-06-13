@@ -26,7 +26,10 @@ Have fun clicking!
 
 ## Fonts
 
-The game uses the retro, pixel-style **Press Start 2P** typeface from Google Fonts, located in `assets/fonts/`. Its license is provided in `assets/fonts/OFL.txt`.
+The game uses the retro, pixel-style **Press Start 2P** typeface from Google Fonts.
+Download `PressStart2P-Regular.ttf` and place it in `assets/fonts/` so the game
+can load it correctly. The font license is provided in
+`assets/fonts/OFL.txt`.
 
 ## Running tests
 

@@ -849,22 +849,54 @@ window.onload = function(){
       attackers.push(a);
     }
 
-    const driver=attackers[0];
-    const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
-        attackers.forEach(a=>a.destroy());
-        if(cb) cb();
+    const loops=new Map();
+    let hits=0;
+    let finished=false;
+
+    function blinkGirl(){
+      scene.tweens.add({targets:girl,duration:dur(60),repeat:2,yoyo:true,x:'+=4',
+        onStart:()=>girl.setTint(0xff0000),
+        onYoyo:()=>girl.setTint(0xff0000),
+        onRepeat:()=>girl.clearTint(),
+        onComplete:()=>girl.clearTint()});
+    }
+
+    function sendDriver(driver){
+      loops.forEach((ev,a)=>{ if(ev) ev.remove(false); if(a!==driver){scene.tweens.add({targets:a,alpha:0,duration:dur(300),onComplete:()=>a.destroy()});}});
+      scene.tweens.add({targets:driver,x:truck.x-40,y:truck.y,duration:dur(300),onComplete:()=>driver.destroy()});
+      scene.tweens.add({targets:truck,x:-200,duration:dur(800),delay:dur(300),onComplete:()=>{if(cb) cb();}});
+    }
+
+    function attack(a){
+      if(finished) return;
+      scene.tweens.add({
+        targets:a,
+        x:girl.x+Phaser.Math.Between(-5,5),
+        y:girl.y+Phaser.Math.Between(-5,5),
+        duration:dur(80),
+        yoyo:true,
+        onComplete:()=>{
+          if(finished) return;
+          hits++;
+          blinkGirl();
+          if(hits>=10){
+            finished=true;
+            sendDriver(a);
+          } else {
+            loops.set(a, scene.time.delayedCall(dur(Phaser.Math.Between(200,400)),()=>attack(a),[],scene));
+          }
+        }
+      });
+    }
+
+    attackers.forEach(a=>{
+      const angle=Phaser.Math.Angle.Between(a.x,a.y,girl.x,girl.y);
+      const tx=girl.x+Math.cos(angle)*30;
+      const ty=girl.y+Math.sin(angle)*30;
+      scene.tweens.add({targets:a,x:tx,y:ty,duration:dur(400),onComplete:()=>{
+        loops.set(a,scene.time.delayedCall(dur(Phaser.Math.Between(100,300)),()=>attack(a),[],scene));
       }});
-
-    attackers.forEach((a,idx)=>{
-      tl.add({targets:a,x:truck.x+Phaser.Math.Between(-8,8),y:truck.y+Phaser.Math.Between(-8,8),duration:dur(400)});
-      tl.add({targets:a,x:`+=${Phaser.Math.Between(-10,10)}`,y:`+=${Phaser.Math.Between(-10,10)}`,duration:dur(80),yoyo:true,repeat:3});
     });
-
-    tl.add({targets:girl,duration:dur(60),repeat:5,yoyo:true,x:'+=4',onStart:()=>girl.setTint(0xff0000),onYoyo:()=>girl.setTint(0xff0000),onRepeat:()=>girl.clearTint(),onComplete:()=>girl.clearTint()},'<');
-
-    tl.add({targets:driver,x:truck.x-40,y:truck.y,duration:dur(300),onComplete:()=>driver.destroy()});
-    tl.add({targets:truck,x:-200,duration:dur(800)});
-    tl.play();
   }
 
   function showEnd(msg){

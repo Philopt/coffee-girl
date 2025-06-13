@@ -1,8 +1,10 @@
 window.onload = function(){
   const COFFEE_COST=5.00, WATER_COST=5.58;
   const VERSION='58';
-  const SPAWN_DELAY=600;
-  const SPAWN_VARIANCE=800;
+  // spawn new customers slowly to keep things manageable
+  // at least a few seconds between arrivals
+  const SPAWN_DELAY=3000;
+  const SPAWN_VARIANCE=2000;
   const QUEUE_SPACING=36;
   // front of the queue near the truck
   const QUEUE_X=200;
@@ -178,7 +180,9 @@ window.onload = function(){
       spawnTimer.remove(false);
     }
     const delay = SPAWN_DELAY + Phaser.Math.Between(0, SPAWN_VARIANCE);
-    spawnTimer = scene.time.delayedCall(dur(delay), spawnCustomer, [], scene);
+    // use real-time delay to ensure customers never spawn too quickly,
+    // regardless of game speed adjustments
+    spawnTimer = scene.time.delayedCall(delay, spawnCustomer, [], scene);
   }
 
   function playIntro(scene){

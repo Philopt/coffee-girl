@@ -585,7 +585,7 @@ window.onload = function(){
           }
           if(love<=0){
             showCustomerRevolt.call(this,()=>{
-              showEnd.call(this,"Game Over\nThe Customer's Revolt!\n(and they stole your truck)");
+              showEnd.call(this,'Game Over\nThe Customers Revolt!\n(and they stole your truck)');
             });
             return;
           }

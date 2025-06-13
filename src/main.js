@@ -41,7 +41,8 @@ window.onload = function(){
   new Phaser.Game(config);
 
   let moneyText, loveText, loveLevelText, queueLevelText, versionText, speedBtn;
-  let dialogBg, dialogText, dialogCoins, dialogPrice, btnSell, btnGive, btnRef;
+  let dialogBg, dialogText, dialogCoins, dialogPriceLabel, dialogPriceValue,
+      btnSell, btnGive, btnRef;
   let iconSell, iconGive, iconRef;
   let reportLine1, reportLine2, reportLine3, reportLine4, tipText;
   let paidStamp, lossStamp;
@@ -260,7 +261,9 @@ window.onload = function(){
                      .setOrigin(0.5).setVisible(false).setDepth(11);
     dialogCoins=this.add.text(240,470,'',{font:'24px sans-serif',fill:'#000'})
       .setOrigin(0.5).setVisible(false).setDepth(11);
-    dialogPrice=this.add.text(240,456,'',{font:'18px sans-serif',fill:'#000'})
+    dialogPriceLabel=this.add.text(240,456,'',{font:'14px sans-serif',fill:'#000',align:'center'})
+      .setOrigin(0.5).setVisible(false).setDepth(11);
+    dialogPriceValue=this.add.text(240,480,'',{font:'32px sans-serif',fill:'#000'})
       .setOrigin(0.5).setVisible(false).setDepth(11);
 
     // buttons
@@ -401,18 +404,24 @@ window.onload = function(){
       .setPosition(dialogBg.x-dialogBg.width/2+60,440)
       .setText(`I want ${itemStr}`)
       .setVisible(true);
-    const totalCost=c.orders.reduce((s,o)=>s+(o.req==='coffee'?COFFEE_COST:WATER_COST)*o.qty,0);
-    dialogPrice
-      .setOrigin(1,0.5)
-      .setPosition(dialogBg.x+dialogBg.width/2-60,456)
-      .setStyle({fontSize:'18px'})
-      .setText(`Price $${totalCost.toFixed(2)}`)
-      .setVisible(true);
     dialogCoins
+      .setOrigin(0,0.5)
+      .setPosition(dialogBg.x-dialogBg.width/2+60,470)
+      .setStyle({fontSize:'24px'})
+      .setText(`I have $${c.orders[0].coins.toFixed(2)}`)
+      .setVisible(true);
+    const totalCost=c.orders.reduce((s,o)=>s+(o.req==='coffee'?COFFEE_COST:WATER_COST)*o.qty,0);
+    dialogPriceLabel
+      .setOrigin(1,0.5)
+      .setPosition(dialogBg.x+dialogBg.width/2-60,440)
+      .setStyle({fontSize:'14px'})
+      .setText('Total\nCost')
+      .setVisible(true);
+    dialogPriceValue
       .setOrigin(1,0.5)
       .setPosition(dialogBg.x+dialogBg.width/2-60,470)
-      .setStyle({fontSize:'18px'})
-      .setText(`I have $${c.orders[0].coins.toFixed(2)}`)
+      .setStyle({fontSize:'32px'})
+      .setText(`$${totalCost.toFixed(2)}`)
       .setVisible(true);
     tipText.setVisible(false);
     const hasCoffee=c.orders.some(o=>o.req==='coffee');
@@ -425,11 +434,13 @@ window.onload = function(){
       dialogBg.setVisible(false);
       dialogText.setVisible(false);
       dialogCoins.setVisible(false);
-      dialogPrice.setVisible(false);
+      dialogPriceLabel.setVisible(false);
+      dialogPriceValue.setVisible(false);
     }else{
       dialogBg.setVisible(true);
       dialogText.setVisible(true);
-      dialogPrice.setVisible(true);
+      dialogPriceLabel.setVisible(true);
+      dialogPriceValue.setVisible(true);
     }
     btnSell.setVisible(false); btnGive.setVisible(false); btnRef.setVisible(false);
     iconSell.setVisible(false); iconGive.setVisible(false); iconRef.setVisible(false);
@@ -488,7 +499,7 @@ window.onload = function(){
 
     if(type==='sell'){
       const t=dialogCoins;
-      const p=dialogPrice;
+      const p=dialogPriceValue;
       t.setVisible(true);
       paidStamp
         .setText('PAID')

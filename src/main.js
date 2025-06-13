@@ -519,9 +519,11 @@ window.onload = function(){
       .setVisible(true);
     tipText.setVisible(false);
     btnSell.setVisible(canAfford);
-    if (canAfford) btnSell.setInteractive(); else btnSell.disableInteractive();
-    btnGive.setVisible(true).setInteractive();
-    btnRef.setVisible(true).setInteractive();
+    if (btnSell.input) btnSell.input.enabled = canAfford;
+    btnGive.setVisible(true);
+    if (btnGive.input) btnGive.input.enabled = true;
+    btnRef.setVisible(true);
+    if (btnRef.input) btnRef.input.enabled = true;
     iconSell.setVisible(canAfford); iconGive.setVisible(true); iconRef.setVisible(true);
   }
 
@@ -539,9 +541,12 @@ window.onload = function(){
       dialogPriceLabel.setVisible(true);
       dialogPriceValue.setVisible(true);
     }
-    btnSell.setVisible(false).disableInteractive();
-    btnGive.setVisible(false).disableInteractive();
-    btnRef.setVisible(false).disableInteractive();
+    btnSell.setVisible(false);
+    if (btnSell.input) btnSell.input.enabled = false;
+    btnGive.setVisible(false);
+    if (btnGive.input) btnGive.input.enabled = false;
+    btnRef.setVisible(false);
+    if (btnRef.input) btnRef.input.enabled = false;
     iconSell.setVisible(false); iconGive.setVisible(false); iconRef.setVisible(false);
     tipText.setVisible(false);
   }

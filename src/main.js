@@ -59,8 +59,8 @@ window.onload = function(){
     const targetY=332+QUEUE_SPACING*customerQueue.length;
     customerQueue.push(w);
     const dist=Phaser.Math.Distance.Between(w.sprite.x,w.sprite.y,QUEUE_X,targetY);
-    scene.tweens.add({targets:w.sprite,x:QUEUE_X,y:targetY,scale:0.7,duration:dur(800+dist*2),ease:'Sine.easeIn',callbackScope:scene,
-      onComplete:()=>{ startGiveUpTimer(w,scene); if(customerQueue[0]===w){ showDialog.call(scene); } }});
+    w.walkTween = scene.tweens.add({targets:w.sprite,x:QUEUE_X,y:targetY,scale:0.7,duration:dur(800+dist*2),ease:'Sine.easeIn',callbackScope:scene,
+      onComplete:()=>{ w.walkTween=null; startGiveUpTimer(w,scene); if(customerQueue[0]===w){ showDialog.call(scene); } }});
   }
 
   function startGiveUpTimer(c, scene){
@@ -253,8 +253,8 @@ window.onload = function(){
     const dist=Phaser.Math.Distance.Between(startX,startY,QUEUE_X,targetY);
     let moveDur=1200+dist*4;
     if(customerQueue.length===1) moveDur=800+dist*3;
-    this.tweens.add({targets:c.sprite,x:QUEUE_X,y:targetY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn',callbackScope:this,
-      onComplete:()=>{ startGiveUpTimer(c,this); if(customerQueue[0]===c) { showDialog.call(this); } }});
+    c.walkTween = this.tweens.add({targets:c.sprite,x:QUEUE_X,y:targetY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn',callbackScope:this,
+      onComplete:()=>{ c.walkTween=null; startGiveUpTimer(c,this); if(customerQueue[0]===c) { showDialog.call(this); } }});
     if(c.friend){
       this.tweens.add({targets:c.friend,x:QUEUE_X+FRIEND_OFFSET,y:targetY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn'});
     }
@@ -332,12 +332,17 @@ window.onload = function(){
           if(love<=0){showEnd.call(this,'Game Over 😠');return;}
           if(money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
           if(love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
-          repositionQueue(this);
-          if(customerQueue.length>0){
-            this.time.delayedCall(dur(600),showDialog,[],this);
-          }else{
-            scheduleNextSpawn(this);
-          }
+            repositionQueue(this);
+            if(customerQueue.length>0){
+              const next=customerQueue[0];
+              if(next.walkTween){
+                next.walkTween.once('complete',()=>{ showDialog.call(this); });
+              }else{
+                this.time.delayedCall(dur(600),showDialog,[],this);
+              }
+            }else{
+              scheduleNextSpawn(this);
+            }
         }
       });
     };

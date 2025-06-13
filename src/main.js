@@ -1,6 +1,6 @@
 window.onload = function(){
   const COFFEE_COST=5.00, WATER_COST=5.58;
-  const VERSION='59';
+  const VERSION='60';
   // spawn new customers slowly to keep things manageable
   // at least a few seconds between arrivals
   const SPAWN_DELAY=3000;
@@ -248,8 +248,8 @@ window.onload = function(){
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
     reportLine4=this.add.text(0,0,'',{font:'14px sans-serif',fill:'#fff'})
       .setVisible(false).setDepth(11);
-    tipText=this.add.text(0,0,'',{font:'20px sans-serif',fill:'#000'})
-      .setOrigin(0.5).setDepth(11).setVisible(false);
+    tipText=this.add.text(0,0,'',{font:'24px sans-serif',fill:'#0a0'})
+      .setOrigin(0.5).setDepth(12).setVisible(false);
     paidStamp=this.add.text(0,0,'PAID',{font:'24px sans-serif',fill:'#0a0'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
     lossStamp=this.add.text(0,0,'LOSS',{font:'24px sans-serif',fill:'#a00'})
@@ -447,34 +447,30 @@ window.onload = function(){
         .setAngle(Phaser.Math.Between(-15,15))
         .setVisible(true);
       if(tip>0){
-        tipText
-          .setText('TIP')
-          .setPosition(t.x,t.y-20)
-          .setAngle(Phaser.Math.Between(-15,15))
-          .setVisible(true);
-        t.setText(receipt(totalCost+tip))
-          .setPosition(t.x,t.y-40)
-          .setStyle({fontSize:'26px',fill:'#fff'})
-          .setScale(1.2);
-        this.tweens.add({targets:t,scale:1,duration:dur(200)});
-        this.time.delayedCall(dur(200),()=>t.setStyle({fontSize:'26px',fill:'#000'}),[],this);
+        t.setText(receipt(totalCost+tip));
+        this.time.delayedCall(dur(200),()=>{
+          tipText
+            .setText('TIP')
+            .setScale(1.8)
+            .setPosition(paidStamp.x,paidStamp.y)
+            .setAngle(Phaser.Math.Between(-15,15))
+            .setVisible(true);
+          t.setVisible(false);
+        },[],this);
       }else{
         t.setText(`$${totalCost.toFixed(2)}`);
       }
-      this.time.delayedCall(dur(1000),()=>{
+      const delay = tip>0 ? dur(1200) : dur(1000);
+      this.time.delayedCall(delay,()=>{
         paidStamp.setVisible(false);
         tipText.setVisible(false);
-        const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
-            t.setVisible(false);
-            dialogBg.setVisible(false);
-            dialogText.setVisible(false);
-            dialogPriceValue.setVisible(false);
-            money=+(money+mD).toFixed(2);
-            moneyText.setText('🪙 '+receipt(money));
-            done();
-        }});
-        tl.add({targets:t,x:moneyText.x,y:moneyText.y,duration:dur(400)});
-        tl.play();
+        dialogBg.setVisible(false);
+        dialogText.setVisible(false);
+        dialogPriceValue.setVisible(false);
+        t.setVisible(false);
+        money=+(money+mD).toFixed(2);
+        moneyText.setText('🪙 '+receipt(money));
+        done();
       },[],this);
     } else if(type==='give'){
       const t=dialogPriceValue;

@@ -743,14 +743,15 @@ window.onload = function(){
         for(let i=0;i<5;i++){
           tl.add({targets:falcon,y:targetY+10,duration:dur(80),yoyo:true});
           tl.add({targets:girl,y:girl.y+5,duration:dur(80),yoyo:true},'<');
-          const debris=createDebrisEmoji(scene);
+          const debris=createDebrisEmoji(scene, falcon.x, falcon.y);
           tl.add({targets:debris,
-                  x:debris.x+Phaser.Math.Between(-30,30),
-                  y:debris.y-Phaser.Math.Between(20,40),
+                  x:debris.x+Phaser.Math.Between(-60,60),
+                  y:debris.y+Phaser.Math.Between(-50,10),
+                  angle:Phaser.Math.Between(-180,180),
                   alpha:0,
-                  duration:dur(300),
+                  duration:dur(400),
                   onComplete:()=>debris.destroy()},'<');
-          scene.time.delayedCall(dur(350),()=>debris.destroy(),[],scene);
+          scene.time.delayedCall(dur(450),()=>debris.destroy(),[],scene);
         }
         tl.play();
       }
@@ -762,21 +763,25 @@ window.onload = function(){
       s.tweens.add({targets:e,alpha:0,duration:dur(150),yoyo:true,repeat:2,onComplete:()=>e.destroy()});
     }
 
-    function createDebrisEmoji(s){
-      const chars=['💨','💥'];
+    function createDebrisEmoji(s, x, y){
+      const chars=['✨','💥','🪶'];
       const ch=chars[Phaser.Math.Between(0,chars.length-1)];
-      return s.add.text(girl.x,girl.y-40,ch,{font:'24px sans-serif',fill:'#555'})
+      return s.add.text(x,y,ch,{font:'24px sans-serif',fill:'#555'})
         .setOrigin(0.5).setDepth(21);
     }
   }
 
   function showEnd(msg){
+    const scene=this;
+    scene.tweens.killAll();
+    scene.time.removeAllEvents();
+    if (spawnTimer) { spawnTimer.remove(false); spawnTimer=null; }
     clearDialog();
     let bgY=320;
     let img=null;
     if(/lady falcon reclaims the coffee truck/i.test(msg)){
-      img=this.add.image(240,160,'falcon_end').setScale(1.5).setDepth(20);
-      bgY=380;
+      img=this.add.image(240,160,'falcon_end').setScale(1.2).setDepth(20);
+      bgY=440;
     }
     const bg=this.add.rectangle(240,bgY,480,240,0xffffff).setStrokeStyle(2,0x000).setDepth(20);
     const lines=msg.split('\n');

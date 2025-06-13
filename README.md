@@ -60,14 +60,17 @@ Customers can now order any of the following drinks:
 
 ## Running tests
 
-Install dependencies and run the automated check:
+Before running the tests, install all dependencies:
 
 ```bash
 npm install
-npm test
 ```
 
-The test script starts a local server and verifies the page responds without errors.
+Then run the automated check. `npm test` relies on `node_modules/.bin/http-server` to start a local server and verify the page responds without errors:
+
+```bash
+npm test
+```
 
 ## License
 

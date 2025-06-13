@@ -30,14 +30,15 @@ window.onload = function(){
   // at least a few seconds between arrivals
   const SPAWN_DELAY=2000;
   const SPAWN_VARIANCE=1500;
-  const QUEUE_SPACING=36;
-  // waiting spot to the left of the truck
-  const QUEUE_X=220; // base position for the waiting line
-  const QUEUE_OFFSET=8; // stack each waiting customer slightly left
-  const ORDER_X=230; // ordering spot shifted right
-  const QUEUE_Y=320; // matches new order position
-  // step forward when ordering
-  const ORDER_Y=310; // moved down a bit
+  const QUEUE_SPACING=36; // distance between queued customers (horizontal)
+  const ORDER_X=230; // ordering spot
+  const ORDER_Y=310; // ordering spot Y
+  // base position for the waiting line to the left of the order spot
+  const QUEUE_X=ORDER_X-QUEUE_SPACING;
+  // each waiting customer stands slightly higher than the one in front
+  const QUEUE_OFFSET=8;
+  // vertical position of the first waiting customer
+  const QUEUE_Y=ORDER_Y-10;
   const FRIEND_OFFSET=40;
   const WANDER_TOP=ORDER_Y+50; // wander up to 50px below the order window
   const WANDER_BOTTOM=580; // near bottom of the screen
@@ -185,8 +186,8 @@ window.onload = function(){
       c.atOrder=false;
       queue.push(c);
       activeCustomer=queue[0];
-      const targetY=QUEUE_Y+idx*QUEUE_SPACING;
-      const targetX = idx===0 ? ORDER_X : QUEUE_X - QUEUE_OFFSET*(idx-1);
+      const targetX = idx===0 ? ORDER_X : QUEUE_X - QUEUE_SPACING*(idx-1);
+      const targetY = idx===0 ? ORDER_Y : QUEUE_Y - QUEUE_OFFSET*(idx-1);
       const dist=Phaser.Math.Distance.Between(c.sprite.x,c.sprite.y,targetX,targetY);
       c.sprite.setDepth(5);
       c.walkTween=scene.tweens.add({targets:c.sprite,x:targetX,y:targetY,scale:scaleForY(targetY),duration:dur(1200+dist*4),ease:'Sine.easeIn',callbackScope:scene,
@@ -201,8 +202,8 @@ window.onload = function(){
     const scene=this;
     let willShow=false;
     queue.forEach((cust, idx)=>{
-      const ty=QUEUE_Y+idx*QUEUE_SPACING;
-      const tx=idx===0?ORDER_X:QUEUE_X - QUEUE_OFFSET*(idx-1);
+      const tx = idx===0 ? ORDER_X : QUEUE_X - QUEUE_SPACING*(idx-1);
+      const ty = idx===0 ? ORDER_Y : QUEUE_Y - QUEUE_OFFSET*(idx-1);
       if(cust.sprite.y!==ty || cust.sprite.x!==tx){
         const cfg={targets:cust.sprite,x:tx,y:ty,scale:scaleForY(ty),duration:dur(300)};
         if(idx===0){
@@ -215,7 +216,7 @@ window.onload = function(){
     });
     activeCustomer=queue[0]||null;
     if(activeCustomer){
-      if(!willShow && activeCustomer.sprite.y===QUEUE_Y && activeCustomer.sprite.x===ORDER_X){
+      if(!willShow && activeCustomer.sprite.y===ORDER_Y && activeCustomer.sprite.x===ORDER_X){
         showDialog.call(scene);
       }
     }

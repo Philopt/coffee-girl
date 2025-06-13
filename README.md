@@ -24,14 +24,6 @@ If the game fails to start, check your browser's console for errors.
 
 Have fun clicking!
 
-## Troubleshooting
-
-If the truck never drives in at the start or the page seems frozen,
-verify that you're running the game through a local web server.
-Opening `index.html` directly from the filesystem prevents asset files
-from loading, which stops the game before it begins. Start a server
-with `npm start` or `python3 -m http.server` and load
-`http://localhost:8080` instead.
 
 ## Controls
 

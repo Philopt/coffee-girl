@@ -34,9 +34,9 @@ window.onload = function(){
   const QUEUE_SPACING=36;
   // first waiting spot in front of the truck
   const QUEUE_X=240;
-  const QUEUE_Y=330;
+  const QUEUE_Y=340; // lowered by 10px
   // step forward when ordering
-  const ORDER_Y=300;
+  const ORDER_Y=310; // lowered by 10px
   const FRIEND_OFFSET=40;
   const WANDER_Y=600;
   // base number of customers that can linger nearby
@@ -194,8 +194,8 @@ window.onload = function(){
   function showSideC(){
     if(sideCText) return;
     const y=this.scale.height*0.15;
-    sideCText=this.add.text(this.scale.width/2,y,'Side C',
-        {font:'bold 64px sans-serif',fill:'#fff'})
+    sideCText=this.add.text(this.scale.width/2,y,'Side B',
+        {font:'bold 64px serif',fill:'#002a8a'})
       .setOrigin(0.5)
       .setDepth(4)
       .setAlpha(0);

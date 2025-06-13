@@ -13,16 +13,12 @@ Coffee Clicker is a small browser game built with [Phaser](https://phaser.io/). 
    Then navigate to `http://localhost:8000` in your browser.
 
 
+
 The game uses [Phaser](https://phaser.io/). It will load `lib/phaser.min.js` by default. If you prefer the CDN version, replace the script tag in `index.html` with:
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
 ```
-
-If the game fails to start, check your browser's console for errors.
-
-Have fun clicking!
-
 
 ## Controls
 
@@ -74,9 +70,6 @@ npm test
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is not licensed
 
-The `Press Start 2P` font is licensed under the
-[SIL Open Font License](assets/fonts/OFL.txt). The license text is included in
-`assets/fonts/OFL.txt` for reference.
 

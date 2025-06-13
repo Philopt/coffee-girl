@@ -29,19 +29,19 @@ window.onload = function(){
   const VERSION='60';
   // spawn new customers slowly to keep things manageable
   // at least a few seconds between arrivals
-  const SPAWN_DELAY=3000;
-  const SPAWN_VARIANCE=2000;
+  const SPAWN_DELAY=2000;
+  const SPAWN_VARIANCE=1500;
   const QUEUE_SPACING=36;
   // waiting spot to the left of the truck
-  const QUEUE_X=200;
+  const QUEUE_X=220;
   const ORDER_X=240;
   const QUEUE_Y=340; // lowered by 10px
   // step forward when ordering
   const ORDER_Y=310; // lowered by 10px
   const FRIEND_OFFSET=40;
-  const WANDER_Y=600;
+  const WANDER_Y=560;
   // base number of customers that can linger nearby
-  const BASE_WAITERS=2;
+  const BASE_WAITERS=3;
   const WALK_OFF_BASE=1000;
   const WALK_OFF_SLOW=200;
   const MAX_M=100, MAX_L=100;
@@ -68,14 +68,20 @@ window.onload = function(){
 
   function flashMoney(obj, scene){
     let on=true;
+    obj.setStyle({stroke:'#000', strokeThickness:3});
+    const flashes=5;
     scene.time.addEvent({
-      repeat:5,
+      repeat:flashes,
       delay:dur(60),
       callback:()=>{
         obj.setColor(on?'#fff':'#0f0');
         on=!on;
       }
     });
+    scene.time.delayedCall(dur(60)*(flashes+1)+dur(10),()=>{
+      obj.setColor('#000');
+      obj.setStyle({strokeThickness:0});
+    },[],scene);
   }
 
   const config={ type:Phaser.AUTO, parent:'game-container', backgroundColor:'#f2e5d7',
@@ -123,7 +129,13 @@ window.onload = function(){
 
   function lureNextWanderer(scene){
     if(wanderers.length && queue.length < queueLimit()){
-      const c=wanderers.shift();
+      let closestIdx=0;
+      let minDist=Number.MAX_VALUE;
+      for(let i=0;i<wanderers.length;i++){
+        const d=Math.abs(wanderers[i].sprite.x-ORDER_X);
+        if(d<minDist){ closestIdx=i; minDist=d; }
+      }
+      const c=wanderers.splice(closestIdx,1)[0];
       if(c.walkTween) c.walkTween.stop();
       const idx=queue.length;
       c.atOrder=false;

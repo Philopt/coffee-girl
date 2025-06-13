@@ -3,7 +3,7 @@ window.onload = function(){
   const VERSION='56';
   const SPAWN_DELAY=300;
   const SPAWN_VARIANCE=500;
-  const QUEUE_SPACING=70;
+  const QUEUE_SPACING=50;
   const MAX_M=100, MAX_L=100;
   let speed=1;
   let money=10.00, love=10, gameOver=false, customerQueue=[];
@@ -35,14 +35,48 @@ window.onload = function(){
     return 3;
   }
 
+  function repositionQueue(scene){
+    Phaser.Actions.Call(customerQueue,(c,idx)=>{
+      const targetY=332+QUEUE_SPACING*idx;
+      scene.tweens.add({targets:c.sprite,y:targetY,duration:dur(500)});
+      if(c.friend){
+        scene.tweens.add({targets:c.friend,y:targetY,duration:dur(500)});
+      }
+    });
+  }
+
+  function startGiveUpTimer(c, scene){
+    c.giveUpTimer = scene.time.delayedCall(dur(20000), () => {
+      const idx = customerQueue.indexOf(c);
+      if(idx>0){
+        customerQueue.splice(idx,1);
+        const targets=[c.sprite];
+        if(c.friend) targets.push(c.friend);
+        scene.tweens.add({targets:targets,x:-50,duration:dur(600),onComplete:()=>{
+          c.sprite.destroy();
+          if(c.friend) c.friend.destroy();
+          repositionQueue(scene);
+        }});
+      }
+    }, [], scene);
+  }
+
   function updateLevelDisplay(){
-    loveLevel=calcLoveLevel(love);
+    const newLevel=calcLoveLevel(love);
     if(loveLevelText){
-      loveLevelText.setText(loveLevel);
+      loveLevelText.setText(newLevel);
     }
     if(queueLevelText){
-      queueLevelText.setText('Queue Lv. '+loveLevel);
+      queueLevelText.setText('Lv. '+newLevel);
+      if(newLevel!==loveLevel){
+        const sp=queueLevelText.scene.add.text(queueLevelText.x,queueLevelText.y,'✨',
+            {font:'18px sans-serif',fill:'#000'})
+          .setOrigin(0.5).setDepth(queueLevelText.depth+1);
+        queueLevelText.scene.tweens.add({targets:sp,y:queueLevelText.y-20,alpha:0,
+            duration:dur(600),onComplete:()=>sp.destroy()});
+      }
     }
+    loveLevel=newLevel;
   }
 
   function scheduleNextSpawn(scene){
@@ -70,7 +104,8 @@ window.onload = function(){
     moneyText=this.add.text(20,20,'🪙 '+money.toFixed(2),{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
     loveText=this.add.text(20,50,'❤️ '+love,{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
     loveLevelText=this.add.text(loveText.x+22,loveText.y+8,loveLevel,{font:'12px sans-serif',fill:'#800'}).setDepth(1);
-    queueLevelText=this.add.text(460,340,'Queue Lv. '+loveLevel,{font:'16px sans-serif',fill:'#000'}).setOrigin(1,0.5).setDepth(1);
+    queueLevelText=this.add.text(320,360,'Lv. '+loveLevel,{font:'16px sans-serif',fill:'#000'})
+      .setOrigin(0.5).setDepth(1);
     updateLevelDisplay();
     versionText=this.add.text(10,630,'v'+VERSION,{font:'12px sans-serif',fill:'#000'})
       .setOrigin(0,1).setDepth(1);
@@ -161,10 +196,13 @@ window.onload = function(){
 
     const targetY=332+QUEUE_SPACING*customerQueue.length;
     customerQueue.push(c);
-    this.tweens.add({targets:c.sprite,x:240,y:targetY,scale:0.7,duration:dur(800),callbackScope:this,
-      onComplete:()=>{ if(customerQueue[0]===c) { showDialog.call(this); } }});
+    const dist=Phaser.Math.Distance.Between(startX,startY,240,targetY);
+    let moveDur=1200+dist*4;
+    if(customerQueue.length===1) moveDur=800+dist*3;
+    this.tweens.add({targets:c.sprite,x:240,y:targetY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn',callbackScope:this,
+      onComplete:()=>{ startGiveUpTimer(c,this); if(customerQueue[0]===c) { showDialog.call(this); } }});
     if(c.friend){
-      this.tweens.add({targets:c.friend,x:280,y:targetY,scale:0.7,duration:dur(800)});
+      this.tweens.add({targets:c.friend,x:280,y:targetY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn'});
     }
     if(customerQueue.length<maxQ){
       scheduleNextSpawn(this);
@@ -215,6 +253,7 @@ window.onload = function(){
     const tipPct=type==='sell'?lD*15:0;
     const customer=current.sprite;
     const friend=current.friend;
+    if(current.giveUpTimer){ current.giveUpTimer.remove(false); }
     customerQueue.shift();
     const finish=()=>{
       const targets=[current.sprite];
@@ -227,12 +266,7 @@ window.onload = function(){
           if(love<=0){showEnd.call(this,'Game Over 😠');return;}
           if(money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
           if(love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
-          Phaser.Actions.Call(customerQueue,(c,idx)=>{
-            this.tweens.add({targets:c.sprite,y:332+QUEUE_SPACING*idx,duration:dur(500)});
-            if(c.friend){
-              this.tweens.add({targets:c.friend,y:332+QUEUE_SPACING*idx,duration:dur(500)});
-            }
-          });
+          repositionQueue(this);
           if(customerQueue.length>0){
             this.time.delayedCall(dur(600),showDialog,[],this);
           }else{

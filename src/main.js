@@ -32,8 +32,9 @@ window.onload = function(){
   const SPAWN_DELAY=3000;
   const SPAWN_VARIANCE=2000;
   const QUEUE_SPACING=36;
-  // first waiting spot in front of the truck
-  const QUEUE_X=240;
+  // waiting spot to the left of the truck
+  const QUEUE_X=200;
+  const ORDER_X=240;
   const QUEUE_Y=340; // lowered by 10px
   // step forward when ordering
   const ORDER_Y=310; // lowered by 10px
@@ -129,10 +130,14 @@ window.onload = function(){
       queue.push(c);
       activeCustomer=queue[0];
       const targetY=QUEUE_Y+idx*QUEUE_SPACING;
-      const dist=Phaser.Math.Distance.Between(c.sprite.x,c.sprite.y,QUEUE_X,targetY);
+      const targetX = idx===0 ? ORDER_X : QUEUE_X;
+      const dist=Phaser.Math.Distance.Between(c.sprite.x,c.sprite.y,targetX,targetY);
       c.sprite.setDepth(5);
-      c.walkTween=scene.tweens.add({targets:c.sprite,x:QUEUE_X,y:targetY,scale:0.7,duration:dur(1200+dist*4),ease:'Sine.easeIn',callbackScope:scene,
+      c.walkTween=scene.tweens.add({targets:c.sprite,x:targetX,y:targetY,scale:0.7,duration:dur(1200+dist*4),ease:'Sine.easeIn',callbackScope:scene,
         onComplete:()=>{c.walkTween=null; if(idx===0) showDialog.call(scene);} });
+      if(c.friend){
+        scene.tweens.add({targets:c.friend,x:targetX+FRIEND_OFFSET,y:targetY,scale:0.7,duration:dur(1200+dist*4),ease:'Sine.easeIn'});
+      }
     }
   }
 
@@ -141,19 +146,20 @@ window.onload = function(){
     let willShow=false;
     queue.forEach((cust, idx)=>{
       const ty=QUEUE_Y+idx*QUEUE_SPACING;
-      if(cust.sprite.y!==ty){
-        const cfg={targets:cust.sprite,y:ty,duration:dur(300)};
+      const tx=idx===0?ORDER_X:QUEUE_X;
+      if(cust.sprite.y!==ty || cust.sprite.x!==tx){
+        const cfg={targets:cust.sprite,x:tx,y:ty,duration:dur(300)};
         if(idx===0){
           cfg.onComplete=()=>{ showDialog.call(scene); };
           willShow=true;
         }
         scene.tweens.add(cfg);
-        if(cust.friend) scene.tweens.add({targets:cust.friend,y:ty,duration:dur(300)});
+        if(cust.friend) scene.tweens.add({targets:cust.friend,x:tx+FRIEND_OFFSET,y:ty,duration:dur(300)});
       }
     });
     activeCustomer=queue[0]||null;
     if(activeCustomer){
-      if(!willShow && activeCustomer.sprite.y===QUEUE_Y){
+      if(!willShow && activeCustomer.sprite.y===QUEUE_Y && activeCustomer.sprite.x===ORDER_X){
         showDialog.call(scene);
       }
     }
@@ -380,7 +386,10 @@ window.onload = function(){
       const k2=Phaser.Utils.Array.GetRandom(keys);
       order.qty+=1;
       c.friend=this.add.sprite(startX+FRIEND_OFFSET,startY,k2).setScale(distScale).setDepth(4);
-      this.tweens.add({targets:c.friend,x:targetX,duration:dur(12000)});
+      this.tweens.add({targets:c.friend,x:targetX,duration:dur(12000),onUpdate:(tw,t)=>{
+          const p=tw.progress;
+          t.y=startY+Math.sin(p*Math.PI*freq)*amp;
+        }});
     }
     wanderers.push(c);
     lureNextWanderer(this);
@@ -396,11 +405,11 @@ window.onload = function(){
     activeCustomer=queue[0]||null;
     if(!activeCustomer) return;
     const c=activeCustomer;
-    if(!c.atOrder && c.sprite.y!==ORDER_Y){
+    if(!c.atOrder && (c.sprite.y!==ORDER_Y || c.sprite.x!==ORDER_X)){
       c.atOrder=true;
       const targets=[c.sprite];
       if(c.friend) targets.push(c.friend);
-      this.tweens.add({targets:targets,y:ORDER_Y,duration:dur(300),onComplete:()=>{showDialog.call(this);}});
+      this.tweens.add({targets:targets,x:ORDER_X,y:ORDER_Y,duration:dur(300),onComplete:()=>{showDialog.call(this);}});
       return;
     }
     dialogBg.setVisible(true);
@@ -436,6 +445,7 @@ window.onload = function(){
       .setPosition(dialogBg.x+dialogBg.width/2-60,470)
       .setStyle({fontSize:'32px'})
       .setText(`$${totalCost.toFixed(2)}`)
+      .setScale(1)
       .setAlpha(1)
       .setVisible(true);
     tipText.setVisible(false);

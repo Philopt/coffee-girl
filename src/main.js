@@ -3,11 +3,13 @@ window.onload = function(){
   const VERSION='58';
   const SPAWN_DELAY=600;
   const SPAWN_VARIANCE=800;
-  const QUEUE_SPACING=50;
+  const QUEUE_SPACING=36;
   const QUEUE_X=240;
   const FRIEND_OFFSET=40;
   const WANDER_Y=600;
   const MAX_WANDERERS=1;
+  const WALK_OFF_BASE=1000;
+  const WALK_OFF_SLOW=200;
   const MAX_M=100, MAX_L=100;
   const MAX_SPEED=3;
   let speed=1;
@@ -39,6 +41,7 @@ window.onload = function(){
   let iconSell, iconGive, iconRef;
   let reportLine1, reportLine2, reportLine3, reportLine4, tipText;
   let paidStamp, lossStamp;
+  let truck, girl;
 
   function calcLoveLevel(v){
     if(v>=100) return 4;
@@ -57,9 +60,11 @@ window.onload = function(){
     Phaser.Actions.Call(customerQueue,(c,idx)=>{
       if(c.approaching) return;
       const targetY=332+QUEUE_SPACING*idx;
-      scene.tweens.add({targets:c.sprite,x:QUEUE_X,y:targetY,duration:dur(500)});
+      const targetX=QUEUE_X+(c.qOffset||0);
+      if(c.walkTween) c.walkTween.stop();
+      c.walkTween=scene.tweens.add({targets:c.sprite,x:targetX,y:targetY,duration:dur(500),onComplete:()=>{c.walkTween=null;}});
       if(c.friend){
-        scene.tweens.add({targets:c.friend,x:QUEUE_X+FRIEND_OFFSET,y:targetY,duration:dur(500)});
+        scene.tweens.add({targets:c.friend,x:targetX+FRIEND_OFFSET,y:targetY,duration:dur(500)});
       }
     });
     if(join) tryJoinWanderer(scene);
@@ -75,15 +80,17 @@ window.onload = function(){
     const w=wanderers.splice(idx,1)[0];
     if(w.walkTween) w.walkTween.stop();
     const targetY=332+QUEUE_SPACING*customerQueue.length;
+    w.qOffset=Phaser.Math.Between(-5,5);
+    const targetX=QUEUE_X+w.qOffset;
     w.approaching = true;
     customerQueue.push(w);
     const dist=Phaser.Math.Distance.Between(w.sprite.x,w.sprite.y,QUEUE_X,targetY);
     w.sprite.setDepth(5);
     if(w.friend) w.friend.setDepth(5);
-    w.walkTween = scene.tweens.add({targets:w.sprite,x:QUEUE_X,y:targetY,scale:0.7,duration:dur(800+dist*2),ease:'Sine.easeIn',callbackScope:scene,
+    w.walkTween = scene.tweens.add({targets:w.sprite,x:targetX,y:targetY,scale:0.7,duration:dur(800+dist*2),ease:'Sine.easeIn',callbackScope:scene,
       onComplete:()=>{ w.walkTween=null; startGiveUpTimer(w,scene); if(customerQueue[0]===w){ showDialog.call(scene); } }});
     if(w.friend){
-      scene.tweens.add({targets:w.friend,x:QUEUE_X+FRIEND_OFFSET,y:targetY,scale:0.7,duration:dur(800+dist*2),ease:'Sine.easeIn'});
+      scene.tweens.add({targets:w.friend,x:targetX+FRIEND_OFFSET,y:targetY,scale:0.7,duration:dur(800+dist*2),ease:'Sine.easeIn'});
     }
   }
 
@@ -100,7 +107,8 @@ window.onload = function(){
     const targets=[c.sprite];
     if(c.friend) targets.push(c.friend);
     wanderers.splice(wanderers.indexOf(c),1);
-    scene.tweens.add({targets:targets,x:targetX,duration:dur(1000),onComplete:()=>{
+    const extra = customerQueue.length * WALK_OFF_SLOW;
+    scene.tweens.add({targets:targets,x:targetX,duration:dur(WALK_OFF_BASE+extra),onComplete:()=>{
         targets.forEach(t=>t.destroy());
     }});
   }
@@ -114,15 +122,18 @@ window.onload = function(){
       return;
     }
     wanderers.splice(wanderers.indexOf(c),1);
-    const targetY=332+QUEUE_SPACING*customerQueue.length;
+    const idx = customerQueue.length;
+    const targetY=332+QUEUE_SPACING*idx;
+    c.qOffset=Phaser.Math.Between(-5,5);
+    const targetX=QUEUE_X+c.qOffset;
     customerQueue.push(c);
     const dist=Phaser.Math.Distance.Between(c.sprite.x,c.sprite.y,QUEUE_X,targetY);
     c.sprite.setDepth(5);
     if(c.friend) c.friend.setDepth(5);
-    c.walkTween = scene.tweens.add({targets:c.sprite,x:QUEUE_X,y:targetY,scale:0.7,duration:dur(400+dist),ease:'Sine.easeIn',callbackScope:scene,
+    c.walkTween = scene.tweens.add({targets:c.sprite,x:targetX,y:targetY,scale:0.7,duration:dur(400+dist),ease:'Sine.easeIn',callbackScope:scene,
       onComplete:()=>{ c.walkTween=null; startGiveUpTimer(c,scene); if(customerQueue[0]===c){ showDialog.call(scene); } }});
     if(c.friend){
-      scene.tweens.add({targets:c.friend,x:QUEUE_X+FRIEND_OFFSET,y:targetY,scale:0.7,duration:dur(400+dist),ease:'Sine.easeIn'});
+      scene.tweens.add({targets:c.friend,x:targetX+FRIEND_OFFSET,y:targetY,scale:0.7,duration:dur(400+dist),ease:'Sine.easeIn'});
     }
   }
 
@@ -162,6 +173,17 @@ window.onload = function(){
     spawnTimer = scene.time.delayedCall(dur(delay), spawnCustomer, [], scene);
   }
 
+  function playIntro(scene){
+    if(!truck || !girl) return;
+    truck.setPosition(520,245);
+    girl.setPosition(520,260).setVisible(false);
+    const intro=scene.tweens.createTimeline({callbackScope:scene,
+      onComplete:()=>scheduleNextSpawn(scene)});
+    intro.add({targets:[truck,girl],x:240,duration:dur(600)});
+    intro.add({targets:girl,y:292,duration:dur(300),onStart:()=>girl.setVisible(true)});
+    intro.play();
+  }
+
   function preload(){
     this.load.image('bg','assets/bg.png');
     this.load.image('truck','assets/truck.png');
@@ -199,15 +221,11 @@ window.onload = function(){
       });
 
     // truck & girl
-    const truck=this.add.image(520,245,'truck').setScale(0.924).setDepth(2);
+    truck=this.add.image(520,245,'truck').setScale(0.924).setDepth(2);
 
-    const girl=this.add.image(520,260,'girl').setScale(0.5).setDepth(3).setVisible(false);
+    girl=this.add.image(520,260,'girl').setScale(0.5).setDepth(3).setVisible(false);
 
-    const intro=this.tweens.createTimeline({callbackScope:this,
-      onComplete:()=>scheduleNextSpawn(this)});
-    intro.add({targets:[truck,girl],x:240,duration:dur(600)});
-    intro.add({targets:girl,y:292,duration:dur(300),onStart:()=>girl.setVisible(true)});
-    intro.play();
+    playIntro(this);
 
     // dialog
     dialogBg=this.add.rectangle(240,460,460,120,0xffffff).setStrokeStyle(2,0x000).setVisible(false).setDepth(10);
@@ -267,8 +285,8 @@ window.onload = function(){
     if(customerQueue.length<maxQ){
       tryJoinWanderer(this);
     }
-    const createOrder=(extra)=>{
-      const coins=Phaser.Math.Between(1,10)+extra;
+    const createOrder=()=>{
+      const coins=Phaser.Math.Between(0,20);
       const req=coins<COFFEE_COST?'water':'coffee';
       const qty=(level>=3?2:1);
       return {coins, req, qty};
@@ -307,6 +325,7 @@ window.onload = function(){
     const startX=Phaser.Math.Between(-40,520);
     const startY=700+Phaser.Math.Between(-20,10);
     c.sprite=this.add.sprite(startX,startY,k).setScale(startScale).setDepth(4);
+    c.qOffset=Phaser.Math.Between(-5,5);
 
     if(level>=3 && Phaser.Math.Between(1,100)<=love){
       const k2=Phaser.Utils.Array.GetRandom(keys);
@@ -322,12 +341,13 @@ window.onload = function(){
     let moveDur=1200+dist*4;
     c.sprite.setDepth(5);
     if(c.friend) c.friend.setDepth(5);
-    c.walkTween = this.tweens.add({targets:c.sprite,x:QUEUE_X,y:backY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn',callbackScope:this,
+    const targetX=QUEUE_X+c.qOffset;
+    c.walkTween = this.tweens.add({targets:c.sprite,x:targetX,y:backY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn',callbackScope:this,
       onComplete:()=>{ c.walkTween=null; arriveAtBack(c,this); }});
     if(customerQueue.length===1) moveDur=800+dist*3;
 
     if(c.friend){
-      this.tweens.add({targets:c.friend,x:QUEUE_X+FRIEND_OFFSET,y:backY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn'});
+      this.tweens.add({targets:c.friend,x:targetX+FRIEND_OFFSET,y:backY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn'});
     }
     scheduleNextSpawn(this);
   }
@@ -337,16 +357,19 @@ window.onload = function(){
     const c=customerQueue[0];
     dialogBg.setVisible(true);
     const itemStr=c.orders.map(o=>`${o.qty>1?o.qty+' ':''}${o.req}`).join(' and ');
+    const bubble=this.add.text(c.sprite.x,c.sprite.y-50,'💬',{font:'32px sans-serif',fill:'#000'})
+      .setOrigin(0.5).setDepth(11);
+    this.tweens.add({targets:bubble,y:c.sprite.y-70,alpha:0,duration:dur(600),onComplete:()=>bubble.destroy()});
     dialogText
       .setOrigin(0,0.5)
       .setPosition(dialogBg.x-dialogBg.width/2+60,440)
       .setText(`I want ${itemStr}`)
       .setVisible(true);
-    const totalCost=c.orders.reduce((s,o)=>s+(o.req==='coffee'?COFFEE_COST:WATER_COST)*o.qty,0);
     dialogCoins
       .setOrigin(1,0.5)
-      .setPosition(dialogBg.x+dialogBg.width/2-60,440)
-      .setText(`Total $${totalCost.toFixed(2)}`)
+      .setPosition(dialogBg.x+dialogBg.width/2-60,470)
+      .setStyle({fontSize:'18px'})
+      .setText(`I have $${c.orders[0].coins.toFixed(2)}`)
       .setVisible(true);
     tipText.setVisible(false);
     const hasCoffee=c.orders.some(o=>o.req==='coffee');
@@ -369,7 +392,7 @@ window.onload = function(){
   }
 
   function handleAction(type){
-    clearDialog(type==='sell');
+    clearDialog(type!=='refuse');
     const current=customerQueue[0];
     const orderCount=current.orders.length;
     const totalCost=current.orders.reduce((s,o)=>s+(o.req==='coffee'?COFFEE_COST:WATER_COST)*o.qty,0);
@@ -396,7 +419,8 @@ window.onload = function(){
       const targets=[current.sprite];
       if(friend) targets.push(friend);
       targets.forEach(t=>t.setDepth(5));
-      this.tweens.add({ targets: targets, x: (type==='refuse'? -50:520), alpha:0, duration:dur(600), callbackScope:this,
+      const extra = customerQueue.length * WALK_OFF_SLOW;
+      this.tweens.add({ targets: targets, x: (type==='refuse'? -50:520), alpha:0, duration:dur(WALK_OFF_BASE+extra), callbackScope:this,
         onComplete:()=>{
           current.sprite.destroy();
           if(friend) friend.destroy();
@@ -404,20 +428,20 @@ window.onload = function(){
           if(love<=0){showEnd.call(this,'Game Over 😠');return;}
           if(money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
           if(love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
-            repositionQueue(this,false);
-            repositionQueue(this);
-            if(customerQueue.length>0){
-              const next=customerQueue[0];
-              if(next.walkTween){
-                next.walkTween.once('complete',()=>{ showDialog.call(this); });
-              }else{
-                this.time.delayedCall(dur(600),showDialog,[],this);
-              }
-            }else{
-              scheduleNextSpawn(this);
-            }
         }
       });
+      repositionQueue(this,false);
+      repositionQueue(this);
+      if(customerQueue.length>0){
+        const next=customerQueue[0];
+        if(next.walkTween){
+          next.walkTween.once('complete',()=>{ showDialog.call(this); });
+        }else{
+          showDialog.call(this);
+        }
+      }else{
+        scheduleNextSpawn(this);
+      }
     };
 
     // animated report using timelines
@@ -609,7 +633,7 @@ window.onload = function(){
     speed = 1;
     if (speedBtn) speedBtn.setText('1x');
     gameOver=false;
-    scheduleNextSpawn(this);
+    playIntro(this);
   }
 
 };

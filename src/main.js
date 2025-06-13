@@ -297,7 +297,7 @@ window.onload = function(){
     this.load.image('girl','assets/coffeegirl.png');
     this.load.spritesheet('lady_falcon','assets/lady_falcon.png',{frameWidth:64,frameHeight:64});
     this.load.image('falcon_end','assets/ladyfalconend.png');
-    this.load.image('revolt_end','assets/revolve.png');
+    this.load.image('revolt_end','assets/revolt.png');
     for(let r=0;r<5;r++)for(let c=0;c<6;c++){
       if(r===0 && c===3) continue; // skip missing sprite
       const k=`new_kid_${r}_${c}`; keys.push(k);
@@ -570,7 +570,7 @@ window.onload = function(){
           }
           if(love<=0){
             showCustomerRevolt.call(this,()=>{
-              showEnd.call(this,'Game Over\nCustomer Revolt');
+              showEnd.call(this,"Game Over\nThe Customer's Revolt!\n(and they stole your truck)");
             });
             return;
           }
@@ -832,25 +832,37 @@ window.onload = function(){
   function showCustomerRevolt(cb){
     const scene=this;
     const attackers=[];
-    for(let i=0;i<3;i++){
+    const gather=(arr)=>{
+      arr.forEach(c=>{
+        if(c.walkTween){ c.walkTween.stop(); c.walkTween=null; }
+        if(c.sprite) attackers.push(c.sprite);
+        if(c.friend) attackers.push(c.friend);
+      });
+    };
+    gather(queue);
+    gather(wanderers);
+
+    while(attackers.length<3){
       const k=Phaser.Utils.Array.GetRandom(keys);
-      const a=scene.add.sprite(girl.x+(i-1)*30,girl.y-20,k)
-        .setScale(0.6)
-        .setDepth(20);
+      const a=scene.add.sprite(Phaser.Math.Between(-40,520),Phaser.Math.Between(WANDER_TOP,WANDER_BOTTOM),k)
+        .setScale(0.6).setDepth(20);
       attackers.push(a);
     }
+
     const driver=attackers[0];
     const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
         attackers.forEach(a=>a.destroy());
         if(cb) cb();
       }});
-    for(let i=0;i<8;i++){
-      tl.add({targets:attackers,y:'-=15',duration:dur(80),yoyo:true});
-      tl.add({targets:girl,duration:dur(40),onStart:()=>girl.setTint(0xff0000),onComplete:()=>girl.clearTint()},'<');
-    }
-    tl.add({targets:attackers.filter(a=>a!==driver),alpha:0,duration:dur(200)});
-    tl.add({targets:driver,x:truck.x-40,y:truck.y,duration:dur(300)});
-    tl.add({targets:truck,y:'-=5',duration:dur(80),yoyo:true,repeat:3});
+
+    attackers.forEach((a,idx)=>{
+      tl.add({targets:a,x:truck.x+Phaser.Math.Between(-8,8),y:truck.y+Phaser.Math.Between(-8,8),duration:dur(400)});
+      tl.add({targets:a,x:`+=${Phaser.Math.Between(-10,10)}`,y:`+=${Phaser.Math.Between(-10,10)}`,duration:dur(80),yoyo:true,repeat:3});
+    });
+
+    tl.add({targets:girl,duration:dur(60),repeat:5,yoyo:true,x:'+=4',onStart:()=>girl.setTint(0xff0000),onYoyo:()=>girl.setTint(0xff0000),onRepeat:()=>girl.clearTint(),onComplete:()=>girl.clearTint()},'<');
+
+    tl.add({targets:driver,x:truck.x-40,y:truck.y,duration:dur(300),onComplete:()=>driver.destroy()});
     tl.add({targets:truck,x:-200,duration:dur(800)});
     tl.play();
   }
@@ -868,7 +880,7 @@ window.onload = function(){
     if(/lady falcon reclaims the coffee truck/i.test(msg)){
       img=this.add.image(240,200,'falcon_end').setScale(1.2).setDepth(20);
       bgY=480;
-    } else if(/customer revolt/i.test(msg)){
+    } else if(/customer.*revolt/i.test(msg)){
       img=this.add.image(240,200,'revolt_end').setScale(1.2).setDepth(20);
       bgY=480;
     }

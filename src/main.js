@@ -7,6 +7,7 @@ window.onload = function(){
   const QUEUE_X=240;
   const FRIEND_OFFSET=40;
   const WANDER_Y=600;
+  const MAX_WANDERERS=3;
   const MAX_M=100, MAX_L=100;
   let speed=1;
   let money=10.00, love=10, gameOver=false, customerQueue=[], wanderers=[];
@@ -34,7 +35,7 @@ window.onload = function(){
   let moneyText, loveText, loveLevelText, queueLevelText, versionText, speedBtn;
   let dialogBg, dialogText, dialogCoins, btnSell, btnGive, btnRef;
   let iconSell, iconGive, iconRef;
-  let reportLine1, reportLine2, reportLine3, reportLine4;
+  let reportLine1, reportLine2, reportLine3, reportLine4, tipText;
   let paidStamp;
 
   function calcLoveLevel(v){
@@ -73,6 +74,8 @@ window.onload = function(){
     const targetY=332+QUEUE_SPACING*customerQueue.length;
     customerQueue.push(w);
     const dist=Phaser.Math.Distance.Between(w.sprite.x,w.sprite.y,QUEUE_X,targetY);
+    w.sprite.setDepth(5);
+    if(w.friend) w.friend.setDepth(5);
     w.walkTween = scene.tweens.add({targets:w.sprite,x:QUEUE_X,y:targetY,scale:0.7,duration:dur(800+dist*2),ease:'Sine.easeIn',callbackScope:scene,
       onComplete:()=>{ w.walkTween=null; startGiveUpTimer(w,scene); if(customerQueue[0]===w){ showDialog.call(scene); } }});
     if(w.friend){
@@ -119,6 +122,8 @@ window.onload = function(){
     const targetY=332+QUEUE_SPACING*customerQueue.length;
     customerQueue.push(c);
     const dist=Phaser.Math.Distance.Between(c.sprite.x,c.sprite.y,QUEUE_X,targetY);
+    c.sprite.setDepth(5);
+    if(c.friend) c.friend.setDepth(5);
     c.walkTween = scene.tweens.add({targets:c.sprite,x:QUEUE_X,y:targetY,scale:0.7,duration:dur(400+dist),ease:'Sine.easeIn',callbackScope:scene,
       onComplete:()=>{ c.walkTween=null; startGiveUpTimer(c,scene); if(customerQueue[0]===c){ showDialog.call(scene); } }});
     if(c.friend){
@@ -207,7 +212,7 @@ window.onload = function(){
     dialogBg=this.add.rectangle(240,460,460,120,0xffffff).setStrokeStyle(2,0x000).setVisible(false).setDepth(10);
     dialogText=this.add.text(240,440,'',{font:'24px sans-serif',fill:'#000',align:'center',wordWrap:{width:420}})
                      .setOrigin(0.5).setVisible(false).setDepth(11);
-    dialogCoins=this.add.text(240,470,'',{font:'28px sans-serif',fill:'#000'}).setOrigin(0.5).setVisible(false).setDepth(11);
+    dialogCoins=this.add.text(240,470,'',{font:'24px sans-serif',fill:'#000'}).setOrigin(0.5).setVisible(false).setDepth(11);
 
     // buttons
     btnSell=this.add.text(80,500,'Sell',{font:'18px sans-serif',fill:'#fff',backgroundColor:'#006400',padding:{x:12,y:6}})
@@ -246,6 +251,8 @@ window.onload = function(){
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
     reportLine4=this.add.text(0,0,'',{font:'14px sans-serif',fill:'#fff'})
       .setVisible(false).setDepth(11);
+    tipText=this.add.text(0,0,'',{font:'20px sans-serif',fill:'#000'})
+      .setOrigin(0.5).setDepth(11).setVisible(false);
     paidStamp=this.add.text(0,0,'PAID',{font:'24px sans-serif',fill:'#0a0'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
   }
@@ -269,22 +276,33 @@ window.onload = function(){
     const k=Phaser.Utils.Array.GetRandom(keys);
     const order=createOrder(0);
     if(customerQueue.length>=maxQ){
+      if(wanderers.length>=MAX_WANDERERS){
+        scheduleNextSpawn(this);
+        return;
+      }
       const dir=Phaser.Math.Between(0,1)?1:-1;
       const startX=dir===1?-40:520;
       const targetX=dir===1?520:-40;
+      const startY=Phaser.Math.Between(WANDER_Y-15,WANDER_Y+15);
+      const distScale=0.6+((startY-(WANDER_Y-15))/30)*0.3;
       c.orders.push(order);
-      c.sprite=this.add.sprite(startX,WANDER_Y,k).setScale(startScale).setDepth(4);
-      c.walkTween=this.tweens.add({targets:c.sprite,x:targetX,duration:dur(6000),onComplete:()=>{
+      c.sprite=this.add.sprite(startX,startY,k).setScale(distScale).setDepth(4);
+      const amp=Phaser.Math.Between(10,25);
+      const freq=Phaser.Math.Between(2,4);
+      c.walkTween=this.tweens.add({targets:c.sprite,x:targetX,duration:dur(6000),onUpdate:(tw,t)=>{
+          const p=tw.progress;
+          t.y=startY+Math.sin(p*Math.PI*freq)*amp;
+        },onComplete:()=>{
           const idx=wanderers.indexOf(c);
           if(idx>=0) wanderers.splice(idx,1);
           c.sprite.destroy();
-      }});
+        }});
       wanderers.push(c);
       scheduleNextSpawn(this);
       return;
     }
     const startX=Phaser.Math.Between(-40,520);
-    const startY=700;
+    const startY=700+Phaser.Math.Between(-20,10);
     c.sprite=this.add.sprite(startX,startY,k).setScale(startScale).setDepth(4);
 
     if(level>=3 && Phaser.Math.Between(1,100)<=love){
@@ -299,6 +317,8 @@ window.onload = function(){
     wanderers.unshift(c);
     const dist=Phaser.Math.Distance.Between(startX,startY,QUEUE_X,backY);
     let moveDur=1200+dist*4;
+    c.sprite.setDepth(5);
+    if(c.friend) c.friend.setDepth(5);
     c.walkTween = this.tweens.add({targets:c.sprite,x:QUEUE_X,y:backY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn',callbackScope:this,
       onComplete:()=>{ c.walkTween=null; arriveAtBack(c,this); }});
     if(customerQueue.length===1) moveDur=800+dist*3;
@@ -316,15 +336,16 @@ window.onload = function(){
     const itemStr=c.orders.map(o=>`${o.qty>1?o.qty+' ':''}${o.req}`).join(' and ');
     dialogText
       .setOrigin(0,0.5)
-      .setPosition(dialogBg.x-dialogBg.width/2+20,440)
+      .setPosition(dialogBg.x-dialogBg.width/2+60,440)
       .setText(`I want ${itemStr}`)
       .setVisible(true);
     const totalCost=c.orders.reduce((s,o)=>s+(o.req==='coffee'?COFFEE_COST:WATER_COST)*o.qty,0);
     dialogCoins
       .setOrigin(1,0.5)
-      .setPosition(dialogBg.x+dialogBg.width/2-20,440)
+      .setPosition(dialogBg.x+dialogBg.width/2-60,440)
       .setText(`Total $${totalCost.toFixed(2)}`)
       .setVisible(true);
+    tipText.setVisible(false);
     const hasCoffee=c.orders.some(o=>o.req==='coffee');
     btnSell.setVisible(hasCoffee); btnGive.setVisible(true); btnRef.setVisible(true);
     iconSell.setVisible(hasCoffee); iconGive.setVisible(true); iconRef.setVisible(true);
@@ -341,6 +362,7 @@ window.onload = function(){
     }
     btnSell.setVisible(false); btnGive.setVisible(false); btnRef.setVisible(false);
     iconSell.setVisible(false); iconGive.setVisible(false); iconRef.setVisible(false);
+    tipText.setVisible(false);
   }
 
   function handleAction(type){
@@ -370,6 +392,7 @@ window.onload = function(){
     const finish=()=>{
       const targets=[current.sprite];
       if(friend) targets.push(friend);
+      targets.forEach(t=>t.setDepth(5));
       this.tweens.add({ targets: targets, x: (type==='refuse'? -50:520), duration:dur(600), callbackScope:this,
         onComplete:()=>{
           current.sprite.destroy();
@@ -413,13 +436,18 @@ window.onload = function(){
         t.setText(`$${totalCost.toFixed(2)}`);
         dialogBg.setVisible(false);
         dialogText.setVisible(false);
+        tipText.setText(`Tip ${receipt(tip)}`)
+          .setPosition(t.x,t.y+24)
+          .setVisible(true);
         const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
             t.setVisible(false);
+            tipText.setVisible(false);
             money=+(money+mD).toFixed(2);
             moneyText.setText('🪙 '+money.toFixed(2));
             done();
         }});
         tl.add({targets:t,x:moneyText.x,y:moneyText.y,duration:dur(400)});
+        tl.add({targets:tipText,x:moneyText.x,y:moneyText.y+24,duration:dur(400)},0);
         tl.play();
       },[],this);
     } else if(type!=='refuse'){

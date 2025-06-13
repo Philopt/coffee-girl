@@ -1,6 +1,6 @@
 window.onload = function(){
   const COFFEE_COST=5.00, WATER_COST=5.58;
-  const VERSION='57';
+  const VERSION='58';
   const SPAWN_DELAY=600;
   const SPAWN_VARIANCE=800;
   const QUEUE_SPACING=50;
@@ -84,19 +84,10 @@ window.onload = function(){
   }
 
   function startGiveUpTimer(c, scene){
-    c.giveUpTimer = scene.time.delayedCall(dur(20000), () => {
-      const idx = customerQueue.indexOf(c);
-      if(idx>0){
-        customerQueue.splice(idx,1);
-        const targets=[c.sprite];
-        if(c.friend) targets.push(c.friend);
-        scene.tweens.add({targets:targets,x:-50,duration:dur(600),onComplete:()=>{
-          c.sprite.destroy();
-          if(c.friend) c.friend.destroy();
-          repositionQueue(scene);
-        }});
-      }
-    }, [], scene);
+    // Customers should remain in line until served. Previous versions removed
+    // them after waiting for a timeout, which felt like they were randomly
+    // disappearing. We disable that timer by simply storing `null`.
+    c.giveUpTimer = null;
   }
 
   function wanderOff(c, scene){
@@ -458,7 +449,7 @@ window.onload = function(){
       lossStamp
         .setText('LOSS')
         .setScale(1.8)
-        .setPosition(dialogBg.x, dialogText.y)
+        .setPosition(t.x, t.y)
         .setAngle(Phaser.Math.Between(-15,15))
         .setVisible(true);
       this.time.delayedCall(dur(1000),()=>{

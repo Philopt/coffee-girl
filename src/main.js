@@ -153,6 +153,9 @@ window.onload = function(){
   let activeBubble=null;
   let sideCText;
   let spawnCount=0;
+  let servedCount=0;
+  let sideCAlpha=0;
+  let sideCFadeTween=null;
   let endOverlay=null;
 
   function calcLoveLevel(v){
@@ -285,13 +288,22 @@ window.onload = function(){
       .setOrigin(0.5)
       .setDepth(4)
       .setAlpha(0);
-    this.tweens.timeline({
-      targets: sideCText,
-      tweens: [
-        { alpha: 1, duration: 20000 },
-        { alpha: 0, duration: 20000, onComplete:()=>{ sideCText.destroy(); sideCText=null; } }
-      ]
-    });
+  }
+
+  function updateSideC(){
+    if(servedCount<6) return;
+    showSideC.call(this);
+    const target=Math.min(1,(servedCount-5)*0.1);
+    if(target<=sideCAlpha) return;
+    if(sideCFadeTween){ sideCFadeTween.stop(); }
+    let duration=2000;
+    if(target>0.5) duration=1000;
+    sideCFadeTween=this.tweens.add({targets:sideCText,alpha:target,duration:duration});
+    sideCAlpha=target;
+    if(sideCAlpha>=1){
+      sideCFadeTween=this.tweens.add({targets:sideCText,alpha:0,duration:20000,
+        onComplete:()=>{ sideCText.destroy(); sideCText=null; sideCFadeTween=null; sideCAlpha=0; }});
+    }
   }
 
   function playIntro(scene){
@@ -444,9 +456,6 @@ window.onload = function(){
     scheduleNextSpawn(this);
 
     spawnCount++;
-    if(spawnCount===2){
-      this.time.delayedCall(500,showSideC,[],this);
-    }
   }
 
   function showDialog(){
@@ -603,6 +612,8 @@ window.onload = function(){
           if(money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
           if(love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
           scheduleNextSpawn(this);
+          servedCount++;
+          updateSideC.call(this);
         }
       });
     };
@@ -1001,6 +1012,9 @@ window.onload = function(){
     Phaser.Actions.Call(wanderers,c=>{ c.sprite.destroy(); if(c.friend) c.friend.destroy(); });
     wanderers=[];
     spawnCount=0;
+    servedCount=0;
+    sideCAlpha=0;
+    sideCFadeTween=null;
     gameOver=false;
     playIntro(this);
   }

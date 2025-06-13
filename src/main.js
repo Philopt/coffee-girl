@@ -66,6 +66,16 @@ window.onload = function(){
     const newLevel=calcLoveLevel(love);
     if(loveLevelText){
       loveLevelText.setText(newLevel);
+      if(newLevel>loveLevel){
+        const scene=loveLevelText.scene;
+        loveLevelText.setColor('#fff');
+        scene.time.delayedCall(dur(1000),()=>loveLevelText.setColor('#800'),[],scene);
+        const sp=scene.add.text(loveLevelText.x,loveLevelText.y,'✨',
+            {font:'18px sans-serif',fill:'#fff'})
+          .setOrigin(0.5).setDepth(loveLevelText.depth+1);
+        scene.tweens.add({targets:sp,y:loveLevelText.y-20,alpha:0,
+            duration:dur(600),onComplete:()=>sp.destroy()});
+      }
     }
     if(queueLevelText){
       queueLevelText.setText('Lv. '+newLevel);
@@ -104,7 +114,11 @@ window.onload = function(){
     // HUD
     moneyText=this.add.text(20,20,'🪙 '+money.toFixed(2),{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
     loveText=this.add.text(20,50,'❤️ '+love,{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
-    loveLevelText=this.add.text(loveText.x+22,loveText.y+8,loveLevel,{font:'12px sans-serif',fill:'#800'}).setDepth(1);
+    // position level number centered over the heart icon
+    loveLevelText=this.add.text(loveText.x+12,loveText.y+8,loveLevel,
+        {font:'12px sans-serif',fill:'#800'})
+      .setOrigin(0.5)
+      .setDepth(1);
     queueLevelText=this.add.text(320,360,'Lv. '+loveLevel,{font:'16px sans-serif',fill:'#000'})
       .setOrigin(0.5).setDepth(1);
     updateLevelDisplay();

@@ -845,8 +845,9 @@ window.onload = function(){
 
     while(attackers.length<3){
       const k=Phaser.Utils.Array.GetRandom(keys);
-      const a=scene.add.sprite(Phaser.Math.Between(-40,520),Phaser.Math.Between(WANDER_TOP,WANDER_BOTTOM),k)
-        .setScale(0.6).setDepth(20);
+      const ay=Phaser.Math.Between(WANDER_TOP, WANDER_BOTTOM);
+      const a=scene.add.sprite(Phaser.Math.Between(-40,520), ay, k)
+        .setScale(scaleForY(ay)).setDepth(20);
       attackers.push(a);
     }
 
@@ -874,6 +875,7 @@ window.onload = function(){
         targets:a,
         x:girl.x+Phaser.Math.Between(-5,5),
         y:girl.y+Phaser.Math.Between(-5,5),
+        scale:scaleForY(girl.y),
         duration:dur(80),
         yoyo:true,
         onComplete:()=>{
@@ -894,7 +896,7 @@ window.onload = function(){
       const angle=Phaser.Math.Angle.Between(a.x,a.y,girl.x,girl.y);
       const tx=girl.x+Math.cos(angle)*30;
       const ty=girl.y+Math.sin(angle)*30;
-      scene.tweens.add({targets:a,x:tx,y:ty,duration:dur(400),onComplete:()=>{
+      scene.tweens.add({targets:a,x:tx,y:ty,scale:scaleForY(ty),duration:dur(400),onComplete:()=>{
         loops.set(a,scene.time.delayedCall(dur(Phaser.Math.Between(100,300)),()=>attack(a),[],scene));
       }});
     });

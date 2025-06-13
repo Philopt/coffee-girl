@@ -1,5 +1,31 @@
 window.onload = function(){
-  const COFFEE_COST=5.00, WATER_COST=5.58;
+  // full drink menu with prices
+  const MENU=[
+    {name:"Lady Roaster Drip", price:3.90},
+    {name:"Falcon's Crest", price:4.83},
+    {name:"Espresso", price:4.25},
+    {name:"Macchiato", price:5.00},
+    {name:"Petite Latte", price:5.75},
+    {name:"Cappuccino", price:6.23},
+    {name:"Latte", price:6.97},
+    {name:"Mocha", price:6.97},
+    {name:"Starry Night Latte with Espresso", price:6.97},
+    {name:"Starry Night Latte", price:6.56},
+    {name:"Hot Chocolate", price:5.70},
+    {name:"Under the Pink", price:5.70},
+    {name:"Rose Tea", price:5.70},
+    {name:"Starry Night Tea", price:5.70},
+    {name:"Cold Brew Iced Coffee", price:6.10},
+    {name:"Black N' Tan", price:6.80},
+    {name:"Chocolate Cold Brew", price:6.85},
+    {name:"Iced Latte", price:6.23},
+    {name:"Iced Mocha", price:6.90},
+    {name:"Iced Hot Chocolate", price:6.58},
+    {name:"Pink Crush", price:5.70},
+    {name:"Iced Under the Pink", price:6.10},
+    {name:"Iced Rose Tea", price:5.70},
+    {name:"Iced Starry Night Tea", price:5.70}
+  ];
   const VERSION='60';
   // spawn new customers slowly to keep things manageable
   // at least a few seconds between arrivals
@@ -288,9 +314,9 @@ window.onload = function(){
     if(gameOver) return;
     const createOrder=()=>{
       const coins=Phaser.Math.Between(0,20);
-      const req=coins<COFFEE_COST?'water':'coffee';
+      const item=Phaser.Utils.Array.GetRandom(MENU);
       const qty=(level>=3?2:1);
-      return {coins, req, qty};
+      return {coins, req:item.name, price:item.price, qty};
     };
 
     const c={ orders:[] };
@@ -383,7 +409,7 @@ window.onload = function(){
       .setStyle({fontSize:'24px'})
       .setText(`I have $${c.orders[0].coins.toFixed(2)}`)
       .setVisible(true);
-    const totalCost=c.orders.reduce((s,o)=>s+(o.req==='coffee'?COFFEE_COST:WATER_COST)*o.qty,0);
+    const totalCost=c.orders.reduce((s,o)=>s+o.price*o.qty,0);
     dialogPriceLabel
       .setOrigin(1,0.5)
       .setPosition(dialogBg.x+dialogBg.width/2-60,440)
@@ -398,9 +424,9 @@ window.onload = function(){
       .setAlpha(1)
       .setVisible(true);
     tipText.setVisible(false);
-    const hasCoffee=c.orders.some(o=>o.req==='coffee');
-    btnSell.setVisible(hasCoffee); btnGive.setVisible(true); btnRef.setVisible(true);
-    iconSell.setVisible(hasCoffee); iconGive.setVisible(true); iconRef.setVisible(true);
+    const hasOrder=true;
+    btnSell.setVisible(hasOrder); btnGive.setVisible(true); btnRef.setVisible(true);
+    iconSell.setVisible(hasOrder); iconGive.setVisible(true); iconRef.setVisible(true);
   }
 
   function clearDialog(keepPrice=false){
@@ -427,7 +453,7 @@ window.onload = function(){
     const current=activeCustomer;
     if(!current) return;
     const orderCount=current.orders.length;
-    const totalCost=current.orders.reduce((s,o)=>s+(o.req==='coffee'?COFFEE_COST:WATER_COST)*o.qty,0);
+    const totalCost=current.orders.reduce((s,o)=>s+o.price*o.qty,0);
 
     let mD=0, lD=0, tip=0;
     if(type==='sell'){

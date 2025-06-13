@@ -1,13 +1,13 @@
 window.onload = function(){
   const COFFEE_COST=5.00, WATER_COST=5.58;
   const VERSION='57';
-  const SPAWN_DELAY=300;
-  const SPAWN_VARIANCE=500;
+  const SPAWN_DELAY=600;
+  const SPAWN_VARIANCE=800;
   const QUEUE_SPACING=50;
   const QUEUE_X=240;
   const FRIEND_OFFSET=40;
   const WANDER_Y=600;
-  const MAX_WANDERERS=3;
+  const MAX_WANDERERS=1;
   const MAX_M=100, MAX_L=100;
   let speed=1;
   let money=10.00, love=10, gameOver=false, customerQueue=[], wanderers=[];
@@ -36,7 +36,7 @@ window.onload = function(){
   let dialogBg, dialogText, dialogCoins, btnSell, btnGive, btnRef;
   let iconSell, iconGive, iconRef;
   let reportLine1, reportLine2, reportLine3, reportLine4, tipText;
-  let paidStamp;
+  let paidStamp, lossStamp;
 
   function calcLoveLevel(v){
     if(v>=100) return 4;
@@ -184,11 +184,11 @@ window.onload = function(){
     moneyText=this.add.text(20,20,'🪙 '+receipt(money),{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
     loveText=this.add.text(20,50,'❤️ '+love,{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
     // position level number centered over the heart icon
-    loveLevelText=this.add.text(loveText.x+12,loveText.y+8,loveLevel,
+    loveLevelText=this.add.text(loveText.x+12,loveText.y+13,loveLevel,
         {font:'12px sans-serif',fill:'#800'})
       .setOrigin(0.5)
       .setDepth(1);
-    queueLevelText=this.add.text(320,360,'Lv. '+loveLevel,{font:'16px sans-serif',fill:'#000'})
+    queueLevelText=this.add.text(320,292,'Lv. '+loveLevel,{font:'16px sans-serif',fill:'#000'})
       .setOrigin(0.5).setDepth(1);
     updateLevelDisplay();
     versionText=this.add.text(10,630,'v'+VERSION,{font:'12px sans-serif',fill:'#000'})
@@ -255,6 +255,8 @@ window.onload = function(){
       .setOrigin(0.5).setDepth(11).setVisible(false);
     paidStamp=this.add.text(0,0,'PAID',{font:'24px sans-serif',fill:'#0a0'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
+    lossStamp=this.add.text(0,0,'LOSS',{font:'24px sans-serif',fill:'#a00'})
+      .setOrigin(0.5).setDepth(12).setVisible(false);
   }
 
   function spawnCustomer(){
@@ -289,7 +291,7 @@ window.onload = function(){
       c.sprite=this.add.sprite(startX,startY,k).setScale(distScale).setDepth(4);
       const amp=Phaser.Math.Between(10,25);
       const freq=Phaser.Math.Between(2,4);
-      c.walkTween=this.tweens.add({targets:c.sprite,x:targetX,duration:dur(6000),onUpdate:(tw,t)=>{
+      c.walkTween=this.tweens.add({targets:c.sprite,x:targetX,duration:dur(12000),onUpdate:(tw,t)=>{
           const p=tw.progress;
           t.y=startY+Math.sin(p*Math.PI*freq)*amp;
         },onComplete:()=>{
@@ -393,7 +395,7 @@ window.onload = function(){
       const targets=[current.sprite];
       if(friend) targets.push(friend);
       targets.forEach(t=>t.setDepth(5));
-      this.tweens.add({ targets: targets, x: (type==='refuse'? -50:520), duration:dur(600), callbackScope:this,
+      this.tweens.add({ targets: targets, x: (type==='refuse'? -50:520), alpha:0, duration:dur(600), callbackScope:this,
         onComplete:()=>{
           current.sprite.destroy();
           if(friend) friend.destroy();
@@ -450,6 +452,29 @@ window.onload = function(){
         tl.add({targets:tipText,x:moneyText.x,y:moneyText.y+24,duration:dur(400)},0);
         tl.play();
       },[],this);
+    } else if(type==='give'){
+      const t=dialogCoins;
+      t.setVisible(true);
+      lossStamp
+        .setText('LOSS')
+        .setScale(1.8)
+        .setPosition(dialogBg.x, dialogText.y)
+        .setAngle(Phaser.Math.Between(-15,15))
+        .setVisible(true);
+      this.time.delayedCall(dur(1000),()=>{
+        lossStamp.setVisible(false);
+        t.setText(`-$${totalCost.toFixed(2)}`);
+        dialogBg.setVisible(false);
+        dialogText.setVisible(false);
+        const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
+            t.setVisible(false);
+            money=+(money+mD).toFixed(2);
+            moneyText.setText('🪙 '+money.toFixed(2));
+            done();
+        }});
+        tl.add({targets:t,x:moneyText.x,y:moneyText.y,duration:dur(400)});
+        tl.play();
+      },[],this);
     } else if(type!=='refuse'){
       const showTip=tip>0;
       reportLine1.setStyle({fill:'#fff'})
@@ -477,15 +502,11 @@ window.onload = function(){
           done();
       }});
       tl.add({targets:reportLine1,x:midX,y:midY,duration:dur(300),onComplete:()=>{
-            const word=type==='give'? 'LOSS':'PAID';
-            const color=type==='give'? '#f88':'#8f8';
+            const word='PAID';
+            const color='#8f8';
             reportLine1.setColor(color);
             if(showTip){
               reportLine2.setColor(color);
-            }
-            if(type==='give'){
-              reportLine1.setText(`$${totalCost.toFixed(2)} LOSS`).setColor('#f88');
-
             }
             reportLine3.setText(word)
               .setStyle({fontSize:'20px'})

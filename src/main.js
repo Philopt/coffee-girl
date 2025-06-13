@@ -17,7 +17,7 @@ window.onload = function(){
   const MAX_M=100, MAX_L=100;
   const MAX_SPEED=3;
   let speed=1;
-  let money=10.00, love=10, gameOver=false, customerQueue=[], wanderers=[];
+  let money=10.00, love=10, gameOver=false, activeCustomer=null, wanderers=[];
   let spawnTimer = null;
   let loveLevel=1;
   const keys=[];
@@ -56,75 +56,6 @@ window.onload = function(){
     return 1;
   }
 
-  function queueCapacityForLevel(lv){
-    if(lv===1) return 1;
-    if(lv===2) return 2;
-    return 3;
-  }
-
-  function queuePos(idx){
-    return { x: QUEUE_X - QUEUE_SPACING * idx, y: QUEUE_Y };
-  }
-
-  function repositionQueue(scene, join=true){
-    Phaser.Actions.Call(customerQueue,(c,idx)=>{
-      if(c.approaching) return;
-      const pos=queuePos(idx);
-      if(c.walkTween) c.walkTween.stop();
-      c.walkTween=scene.tweens.add({targets:c.sprite,x:pos.x,y:pos.y,duration:dur(500),onComplete:()=>{c.walkTween=null;}});
-      if(c.friend){
-        scene.tweens.add({targets:c.friend,x:pos.x+FRIEND_OFFSET,y:pos.y,duration:dur(500)});
-      }
-    });
-    if(join) tryJoinWanderer(scene);
-  }
-
-  function advanceQueue(scene){
-    repositionQueue(scene, false);
-    repositionQueue(scene);
-    if(customerQueue.length>0){
-      const next = customerQueue[0];
-      if(next.walkTween){
-        next.walkTween.once('complete',()=>{ showDialog.call(scene); });
-      }else{
-        showDialog.call(scene);
-      }
-    }else{
-      scheduleNextSpawn(scene);
-    }
-  }
-
-  function tryJoinWanderer(scene){
-    const level=calcLoveLevel(love);
-    const maxQ=queueCapacityForLevel(level);
-    if(customerQueue.length>=maxQ||wanderers.length===0) return;
-    let idx=0;
-    while(idx<wanderers.length && wanderers[idx].approaching) idx++;
-    if(idx>=wanderers.length) return;
-    const w=wanderers.splice(idx,1)[0];
-    if(w.walkTween) w.walkTween.stop();
-    const pos=queuePos(customerQueue.length);
-    w.qOffset=Phaser.Math.Between(-5,5);
-    const targetX=pos.x+w.qOffset;
-    const targetY=pos.y;
-    w.approaching = true;
-    customerQueue.push(w);
-    const dist=Phaser.Math.Distance.Between(w.sprite.x,w.sprite.y,pos.x,targetY);
-    w.sprite.setDepth(5);
-    if(w.friend) w.friend.setDepth(5);
-    w.walkTween = scene.tweens.add({targets:w.sprite,x:targetX,y:targetY,scale:0.7,duration:dur(800+dist*2),ease:'Sine.easeIn',callbackScope:scene,
-      onComplete:()=>{ w.walkTween=null; startGiveUpTimer(w,scene); if(customerQueue[0]===w){ showDialog.call(scene); } }});
-    if(w.friend){
-      scene.tweens.add({targets:w.friend,x:targetX+FRIEND_OFFSET,y:targetY,scale:0.7,duration:dur(800+dist*2),ease:'Sine.easeIn'});
-    }
-  }
-
-  function startGiveUpTimer(c, scene){
-    // Customers should remain in line until served. Previous versions removed
-    // them after waiting for a timeout, which felt like they were randomly
-    // disappearing. We disable that timer by simply storing `null`.
-    c.giveUpTimer = null;
-  }
 
   function wanderOff(c, scene){
     const dir = Phaser.Math.Between(0,1)?1:-1;
@@ -132,35 +63,9 @@ window.onload = function(){
     const targets=[c.sprite];
     if(c.friend) targets.push(c.friend);
     wanderers.splice(wanderers.indexOf(c),1);
-    const extra = customerQueue.length * WALK_OFF_SLOW;
-    scene.tweens.add({targets:targets,x:targetX,duration:dur(WALK_OFF_BASE+extra),onComplete:()=>{
+    scene.tweens.add({targets:targets,x:targetX,duration:dur(WALK_OFF_BASE),onComplete:()=>{
         targets.forEach(t=>t.destroy());
     }});
-  }
-
-  function arriveAtBack(c, scene){
-    c.approaching=false;
-    const level=calcLoveLevel(love);
-    const maxQ=queueCapacityForLevel(level);
-    if(customerQueue.length>=maxQ){
-      wanderOff(c, scene);
-      return;
-    }
-    wanderers.splice(wanderers.indexOf(c),1);
-    const idx = customerQueue.length;
-    const pos=queuePos(idx);
-    c.qOffset=Phaser.Math.Between(-5,5);
-    const targetX=pos.x+c.qOffset;
-    const targetY=pos.y;
-    customerQueue.push(c);
-    const dist=Phaser.Math.Distance.Between(c.sprite.x,c.sprite.y,pos.x,targetY);
-    c.sprite.setDepth(5);
-    if(c.friend) c.friend.setDepth(5);
-    c.walkTween = scene.tweens.add({targets:c.sprite,x:targetX,y:targetY,scale:0.7,duration:dur(400+dist),ease:'Sine.easeIn',callbackScope:scene,
-      onComplete:()=>{ c.walkTween=null; startGiveUpTimer(c,scene); if(customerQueue[0]===c){ showDialog.call(scene); } }});
-    if(c.friend){
-      scene.tweens.add({targets:c.friend,x:targetX+FRIEND_OFFSET,y:targetY,scale:0.7,duration:dur(400+dist),ease:'Sine.easeIn'});
-    }
   }
 
   function updateLevelDisplay(){
@@ -316,11 +221,7 @@ window.onload = function(){
 
   function spawnCustomer(){
     const level=calcLoveLevel(love);
-    const maxQ=queueCapacityForLevel(level);
     if(gameOver) return;
-    if(customerQueue.length<maxQ){
-      tryJoinWanderer(this);
-    }
     const createOrder=()=>{
       const coins=Phaser.Math.Between(0,20);
       const req=coins<COFFEE_COST?'water':'coffee';
@@ -332,7 +233,7 @@ window.onload = function(){
     const startScale=1.1;
     const k=Phaser.Utils.Array.GetRandom(keys);
     const order=createOrder();
-    if(customerQueue.length>=maxQ){
+    if(activeCustomer){
       if(wanderers.length>=MAX_WANDERERS){
         scheduleNextSpawn(this);
         return;
@@ -361,7 +262,6 @@ window.onload = function(){
     const startX=Phaser.Math.Between(-40,520);
     const startY=700+Phaser.Math.Between(-20,10);
     c.sprite=this.add.sprite(startX,startY,k).setScale(startScale).setDepth(4);
-    c.qOffset=Phaser.Math.Between(-5,5);
 
     if(level>=3 && Phaser.Math.Between(1,100)<=love){
       const k2=Phaser.Utils.Array.GetRandom(keys);
@@ -369,29 +269,22 @@ window.onload = function(){
       c.friend=this.add.sprite(startX+FRIEND_OFFSET,startY,k2).setScale(startScale).setDepth(4);
     }
     c.orders.push(order);
-
-    const posBack=queuePos(maxQ);
-    const backY=posBack.y;
-    c.approaching=true;
-    wanderers.unshift(c);
-    const dist=Phaser.Math.Distance.Between(startX,startY,posBack.x,backY);
-    let moveDur=1200+dist*4;
+    activeCustomer = c;
+    const dist=Phaser.Math.Distance.Between(startX,startY,QUEUE_X,QUEUE_Y);
+    const moveDur=1200+dist*4;
     c.sprite.setDepth(5);
     if(c.friend) c.friend.setDepth(5);
-    const targetX=posBack.x+c.qOffset;
-    c.walkTween = this.tweens.add({targets:c.sprite,x:targetX,y:backY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn',callbackScope:this,
-      onComplete:()=>{ c.walkTween=null; arriveAtBack(c,this); }});
-    if(customerQueue.length===1) moveDur=800+dist*3;
-
+    c.walkTween = this.tweens.add({targets:c.sprite,x:QUEUE_X,y:QUEUE_Y,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn',callbackScope:this,
+      onComplete:()=>{ c.walkTween=null; showDialog.call(this); }});
     if(c.friend){
-      this.tweens.add({targets:c.friend,x:targetX+FRIEND_OFFSET,y:backY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn'});
+      this.tweens.add({targets:c.friend,x:QUEUE_X+FRIEND_OFFSET,y:QUEUE_Y,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn'});
     }
     scheduleNextSpawn(this);
   }
 
   function showDialog(){
-    if(customerQueue.length===0) return;
-    const c=customerQueue[0];
+    if(!activeCustomer) return;
+    const c=activeCustomer;
     dialogBg.setVisible(true);
     const itemStr=c.orders.map(o=>`${o.qty>1?o.qty+' ':''}${o.req}`).join(' and ');
     if(activeBubble){
@@ -452,7 +345,8 @@ window.onload = function(){
 
   function handleAction(type){
     clearDialog(type!=='refuse');
-    const current=customerQueue[0];
+    const current=activeCustomer;
+    if(!current) return;
     const orderCount=current.orders.length;
     const totalCost=current.orders.reduce((s,o)=>s+(o.req==='coffee'?COFFEE_COST:WATER_COST)*o.qty,0);
 
@@ -471,15 +365,13 @@ window.onload = function(){
     const tipPct=type==='sell'?lD*15:0;
     const customer=current.sprite;
     const friend=current.friend;
-    if(current.giveUpTimer){ current.giveUpTimer.remove(false); }
-    customerQueue.shift();
+    activeCustomer=null;
 
     const finish=()=>{
       const targets=[current.sprite];
       if(friend) targets.push(friend);
       targets.forEach(t=>t.setDepth(5));
-      const extra = customerQueue.length * WALK_OFF_SLOW;
-      this.tweens.add({ targets: targets, x: (type==='refuse'? -50:520), alpha:0, duration:dur(WALK_OFF_BASE+extra), callbackScope:this,
+      this.tweens.add({ targets: targets, x: (type==='refuse'? -50:520), alpha:0, duration:dur(WALK_OFF_BASE), callbackScope:this,
         onComplete:()=>{
           current.sprite.destroy();
           if(friend) friend.destroy();
@@ -487,11 +379,9 @@ window.onload = function(){
           if(love<=0){showEnd.call(this,'Game Over 😠');return;}
           if(money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
           if(love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
-
-          advanceQueue(this);
+          scheduleNextSpawn(this);
         }
       });
-      advanceQueue(this);
     };
 
     // animated report using timelines
@@ -688,8 +578,11 @@ window.onload = function(){
     moneyText.setText('🪙 '+receipt(money));
     loveText.setText('❤️ '+love);
     updateLevelDisplay();
-    Phaser.Actions.Call(customerQueue,c=>{ c.sprite.destroy(); if(c.friend) c.friend.destroy(); });
-    customerQueue=[];
+    if(activeCustomer){
+      activeCustomer.sprite.destroy();
+      if(activeCustomer.friend) activeCustomer.friend.destroy();
+      activeCustomer=null;
+    }
     Phaser.Actions.Call(wanderers,c=>{ c.sprite.destroy(); if(c.friend) c.friend.destroy(); });
     wanderers=[];
     speed = 1;

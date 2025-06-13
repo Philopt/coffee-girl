@@ -36,7 +36,6 @@ Customers can now order any of the following drinks:
 * Cappuccino - $6.23
 * Latte - $6.97
 * Mocha - $6.97
-* Starry Night Latte with Espresso - $6.97
 * Starry Night Latte - $6.56
 * Hot Chocolate - $5.70
 * Under the Pink - $5.70

@@ -9,7 +9,6 @@ window.onload = function(){
     {name:"Cappuccino", price:6.23},
     {name:"Latte", price:6.97},
     {name:"Mocha", price:6.97},
-    {name:"Starry Night Latte with Espresso", price:6.97},
     {name:"Starry Night Latte", price:6.56},
     {name:"Hot Chocolate", price:5.70},
     {name:"Under the Pink", price:5.70},
@@ -72,6 +71,11 @@ window.onload = function(){
     const [d,c]=value.toFixed(2).split('.');
     const cents=c.split('').map(ch=>supers[ch]||ch).join('');
     return `$${d}${cents}`;
+  }
+
+  function articleFor(name){
+    const first=name.trim()[0].toLowerCase();
+    return 'aeiou'.includes(first)?'an':'a';
   }
 
   function flashMoney(obj, scene, color='#0f0'){
@@ -422,7 +426,7 @@ window.onload = function(){
       return o.qty>1 ? `${o.qty} ${o.req}` : o.req;
     }).join(' and ');
     const wantLine=(c.orders.length===1 && c.orders[0].qty===1)
-      ? `I want a ${c.orders[0].req}`
+      ? `I want ${articleFor(c.orders[0].req)} ${c.orders[0].req}`
       : `I want ${itemStr}`;
     if(activeBubble){
       activeBubble.destroy();
@@ -443,7 +447,7 @@ window.onload = function(){
       .setOrigin(0,0.5)
       .setPosition(dialogBg.x-dialogBg.width/2+40,470)
       .setStyle({fontSize:'20px'})
-      .setText(canAfford?`I have $${c.orders[0].coins}`:`But I only have $${c.orders[0].coins}`)
+      .setText(canAfford?`I have $${c.orders[0].coins}`:`...but I only have $${c.orders[0].coins}`)
       .setVisible(true);
     dialogPriceLabel
       .setOrigin(1,0.5)

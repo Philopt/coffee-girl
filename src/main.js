@@ -32,9 +32,11 @@ window.onload = function(){
   const SPAWN_DELAY=3000;
   const SPAWN_VARIANCE=2000;
   const QUEUE_SPACING=36;
-  // front of the queue near the truck
+  // first waiting spot in front of the truck
   const QUEUE_X=240;
-  const QUEUE_Y=360;
+  const QUEUE_Y=330;
+  // step forward when ordering
+  const ORDER_Y=300;
   const FRIEND_OFFSET=40;
   const WANDER_Y=600;
   // base number of customers that can linger nearby
@@ -90,6 +92,10 @@ window.onload = function(){
     return BASE_WAITERS + calcLoveLevel(love) - 1;
   }
 
+  function queueLimit(){
+    return calcLoveLevel(love);
+  }
+
 
   function wanderOff(c, scene){
     const dir = Phaser.Math.Between(0,1)?1:-1;
@@ -103,10 +109,11 @@ window.onload = function(){
   }
 
   function lureNextWanderer(scene){
-    if(wanderers.length && queue.length === 0){
+    if(wanderers.length && queue.length < queueLimit()){
       const c=wanderers.shift();
       if(c.walkTween) c.walkTween.stop();
       const idx=queue.length;
+      c.atOrder=false;
       queue.push(c);
       activeCustomer=queue[0];
       const targetY=QUEUE_Y+idx*QUEUE_SPACING;
@@ -137,7 +144,8 @@ window.onload = function(){
       if(!willShow && activeCustomer.sprite.y===QUEUE_Y){
         showDialog.call(scene);
       }
-    } else {
+    }
+    if(queue.length < queueLimit()){
       lureNextWanderer(scene);
     }
   }
@@ -324,62 +332,39 @@ window.onload = function(){
     };
 
     const c={ orders:[] };
-    const startScale=1.1;
     const k=Phaser.Utils.Array.GetRandom(keys);
     const order=createOrder();
 
-    const queueFull = queue.length >= 1;
-    if(queueFull){
-      if(wanderers.length>=maxWanderers()){
-        scheduleNextSpawn(this);
-        return;
-      }
-      const dir=Phaser.Math.Between(0,1)?1:-1;
-      const startX=dir===1?-40:520;
-      const targetX=dir===1?520:-40;
-      const startY=Phaser.Math.Between(WANDER_Y-15,WANDER_Y+15);
-      const distScale=0.6+((startY-(WANDER_Y-15))/30)*0.3;
-      c.orders.push(order);
-      c.sprite=this.add.sprite(startX,startY,k).setScale(distScale).setDepth(4);
-      const amp=Phaser.Math.Between(10,25);
-      const freq=Phaser.Math.Between(2,4);
-      c.walkTween=this.tweens.add({targets:c.sprite,x:targetX,duration:dur(12000),onUpdate:(tw,t)=>{
-          const p=tw.progress;
-          t.y=startY+Math.sin(p*Math.PI*freq)*amp;
-        },onComplete:()=>{
-          const idx=wanderers.indexOf(c);
-          if(idx>=0) wanderers.splice(idx,1);
-          c.sprite.destroy();
-        }});
-      wanderers.push(c);
+    if(wanderers.length>=maxWanderers()){
       scheduleNextSpawn(this);
       return;
     }
-
-    const startX=Phaser.Math.Between(-40,520);
-    const startY=700+Phaser.Math.Between(-20,10);
-    c.sprite=this.add.sprite(startX,startY,k).setScale(startScale).setDepth(4);
-
+    const dir=Phaser.Math.Between(0,1)?1:-1;
+    const startX=dir===1?-40:520;
+    const targetX=dir===1?520:-40;
+    const startY=Phaser.Math.Between(WANDER_Y-15,WANDER_Y+15);
+    const distScale=0.6+((startY-(WANDER_Y-15))/30)*0.3;
+    c.orders.push(order);
+    c.atOrder=false;
+    c.sprite=this.add.sprite(startX,startY,k).setScale(distScale).setDepth(4);
+    const amp=Phaser.Math.Between(10,25);
+    const freq=Phaser.Math.Between(2,4);
+    c.walkTween=this.tweens.add({targets:c.sprite,x:targetX,duration:dur(12000),onUpdate:(tw,t)=>{
+        const p=tw.progress;
+        t.y=startY+Math.sin(p*Math.PI*freq)*amp;
+      },onComplete:()=>{
+        const idx=wanderers.indexOf(c);
+        if(idx>=0) wanderers.splice(idx,1);
+        c.sprite.destroy();
+      }});
     if(level>=3 && Phaser.Math.Between(1,100)<=love){
       const k2=Phaser.Utils.Array.GetRandom(keys);
       order.qty+=1;
-      c.friend=this.add.sprite(startX+FRIEND_OFFSET,startY,k2).setScale(startScale).setDepth(4);
+      c.friend=this.add.sprite(startX+FRIEND_OFFSET,startY,k2).setScale(distScale).setDepth(4);
+      this.tweens.add({targets:c.friend,x:targetX,duration:dur(12000)});
     }
-    c.orders.push(order);
-
-    const idx=queue.length;
-    queue.push(c);
-    activeCustomer = queue[0];
-    const targetY=QUEUE_Y + idx*QUEUE_SPACING;
-    const dist=Phaser.Math.Distance.Between(startX,startY,QUEUE_X,targetY);
-    const moveDur=1200+dist*4;
-    c.sprite.setDepth(5);
-    if(c.friend) c.friend.setDepth(5);
-    c.walkTween = this.tweens.add({targets:c.sprite,x:QUEUE_X,y:targetY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn',callbackScope:this,
-      onComplete:()=>{ c.walkTween=null; if(idx===0) showDialog.call(this); }});
-    if(c.friend){
-      this.tweens.add({targets:c.friend,x:QUEUE_X+FRIEND_OFFSET,y:targetY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn'});
-    }
+    wanderers.push(c);
+    lureNextWanderer(this);
     scheduleNextSpawn(this);
 
     spawnCount++;
@@ -392,6 +377,13 @@ window.onload = function(){
     activeCustomer=queue[0]||null;
     if(!activeCustomer) return;
     const c=activeCustomer;
+    if(!c.atOrder && c.sprite.y!==ORDER_Y){
+      c.atOrder=true;
+      const targets=[c.sprite];
+      if(c.friend) targets.push(c.friend);
+      this.tweens.add({targets:targets,y:ORDER_Y,duration:dur(300),onComplete:()=>{showDialog.call(this);}});
+      return;
+    }
     dialogBg.setVisible(true);
     const itemStr=c.orders.map(o=>`${o.qty>1?o.qty+' ':''}${o.req}`).join(' and ');
     if(activeBubble){

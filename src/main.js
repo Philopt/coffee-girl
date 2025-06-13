@@ -33,13 +33,14 @@ window.onload = function(){
   const SPAWN_VARIANCE=1500;
   const QUEUE_SPACING=36;
   // waiting spot to the left of the truck
-  const QUEUE_X=220;
+  const QUEUE_X=230; // closer to the truck
   const ORDER_X=240;
-  const QUEUE_Y=340; // lowered by 10px
+  const QUEUE_Y=320; // closer vertically as well
   // step forward when ordering
   const ORDER_Y=310; // lowered by 10px
   const FRIEND_OFFSET=40;
-  const WANDER_Y=560;
+  const WANDER_TOP=ORDER_Y+50; // wander up to 50px below the order window
+  const WANDER_BOTTOM=580; // near bottom of the screen
   // base number of customers that can linger nearby
   const BASE_WAITERS=3;
   const WALK_OFF_BASE=1000;
@@ -59,6 +60,13 @@ window.onload = function(){
     '0':'\u2070','1':'\u00b9','2':'\u00b2','3':'\u00b3','4':'\u2074',
     '5':'\u2075','6':'\u2076','7':'\u2077','8':'\u2078','9':'\u2079'
   };
+
+  function scaleForY(y){
+    const minY = ORDER_Y;
+    const maxY = WANDER_BOTTOM;
+    const t = Phaser.Math.Clamp((y - minY) / (maxY - minY), 0, 1);
+    return 0.7 + t * 0.4; // grow larger toward the bottom
+  }
 
   function receipt(value){
     const [d,c]=value.toFixed(2).split('.');
@@ -129,6 +137,7 @@ window.onload = function(){
 
   function lureNextWanderer(scene){
     if(wanderers.length && queue.length < queueLimit()){
+      if(queue.some(c=>c.walkTween)) return;
       let closestIdx=0;
       let minDist=Number.MAX_VALUE;
       for(let i=0;i<wanderers.length;i++){
@@ -145,10 +154,10 @@ window.onload = function(){
       const targetX = idx===0 ? ORDER_X : QUEUE_X;
       const dist=Phaser.Math.Distance.Between(c.sprite.x,c.sprite.y,targetX,targetY);
       c.sprite.setDepth(5);
-      c.walkTween=scene.tweens.add({targets:c.sprite,x:targetX,y:targetY,scale:0.7,duration:dur(1200+dist*4),ease:'Sine.easeIn',callbackScope:scene,
+      c.walkTween=scene.tweens.add({targets:c.sprite,x:targetX,y:targetY,scale:scaleForY(targetY),duration:dur(1200+dist*4),ease:'Sine.easeIn',callbackScope:scene,
         onComplete:()=>{c.walkTween=null; if(idx===0) showDialog.call(scene);} });
       if(c.friend){
-        scene.tweens.add({targets:c.friend,x:targetX+FRIEND_OFFSET,y:targetY,scale:0.7,duration:dur(1200+dist*4),ease:'Sine.easeIn'});
+        scene.tweens.add({targets:c.friend,x:targetX+FRIEND_OFFSET,y:targetY,scale:scaleForY(targetY),duration:dur(1200+dist*4),ease:'Sine.easeIn'});
       }
     }
   }
@@ -160,13 +169,13 @@ window.onload = function(){
       const ty=QUEUE_Y+idx*QUEUE_SPACING;
       const tx=idx===0?ORDER_X:QUEUE_X;
       if(cust.sprite.y!==ty || cust.sprite.x!==tx){
-        const cfg={targets:cust.sprite,x:tx,y:ty,duration:dur(300)};
+        const cfg={targets:cust.sprite,x:tx,y:ty,scale:scaleForY(ty),duration:dur(300)};
         if(idx===0){
           cfg.onComplete=()=>{ showDialog.call(scene); };
           willShow=true;
         }
         scene.tweens.add(cfg);
-        if(cust.friend) scene.tweens.add({targets:cust.friend,x:tx+FRIEND_OFFSET,y:ty,duration:dur(300)});
+        if(cust.friend) scene.tweens.add({targets:cust.friend,x:tx+FRIEND_OFFSET,y:ty,scale:scaleForY(ty),duration:dur(300)});
       }
     });
     activeCustomer=queue[0]||null;
@@ -362,8 +371,8 @@ window.onload = function(){
     const dir=Phaser.Math.Between(0,1)?1:-1;
     const startX=dir===1?-40:520;
     const targetX=dir===1?520:-40;
-    const startY=Phaser.Math.Between(WANDER_Y-15,WANDER_Y+15);
-    const distScale=0.6+((startY-(WANDER_Y-15))/30)*0.3;
+    const startY=Phaser.Math.Between(WANDER_TOP,WANDER_BOTTOM);
+    const distScale=scaleForY(startY);
     c.orders.push(order);
     c.atOrder=false;
     c.sprite=this.add.sprite(startX,startY,k).setScale(distScale).setDepth(4);
@@ -404,7 +413,7 @@ window.onload = function(){
       c.atOrder=true;
       const targets=[c.sprite];
       if(c.friend) targets.push(c.friend);
-      this.tweens.add({targets:targets,x:ORDER_X,y:ORDER_Y,duration:dur(300),onComplete:()=>{showDialog.call(this);}});
+      this.tweens.add({targets:targets,x:ORDER_X,y:ORDER_Y,scale:scaleForY(ORDER_Y),duration:dur(300),onComplete:()=>{showDialog.call(this);}});
       return;
     }
     dialogBg.setVisible(true);

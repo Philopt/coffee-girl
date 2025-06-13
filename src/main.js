@@ -89,16 +89,24 @@ window.onload = function(){
 
   function moveQueueForward(){
     const scene=this;
+    let willShow=false;
     queue.forEach((cust, idx)=>{
       const ty=QUEUE_Y+idx*QUEUE_SPACING;
       if(cust.sprite.y!==ty){
-        scene.tweens.add({targets:cust.sprite,y:ty,duration:dur(300)});
+        const cfg={targets:cust.sprite,y:ty,duration:dur(300)};
+        if(idx===0){
+          cfg.onComplete=()=>{ showDialog.call(scene); };
+          willShow=true;
+        }
+        scene.tweens.add(cfg);
         if(cust.friend) scene.tweens.add({targets:cust.friend,y:ty,duration:dur(300)});
       }
     });
     activeCustomer=queue[0]||null;
     if(activeCustomer){
-      showDialog.call(scene);
+      if(!willShow && activeCustomer.sprite.y===QUEUE_Y){
+        showDialog.call(scene);
+      }
     } else {
       lureNextWanderer(scene);
     }
@@ -521,7 +529,6 @@ window.onload = function(){
         .setVisible(true);
       this.time.delayedCall(dur(1000),()=>{
         lossStamp.setVisible(false);
-        t.setText(`-$${totalCost.toFixed(2)}`);
         dialogBg.setVisible(false);
         dialogText.setVisible(false);
         const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{

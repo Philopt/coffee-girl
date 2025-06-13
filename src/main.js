@@ -769,10 +769,23 @@ window.onload = function(){
   }
 
   function restartGame(){
+    const scene=this;
+    scene.tweens.killAll();
+    scene.time.removeAllEvents();
     if (spawnTimer) {
       spawnTimer.remove(false);
       spawnTimer = null;
     }
+    clearDialog();
+    if(sideCText){ sideCText.destroy(); sideCText=null; }
+    if(activeBubble){ activeBubble.destroy(); activeBubble=null; }
+    reportLine1.setVisible(false);
+    reportLine2.setVisible(false);
+    reportLine3.setVisible(false);
+    reportLine4.setVisible(false);
+    tipText.setVisible(false);
+    paidStamp.setVisible(false);
+    lossStamp.setVisible(false);
     money=10.00; love=10;
     moneyText.setText('🪙 '+receipt(money));
     loveText.setText('❤️ '+love);

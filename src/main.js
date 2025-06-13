@@ -266,7 +266,7 @@ window.onload = function(){
     // HUD
     moneyText=this.add.text(20,20,'🪙 '+receipt(money),{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
     loveText=this.add.text(20,50,'❤️ '+love,{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
-    queueLevelText=this.add.text(296,316,'Lv. '+loveLevel,{font:'16px sans-serif',fill:'#000'})
+    queueLevelText=this.add.text(304,316,'Lv. '+loveLevel,{font:'16px sans-serif',fill:'#000'})
       .setOrigin(0.5).setDepth(1);
     updateLevelDisplay();
     // truck & girl
@@ -722,7 +722,7 @@ window.onload = function(){
   function showFalconAttack(cb){
     const scene=this;
     const falcon=scene.add.sprite(-40,-40,'lady_falcon',0)
-      .setScale(1.2)
+      .setScale(1.4)
       .setDepth(20);
     falcon.anims.play('falcon_fly');
     const targetX=girl.x;
@@ -731,14 +731,14 @@ window.onload = function(){
       targets:falcon,
       x:targetX,
       y:targetY,
-      duration:dur(600),
+      duration:dur(900),
       ease:'Cubic.easeIn',
       onComplete:()=>{
         const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
             falcon.destroy();
             if(cb) cb();
         }});
-        for(let i=0;i<3;i++){
+        for(let i=0;i<5;i++){
           tl.add({targets:falcon,y:targetY+10,duration:dur(80),yoyo:true});
           tl.add({targets:girl,y:girl.y+5,duration:dur(80),yoyo:true},0);
           tl.add({targets:createAttackEmoji(scene),alpha:0,duration:dur(300)},0);
@@ -759,7 +759,7 @@ window.onload = function(){
     const bg=this.add.rectangle(240,320,480,240,0xffffff).setStrokeStyle(2,0x000).setDepth(20);
     const txt=this.add.text(240,300,msg,{font:'24px sans-serif',fill:'#000',align:'center',wordWrap:{width:440}})
       .setOrigin(0.5).setDepth(21);
-    const btn=this.add.text(240,350,'Restart',{font:'20px sans-serif',fill:'#fff',backgroundColor:'#006400',padding:{x:14,y:8}})
+    const btn=this.add.text(240,380,'Restart',{font:'20px sans-serif',fill:'#fff',backgroundColor:'#006400',padding:{x:14,y:8}})
       .setOrigin(0.5).setDepth(22).setInteractive()
       .on('pointerdown',()=>{
         bg.destroy(); txt.destroy(); btn.destroy();

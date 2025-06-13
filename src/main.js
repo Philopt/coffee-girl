@@ -734,6 +734,7 @@ window.onload = function(){
       duration:dur(900),
       ease:'Cubic.easeIn',
       onComplete:()=>{
+        blinkAngry(scene);
         const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
             falcon.destroy();
             if(cb) cb();
@@ -741,28 +742,52 @@ window.onload = function(){
         for(let i=0;i<5;i++){
           tl.add({targets:falcon,y:targetY+10,duration:dur(80),yoyo:true});
           tl.add({targets:girl,y:girl.y+5,duration:dur(80),yoyo:true},0);
-          tl.add({targets:createAttackEmoji(scene),alpha:0,duration:dur(300)},0);
+          const debris=createDebrisEmoji(scene);
+          tl.add({targets:debris,
+                  x:debris.x+Phaser.Math.Between(-30,30),
+                  y:debris.y-Phaser.Math.Between(20,40),
+                  alpha:0,
+                  duration:dur(300),
+                  onComplete:()=>debris.destroy()},0);
         }
         tl.play();
       }
     });
 
-    function createAttackEmoji(s){
-      const e=s.add.text(girl.x,girl.y-50,'💢',{font:'20px sans-serif',fill:'#f00'})
+    function blinkAngry(s){
+      const e=s.add.text(girl.x,girl.y-50,'😠',{font:'32px sans-serif',fill:'#f00'})
         .setOrigin(0.5).setDepth(21);
-      return e;
+      s.tweens.add({targets:e,alpha:0,duration:dur(150),yoyo:true,repeat:2,onComplete:()=>e.destroy()});
+    }
+
+    function createDebrisEmoji(s){
+      const chars=['💨','💥'];
+      const ch=chars[Phaser.Math.Between(0,chars.length-1)];
+      return s.add.text(girl.x,girl.y-40,ch,{font:'24px sans-serif',fill:'#555'})
+        .setOrigin(0.5).setDepth(21);
     }
   }
 
   function showEnd(msg){
     clearDialog();
     const bg=this.add.rectangle(240,320,480,240,0xffffff).setStrokeStyle(2,0x000).setDepth(20);
-    const txt=this.add.text(240,300,msg,{font:'24px sans-serif',fill:'#000',align:'center',wordWrap:{width:440}})
+    const lines=msg.split('\n');
+    let offset=280;
+    let titleText=null;
+    let startIdx=0;
+    if(lines[0].toLowerCase().startsWith('game over')){
+      titleText=this.add.text(240,offset,lines[0].toUpperCase(),{
+        font:'48px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:4
+      }).setOrigin(0.5).setDepth(21);
+      startIdx=1;
+      offset+=60;
+    }
+    const txt=this.add.text(240,offset,lines.slice(startIdx).join('\n'),{font:'24px sans-serif',fill:'#000',align:'center',wordWrap:{width:440}})
       .setOrigin(0.5).setDepth(21);
     const btn=this.add.text(240,380,'Restart',{font:'20px sans-serif',fill:'#fff',backgroundColor:'#006400',padding:{x:14,y:8}})
       .setOrigin(0.5).setDepth(22).setInteractive()
       .on('pointerdown',()=>{
-        bg.destroy(); txt.destroy(); btn.destroy();
+        bg.destroy(); txt.destroy(); btn.destroy(); if(titleText) titleText.destroy();
         restartGame.call(this);
       });
     gameOver=true;

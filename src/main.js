@@ -51,7 +51,7 @@ window.onload = function(){
     return 3;
   }
 
-  function repositionQueue(scene){
+  function repositionQueue(scene, join=true){
     Phaser.Actions.Call(customerQueue,(c,idx)=>{
       const targetY=332+QUEUE_SPACING*idx;
       scene.tweens.add({targets:c.sprite,x:QUEUE_X,y:targetY,duration:dur(500)});
@@ -59,7 +59,7 @@ window.onload = function(){
         scene.tweens.add({targets:c.friend,x:QUEUE_X+FRIEND_OFFSET,y:targetY,duration:dur(500)});
       }
     });
-    tryJoinWanderer(scene);
+    if(join) tryJoinWanderer(scene);
   }
 
   function tryJoinWanderer(scene){
@@ -381,7 +381,7 @@ window.onload = function(){
     const friend=current.friend;
     if(current.giveUpTimer){ current.giveUpTimer.remove(false); }
     customerQueue.shift();
-    repositionQueue(this);
+    repositionQueue(this,false);
     const finish=()=>{
       const targets=[current.sprite];
       if(friend) targets.push(friend);
@@ -436,7 +436,7 @@ window.onload = function(){
             t.setVisible(false);
             tipText.setVisible(false);
             money=+(money+mD).toFixed(2);
-            moneyText.setText('🪙 '+money.toFixed(2));
+            moneyText.setText('🪙 '+receipt(money));
             done();
         }});
         tl.add({targets:t,x:moneyText.x,y:moneyText.y,duration:dur(400)});
@@ -460,7 +460,7 @@ window.onload = function(){
         const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
             t.setVisible(false);
             money=+(money+mD).toFixed(2);
-            moneyText.setText('🪙 '+money.toFixed(2));
+            moneyText.setText('🪙 '+receipt(money));
             done();
         }});
         tl.add({targets:t,x:moneyText.x,y:moneyText.y,duration:dur(400)});
@@ -584,7 +584,7 @@ window.onload = function(){
 
   function restartGame(){
     money=10.00; love=10;
-    moneyText.setText('🪙 '+money.toFixed(2));
+    moneyText.setText('🪙 '+receipt(money));
     loveText.setText('❤️ '+love);
     updateLevelDisplay();
     Phaser.Actions.Call(customerQueue,c=>{ c.sprite.destroy(); if(c.friend) c.friend.destroy(); });

@@ -78,6 +78,21 @@ window.onload = function(){
     if(join) tryJoinWanderer(scene);
   }
 
+  function advanceQueue(scene){
+    repositionQueue(scene, false);
+    repositionQueue(scene);
+    if(customerQueue.length>0){
+      const next = customerQueue[0];
+      if(next.walkTween){
+        next.walkTween.once('complete',()=>{ showDialog.call(scene); });
+      }else{
+        showDialog.call(scene);
+      }
+    }else{
+      scheduleNextSpawn(scene);
+    }
+  }
+
   function tryJoinWanderer(scene){
     const level=calcLoveLevel(love);
     const maxQ=queueCapacityForLevel(level);
@@ -447,32 +462,10 @@ window.onload = function(){
           if(money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
           if(love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
 
-          repositionQueue(this,false);
-          repositionQueue(this);
-          if(customerQueue.length>0){
-            const next=customerQueue[0];
-            if(next.walkTween){
-              next.walkTween.once('complete',()=>{ showDialog.call(this); });
-            }else{
-              showDialog.call(this);
-            }
-          }else{
-            scheduleNextSpawn(this);
-          }
+          advanceQueue(this);
         }
       });
-      repositionQueue(this,false);
-      repositionQueue(this);
-      if(customerQueue.length>0){
-        const next=customerQueue[0];
-        if(next.walkTween){
-          next.walkTween.once('complete',()=>{ showDialog.call(this); });
-        }else{
-          showDialog.call(this);
-        }
-      }else{
-        scheduleNextSpawn(this);
-      }
+      advanceQueue(this);
     };
 
     // animated report using timelines

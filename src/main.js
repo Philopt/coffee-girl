@@ -429,7 +429,6 @@
       .setOrigin(0.5).setDepth(12).setVisible(false);
     lossStamp=this.add.text(0,0,'LOSS',{font:'24px sans-serif',fill:'#a00'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
-
     // defer intro slightly so scene objects are fully ready
     this.time.delayedCall(dur(10), () => playIntro(this));
   }

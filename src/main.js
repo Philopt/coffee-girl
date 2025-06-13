@@ -32,11 +32,11 @@ window.onload = function(){
   const SPAWN_VARIANCE=1500;
   const QUEUE_SPACING=36;
   // waiting spot to the left of the truck
-  const QUEUE_X=230; // closer to the truck
-  const ORDER_X=240;
-  const QUEUE_Y=320; // closer vertically as well
+  const QUEUE_X=200; // moved left
+  const ORDER_X=210; // moved left
+  const QUEUE_Y=310; // slightly higher
   // step forward when ordering
-  const ORDER_Y=310; // lowered by 10px
+  const ORDER_Y=300; // adjusted up
   const FRIEND_OFFSET=40;
   const WANDER_TOP=ORDER_Y+50; // wander up to 50px below the order window
   const WANDER_BOTTOM=580; // near bottom of the screen
@@ -96,6 +96,34 @@ window.onload = function(){
     },[],scene);
   }
 
+  function animateStatChange(obj, scene, delta, isLove=false){
+    if(delta===0) return;
+    const up = delta>0;
+    const color = up ? '#0f0' : '#f00';
+    const by = up ? -8 : 8;
+    const originalY = obj.y;
+    scene.tweens.add({targets:obj, y:originalY+by, duration:dur(120), yoyo:true});
+    let on=true;
+    const flashes = isLove && !up ? 4 : 2;
+    scene.time.addEvent({
+      repeat:flashes,
+      delay:dur(80),
+      callback:()=>{
+        obj.setColor(on?color:'#fff');
+        if(isLove && !up){
+          obj.setText((on?'💔':'❤️')+' '+love);
+        }
+        on=!on;
+      }
+    });
+    scene.time.delayedCall(dur(80)*(flashes+1)+dur(10),()=>{
+      obj.setColor('#fff');
+      if(isLove && !up){
+        obj.setText('❤️ '+love);
+      }
+    },[],scene);
+  }
+
   const config={ type:Phaser.AUTO, parent:'game-container', backgroundColor:'#f2e5d7',
     scale:{ mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH, width:480, height:640 },
     pixelArt:true, scene:{ preload, create } };
@@ -125,7 +153,8 @@ window.onload = function(){
   }
 
   function queueLimit(){
-    return calcLoveLevel(love);
+    // allow one person waiting even at level 1
+    return calcLoveLevel(love) + 1;
   }
 
 
@@ -198,7 +227,8 @@ window.onload = function(){
     const newLevel=calcLoveLevel(love);
     if(queueLevelText){
       queueLevelText.setText('Lv. '+newLevel);
-      if(newLevel!==loveLevel){
+      queueLevelText.setVisible(newLevel>=2);
+      if(newLevel!==loveLevel && newLevel>=2){
         const sp=queueLevelText.scene.add.text(queueLevelText.x,queueLevelText.y,'✨',
             {font:'18px sans-serif',fill:'#000'})
           .setOrigin(0.5).setDepth(queueLevelText.depth+1);
@@ -595,6 +625,7 @@ window.onload = function(){
             t.setVisible(false);
             money=+(money+mD).toFixed(2);
             moneyText.setText('🪙 '+receipt(money));
+            animateStatChange(moneyText, this, mD);
             done();
         }});
         tl.add({targets:t,x:destX,y:destY,scale:0,alpha:0,duration:dur(400)});
@@ -621,6 +652,7 @@ window.onload = function(){
             t.setVisible(false);
             money=+(money+mD).toFixed(2);
             moneyText.setText('🪙 '+receipt(money));
+            animateStatChange(moneyText, this, mD);
             done();
         }});
         flashMoney(t,this,'#f00');
@@ -653,6 +685,7 @@ window.onload = function(){
           reportLine3.setVisible(false).alpha=1;
           money=+(money+mD).toFixed(2);
           moneyText.setText('🪙 '+receipt(money));
+          animateStatChange(moneyText, this, mD);
           done();
       }});
       tl.add({targets:reportLine1,x:midX,y:midY,duration:dur(300),onComplete:()=>{
@@ -718,7 +751,11 @@ window.onload = function(){
       this.tweens.add({targets:h,x:targetX,y:baseY,duration:dur(400),ease:'Cubic.easeOut'});
     }
     const popOne=(idx)=>{
-      if(idx>=hearts.length){ if(cb) cb(); return; }
+      if(idx>=hearts.length){
+        animateStatChange(loveText, this, delta, true);
+        if(cb) cb();
+        return;
+      }
       const h=hearts[idx];
       const tl=this.tweens.createTimeline({callbackScope:this});
       tl.add({targets:h,x:loveText.x,y:loveText.y,scaleX:0,scaleY:1.2,duration:dur(125)});

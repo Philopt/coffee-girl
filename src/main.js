@@ -304,6 +304,7 @@ window.onload = function(){
     if(customerQueue.length===1) moveDur=800+dist*3;
     c.walkTween = this.tweens.add({targets:c.sprite,x:QUEUE_X,y:targetY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn',callbackScope:this,
       onComplete:()=>{ c.walkTween=null; startGiveUpTimer(c,this); if(customerQueue[0]===c) { showDialog.call(this); } }});
+
     if(c.friend){
       this.tweens.add({targets:c.friend,x:QUEUE_X+FRIEND_OFFSET,y:backY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn'});
     }

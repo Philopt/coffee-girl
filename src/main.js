@@ -381,8 +381,10 @@ window.onload = function(){
     const friend=current.friend;
     if(current.giveUpTimer){ current.giveUpTimer.remove(false); }
     customerQueue.shift();
+    
     repositionQueue(this,false);
     const finish=()=>{
+      repositionQueue(this,false);
       const targets=[current.sprite];
       if(friend) targets.push(friend);
       targets.forEach(t=>t.setDepth(5));

@@ -9,6 +9,7 @@ window.onload = function(){
   const WANDER_Y=600;
   const MAX_WANDERERS=1;
   const MAX_M=100, MAX_L=100;
+  const MAX_SPEED=3;
   let speed=1;
   let money=10.00, love=10, gameOver=false, customerQueue=[], wanderers=[];
   let loveLevel=1;
@@ -186,7 +187,10 @@ window.onload = function(){
       .setOrigin(0,1).setDepth(1);
     speedBtn=this.add.text(460,20,'1x',{font:'20px sans-serif',fill:'#000',backgroundColor:'#ddd',padding:{x:6,y:4}})
       .setOrigin(1,0).setDepth(1).setInteractive()
-      .on('pointerdown',()=>{ speed++; speedBtn.setText(speed+'x'); });
+      .on('pointerdown',()=>{
+        speed = speed < MAX_SPEED ? speed + 1 : 1;
+        speedBtn.setText(speed+'x');
+      });
 
     // truck & girl
     const truck=this.add.image(520,245,'truck').setScale(0.924).setDepth(2);

@@ -4,7 +4,9 @@ window.onload = function(){
   const SPAWN_DELAY=600;
   const SPAWN_VARIANCE=800;
   const QUEUE_SPACING=36;
-  const QUEUE_X=240;
+  // front of the queue near the truck
+  const QUEUE_X=200;
+  const QUEUE_Y=360;
   const FRIEND_OFFSET=40;
   const WANDER_Y=600;
   const MAX_WANDERERS=1;
@@ -42,6 +44,7 @@ window.onload = function(){
   let reportLine1, reportLine2, reportLine3, reportLine4, tipText;
   let paidStamp, lossStamp;
   let truck, girl;
+  let activeBubble=null;
 
   function calcLoveLevel(v){
     if(v>=100) return 4;
@@ -56,14 +59,18 @@ window.onload = function(){
     return 3;
   }
 
+  function queuePos(idx){
+    return { x: QUEUE_X - QUEUE_SPACING * idx, y: QUEUE_Y };
+  }
+
   function repositionQueue(scene, join=true){
     Phaser.Actions.Call(customerQueue,(c,idx)=>{
       if(c.approaching) return;
-      const targetY=332+QUEUE_SPACING*idx;
+      const pos=queuePos(idx);
       if(c.walkTween) c.walkTween.stop();
-      c.walkTween=scene.tweens.add({targets:c.sprite,x:QUEUE_X,y:targetY,duration:dur(500),onComplete:()=>{c.walkTween=null;}});
+      c.walkTween=scene.tweens.add({targets:c.sprite,x:pos.x,y:pos.y,duration:dur(500),onComplete:()=>{c.walkTween=null;}});
       if(c.friend){
-        scene.tweens.add({targets:c.friend,x:targetX+FRIEND_OFFSET,y:targetY,duration:dur(500)});
+        scene.tweens.add({targets:c.friend,x:pos.x+FRIEND_OFFSET,y:pos.y,duration:dur(500)});
       }
     });
     if(join) tryJoinWanderer(scene);
@@ -78,12 +85,13 @@ window.onload = function(){
     if(idx>=wanderers.length) return;
     const w=wanderers.splice(idx,1)[0];
     if(w.walkTween) w.walkTween.stop();
-    const targetY=332+QUEUE_SPACING*customerQueue.length;
+    const pos=queuePos(customerQueue.length);
     w.qOffset=Phaser.Math.Between(-5,5);
-    const targetX=QUEUE_X+w.qOffset;
+    const targetX=pos.x+w.qOffset;
+    const targetY=pos.y;
     w.approaching = true;
     customerQueue.push(w);
-    const dist=Phaser.Math.Distance.Between(w.sprite.x,w.sprite.y,QUEUE_X,targetY);
+    const dist=Phaser.Math.Distance.Between(w.sprite.x,w.sprite.y,pos.x,targetY);
     w.sprite.setDepth(5);
     if(w.friend) w.friend.setDepth(5);
     w.walkTween = scene.tweens.add({targets:w.sprite,x:targetX,y:targetY,scale:0.7,duration:dur(800+dist*2),ease:'Sine.easeIn',callbackScope:scene,
@@ -122,11 +130,12 @@ window.onload = function(){
     }
     wanderers.splice(wanderers.indexOf(c),1);
     const idx = customerQueue.length;
-    const targetY=332+QUEUE_SPACING*idx;
+    const pos=queuePos(idx);
     c.qOffset=Phaser.Math.Between(-5,5);
-    const targetX=QUEUE_X+c.qOffset;
+    const targetX=pos.x+c.qOffset;
+    const targetY=pos.y;
     customerQueue.push(c);
-    const dist=Phaser.Math.Distance.Between(c.sprite.x,c.sprite.y,QUEUE_X,targetY);
+    const dist=Phaser.Math.Distance.Between(c.sprite.x,c.sprite.y,pos.x,targetY);
     c.sprite.setDepth(5);
     if(c.friend) c.friend.setDepth(5);
     c.walkTween = scene.tweens.add({targets:c.sprite,x:targetX,y:targetY,scale:0.7,duration:dur(400+dist),ease:'Sine.easeIn',callbackScope:scene,
@@ -333,14 +342,15 @@ window.onload = function(){
     }
     c.orders.push(order);
 
-    const backY=332+QUEUE_SPACING*maxQ;
+    const posBack=queuePos(maxQ);
+    const backY=posBack.y;
     c.approaching=true;
     wanderers.unshift(c);
-    const dist=Phaser.Math.Distance.Between(startX,startY,QUEUE_X,backY);
+    const dist=Phaser.Math.Distance.Between(startX,startY,posBack.x,backY);
     let moveDur=1200+dist*4;
     c.sprite.setDepth(5);
     if(c.friend) c.friend.setDepth(5);
-    const targetX=QUEUE_X+c.qOffset;
+    const targetX=posBack.x+c.qOffset;
     c.walkTween = this.tweens.add({targets:c.sprite,x:targetX,y:backY,scale:0.7,duration:dur(moveDur),ease:'Sine.easeIn',callbackScope:this,
       onComplete:()=>{ c.walkTween=null; arriveAtBack(c,this); }});
     if(customerQueue.length===1) moveDur=800+dist*3;
@@ -356,9 +366,14 @@ window.onload = function(){
     const c=customerQueue[0];
     dialogBg.setVisible(true);
     const itemStr=c.orders.map(o=>`${o.qty>1?o.qty+' ':''}${o.req}`).join(' and ');
+    if(activeBubble){
+      activeBubble.destroy();
+      activeBubble=null;
+    }
     const bubble=this.add.text(c.sprite.x,c.sprite.y-50,'💬',{font:'32px sans-serif',fill:'#000'})
       .setOrigin(0.5).setDepth(11);
-    this.tweens.add({targets:bubble,y:c.sprite.y-70,alpha:0,duration:dur(600),onComplete:()=>bubble.destroy()});
+    activeBubble=bubble;
+    this.tweens.add({targets:bubble,y:c.sprite.y-70,alpha:0,duration:dur(600),onComplete:()=>{bubble.destroy(); activeBubble=null;}});
     dialogText
       .setOrigin(0,0.5)
       .setPosition(dialogBg.x-dialogBg.width/2+60,440)

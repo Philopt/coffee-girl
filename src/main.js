@@ -143,11 +143,9 @@
     });
   }
 
-  function update(){}
-
   const config={ type:Phaser.AUTO, parent:'game-container', backgroundColor:'#f2e5d7',
     scale:{ mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH, width:480, height:640 },
-    pixelArt:true, scene:{ preload, create, update } };
+    pixelArt:true, scene:{ preload, create } };
   new Phaser.Game(config);
 
   let moneyText, loveText, queueLevelText;
@@ -432,8 +430,8 @@
     lossStamp=this.add.text(0,0,'LOSS',{font:'24px sans-serif',fill:'#a00'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
 
-    // start intro after the first update tick to ensure assets are ready
-    this.events.once('update', () => playIntro(this));
+    // start intro after assets are ready
+    this.time.delayedCall(0, () => playIntro(this));
   }
 
   function spawnCustomer(){

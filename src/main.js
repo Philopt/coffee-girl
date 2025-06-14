@@ -506,14 +506,16 @@
         .setDepth(12)
         .setVisible(false);
       // Explicitly specify the hit area so the pointer box aligns with the
-      // visible button. Using the direct form avoids Phaser resetting the
-      // rectangle's position when the interactive object is created.
-      c.setInteractive({
-        hitArea: new Phaser.Geom.Rectangle(0,0,width,height),
-        hitAreaCallback: Phaser.Geom.Rectangle.Contains,
-        useHandCursor: true
-      })
-        .on('pointerdown',()=>blinkButton.call(this,c,handler));
+      // visible button. Using the direct form prevents Phaser from shifting the
+      // rectangle when enabling input.
+      c.setInteractive(
+        new Phaser.Geom.Rectangle(0,0,width,height),
+        Phaser.Geom.Rectangle.Contains
+      );
+      if (c.input) {
+        c.input.cursor='pointer';
+      }
+      c.on('pointerdown',()=>blinkButton.call(this,c,handler));
       return c;
     };
 

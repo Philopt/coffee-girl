@@ -578,11 +578,20 @@
       .setVisible(true);
     const totalCost=c.orders.reduce((s,o)=>s+o.price*o.qty,0);
     const canAfford = c.orders[0].coins >= totalCost;
+    let coinLine;
+    if (canAfford) {
+      coinLine = `I have $${c.orders[0].coins}`;
+    } else if (c.orders[0].coins === 0) {
+      const options = ['...but I have nothing', "...I'm poor", "I don't have money"];
+      coinLine = Phaser.Utils.Array.GetRandom(options);
+    } else {
+      coinLine = `...but I only have $${c.orders[0].coins}`;
+    }
     dialogCoins
       .setOrigin(0,0.5)
       .setPosition(dialogBg.x-dialogBg.width/2+40,470)
       .setStyle({fontSize:'20px'})
-      .setText(canAfford?`I have $${c.orders[0].coins}`:`...but I only have $${c.orders[0].coins}`)
+      .setText(coinLine)
       .setVisible(true);
     dialogPriceLabel
       .setOrigin(1,0.5)

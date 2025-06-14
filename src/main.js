@@ -453,8 +453,8 @@
     };
 
     // buttons evenly spaced
-    btnSell=createButton(120,'SELL',0x006400,()=>handleAction.call(this,'sell'));
-    btnGive=createButton(240,'GIVE FREE',0x008000,()=>handleAction.call(this,'give'));
+    btnSell=createButton(120,'SELL',0x00a000,()=>handleAction.call(this,'sell'));
+    btnGive=createButton(240,'GIVE FREE',0x87cefa,()=>handleAction.call(this,'give'));
     btnRef=createButton(360,'REFUSE',0x800000,()=>handleAction.call(this,'refuse'));
 
     // emoji icons behind buttons (smaller & less transparent)

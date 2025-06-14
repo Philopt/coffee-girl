@@ -55,6 +55,10 @@
   const WALK_OFF_BASE=1000;
   const MAX_M=100, MAX_L=100;
 
+  // dimensions for the phone graphic shown on the start screen
+  const START_PHONE_W = 260;
+  const START_PHONE_H = 500;
+
 
   let money=10.00, love=10, gameOver=false;
   let queue=[], activeCustomer=null, wanderers=[];
@@ -181,6 +185,8 @@
   let startOverlay=null;
   let startButton=null;
   let phoneContainer=null;
+  let startMsgTimers=[];
+  let startMsgBubbles=[];
 
   function calcLoveLevel(v){
     if(v>=100) return 4;
@@ -332,11 +338,13 @@
     if (typeof debugLog === 'function') debugLog('showStartScreen called');
     // Log when the start screen is shown so we know the overlay is active
     console.log('showStartScreen called');
+    if (typeof startMsgTimers === 'undefined') startMsgTimers = [];
+    if (typeof startMsgBubbles === 'undefined') startMsgBubbles = [];
     startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.5)
       .setDepth(14);
 
-    const phoneW = 260;
-    const phoneH = 500;
+    const phoneW = (typeof START_PHONE_W === 'number') ? START_PHONE_W : 260;
+    const phoneH = (typeof START_PHONE_H === 'number') ? START_PHONE_H : 500;
     const caseG = scene.add.graphics();
     caseG.fillStyle(0x5c3b2a,1);
     caseG.fillRoundedRect(-phoneW/2-10,-phoneH/2-10,phoneW+20,phoneH+20,40);
@@ -369,10 +377,44 @@
       .setDepth(15)
       .setInteractive();
 
+    // remove any prior timers or bubbles if restartGame triggered this screen
+    startMsgTimers.forEach(t=>t.remove(false));
+    startMsgTimers=[];
+    startMsgBubbles.forEach(b=>b.destroy());
+    startMsgBubbles=[];
+
+    const addStartMessage=(text)=>{
+      if(!phoneContainer) return;
+      const txt=scene.add.text(0,0,text,{font:'20px sans-serif',fill:'#000',wordWrap:{width:phoneW-40}})
+        .setOrigin(0.5);
+      const pad=10;
+      const bw=txt.width+pad*2;
+      const bh=txt.height+pad*2;
+      const bg=scene.add.graphics();
+      bg.fillStyle(0x8bd48b,1);
+      bg.fillRoundedRect(-bw/2,-bh/2,bw,bh,10);
+      const yStart=-phoneH/2-bh;
+      const yEnd=-phoneH/2+bh/2+20+(startMsgBubbles.length)*(bh+10);
+      const bubble=scene.add.container(0,yStart,[bg,txt]).setDepth(16);
+      phoneContainer.add(bubble);
+      startMsgBubbles.push(bubble);
+      scene.tweens.add({targets:bubble,y:yEnd,duration:300,ease:'Cubic.easeOut'});
+    };
+
+    if(scene.time && scene.time.delayedCall){
+      startMsgTimers.push(scene.time.delayedCall(5000,()=>addStartMessage('hey, are you coming in today?'),[],scene));
+      startMsgTimers.push(scene.time.delayedCall(10000,()=>addStartMessage("Don't tell me you're still in bed."),[],scene));
+    }
+
     startButton.on('pointerdown',()=>{
 
         // Log click registration to help debug input issues
         console.log('start button clicked');
+
+        // cancel any pending start messages
+        startMsgTimers.forEach(t=>t.remove(false));
+        startMsgTimers=[];
+        startMsgBubbles=[];
 
         const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
           if(startButton) startButton.destroy();

@@ -60,6 +60,77 @@ function testShowStartScreen() {
   console.log('showStartScreen test passed');
 }
 
+function testShowDialogButtons() {
+  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+  const match = /function showDialog\(\)[\s\S]*?iconRef\.setVisible\(true\);\n\s*\}/.exec(code);
+  if (!match) throw new Error('showDialog not found');
+  const makeObj = () => ({
+    visible: false,
+    input: { enabled: false },
+    setVisible(v) { this.visible = v; return this; },
+    setOrigin() { return this; },
+    setPosition() { return this; },
+    setStyle() { return this; },
+    setText() { return this; },
+    setDepth() { return this; },
+    setAlpha() { return this; },
+    setColor() { return this; },
+    setScale() { return this; },
+    destroy() { this.destroyed = true; },
+  });
+  const context = {
+    dialogBg: makeObj(),
+    dialogText: makeObj(),
+    dialogCoins: makeObj(),
+    dialogPriceLabel: makeObj(),
+    dialogPriceValue: makeObj(),
+    btnSell: makeObj(),
+    btnGive: makeObj(),
+    btnRef: makeObj(),
+    iconSell: makeObj(),
+    iconGive: makeObj(),
+    iconRef: makeObj(),
+    tipText: makeObj(),
+    activeBubble: null,
+    articleFor: () => 'a',
+    scaleForY: () => 1,
+    ORDER_X: 230,
+    ORDER_Y: 310,
+    FRIEND_OFFSET: 40,
+    queue: [],
+    activeCustomer: null,
+  };
+  const scene = {
+    add: { text() { return makeObj(); }, rectangle() { return makeObj(); } },
+    tweens: { add(cfg) { if (cfg.onComplete) cfg.onComplete(); return {}; } },
+  };
+  vm.createContext(context);
+  context.fn = null;
+  vm.runInContext('const dur=v=>v;\n' + match[0] + '\nfn=showDialog;', context);
+  const showDialog = context.fn;
+
+  const customer = {
+    orders: [{ qty: 1, req: 'Latte', price: 5, coins: 10 }],
+    sprite: { x: context.ORDER_X, y: context.ORDER_Y, setDepth() { return this; } },
+    atOrder: true,
+  };
+  context.activeCustomer = customer;
+  context.queue = [customer];
+
+  showDialog.call(scene);
+  assert.ok(context.btnSell.visible, 'sell button should be visible when affordable');
+  assert.strictEqual(context.btnSell.input.enabled, true, 'sell button should be enabled');
+  assert.ok(context.btnGive.visible && context.btnRef.visible, 'give/ref buttons visible');
+
+  // make order unaffordable
+  customer.orders[0].coins = 1;
+  showDialog.call(scene);
+  assert.ok(!context.btnSell.visible, 'sell button hidden when cannot afford');
+  assert.strictEqual(context.btnSell.input.enabled, false, 'sell button disabled when cannot afford');
+  assert.ok(context.btnGive.visible && context.btnRef.visible, 'give/ref buttons still visible');
+  console.log('showDialog button visibility test passed');
+}
+
 async function run() {
   const serverPath = path.join(__dirname, '..', 'node_modules', '.bin', 'http-server');
   const server = spawn(serverPath, ['-p', '8080', '-c-1'], { stdio: 'inherit' });
@@ -88,6 +159,7 @@ async function run() {
     console.log('Game loaded without errors');
     testShowStartScreen();
     testBlinkButton();
+    testShowDialogButtons();
   }
 }
 

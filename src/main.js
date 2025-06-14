@@ -180,6 +180,7 @@
   let endOverlay=null;
   let startOverlay=null;
   let startButton=null;
+  let phoneContainer=null;
 
   function calcLoveLevel(v){
     if(v>=100) return 4;
@@ -333,16 +334,43 @@
     console.log('showStartScreen called');
     startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.5)
       .setDepth(14);
+
+    const phoneW = 260;
+    const phoneH = 500;
+    const caseG = scene.add.graphics();
+    caseG.fillStyle(0x5c3b2a,1);
+    caseG.fillRoundedRect(-phoneW/2-10,-phoneH/2-10,phoneW+20,phoneH+20,40);
+    const blackG = scene.add.graphics();
+    blackG.fillStyle(0x000000,1);
+    blackG.fillRoundedRect(-phoneW/2,-phoneH/2,phoneW,phoneH,30);
+    const whiteG = scene.add.graphics();
+    whiteG.fillStyle(0xffffff,1);
+    whiteG.fillRoundedRect(-phoneW/2+6,-phoneH/2+6,phoneW-12,phoneH-12,24);
+    const homeH = 100;
+    const homeG = scene.add.graphics();
+    homeG.fillStyle(0xf0f0f0,1);
+    homeG.fillRoundedRect(-phoneW/2+12,phoneH/2-homeH-12,phoneW-24,homeH,20);
+
     const btnLabel = scene.add.text(0,0,'Clock In',{
         font:'32px sans-serif',fill:'#fff'})
       .setOrigin(0.5);
-    const bw = btnLabel.width + 40;
+    const bw = btnLabel.width + 60;
     const bh = btnLabel.height + 20;
     const btnBg = scene.add.graphics();
     btnBg.fillStyle(0x007bff,1);
     btnBg.fillRoundedRect(-bw/2,-bh/2,bw,bh,15);
-    startButton = scene.add.container(240,320,[btnBg,btnLabel])
+    const offsetY = phoneH/2 - homeH/2 - 12;
+    startButton = scene.add.container(0,offsetY,[btnBg,btnLabel])
       .setSize(bw,bh)
+      .setInteractive({useHandCursor:true});
+
+    const containerY = 320 - offsetY;
+    phoneContainer = scene.add.container(240,containerY,[caseG,blackG,whiteG,homeG,startButton])
+      .setDepth(15)
+      .setInteractive();
+
+    startButton.on('pointerdown',()=>{
+
       .setDepth(15);
     startButton.setInteractive(
       new Phaser.Geom.Rectangle(-bw/2,-bh/2,bw,bh),
@@ -350,11 +378,17 @@
     )
       .on('pointerdown',()=>{
 
+
         // Log click registration to help debug input issues
         console.log('start button clicked');
 
-        startButton.destroy();
-        if(startOverlay){ startOverlay.destroy(); startOverlay=null; }
+        const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
+          if(startButton) startButton.destroy();
+          phoneContainer.destroy(); phoneContainer=null;
+        }});
+        tl.add({targets:phoneContainer,y:-320,duration:600,ease:'Sine.easeIn'});
+        tl.add({targets:startOverlay,alpha:0,duration:600,onComplete:()=>{ if(startOverlay){startOverlay.destroy(); startOverlay=null;} }});
+        tl.play();
         // playIntro will kick off the intro tween sequence
         playIntro.call(scene);
       });

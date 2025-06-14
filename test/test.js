@@ -152,6 +152,74 @@ function testShowStartScreen() {
   console.log('showStartScreen test passed');
 }
 
+function testStartButtonPlaysIntro() {
+  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+  const startMatch = /function showStartScreen\(scene\)[\s\S]*?\n\s*\}\);\n\s*\}/.exec(code);
+  const introMatch = /function playIntro\(scene\)[\s\S]*?intro\.play\(\);\n\s*\}/.exec(code);
+  if (!startMatch || !introMatch) throw new Error('showStartScreen or playIntro not found');
+  const context = { spawnCustomer: () => {}, scheduleNextSpawn: () => {} };
+  vm.createContext(context);
+  context.fnStart = null;
+  context.fnIntro = null;
+  vm.runInContext('var startOverlay,startButton,truck,girl; const dur=v=>v;\n' +
+    introMatch[0] + '\n' + startMatch[0] + '\nfnStart=showStartScreen; fnIntro=playIntro;', context);
+  const showStartScreen = context.fnStart;
+  const realPlayIntro = context.fnIntro;
+
+  const truck = { x: 0, y: 0, setPosition(x, y) { this.x = x; this.y = y; return this; }, setScale() { return this; }, setDepth() { return this; } };
+  const girl = { x: 0, y: 0, visible: true, setPosition(x, y) { this.x = x; this.y = y; return this; }, setVisible(v) { this.visible = v; return this; }, setScale() { return this; }, setDepth() { return this; } };
+  context.truck = truck;
+  context.girl = girl;
+
+  let pointerCb = null;
+  const scene = {
+    add: {
+      rectangle() { return { setDepth() { return this; }, destroy() { this.destroyed = true; } }; },
+      text() {
+        const obj = {
+          setOrigin() { return obj; },
+          setDepth() { return obj; },
+          setInteractive() { return obj; },
+          on(event, cb) { if (event === 'pointerdown') pointerCb = cb; return obj; },
+          destroy() { obj.destroyed = true; }
+        };
+        return obj;
+      }
+    },
+    tweens: {
+      createTimeline({ callbackScope, onComplete }) {
+        const steps = [];
+        return {
+          add(cfg) { steps.push(cfg); },
+          play() {
+            for (const s of steps) {
+              if (s.onStart) s.onStart();
+              const targets = Array.isArray(s.targets) ? s.targets : [s.targets];
+              targets.forEach(t => {
+                if (s.x !== undefined) t.x = s.x;
+                if (s.y !== undefined) t.y = s.y;
+              });
+              if (s.onComplete) s.onComplete.call(callbackScope || null);
+            }
+            if (onComplete) onComplete.call(callbackScope || null);
+          }
+        };
+      }
+    }
+  };
+
+  showStartScreen.call(scene);
+  assert(pointerCb, 'pointerdown handler not set');
+
+  let called = false;
+  context.playIntro = function(s) { called = true; return realPlayIntro.call(this, s); };
+  pointerCb();
+
+  assert.ok(called, 'playIntro not called');
+  assert.strictEqual(truck.x, 240, 'truck x not moved');
+  console.log('start button triggers playIntro test passed');
+}
+
 function testShowDialogButtons() {
   const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
   const match = /function showDialog\(\)[\s\S]*?iconRef\.setVisible\(true\);\n\s*\}/.exec(code);
@@ -252,6 +320,7 @@ async function run() {
     testSpawnCustomer();
     testHandleActionSell();
     testShowStartScreen();
+    testStartButtonPlaysIntro();
     testBlinkButton();
     testShowDialogButtons();
   }

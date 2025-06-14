@@ -67,7 +67,7 @@
 
   const dur=v=>v;
 
-  const QUEUE_WALK_MS_PER_PX = 16;
+  const QUEUE_WALK_MS_PER_PX = 24;
   function walkDuration(dist){
     return dur(Math.max(500, dist * QUEUE_WALK_MS_PER_PX));
   }
@@ -158,7 +158,7 @@
           const h = btn._hitHeight !== undefined ? btn._hitHeight : btn.height;
           if (w !== undefined && h !== undefined && Phaser && Phaser.Geom && Phaser.Geom.Rectangle) {
             btn.setInteractive(
-              new Phaser.Geom.Rectangle(0, 0, w, h),
+              new Phaser.Geom.Rectangle(-w/2, -h/2, w, h),
               Phaser.Geom.Rectangle.Contains
             );
           } else {
@@ -495,22 +495,22 @@
       // Graphics objects do not support setShadow. Draw a simple shadow
       // manually by rendering a darker rect slightly offset behind the button.
       g.fillStyle(0x000000,0.3);
-      g.fillRoundedRect(2,2,width,height,radius);
+      g.fillRoundedRect(-width/2+2,-height/2+2,width,height,radius);
 
       g.fillStyle(color,1);
-      g.fillRoundedRect(0,0,width,height,radius);
-      let t=this.add.text(10,height/2,label,{font:'20px sans-serif',fill:'#fff'})
+      g.fillRoundedRect(-width/2,-height/2,width,height,radius);
+      let t=this.add.text(-width/2+10,0,label,{font:'20px sans-serif',fill:'#fff'})
         .setOrigin(0,0.5);
-      let icon=this.add.text(width-10,height/2,iconChar,{font:`${iconSize}px sans-serif`,fill:'#fff'})
+      let icon=this.add.text(width/2-10,0,iconChar,{font:`${iconSize}px sans-serif`,fill:'#fff'})
         .setOrigin(1,0.5);
       let children=[g,t,icon];
       if(label==='REFUSE'){
         t.setFontSize(18);
-        icon.setX(width-4);
+        icon.setX(width/2-4);
         children=[g,icon,t];
       }
       // position the button below the dialog box
-      const c=this.add.container(x - width/2,560 - height/2,children)
+      const c=this.add.container(x,560,children)
         .setSize(width,height)
         .setDepth(12)
         .setVisible(false);
@@ -521,7 +521,7 @@
       // visible button. Using the direct form prevents Phaser from shifting the
       // rectangle when enabling input.
       c.setInteractive(
-        new Phaser.Geom.Rectangle(0,0,width,height),
+        new Phaser.Geom.Rectangle(-width/2,-height/2,width,height),
         Phaser.Geom.Rectangle.Contains
       );
       if (c.input) {
@@ -999,7 +999,8 @@
     }
 
     const falcon=scene.add.sprite(-40,-40,'lady_falcon',0)
-      .setScale(1.4,1.68)
+      // give the falcon some extra height so she looks less squashed
+      .setScale(1.4,2.016)
       .setDepth(20);
     falcon.anims.play('falcon_fly');
     const targetX=girl.x;
@@ -1274,15 +1275,29 @@
     showStartScreen.call(this);
   }
 
+  function update(){
+    // Ensure customers closer to the bottom appear in front
+    queue.forEach(c=>{
+      if(c.sprite && c.sprite.depth < 20){
+        c.sprite.setDepth(5 + c.sprite.y/1000);
+      }
+    });
+    wanderers.forEach(c=>{
+      if(c.sprite && c.sprite.depth < 20){
+        c.sprite.setDepth(4 + c.sprite.y/1000);
+      }
+    });
+  }
+
   const Assets = { keys, requiredAssets, preload };
-  const Scene = { create, showStartScreen, playIntro };
+  const Scene = { create, update, showStartScreen, playIntro };
   const Customers = { spawnCustomer, lureNextWanderer, moveQueueForward, scheduleNextSpawn,
                       showDialog, clearDialog, handleAction, showFalconAttack,
                       showCustomerRevolt, restartGame };
 
   const config={ type:Phaser.AUTO, parent:'game-container', backgroundColor:'#f2e5d7',
     scale:{ mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH, width:480, height:640 },
-    pixelArt:true, scene:{ preload: Assets.preload, create: Scene.create } };
+    pixelArt:true, scene:{ preload: Assets.preload, create: Scene.create, update: Scene.update } };
 
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
     init();

@@ -61,8 +61,8 @@ function testShowStartScreen() {
 }
 
 async function run() {
-  const serverPath = path.join(__dirname, '..', 'node_modules', '.bin', 'http-server');
-  const server = spawn(serverPath, ['-p', '8080', '-c-1'], { stdio: 'inherit' });
+  const serverPath = require.resolve('http-server/bin/http-server');
+  const server = spawn(process.execPath, [serverPath, '-p', '8080', '-c-1'], { stdio: 'inherit' });
 
   // wait a bit for the server to start
   await new Promise(r => setTimeout(r, 1000));

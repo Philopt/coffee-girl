@@ -456,11 +456,13 @@
         .setSize(width,height)
         .setDepth(12)
         .setVisible(false);
-      c.setInteractive({
-        hitArea:new Phaser.Geom.Rectangle(-width/2,-height/2,width,height),
-        hitAreaCallback:Phaser.Geom.Rectangle.Contains,
-        useHandCursor:true
-      })
+      // Explicitly specify the hit area so the pointer box aligns with the
+      // visible button. Using the direct form avoids Phaser resetting the
+      // rectangle's position when the interactive object is created.
+      c.setInteractive(
+        new Phaser.Geom.Rectangle(-width/2,-height/2,width,height),
+        Phaser.Geom.Rectangle.Contains
+      )
         .on('pointerdown',()=>blinkButton.call(this,c,handler));
       return c;
     };

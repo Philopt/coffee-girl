@@ -140,7 +140,7 @@
       duration: dur(80),
       repeat: 1,
       onComplete: () => {
-        if (btn.input) btn.input.enabled = true;  // restore interactivity
+        if (btn.setInteractive) btn.setInteractive();
         if (onComplete) onComplete();
       }
     });

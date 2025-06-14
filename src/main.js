@@ -153,7 +153,7 @@
           const h = btn._hitHeight !== undefined ? btn._hitHeight : btn.height;
           if (w !== undefined && h !== undefined && Phaser && Phaser.Geom && Phaser.Geom.Rectangle) {
             btn.setInteractive(
-              new Phaser.Geom.Rectangle(0, 0, w, h),
+              new Phaser.Geom.Rectangle(-w/2, -h/2, w, h),
               Phaser.Geom.Rectangle.Contains
             );
           } else {

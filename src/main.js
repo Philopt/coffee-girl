@@ -147,7 +147,18 @@
       duration: dur(80),
       repeat: 1,
       onComplete: () => {
-        if (btn.setInteractive) btn.setInteractive();
+        if (btn.setInteractive) {
+          if (btn.width !== undefined && btn.height !== undefined &&
+              Phaser && Phaser.Geom && Phaser.Geom.Rectangle) {
+            btn.setInteractive(
+              new Phaser.Geom.Rectangle(-btn.width/2, -btn.height/2,
+                                        btn.width, btn.height),
+              Phaser.Geom.Rectangle.Contains
+            );
+          } else {
+            btn.setInteractive();
+          }
+        }
         if (onComplete) onComplete();
       }
     });
@@ -333,7 +344,10 @@
     startButton = scene.add.container(240,320,[btnBg,btnLabel])
       .setSize(bw,bh)
       .setDepth(15);
-    startButton.setInteractive({useHandCursor:true})
+    startButton.setInteractive(
+      new Phaser.Geom.Rectangle(-bw/2,-bh/2,bw,bh),
+      Phaser.Geom.Rectangle.Contains
+    )
       .on('pointerdown',()=>{
 
         // Log click registration to help debug input issues

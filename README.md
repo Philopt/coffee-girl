@@ -77,6 +77,8 @@ npm test
 
 ## License
 
-This project is released under the MIT License
+This project is released under the MIT License.
+
+The bundled copy of Phaser is also MIT licensed. See [PHASER_LICENSE.md](PHASER_LICENSE.md) for details.
 
 

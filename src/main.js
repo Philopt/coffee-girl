@@ -466,22 +466,22 @@
     });
 
     // dialog
-    dialogBg=this.add.rectangle(240,470,460,140,0xffffff)
+    dialogBg=this.add.rectangle(240,460,460,110,0xffffff)
       .setStrokeStyle(2,0x000)
       .setVisible(false)
       .setDepth(10);
-    dialogText=this.add.text(240,440,'',{font:'20px sans-serif',fill:'#000',align:'center',wordWrap:{width:420}})
-                     .setOrigin(0.5).setVisible(false).setDepth(11);
-    dialogCoins=this.add.text(240,470,'',{font:'20px sans-serif',fill:'#000'})
-      .setOrigin(0.5).setVisible(false).setDepth(11);
-    dialogPriceLabel=this.add.text(240,456,'',{font:'14px sans-serif',fill:'#000',align:'center'})
-      .setOrigin(0.5).setVisible(false).setDepth(11);
-    dialogPriceValue=this.add.text(240,480,'',{font:'32px sans-serif',fill:'#000'})
-      .setOrigin(0.5).setVisible(false).setDepth(11);
+    dialogText=this.add.text(0,0,'',{font:'20px sans-serif',fill:'#000',align:'center',wordWrap:{width:420}})
+                     .setOrigin(0,0.5).setVisible(false).setDepth(11);
+    dialogCoins=this.add.text(0,0,'',{font:'20px sans-serif',fill:'#000'})
+      .setOrigin(0,0.5).setVisible(false).setDepth(11);
+    dialogPriceLabel=this.add.text(0,0,'',{font:'14px sans-serif',fill:'#000',align:'center'})
+      .setOrigin(1,0.5).setVisible(false).setDepth(11);
+    dialogPriceValue=this.add.text(0,0,'',{font:'32px sans-serif',fill:'#000'})
+      .setOrigin(1,0.5).setVisible(false).setDepth(11);
 
     // helper to create a rounded rectangle button with consistent sizing
     const createButton=(x,label,iconChar,iconSize,color,handler)=>{
-      const width=120, height=40, radius=8;
+      const width=140, height=50, radius=8;
       const g=this.add.graphics();
       // Graphics objects do not support setShadow. Draw a simple shadow
       // manually by rendering a darker rect slightly offset behind the button.
@@ -500,8 +500,8 @@
         icon.setX(width/2-4);
         children=[g,icon,t];
       }
-      // position the button slightly lower so it peeks out of the dialog box
-      const c=this.add.container(x,520,children)
+      // position the button below the dialog box
+      const c=this.add.container(x,560,children)
         .setSize(width,height)
         .setDepth(12)
         .setVisible(false);
@@ -621,9 +621,11 @@
       .setOrigin(0.5).setDepth(11);
     activeBubble=bubble;
     this.tweens.add({targets:bubble,y:c.sprite.y-70,alpha:0,duration:dur(600),onComplete:()=>{bubble.destroy(); activeBubble=null;}});
+    const textY = dialogBg.y - 20;
+    const coinsY = dialogBg.y + 10;
     dialogText
       .setOrigin(0,0.5)
-      .setPosition(dialogBg.x-dialogBg.width/2+40,440)
+      .setPosition(dialogBg.x-dialogBg.width/2+40,textY)
       .setText(wantLine)
       .setVisible(true);
     const totalCost=c.orders.reduce((s,o)=>s+o.price*o.qty,0);
@@ -639,19 +641,19 @@
     }
     dialogCoins
       .setOrigin(0,0.5)
-      .setPosition(dialogBg.x-dialogBg.width/2+40,470)
+      .setPosition(dialogBg.x-dialogBg.width/2+40,coinsY)
       .setStyle({fontSize:'20px'})
       .setText(coinLine)
       .setVisible(true);
     dialogPriceLabel
       .setOrigin(1,0.5)
-      .setPosition(dialogBg.x+dialogBg.width/2-60,440)
+      .setPosition(dialogBg.x+dialogBg.width/2-60,textY)
       .setStyle({fontSize:'14px'})
       .setText('Total\nCost')
       .setVisible(true);
     dialogPriceValue
       .setOrigin(1,0.5)
-      .setPosition(dialogBg.x+dialogBg.width/2-60,470)
+      .setPosition(dialogBg.x+dialogBg.width/2-60,coinsY)
       .setStyle({fontSize:'32px'})
       .setText(`$${totalCost.toFixed(2)}`)
       .setColor('#000')

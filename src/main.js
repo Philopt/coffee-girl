@@ -555,7 +555,11 @@
     };
 
     const c={ orders:[] };
-    const k=Phaser.Utils.Array.GetRandom(keys);
+    const used=new Set();
+    if(typeof queue!=='undefined') queue.forEach(cu=>used.add(cu.key));
+    if(typeof wanderers!=='undefined') wanderers.forEach(cu=>used.add(cu.key));
+    const avail=keys.filter(key=>!used.has(key));
+    const k=Phaser.Utils.Array.GetRandom(avail.length?avail:keys);
     const order=createOrder();
 
     if(wanderers.length>=maxWanderers()){
@@ -569,6 +573,7 @@
     const distScale=scaleForY(startY);
     c.orders.push(order);
     c.atOrder=false;
+    c.key=k;
     c.sprite=this.add.sprite(startX,startY,k).setScale(distScale).setDepth(4);
     const amp=Phaser.Math.Between(10,25);
     const freq=Phaser.Math.Between(2,4);
@@ -1066,7 +1071,12 @@
     gather(wanderers);
 
     while(attackers.length<3){
-      const k=Phaser.Utils.Array.GetRandom(keys);
+      const used=new Set(attackers.map(a=>a.texture.key));
+      queue.forEach(c=>used.add(c.key));
+      wanderers.forEach(c=>used.add(c.key));
+      const avail=keys.filter(key=>!used.has(key));
+      if(!avail.length) break;
+      const k=Phaser.Utils.Array.GetRandom(avail);
       const {x, y}=pickPos();
       const a=scene.add.sprite(x, y, k)
         .setScale(scaleForY(y)).setDepth(20);

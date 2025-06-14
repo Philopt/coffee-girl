@@ -167,6 +167,7 @@
   let endOverlay=null;
   let startOverlay=null;
   let startButton=null;
+  let startMessage=null;
 
   function calcLoveLevel(v){
     if(v>=100) return 4;
@@ -317,12 +318,18 @@
     console.log('showStartScreen called');
     startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.5)
       .setDepth(14);
+    startMessage = scene.add.text(240,360,'Click to begin',{
+        font:'20px sans-serif',fill:'#fff'})
+      .setOrigin(0.5).setDepth(15);
     startButton = scene.add.text(240,320,'Start Shift',{
         font:'32px sans-serif',fill:'#fff',backgroundColor:'#006400',
         padding:{x:20,y:10}})
-      .setOrigin(0.5).setDepth(15).setInteractive({useHandCursor:true})
+      .setOrigin(0.5).setDepth(15);
+    startButton.setInteractive({useHandCursor:true})
       .on('pointerdown',()=>{
+        console.log('start button pressed');
         startButton.destroy();
+        if(startMessage){ startMessage.destroy(); startMessage=null; }
         if(startOverlay){ startOverlay.destroy(); startOverlay=null; }
         playIntro.call(scene);
       });
@@ -340,6 +347,7 @@
     girl.setPosition(560,260).setVisible(false);
     const intro=scene.tweens.createTimeline({callbackScope:scene,
       onComplete:()=>{
+        console.log('intro finished');
         spawnCustomer.call(scene);
         scheduleNextSpawn(scene);
       }});

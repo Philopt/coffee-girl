@@ -371,14 +371,6 @@
 
     startButton.on('pointerdown',()=>{
 
-      .setDepth(15);
-    startButton.setInteractive(
-      new Phaser.Geom.Rectangle(-bw/2,-bh/2,bw,bh),
-      Phaser.Geom.Rectangle.Contains
-    )
-      .on('pointerdown',()=>{
-
-
         // Log click registration to help debug input issues
         console.log('start button clicked');
 

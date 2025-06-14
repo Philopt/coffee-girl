@@ -112,12 +112,14 @@
     const color = up ? '#0f0' : '#f00';
     const by = up ? -8 : 8;
     const originalY = obj.y;
-    scene.tweens.add({targets:obj, y:originalY+by, duration:dur(120), yoyo:true});
+    const moveDur = isLove && !up ? 160 : 120;
+    scene.tweens.add({targets:obj, y:originalY+by, duration:dur(moveDur), yoyo:true});
     let on=true;
     const flashes = isLove && !up ? 4 : 2;
+    const flashDelay = isLove && !up ? 120 : 80;
     scene.time.addEvent({
       repeat:flashes,
-      delay:dur(80),
+      delay:dur(flashDelay),
       callback:()=>{
         obj.setColor(on?color:'#fff');
         if(isLove && !up){
@@ -126,10 +128,21 @@
         on=!on;
       }
     });
-    scene.time.delayedCall(dur(80)*(flashes+1)+dur(10),()=>{
+    scene.time.delayedCall(dur(flashDelay)*(flashes+1)+dur(10),()=>{
       obj.setColor('#fff');
       if(isLove && !up){
         obj.setText('❤️ '+love);
+        scene.tweens.add({
+          targets:obj,
+          angle:{from:-15,to:15},
+          duration:dur(160),
+          repeat:2,
+          yoyo:true,
+          ease:'Sine.easeInOut',
+          onComplete:()=>{
+            scene.tweens.add({targets:obj,angle:0,duration:dur(180),ease:'Sine.easeOut'});
+          }
+        });
       }
     },[],scene);
   }

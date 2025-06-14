@@ -166,6 +166,8 @@
   let sideCAlpha=0;
   let sideCFadeTween=null;
   let endOverlay=null;
+  let startOverlay=null;
+  let startButton=null;
 
   function calcLoveLevel(v){
     if(v>=100) return 4;
@@ -315,6 +317,21 @@
     }
   }
 
+  function showStartScreen(scene){
+    scene = scene || this;
+    startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.5)
+      .setDepth(14);
+    startButton = scene.add.text(240,320,'Start Shift',{
+        font:'32px sans-serif',fill:'#fff',backgroundColor:'#006400',
+        padding:{x:20,y:10}})
+      .setOrigin(0.5).setDepth(15).setInteractive({useHandCursor:true})
+      .on('pointerdown',()=>{
+        startButton.destroy();
+        if(startOverlay){ startOverlay.destroy(); startOverlay=null; }
+        playIntro.call(scene);
+      });
+  }
+
   function playIntro(scene){
     if(!truck || !girl) {
       console.warn('playIntro skipped: missing truck or girl');
@@ -323,8 +340,8 @@
     console.log('playIntro starting');
     scene = scene || this;
     if(!truck || !girl) return;
-    truck.setPosition(520,245);
-    girl.setPosition(520,260).setVisible(false);
+    truck.setPosition(560,245);
+    girl.setPosition(560,260).setVisible(false);
     const intro=scene.tweens.createTimeline({callbackScope:scene,
       onComplete:()=>{
         spawnCustomer.call(scene);
@@ -378,9 +395,9 @@
       .setOrigin(0.5).setDepth(1);
     updateLevelDisplay();
     // truck & girl
-    truck=this.add.image(520,245,'truck').setScale(0.924).setDepth(2);
+    truck=this.add.image(560,245,'truck').setScale(0.924).setDepth(2);
 
-    girl=this.add.image(520,260,'girl').setScale(0.5).setDepth(3).setVisible(false);
+    girl=this.add.image(560,260,'girl').setScale(0.5).setDepth(3).setVisible(false);
 
     // create lady falcon animation
     this.anims.create({
@@ -444,8 +461,8 @@
     lossStamp=this.add.text(0,0,'LOSS',{font:'24px sans-serif',fill:'#a00'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
 
-    // start intro after assets are ready
-    playIntro.call(this);
+    // wait for player to start the shift
+    showStartScreen.call(this);
   }
 
   function spawnCustomer(){
@@ -1053,7 +1070,7 @@
     sideCAlpha=0;
     sideCFadeTween=null;
     gameOver=false;
-    playIntro(this);
+    showStartScreen.call(this);
   }
 
   }

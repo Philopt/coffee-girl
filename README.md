@@ -12,6 +12,8 @@ Coffee Clicker is a small browser game built with [Phaser](https://phaser.io/). 
 
    Then navigate to `http://localhost:8000` in your browser.
 
+   Click **Start Shift** when it appears to begin the game.
+
    The game now loads `src/main.js` with a standard `<script src="src/main.js" defer></script>` tag
    in `index.html`. If the page stays blank, open the browser console and look for
    messages about missing assets.

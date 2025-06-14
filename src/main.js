@@ -1065,12 +1065,18 @@
     }
 
     attackers.forEach(a=>{
-      const angle=Phaser.Math.Angle.Between(a.x,a.y,girl.x,girl.y);
-      const tx=girl.x+Math.cos(angle)*30;
-      const ty=girl.y+Math.sin(angle)*30;
-      scene.tweens.add({targets:a,x:tx,y:ty,scale:scaleForY(ty),duration:dur(400),onComplete:()=>{
-        loops.set(a,scene.time.delayedCall(dur(Phaser.Math.Between(100,300)),()=>attack(a),[],scene));
-      }});
+      const tx = Phaser.Math.Between(girl.x - 30, girl.x + 30);
+      const ty = Math.max(gatherStartY, girl.y + 20);
+      scene.tweens.add({
+        targets:a,
+        x:tx,
+        y:ty,
+        scale:scaleForY(ty),
+        duration:dur(400),
+        onComplete:()=>{
+          loops.set(a, scene.time.delayedCall(dur(Phaser.Math.Between(100,300)),()=>attack(a),[],scene));
+        }
+      });
     });
   }
 

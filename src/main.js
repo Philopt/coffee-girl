@@ -466,7 +466,10 @@
     });
 
     // dialog
-    dialogBg=this.add.rectangle(240,460,460,120,0xffffff).setStrokeStyle(2,0x000).setVisible(false).setDepth(10);
+    dialogBg=this.add.rectangle(240,470,460,140,0xffffff)
+      .setStrokeStyle(2,0x000)
+      .setVisible(false)
+      .setDepth(10);
     dialogText=this.add.text(240,440,'',{font:'20px sans-serif',fill:'#000',align:'center',wordWrap:{width:420}})
                      .setOrigin(0.5).setVisible(false).setDepth(11);
     dialogCoins=this.add.text(240,470,'',{font:'20px sans-serif',fill:'#000'})
@@ -505,10 +508,11 @@
       // Explicitly specify the hit area so the pointer box aligns with the
       // visible button. Using the direct form avoids Phaser resetting the
       // rectangle's position when the interactive object is created.
-      c.setInteractive(
-        new Phaser.Geom.Rectangle(-width/2,-height/2,width,height),
-        Phaser.Geom.Rectangle.Contains
-      )
+      c.setInteractive({
+        hitArea: new Phaser.Geom.Rectangle(-width/2,-height/2,width,height),
+        hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+        useHandCursor: true
+      })
         .on('pointerdown',()=>blinkButton.call(this,c,handler));
       return c;
     };
@@ -516,7 +520,7 @@
     // buttons evenly spaced
 
     btnSell=createButton(100,'SELL','💵',32,0x006400,()=>handleAction.call(this,'sell'));
-    btnGive=createButton(240,'GIVE','💝',28,0x008000,()=>handleAction.call(this,'give'));
+    btnGive=createButton(240,'GIVE','💝',28,0x87cefa,()=>handleAction.call(this,'give'));
     btnRef=createButton(380,'REFUSE','✋',32,0x800000,()=>handleAction.call(this,'refuse'));
 
 

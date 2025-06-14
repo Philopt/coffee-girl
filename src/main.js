@@ -445,12 +445,18 @@
 
       g.fillStyle(color,1);
       g.fillRoundedRect(-width/2,-height/2,width,height,radius);
-      const t=this.add.text(-width/2+10,0,label,{font:'20px sans-serif',fill:'#fff'})
+      let t=this.add.text(-width/2+10,0,label,{font:'20px sans-serif',fill:'#fff'})
         .setOrigin(0,0.5);
-      const icon=this.add.text(width/2-10,0,iconChar,{font:`${iconSize}px sans-serif`,fill:'#fff'})
+      let icon=this.add.text(width/2-10,0,iconChar,{font:`${iconSize}px sans-serif`,fill:'#fff'})
         .setOrigin(1,0.5);
+      let children=[g,t,icon];
+      if(label==='REFUSE'){
+        t.setFontSize(18);
+        icon.setX(width/2-4);
+        children=[g,icon,t];
+      }
       // position the button slightly lower so it peeks out of the dialog box
-      const c=this.add.container(x,520,[g,t,icon])
+      const c=this.add.container(x,520,children)
         .setSize(width,height)
         .setDepth(12)
         .setVisible(false);

@@ -875,6 +875,16 @@
 
   function showFalconAttack(cb){
     const scene=this;
+    // make all customers flee when the falcon appears
+    const fleeing=[...queue, ...wanderers];
+    fleeing.forEach(c=>{
+      if(c.walkTween){ c.walkTween.stop(); c.walkTween=null; }
+      const dir=c.sprite.x<ORDER_X? -1:1;
+      const targetX=dir===1?520:-40;
+      scene.tweens.add({targets:c.sprite,x:targetX,duration:dur(WALK_OFF_BASE/1.5),onComplete:()=>c.sprite.destroy()});
+    });
+    queue.length=0; wanderers.length=0;
+
     const falcon=scene.add.sprite(-40,-40,'lady_falcon',0)
       .setScale(1.4)
       .setDepth(20);
@@ -911,9 +921,11 @@
     });
 
     function blinkAngry(s){
-      const e=s.add.text(girl.x,girl.y-50,'😠',{font:'32px sans-serif',fill:'#f00'})
-        .setOrigin(0.5).setDepth(21);
-      s.tweens.add({targets:e,alpha:0,duration:dur(150),yoyo:true,repeat:2,onComplete:()=>e.destroy()});
+      s.tweens.add({targets:girl,duration:dur(100),repeat:2,yoyo:true,
+        onStart:()=>girl.setTint(0xff0000),
+        onYoyo:()=>girl.setTint(0xff0000),
+        onRepeat:()=>girl.clearTint(),
+        onComplete:()=>girl.clearTint()});
     }
 
     function createDebrisEmoji(s, x, y){

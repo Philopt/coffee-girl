@@ -24,7 +24,7 @@ function testBlinkButton() {
   blinkButton.call(scene, btn);
   assert(disableCalled, 'disableInteractive not called');
   assert.strictEqual(btn.input.enabled, true, 'button not re-enabled');
-  assert.ok(!btn.setInteractiveCalled, 'setInteractive should not be called');
+  assert.ok(btn.setInteractiveCalled, 'setInteractive should be called to re-enable');
   console.log('blinkButton interactivity test passed');
 }
 

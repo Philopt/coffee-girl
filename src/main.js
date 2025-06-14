@@ -322,6 +322,7 @@
         padding:{x:20,y:10}})
       .setOrigin(0.5).setDepth(15).setInteractive({useHandCursor:true})
       .on('pointerdown',()=>{
+        console.log('start button pressed');
         startButton.destroy();
         if(startOverlay){ startOverlay.destroy(); startOverlay=null; }
         playIntro.call(scene);
@@ -340,6 +341,7 @@
     girl.setPosition(560,260).setVisible(false);
     const intro=scene.tweens.createTimeline({callbackScope:scene,
       onComplete:()=>{
+        console.log('intro timeline complete');
         spawnCustomer.call(scene);
         scheduleNextSpawn(scene);
       }});

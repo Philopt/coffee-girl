@@ -28,6 +28,98 @@ function testBlinkButton() {
   console.log('blinkButton interactivity test passed');
 }
 
+function testSpawnCustomer() {
+  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+  const match = /function spawnCustomer\(\)[\s\S]*?\n\s*\}\n(?=\s*function)/.exec(code);
+  if (!match) throw new Error('spawnCustomer not found');
+  const context = {
+    Phaser: { Math: { Between: (min, max) => min }, Utils: { Array: { GetRandom: a => a[0] } } },
+    wanderers: [],
+    gameOver: false,
+    spawnCount: 0,
+    maxWanderers: () => 5,
+    scheduleNextSpawn: () => {},
+    lureNextWanderer: () => {},
+    keys: ['c1'],
+    MENU: [{ name: 'Coffee', price: 5 }],
+    WANDER_TOP: 0,
+    WANDER_BOTTOM: 10,
+    scaleForY: () => 1,
+    dur: v => v,
+    fn: null
+  };
+  vm.createContext(context);
+  vm.runInContext(match[0] + '\nfn=spawnCustomer;', context);
+  const spawnCustomer = context.fn;
+  const scene = {
+    add: {
+      sprite() { return { setScale() { return this; }, setDepth() { return this; }, destroy() {} }; }
+    },
+    tweens: { add(cfg) { if (cfg.onComplete) cfg.onComplete(); return { progress: 0 }; } }
+  };
+  spawnCustomer.call(scene);
+  assert.strictEqual(context.wanderers.length, 1, 'customer not added to wanderers');
+  console.log('spawnCustomer adds wanderer test passed');
+}
+
+function testHandleActionSell() {
+  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+  const recMatch = /function receipt\([^)]*\)[\s\S]*?\n\s*\}/.exec(code);
+  const actMatch = /function handleAction\(type\)[\s\S]*?\n\s*\}\n(?=\s*function animateLoveChange)/.exec(code);
+  if (!actMatch || !recMatch) throw new Error('handleAction or receipt not found');
+  const context = {
+    money: 20,
+    love: 10,
+    queue: [],
+    activeCustomer: null,
+    MAX_M: 100,
+    MAX_L: 100,
+    WALK_OFF_BASE: 1000,
+    servedCount: 0,
+    Phaser: { Math: { Between: () => 1, Clamp: (x, l, h) => Math.max(l, Math.min(h, x)) }, Utils: { Array: { GetRandom: a => a[0] } } },
+    moveQueueForward: () => {},
+    showFalconAttack: () => {},
+    showCustomerRevolt: () => {},
+    showEnd: () => {},
+    scheduleNextSpawn: () => {},
+    updateSideC: () => {},
+    clearDialog: () => {},
+    animateStatChange: () => {},
+    flashMoney: () => {},
+    moneyText: { x: 0, y: 0, width: 50, setText() { return this; } },
+    loveText: { setText() { return this; } },
+    reportLine1: { setStyle() { return this; }, setText() { return this; }, setPosition() { return this; }, setScale() { return this; }, setVisible() { return this; }, setColor() { return this; } },
+    reportLine2: { setStyle() { return this; }, setText() { return this; }, setPosition() { return this; }, setScale() { return this; }, setVisible() { return this; }, setColor() { return this; } },
+    reportLine3: { setStyle() { return this; }, setText() { return this; }, setPosition() { return this; }, setOrigin() { return this; }, setAlpha() { return this; }, setVisible() { return this; }, setColor() { return this; } },
+    dialogPriceValue: { setVisible() { return this; }, setDepth() { return this; }, setText() { return this; }, setPosition() { return this; }, setScale() { return this; }, setAlpha() { return this; }, setColor() { return this; } },
+    paidStamp: { setText() { return this; }, setScale() { return this; }, setPosition() { return this; }, setAngle() { return this; }, setVisible() { return this; } },
+    tipText: { setText() { return this; }, setScale() { return this; }, setPosition() { return this; }, setVisible() { return this; } },
+    dialogBg: { setVisible() { return this; } },
+    dialogText: { setVisible() { return this; } },
+    supers: {},
+    fn: null
+  };
+  vm.createContext(context);
+  context.animateLoveChange = function(delta, c, cb) { context.love += delta; if (cb) cb(); };
+  vm.runInContext('const dur=v=>v;\n' + recMatch[0] + '\n' + actMatch[0] + '\nfn=handleAction;', context);
+  const handleAction = context.fn;
+  const scene = {
+    tweens: {
+      add(cfg) { if (cfg.onComplete) cfg.onComplete.call(cfg.callbackScope || null); return {}; },
+      createTimeline({ callbackScope, onComplete }) { return { add() {}, play() { if (onComplete) onComplete.call(callbackScope); } }; }
+    },
+    time: { delayedCall(d, cb, args, s) { if (cb) cb.apply(s || this, args || []); return {}; } }
+  };
+  const sprite = { destroy() {}, setDepth() { return this; }, x: 0, y: 0 };
+  const cust = { sprite, orders: [{ coins: 10, req: 'Coffee', price: 5, qty: 1 }], atOrder: true };
+  context.activeCustomer = cust;
+  context.queue = [cust];
+  handleAction.call(scene, 'sell');
+  assert.strictEqual(context.money, 25.75, 'money not updated correctly');
+  assert.strictEqual(context.love, 11, 'love not updated correctly');
+  console.log('handleAction("sell") update test passed');
+}
+
 function testShowStartScreen() {
   const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
   const match = /function showStartScreen\(scene\)[\s\S]*?\n\s*\}\);\n\s*\}/.exec(code);
@@ -157,6 +249,8 @@ async function run() {
     process.exit(1);
   } else {
     console.log('Game loaded without errors');
+    testSpawnCustomer();
+    testHandleActionSell();
     testShowStartScreen();
     testBlinkButton();
     testShowDialogButtons();

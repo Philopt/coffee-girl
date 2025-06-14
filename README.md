@@ -27,6 +27,13 @@ The game uses [Phaser](https://phaser.io/). It will load `lib/phaser.min.js` by 
 <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
 ```
 
+## Debugging
+
+1. Run `npm start` and open the game in a browser.
+2. If the truck never moves or "Start Shift" does nothing, open the browser's developer console (usually F12).
+3. Look for messages like "Asset failed to load" or "init() did not execute." 
+4. Verify all files in `assets/` load correctly and reload the page.
+
 ## Controls
 
 When you choose to sell or give a drink, the button briefly blinks.

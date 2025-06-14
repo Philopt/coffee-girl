@@ -487,22 +487,22 @@
       // Graphics objects do not support setShadow. Draw a simple shadow
       // manually by rendering a darker rect slightly offset behind the button.
       g.fillStyle(0x000000,0.3);
-      g.fillRoundedRect(2,2,width,height,radius);
+      g.fillRoundedRect(-width/2+2,-height/2+2,width,height,radius);
 
       g.fillStyle(color,1);
-      g.fillRoundedRect(0,0,width,height,radius);
-      let t=this.add.text(10,height/2,label,{font:'20px sans-serif',fill:'#fff'})
+      g.fillRoundedRect(-width/2,-height/2,width,height,radius);
+      let t=this.add.text(-width/2+10,0,label,{font:'20px sans-serif',fill:'#fff'})
         .setOrigin(0,0.5);
-      let icon=this.add.text(width-10,height/2,iconChar,{font:`${iconSize}px sans-serif`,fill:'#fff'})
+      let icon=this.add.text(width/2-10,0,iconChar,{font:`${iconSize}px sans-serif`,fill:'#fff'})
         .setOrigin(1,0.5);
       let children=[g,t,icon];
       if(label==='REFUSE'){
         t.setFontSize(18);
-        icon.setX(width-4);
+        icon.setX(width/2-4);
         children=[g,icon,t];
       }
       // position the button below the dialog box
-      const c=this.add.container(x - width/2,560 - height/2,children)
+      const c=this.add.container(x,560,children)
         .setSize(width,height)
         .setDepth(12)
         .setVisible(false);
@@ -513,7 +513,7 @@
       // visible button. Using the direct form prevents Phaser from shifting the
       // rectangle when enabling input.
       c.setInteractive(
-        new Phaser.Geom.Rectangle(0,0,width,height),
+        new Phaser.Geom.Rectangle(-width/2,-height/2,width,height),
         Phaser.Geom.Rectangle.Contains
       );
       if (c.input) {

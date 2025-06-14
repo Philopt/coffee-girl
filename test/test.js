@@ -291,6 +291,40 @@ function testShowDialogButtons() {
   console.log('showDialog button visibility test passed');
 }
 
+async function testIntroSequence() {
+  const puppeteer = require('puppeteer');
+  const { PNG } = require('pngjs');
+  const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
+  const page = await browser.newPage();
+  await page.goto('http://localhost:8080');
+  await new Promise(r => setTimeout(r, 2000));
+
+  const rect = await page.evaluate(() => {
+    const c = document.querySelector('canvas');
+    const r = c.getBoundingClientRect();
+    return { x: r.left, y: r.top, w: r.width, h: r.height };
+  });
+
+  const beforeBuf = await page.screenshot({ type: 'png' });
+  const clickX = rect.x + 240 * (rect.w / 480);
+  const clickY = rect.y + 320 * (rect.h / 640);
+  await page.mouse.click(clickX, clickY);
+  await new Promise(r => setTimeout(r, 3000));
+  const afterBuf = await page.screenshot({ type: 'png' });
+  await browser.close();
+
+  const before = PNG.sync.read(beforeBuf);
+  const after = PNG.sync.read(afterBuf);
+  const pixelX = Math.round(rect.x + 240 * (rect.w / 480));
+  const pixelY = Math.round(rect.y + 245 * (rect.h / 640));
+  const idx = (pixelY * before.width + pixelX) * 4;
+  const changed = before.data[idx] !== after.data[idx] ||
+                  before.data[idx + 1] !== after.data[idx + 1] ||
+                  before.data[idx + 2] !== after.data[idx + 2];
+  if (!changed) throw new Error('truck sprite did not appear to move');
+  console.log('intro sequence test passed');
+}
+
 async function run() {
   const serverPath = require.resolve('http-server/bin/http-server');
   const server = spawn(process.execPath, [serverPath, '-p', '8080', '-c-1'], { stdio: 'inherit' });
@@ -300,7 +334,7 @@ async function run() {
 
   const errors = [];
 
-  await new Promise((resolve, reject) => {
+  await new Promise((resolve) => {
     http.get('http://localhost:8080', res => {
       if (res.statusCode !== 200) errors.push(`Status ${res.statusCode}`);
       res.resume();
@@ -310,10 +344,10 @@ async function run() {
       resolve();
     });
   });
-  server.kill();
 
   if (errors.length) {
     console.error('Failed:', errors);
+    server.kill();
     process.exit(1);
   } else {
     console.log('Game loaded without errors');
@@ -323,6 +357,8 @@ async function run() {
     testStartButtonPlaysIntro();
     testBlinkButton();
     testShowDialogButtons();
+    await testIntroSequence();
+    server.kill();
   }
 }
 

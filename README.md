@@ -13,7 +13,7 @@ Coffee Clicker is a small browser game built with [Phaser](https://phaser.io/). 
 
    This runs `http-server` on `http://localhost:8080`. Open that URL in your browser.
 
-   Click **Start Shift** when it appears to begin the game.
+   Click **Clock In** when it appears to begin the game.
 
    The game now loads `src/main.js` with a standard `<script src="src/main.js" defer></script>` tag
    in `index.html`. If the page stays blank, open the browser console and look for
@@ -30,7 +30,7 @@ The game uses [Phaser](https://phaser.io/). It will load `lib/phaser.min.js` by 
 ## Debugging
 
 1. Run `npm start` and open the game in a browser.
-2. If the truck never moves or "Start Shift" does nothing, open the browser's developer console (usually F12).
+2. If the truck never moves or "Clock In" does nothing, open the browser's developer console (usually F12).
 3. Look for messages like "Asset failed to load" or "init() did not execute." 
 4. Verify all files in `assets/` load correctly and reload the page.
 

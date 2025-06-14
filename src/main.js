@@ -169,7 +169,6 @@
   let endOverlay=null;
   let startOverlay=null;
   let startButton=null;
-  let startMessage=null;
 
   function calcLoveLevel(v){
     if(v>=100) return 4;
@@ -323,13 +322,17 @@
     console.log('showStartScreen called');
     startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.5)
       .setDepth(14);
-    startMessage = scene.add.text(240,360,'Click to begin',{
-        font:'20px sans-serif',fill:'#fff'})
-      .setOrigin(0.5).setDepth(15);
-    startButton = scene.add.text(240,320,'Start Shift',{
-        font:'32px sans-serif',fill:'#fff',backgroundColor:'#006400',
-        padding:{x:20,y:10}})
-      .setOrigin(0.5).setDepth(15);
+    const btnLabel = scene.add.text(0,0,'Clock In',{
+        font:'32px sans-serif',fill:'#fff'})
+      .setOrigin(0.5);
+    const bw = btnLabel.width + 40;
+    const bh = btnLabel.height + 20;
+    const btnBg = scene.add.graphics();
+    btnBg.fillStyle(0x007bff,1);
+    btnBg.fillRoundedRect(-bw/2,-bh/2,bw,bh,15);
+    startButton = scene.add.container(240,320,[btnBg,btnLabel])
+      .setSize(bw,bh)
+      .setDepth(15);
     startButton.setInteractive({useHandCursor:true})
       .on('pointerdown',()=>{
 
@@ -337,7 +340,6 @@
         console.log('start button clicked');
 
         startButton.destroy();
-        if(startMessage){ startMessage.destroy(); startMessage=null; }
         if(startOverlay){ startOverlay.destroy(); startOverlay=null; }
         // playIntro will kick off the intro tween sequence
         playIntro.call(scene);

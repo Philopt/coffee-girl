@@ -129,7 +129,7 @@ function testShowStartScreen() {
   context.fn = null;
   vm.runInContext('let startOverlay,startButton;const playIntro=()=>{};\n' + match[0] + '\nfn=showStartScreen;', context);
   const showStartScreen = context.fn;
-  const calls = { rects: 0, text: null };
+  const calls = { rects: 0, text: null, container: null };
   const scene = {
     add: {
       rectangle() { calls.rects++; return { setDepth() { return this; } }; },
@@ -137,18 +137,29 @@ function testShowStartScreen() {
         const obj = {
           setOrigin() { return obj; },
           setDepth() { return obj; },
+          width: 100,
+          height: 40
+        };
+        calls.text = { txt, obj };
+        return obj;
+      },
+      graphics() { return { fillStyle() { return this; }, fillRoundedRect() { return this; } }; },
+      container(x,y,children) {
+        const obj = {
+          setSize() { return obj; },
+          setDepth() { return obj; },
           setInteractive() { obj.interactive = true; return obj; },
           on() { return obj; }
         };
-        calls.text = { txt, obj };
+        calls.container = obj;
         return obj;
       }
     }
   };
   showStartScreen.call(scene);
   assert.strictEqual(calls.rects, 1, 'start overlay not created');
-  assert.ok(calls.text && calls.text.obj.interactive, 'start button not interactive');
-  assert.strictEqual(calls.text.txt, 'Start Shift', 'start button text mismatch');
+  assert.ok(calls.container && calls.container.interactive, 'start button not interactive');
+  assert.strictEqual(calls.text.txt, 'Clock In', 'start button text mismatch');
   console.log('showStartScreen test passed');
 }
 
@@ -175,9 +186,11 @@ function testStartButtonPlaysIntro() {
   const scene = {
     add: {
       rectangle() { return { setDepth() { return this; }, destroy() { this.destroyed = true; } }; },
-      text() {
+      text() { return { setOrigin() { return this; }, setDepth() { return this; }, width: 100, height: 40 }; },
+      graphics() { return { fillStyle() { return this; }, fillRoundedRect() { return this; } }; },
+      container() {
         const obj = {
-          setOrigin() { return obj; },
+          setSize() { return obj; },
           setDepth() { return obj; },
           setInteractive() { return obj; },
           on(event, cb) { if (event === 'pointerdown') pointerCb = cb; return obj; },

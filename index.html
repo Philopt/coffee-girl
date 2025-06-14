@@ -26,7 +26,7 @@ window.onload = function(){
   new Phaser.Game(config);
 
   let moneyText, loveText;
-  let dialogBg, dialogText, dialogCoins, btnSell, btnGive, btnRef;
+  let dialogBg, dialogText, dialogCoins, btnSell, btnGive, btnRef, btnSellLabel, btnGiveLabel, btnRefLabel;
   let reportBg, reportLine1, reportLine2, reportLine3;
 
   function preload(){
@@ -53,18 +53,29 @@ window.onload = function(){
     this.add.image(240,292,'girl').setScale(0.5).setDepth(3);
 
     // dialog
-    dialogBg=this.add.rectangle(240,460,460,120,0xffffff).setStrokeStyle(2,0x000).setVisible(false).setDepth(10);
-    dialogText=this.add.text(240,440,'',{font:'18px sans-serif',fill:'#000',align:'center',wordWrap:{width:420}})
+    dialogBg=this.add.rectangle(240,470,460,200,0xffffff).setStrokeStyle(2,0x000).setVisible(false).setDepth(10);
+    dialogText=this.add.text(240,450,'',{font:'18px sans-serif',fill:'#000',align:'center',wordWrap:{width:420}})
                      .setOrigin(0.5).setVisible(false).setDepth(11);
-    dialogCoins=this.add.text(240,470,'',{font:'24px sans-serif',fill:'#000'}).setOrigin(0.5).setVisible(false).setDepth(11);
+    dialogCoins=this.add.text(240,480,'',{font:'24px sans-serif',fill:'#000'}).setOrigin(0.5).setVisible(false).setDepth(11);
 
     // buttons
-    btnSell=this.add.text(80,500,'Sell',{font:'18px sans-serif',fill:'#fff',backgroundColor:'#006400',padding:{x:12,y:6}})
-      .setInteractive().setVisible(false).setDepth(12).on('pointerdown',()=>handleAction('sell'));
-    btnGive=this.add.text(200,500,'Give Free',{font:'18px sans-serif',fill:'#fff',backgroundColor:'#008000',padding:{x:12,y:6}})
-      .setInteractive().setVisible(false).setDepth(12).on('pointerdown',()=>handleAction('give'));
-    btnRef=this.add.text(360,500,'Refuse',{font:'18px sans-serif',fill:'#fff',backgroundColor:'#800000',padding:{x:12,y:6}})
-      .setInteractive().setVisible(false).setDepth(12).on('pointerdown',()=>handleAction('refuse'));
+    btnSell=this.add.rectangle(80,520,100,40,0x006400)
+      .setOrigin(0.5).setVisible(false).setDepth(12)
+      .setInteractive({useHandCursor:true}).on('pointerdown',()=>handleAction('sell'));
+    btnSellLabel=this.add.text(80,520,'Sell',{font:'18px sans-serif',fill:'#fff'})
+      .setOrigin(0.5).setVisible(false).setDepth(13);
+
+    btnGive=this.add.rectangle(200,520,100,40,0xADD8E6)
+      .setOrigin(0.5).setVisible(false).setDepth(12)
+      .setInteractive({useHandCursor:true}).on('pointerdown',()=>handleAction('give'));
+    btnGiveLabel=this.add.text(200,520,'Give Free',{font:'18px sans-serif',fill:'#000'})
+      .setOrigin(0.5).setVisible(false).setDepth(13);
+
+    btnRef=this.add.rectangle(360,520,100,40,0x800000)
+      .setOrigin(0.5).setVisible(false).setDepth(12)
+      .setInteractive({useHandCursor:true}).on('pointerdown',()=>handleAction('refuse'));
+    btnRefLabel=this.add.text(360,520,'Refuse',{font:'18px sans-serif',fill:'#fff'})
+      .setOrigin(0.5).setVisible(false).setDepth(13);
 
     // report
     reportBg=this.add.rectangle(240,200,220,80,0xffffff).setStrokeStyle(2,0x000).setVisible(false).setDepth(10);
@@ -89,12 +100,16 @@ window.onload = function(){
     dialogText.setText(`${req.charAt(0).toUpperCase()+req.slice(1)} costs $${(req==='coffee'?COFFEE_COST:WATER_COST).toFixed(2)}.`)
       .setVisible(true);
     dialogCoins.setText(`🪙${coins}`).setVisible(true);
-    btnSell.setVisible(req==='coffee'); btnGive.setVisible(true); btnRef.setVisible(true);
+    btnSell.setVisible(req==='coffee'); btnSellLabel.setVisible(req==='coffee');
+    btnGive.setVisible(true); btnGiveLabel.setVisible(true);
+    btnRef.setVisible(true); btnRefLabel.setVisible(true);
   }
 
   function clearDialog(){
     dialogBg.setVisible(false); dialogText.setVisible(false); dialogCoins.setVisible(false);
-    btnSell.setVisible(false); btnGive.setVisible(false); btnRef.setVisible(false);
+    btnSell.setVisible(false); btnSellLabel.setVisible(false);
+    btnGive.setVisible(false); btnGiveLabel.setVisible(false);
+    btnRef.setVisible(false); btnRefLabel.setVisible(false);
   }
 
   function handleAction(type){

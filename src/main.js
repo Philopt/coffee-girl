@@ -44,7 +44,6 @@
   const QUEUE_OFFSET=8;
   // vertical position of the first waiting customer (slightly lower than order spot)
   const QUEUE_Y=ORDER_Y+5;
-  const FRIEND_OFFSET=40;
   const WANDER_TOP=ORDER_Y+50; // wander up to 50px below the order window
   const WANDER_BOTTOM=580; // near bottom of the screen
   // base number of customers that can linger nearby
@@ -190,7 +189,6 @@
     const dir = Phaser.Math.Between(0,1)?1:-1;
     const targetX = dir===1?520:-40;
     const targets=[c.sprite];
-    if(c.friend) targets.push(c.friend);
     wanderers.splice(wanderers.indexOf(c),1);
     scene.tweens.add({targets:targets,x:targetX,duration:dur(WALK_OFF_BASE),onComplete:()=>{
         targets.forEach(t=>t.destroy());
@@ -222,9 +220,6 @@
       c.sprite.setDepth(5);
       c.walkTween=scene.tweens.add({targets:c.sprite,x:targetX,y:targetY,scale:scaleForY(targetY),duration:dur(1200+dist*4),ease:'Sine.easeIn',callbackScope:scene,
         onComplete:()=>{c.walkTween=null; if(idx===0) showDialog.call(scene);} });
-      if(c.friend){
-        scene.tweens.add({targets:c.friend,x:targetX+FRIEND_OFFSET,y:targetY,scale:scaleForY(targetY),duration:dur(1200+dist*4),ease:'Sine.easeIn'});
-      }
     }
   }
 
@@ -241,7 +236,6 @@
           willShow=true;
         }
         scene.tweens.add(cfg);
-        if(cust.friend) scene.tweens.add({targets:cust.friend,x:tx+FRIEND_OFFSET,y:ty,scale:scaleForY(ty),duration:dur(300)});
       }
     });
     activeCustomer=queue[0]||null;
@@ -501,7 +495,6 @@
         if(idx>=0) wanderers.splice(idx,1);
         c.sprite.destroy();
       }});
-    // Friends no longer tag along
     wanderers.push(c);
     lureNextWanderer(this);
     scheduleNextSpawn(this);
@@ -527,15 +520,6 @@
         duration: dur(300),
         onComplete: ()=>{ showDialog.call(this); }
       });
-      if(c.friend){
-        this.tweens.add({
-          targets: c.friend,
-          x: ORDER_X + FRIEND_OFFSET,
-          y: ORDER_Y,
-          scale: scaleForY(ORDER_Y),
-          duration: dur(300)
-        });
-      }
       return;
     }
     dialogBg.setVisible(true);
@@ -639,17 +623,14 @@
 
     const tipPct=type==='sell'?lD*15:0;
     const customer=current.sprite;
-    const friend=current.friend;
     activeCustomer=null;
 
     const finish=()=>{
       const targets=[current.sprite];
-      if(friend) targets.push(friend);
       targets.forEach(t=>t.setDepth(5));
       this.tweens.add({ targets: targets, x: (type==='refuse'? -50:520), alpha:0, duration:dur(WALK_OFF_BASE), callbackScope:this,
         onComplete:()=>{
           current.sprite.destroy();
-          if(friend) friend.destroy();
           queue.shift();
           moveQueueForward.call(this);
           if(money<=0){
@@ -928,7 +909,6 @@
       arr.forEach(c=>{
         if(c.walkTween){ c.walkTween.stop(); c.walkTween=null; }
         if(c.sprite) attackers.push(c.sprite);
-        if(c.friend) attackers.push(c.friend);
       });
     };
     gather(queue);
@@ -1059,12 +1039,11 @@
     updateLevelDisplay();
     if(activeCustomer){
       activeCustomer.sprite.destroy();
-      if(activeCustomer.friend) activeCustomer.friend.destroy();
     }
     activeCustomer=null;
-    Phaser.Actions.Call(queue,c=>{ c.sprite.destroy(); if(c.friend) c.friend.destroy(); });
+    Phaser.Actions.Call(queue,c=>{ c.sprite.destroy(); });
     queue=[];
-    Phaser.Actions.Call(wanderers,c=>{ c.sprite.destroy(); if(c.friend) c.friend.destroy(); });
+    Phaser.Actions.Call(wanderers,c=>{ c.sprite.destroy(); });
     wanderers=[];
     spawnCount=0;
     servedCount=0;

@@ -32,8 +32,8 @@ function testBlinkButton() {
   assert(disableCalled, 'disableInteractive not called');
   assert.strictEqual(btn.input.enabled, true, 'button not re-enabled');
   assert.ok(setArgs && setArgs.rect && setArgs.cb, 'setInteractive should be called with shape');
-  assert.strictEqual(setArgs.rect.x, 0, 'hitbox x incorrect');
-  assert.strictEqual(setArgs.rect.y, 0, 'hitbox y incorrect');
+  assert.strictEqual(setArgs.rect.x, -btn.width / 2, 'hitbox x not centered');
+  assert.strictEqual(setArgs.rect.y, -btn.height / 2, 'hitbox y not centered');
   console.log('blinkButton interactivity test passed');
 }
 

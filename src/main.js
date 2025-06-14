@@ -319,6 +319,7 @@
 
   function showStartScreen(scene){
     scene = scene || this;
+    console.log('showStartScreen called');
     startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.5)
       .setDepth(14);
     startButton = scene.add.text(240,320,'Start Shift',{

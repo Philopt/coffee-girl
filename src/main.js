@@ -1063,6 +1063,20 @@
     setTimeout(() => {
       if (!initCalled) {
         console.error('init() did not execute');
+        new Phaser.Game({
+          type: Phaser.AUTO,
+          parent: 'game-container',
+          width: 480,
+          height: 640,
+          scene: {
+            create: function(){
+              this.add.text(240, 320,
+                'Failed to start game. Check console for errors.',
+                {font:'20px sans-serif', fill:'#f00', align:'center', wordWrap:{width:460}})
+                .setOrigin(0.5);
+            }
+          }
+        });
       }
     }, 3000);
   }

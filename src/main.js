@@ -6,6 +6,8 @@
   function init(){
     if (typeof debugLog === 'function') debugLog('init() executing');
     initCalled = true;
+    new Phaser.Game(config);
+  }
   // full drink menu with prices
   const MENU=[
     {name:"Lady Roaster Drip", price:3.90},
@@ -51,7 +53,6 @@
   // base number of customers that can linger nearby
   const BASE_WAITERS=3;
   const WALK_OFF_BASE=1000;
-  const WALK_OFF_SLOW=200;
   const MAX_M=100, MAX_L=100;
 
 
@@ -142,16 +143,12 @@
       duration: dur(80),
       repeat: 1,
       onComplete: () => {
-        if (btn.input) btn.input.enabled = true;  // restore interactivity
+        if (btn.setInteractive) btn.setInteractive();
         if (onComplete) onComplete();
       }
     });
   }
 
-  const config={ type:Phaser.AUTO, parent:'game-container', backgroundColor:'#f2e5d7',
-    scale:{ mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH, width:480, height:640 },
-    pixelArt:true, scene:{ preload, create } };
-  new Phaser.Game(config);
 
   let moneyText, loveText, queueLevelText;
   let dialogBg, dialogText, dialogCoins, dialogPriceLabel, dialogPriceValue,
@@ -169,6 +166,7 @@
   let endOverlay=null;
   let startOverlay=null;
   let startButton=null;
+  let startMessage=null;
 
   function calcLoveLevel(v){
     if(v>=100) return 4;
@@ -317,15 +315,27 @@
   function showStartScreen(scene){
     scene = scene || this;
     if (typeof debugLog === 'function') debugLog('showStartScreen called');
+    // Log when the start screen is shown so we know the overlay is active
+    console.log('showStartScreen called');
     startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.5)
       .setDepth(14);
+    startMessage = scene.add.text(240,360,'Click to begin',{
+        font:'20px sans-serif',fill:'#fff'})
+      .setOrigin(0.5).setDepth(15);
     startButton = scene.add.text(240,320,'Start Shift',{
         font:'32px sans-serif',fill:'#fff',backgroundColor:'#006400',
         padding:{x:20,y:10}})
-      .setOrigin(0.5).setDepth(15).setInteractive({useHandCursor:true})
+      .setOrigin(0.5).setDepth(15);
+    startButton.setInteractive({useHandCursor:true})
       .on('pointerdown',()=>{
+
+        // Log click registration to help debug input issues
+        console.log('start button clicked');
+
         startButton.destroy();
+        if(startMessage){ startMessage.destroy(); startMessage=null; }
         if(startOverlay){ startOverlay.destroy(); startOverlay=null; }
+        // playIntro will kick off the intro tween sequence
         playIntro.call(scene);
       });
   }
@@ -342,6 +352,8 @@
     girl.setPosition(560,260).setVisible(false);
     const intro=scene.tweens.createTimeline({callbackScope:scene,
       onComplete:()=>{
+        console.log('intro finished');
+        console.log('playIntro finished');
         spawnCustomer.call(scene);
         scheduleNextSpawn(scene);
       }});
@@ -371,6 +383,8 @@
   }
 
   function create(){
+    this.assets = Assets;
+    this.customers = Customers;
     const missing=requiredAssets.filter(key=>!this.textures.exists(key));
     if(missing.length){
       const msg='Missing assets: '+missing.join(', ');
@@ -1056,7 +1070,15 @@
     showStartScreen.call(this);
   }
 
-  }
+  const Assets = { keys, requiredAssets, preload };
+  const Scene = { create, showStartScreen, playIntro };
+  const Customers = { spawnCustomer, lureNextWanderer, moveQueueForward, scheduleNextSpawn,
+                      showDialog, clearDialog, handleAction, showFalconAttack,
+                      showCustomerRevolt, restartGame };
+
+  const config={ type:Phaser.AUTO, parent:'game-container', backgroundColor:'#f2e5d7',
+    scale:{ mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH, width:480, height:640 },
+    pixelArt:true, scene:{ preload: Assets.preload, create: Scene.create } };
 
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
     init();
@@ -1065,6 +1087,20 @@
     setTimeout(() => {
       if (!initCalled) {
         console.error('init() did not execute');
+        new Phaser.Game({
+          type: Phaser.AUTO,
+          parent: 'game-container',
+          width: 480,
+          height: 640,
+          scene: {
+            create: function(){
+              this.add.text(240, 320,
+                'Failed to start game. Check console for errors.',
+                {font:'20px sans-serif', fill:'#f00', align:'center', wordWrap:{width:460}})
+                .setOrigin(0.5);
+            }
+          }
+        });
       }
     }, 3000);
   }

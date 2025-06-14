@@ -9,22 +9,31 @@ function testBlinkButton() {
   const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
   const match = /function blinkButton\(btn, onComplete\)[\s\S]*?\n\s*\}\);\n\s*\}/.exec(code);
   if (!match) throw new Error('blinkButton not found');
-  const context = {};
+  function RectStub(x, y, w, h) {
+    return { x, y, width: w, height: h };
+  }
+  RectStub.Contains = () => true;
+  const context = { Phaser: { Geom: { Rectangle: RectStub } } };
   vm.createContext(context);
   context.blinkBtn = null;
   vm.runInContext('const dur=v=>v;\n' + match[0] + '\nblinkBtn=blinkButton;', context);
   const blinkButton = context.blinkBtn;
   let disableCalled = false;
+  let setArgs = null;
   const btn = {
+    width: 120,
+    height: 40,
     input: { enabled: true },
     disableInteractive() { disableCalled = true; this.input.enabled = false; },
-    setInteractive() { this.setInteractiveCalled = true; this.input.enabled = true; }
+    setInteractive(rect, cb) { setArgs = { rect, cb }; this.input.enabled = true; }
   };
   const scene = { tweens: { add(cfg) { if (cfg.onComplete) cfg.onComplete(); return {}; } } };
   blinkButton.call(scene, btn);
   assert(disableCalled, 'disableInteractive not called');
   assert.strictEqual(btn.input.enabled, true, 'button not re-enabled');
-  assert.ok(btn.setInteractiveCalled, 'setInteractive should be called to re-enable');
+  assert.ok(setArgs && setArgs.rect && setArgs.cb, 'setInteractive should be called with shape');
+  assert.strictEqual(setArgs.rect.x, -btn.width / 2, 'hitbox x not centered');
+  assert.strictEqual(setArgs.rect.y, -btn.height / 2, 'hitbox y not centered');
   console.log('blinkButton interactivity test passed');
 }
 
@@ -124,7 +133,11 @@ function testShowStartScreen() {
   const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
   const match = /function showStartScreen\(scene\)[\s\S]*?\n\s*\}\);\n\s*\}/.exec(code);
   if (!match) throw new Error('showStartScreen not found');
-  const context = {};
+  function RectStub(x, y, w, h) {
+    return { x, y, width: w, height: h };
+  }
+  RectStub.Contains = () => true;
+  const context = { Phaser: { Geom: { Rectangle: RectStub } } };
   vm.createContext(context);
   context.fn = null;
   vm.runInContext('let startOverlay,startButton;const playIntro=()=>{};\n' + match[0] + '\nfn=showStartScreen;', context);
@@ -168,7 +181,11 @@ function testStartButtonPlaysIntro() {
   const startMatch = /function showStartScreen\(scene\)[\s\S]*?\n\s*\}\);\n\s*\}/.exec(code);
   const introMatch = /function playIntro\(scene\)[\s\S]*?intro\.play\(\);\n\s*\}/.exec(code);
   if (!startMatch || !introMatch) throw new Error('showStartScreen or playIntro not found');
-  const context = { spawnCustomer: () => {}, scheduleNextSpawn: () => {} };
+  function RectStub(x, y, w, h) {
+    return { x, y, width: w, height: h };
+  }
+  RectStub.Contains = () => true;
+  const context = { Phaser: { Geom: { Rectangle: RectStub } }, spawnCustomer: () => {}, scheduleNextSpawn: () => {} };
   vm.createContext(context);
   context.fnStart = null;
   context.fnIntro = null;

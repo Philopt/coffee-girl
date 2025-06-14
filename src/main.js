@@ -312,6 +312,7 @@
   }
 
   function playIntro(scene){
+    scene = scene || this;
     if(!truck || !girl) return;
     truck.setPosition(520,245);
     girl.setPosition(520,260).setVisible(false);
@@ -431,7 +432,7 @@
       .setOrigin(0.5).setDepth(12).setVisible(false);
 
     // start intro after assets are ready
-    this.time.delayedCall(0, () => playIntro(this));
+    playIntro.call(this);
   }
 
   function spawnCustomer(){

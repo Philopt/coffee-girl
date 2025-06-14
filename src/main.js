@@ -152,8 +152,7 @@
           if (btn.width !== undefined && btn.height !== undefined &&
               Phaser && Phaser.Geom && Phaser.Geom.Rectangle) {
             btn.setInteractive(
-              new Phaser.Geom.Rectangle(-btn.width/2, -btn.height/2,
-                                        btn.width, btn.height),
+              new Phaser.Geom.Rectangle(0, 0, btn.width, btn.height),
               Phaser.Geom.Rectangle.Contains
             );
           } else {
@@ -482,27 +481,27 @@
 
     // helper to create a rounded rectangle button with consistent sizing
     const createButton=(x,label,iconChar,iconSize,color,handler)=>{
-      const width=140, height=50, radius=8;
+      const width=120, height=60, radius=8;
       const g=this.add.graphics();
       // Graphics objects do not support setShadow. Draw a simple shadow
       // manually by rendering a darker rect slightly offset behind the button.
       g.fillStyle(0x000000,0.3);
-      g.fillRoundedRect(-width/2+2,-height/2+2,width,height,radius);
+      g.fillRoundedRect(2,2,width,height,radius);
 
       g.fillStyle(color,1);
-      g.fillRoundedRect(-width/2,-height/2,width,height,radius);
-      let t=this.add.text(-width/2+10,0,label,{font:'20px sans-serif',fill:'#fff'})
+      g.fillRoundedRect(0,0,width,height,radius);
+      let t=this.add.text(10,height/2,label,{font:'20px sans-serif',fill:'#fff'})
         .setOrigin(0,0.5);
-      let icon=this.add.text(width/2-10,0,iconChar,{font:`${iconSize}px sans-serif`,fill:'#fff'})
+      let icon=this.add.text(width-10,height/2,iconChar,{font:`${iconSize}px sans-serif`,fill:'#fff'})
         .setOrigin(1,0.5);
       let children=[g,t,icon];
       if(label==='REFUSE'){
         t.setFontSize(18);
-        icon.setX(width/2-4);
+        icon.setX(width-4);
         children=[g,icon,t];
       }
       // position the button below the dialog box
-      const c=this.add.container(x,560,children)
+      const c=this.add.container(x - width/2,560 - height/2,children)
         .setSize(width,height)
         .setDepth(12)
         .setVisible(false);
@@ -510,7 +509,7 @@
       // visible button. Using the direct form avoids Phaser resetting the
       // rectangle's position when the interactive object is created.
       c.setInteractive({
-        hitArea: new Phaser.Geom.Rectangle(-width/2,-height/2,width,height),
+        hitArea: new Phaser.Geom.Rectangle(0,0,width,height),
         hitAreaCallback: Phaser.Geom.Rectangle.Contains,
         useHandCursor: true
       })

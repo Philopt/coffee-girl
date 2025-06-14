@@ -966,10 +966,18 @@
   function showCustomerRevolt(cb){
     const scene=this;
     const attackers=[];
+    const gatherStartY = Math.max(WANDER_TOP, girl.y + 60);
     const gather=(arr)=>{
       arr.forEach(c=>{
         if(c.walkTween){ c.walkTween.stop(); c.walkTween=null; }
-        if(c.sprite) attackers.push(c.sprite);
+        if(c.sprite){
+          c.sprite.setDepth(20); // keep attackers above the girl
+          if(c.sprite.y < gatherStartY){
+            c.sprite.setPosition(c.sprite.x, gatherStartY);
+            c.sprite.setScale(scaleForY(gatherStartY));
+          }
+          attackers.push(c.sprite);
+        }
       });
     };
     gather(queue);
@@ -977,7 +985,7 @@
 
     while(attackers.length<3){
       const k=Phaser.Utils.Array.GetRandom(keys);
-      const ay=Phaser.Math.Between(WANDER_TOP, WANDER_BOTTOM);
+      const ay=Phaser.Math.Between(gatherStartY, WANDER_BOTTOM);
       const a=scene.add.sprite(Phaser.Math.Between(-40,520), ay, k)
         .setScale(scaleForY(ay)).setDepth(20);
       attackers.push(a);
@@ -995,11 +1003,23 @@
         onComplete:()=>girl.clearTint()});
     }
 
-    function sendDriver(driver){
-      loops.forEach((ev,a)=>{ if(ev) ev.remove(false); if(a!==driver){scene.tweens.add({targets:a,alpha:0,duration:dur(300),onComplete:()=>a.destroy()});}});
-      scene.tweens.add({targets:driver,x:truck.x-40,y:truck.y,duration:dur(300),onComplete:()=>driver.destroy()});
-      scene.tweens.add({targets:truck,x:-200,duration:dur(800),delay:dur(300),onComplete:()=>{if(cb) cb();}});
-    }
+      function sendDriver(driver){
+        loops.forEach((ev,a)=>{
+          if(ev) ev.remove(false);
+          if(a!==driver){
+            const dir = a.x < girl.x ? -1 : 1;
+            const targetX = dir===1 ? 520 : -40;
+            scene.tweens.add({
+              targets:a,
+              x:targetX,
+              duration:dur(WALK_OFF_BASE/1.5),
+              onComplete:()=>a.destroy()
+            });
+          }
+        });
+        scene.tweens.add({targets:driver,x:truck.x-40,y:truck.y,duration:dur(300),onComplete:()=>driver.destroy()});
+        scene.tweens.add({targets:truck,x:-200,duration:dur(800),delay:dur(300),onComplete:()=>{if(cb) cb();}});
+      }
 
     function attack(a){
       if(finished) return;

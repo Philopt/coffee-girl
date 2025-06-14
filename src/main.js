@@ -133,17 +133,7 @@
       obj.setColor('#fff');
       if(isLove && !up){
         obj.setText('❤️ '+love);
-        scene.tweens.add({
-          targets:obj,
-          angle:{from:-15,to:15},
-          duration:dur(160),
-          repeat:2,
-          yoyo:true,
-          ease:'Sine.easeInOut',
-          onComplete:()=>{
-            scene.tweens.add({targets:obj,angle:0,duration:dur(180),ease:'Sine.easeOut'});
-          }
-        });
+        // removed wobble animation for the love counter
       }
     },[],scene);
   }

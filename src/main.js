@@ -315,6 +315,7 @@
 
   function showStartScreen(scene){
     scene = scene || this;
+    // Log when the start screen is shown so we know the overlay is active
     console.log('showStartScreen called');
     startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.5)
       .setDepth(14);
@@ -327,10 +328,14 @@
       .setOrigin(0.5).setDepth(15);
     startButton.setInteractive({useHandCursor:true})
       .on('pointerdown',()=>{
-        console.log('start button pressed');
+
+        // Log click registration to help debug input issues
+        console.log('start button clicked');
+
         startButton.destroy();
         if(startMessage){ startMessage.destroy(); startMessage=null; }
         if(startOverlay){ startOverlay.destroy(); startOverlay=null; }
+        // playIntro will kick off the intro tween sequence
         playIntro.call(scene);
       });
   }
@@ -348,6 +353,7 @@
     const intro=scene.tweens.createTimeline({callbackScope:scene,
       onComplete:()=>{
         console.log('intro finished');
+        console.log('playIntro finished');
         spawnCustomer.call(scene);
         scheduleNextSpawn(scene);
       }});
@@ -1071,6 +1077,20 @@
     setTimeout(() => {
       if (!initCalled) {
         console.error('init() did not execute');
+        new Phaser.Game({
+          type: Phaser.AUTO,
+          parent: 'game-container',
+          width: 480,
+          height: 640,
+          scene: {
+            create: function(){
+              this.add.text(240, 320,
+                'Failed to start game. Check console for errors.',
+                {font:'20px sans-serif', fill:'#f00', align:'center', wordWrap:{width:460}})
+                .setOrigin(0.5);
+            }
+          }
+        });
       }
     }, 3000);
   }

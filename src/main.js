@@ -442,7 +442,11 @@
       g.fillStyle(color,1);
       g.fillRoundedRect(-width/2,-height/2,width,height,radius);
       const t=this.add.text(0,0,label,{font:'20px sans-serif',fill:'#fff'}).setOrigin(0.5);
-      const c=this.add.container(x,500,[g,t]).setSize(width,height).setDepth(12).setVisible(false);
+      // position the button slightly lower so it peeks out of the dialog box
+      const c=this.add.container(x,520,[g,t])
+        .setSize(width,height)
+        .setDepth(12)
+        .setVisible(false);
       c.setInteractive(new Phaser.Geom.Rectangle(-width/2,-height/2,width,height),Phaser.Geom.Rectangle.Contains)
         .on('pointerdown',()=>blinkButton.call(this,c,handler));
       return c;

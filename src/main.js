@@ -59,6 +59,7 @@
   let money=10.00, love=10, gameOver=false;
   let queue=[], activeCustomer=null, wanderers=[];
   let spawnTimer = null;
+  let falconActive = false;
   let loveLevel=1;
   const keys=[];
   const requiredAssets=['bg','truck','girl','lady_falcon','falcon_end','revolt_end'];
@@ -282,6 +283,7 @@
   }
 
   function scheduleNextSpawn(scene){
+    if(falconActive) return;
     if (spawnTimer) {
       spawnTimer.remove(false);
     }
@@ -886,13 +888,28 @@
 
   function showFalconAttack(cb){
     const scene=this;
+    falconActive = true;
+    gameOver = true;
+    if (spawnTimer) { spawnTimer.remove(false); spawnTimer = null; }
     // make all customers flee when the falcon appears
     const fleeing=[...queue, ...wanderers];
     fleeing.forEach(c=>{
       if(c.walkTween){ c.walkTween.stop(); c.walkTween=null; }
       const dir=c.sprite.x<ORDER_X? -1:1;
       const targetX=dir===1?520:-40;
-      scene.tweens.add({targets:c.sprite,x:targetX,duration:dur(WALK_OFF_BASE/1.5),onComplete:()=>c.sprite.destroy()});
+      const tl=scene.tweens.createTimeline();
+      for(let i=0;i<3;i++){
+        tl.add({targets:c.sprite,
+                x:Phaser.Math.Between(40,440),
+                y:Phaser.Math.Between(WANDER_TOP,WANDER_BOTTOM),
+                duration:dur(Phaser.Math.Between(200,400)),
+                ease:'Sine.easeInOut'});
+      }
+      tl.add({targets:c.sprite,
+              x:targetX,
+              duration:dur(WALK_OFF_BASE/1.5),
+              onComplete:()=>c.sprite.destroy()});
+      tl.play();
     });
     queue.length=0; wanderers.length=0;
 
@@ -1067,6 +1084,7 @@
       spawnTimer.remove(false);
       spawnTimer = null;
     }
+    falconActive = false;
     clearDialog();
     if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
     if(sideCText){ sideCText.destroy(); sideCText=null; }

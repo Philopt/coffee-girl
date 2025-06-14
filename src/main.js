@@ -434,6 +434,11 @@
     const createButton=(x,label,color,handler)=>{
       const width=120, height=40, radius=8;
       const g=this.add.graphics();
+      // Graphics objects do not support setShadow. Draw a simple shadow
+      // manually by rendering a darker rect slightly offset behind the button.
+      g.fillStyle(0x000000,0.3);
+      g.fillRoundedRect(-width/2+2,-height/2+2,width,height,radius);
+
       g.fillStyle(color,1);
       g.fillRoundedRect(-width/2,-height/2,width,height,radius);
       const t=this.add.text(0,0,label,{font:'20px sans-serif',fill:'#fff'}).setOrigin(0.5);

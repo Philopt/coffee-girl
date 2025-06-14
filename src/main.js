@@ -464,7 +464,11 @@
         .setSize(width,height)
         .setDepth(12)
         .setVisible(false);
-      c.setInteractive(new Phaser.Geom.Rectangle(-width/2,-height/2,width,height),Phaser.Geom.Rectangle.Contains)
+      c.setInteractive({
+        hitArea:new Phaser.Geom.Rectangle(-width/2,-height/2,width,height),
+        hitAreaCallback:Phaser.Geom.Rectangle.Contains,
+        useHandCursor:true
+      })
         .on('pointerdown',()=>blinkButton.call(this,c,handler));
       return c;
     };
@@ -923,7 +927,7 @@
     queue.length=0; wanderers.length=0;
 
     const falcon=scene.add.sprite(-40,-40,'lady_falcon',0)
-      .setScale(1.4)
+      .setScale(1.4,1.68)
       .setDepth(20);
     falcon.anims.play('falcon_fly');
     const targetX=girl.x;

@@ -49,7 +49,6 @@
   // base number of customers that can linger nearby
   const BASE_WAITERS=3;
   const WALK_OFF_BASE=1000;
-  const WALK_OFF_SLOW=200;
   const MAX_M=100, MAX_L=100;
 
 

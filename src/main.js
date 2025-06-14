@@ -149,10 +149,11 @@
       repeat: 1,
       onComplete: () => {
         if (btn.setInteractive) {
-          if (btn.width !== undefined && btn.height !== undefined &&
-              Phaser && Phaser.Geom && Phaser.Geom.Rectangle) {
+          const w = btn._hitWidth !== undefined ? btn._hitWidth : btn.width;
+          const h = btn._hitHeight !== undefined ? btn._hitHeight : btn.height;
+          if (w !== undefined && h !== undefined && Phaser && Phaser.Geom && Phaser.Geom.Rectangle) {
             btn.setInteractive(
-              new Phaser.Geom.Rectangle(0, 0, btn.width, btn.height),
+              new Phaser.Geom.Rectangle(0, 0, w, h),
               Phaser.Geom.Rectangle.Contains
             );
           } else {
@@ -505,6 +506,9 @@
         .setSize(width,height)
         .setDepth(12)
         .setVisible(false);
+      // store hit area dimensions for later reactivation
+      c._hitWidth = width;
+      c._hitHeight = height;
       // Explicitly specify the hit area so the pointer box aligns with the
       // visible button. Using the direct form avoids Phaser resetting the
       // rectangle's position when the interactive object is created.

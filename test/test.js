@@ -127,28 +127,37 @@ function testShowStartScreen() {
   const context = {};
   vm.createContext(context);
   context.fn = null;
-  vm.runInContext('let startOverlay,startButton;const playIntro=()=>{};\n' + match[0] + '\nfn=showStartScreen;', context);
+  vm.runInContext('let startOverlay,startButton,startMessage;const playIntro=()=>{};\n' + match[0] + '\nfn=showStartScreen;', context);
   const showStartScreen = context.fn;
-  const calls = { rects: 0, text: null };
+  const calls = { rects: 0, graphics: false, text: null, container: null };
   const scene = {
     add: {
       rectangle() { calls.rects++; return { setDepth() { return this; } }; },
-      text(x, y, txt, style) {
+      graphics() { calls.graphics = true; return { fillStyle() { return this; }, fillRoundedRect() { return this; } }; },
+      text(x, y, txt) {
         const obj = {
           setOrigin() { return obj; },
+          setDepth() { return obj; },
+        };
+        calls.text = { txt, obj };
+        return obj;
+      },
+      container(x, y, arr) {
+        const obj = {
+          setSize() { return obj; },
           setDepth() { return obj; },
           setInteractive() { obj.interactive = true; return obj; },
           on() { return obj; }
         };
-        calls.text = { txt, obj };
+        calls.container = obj;
         return obj;
       }
     }
   };
   showStartScreen.call(scene);
   assert.strictEqual(calls.rects, 1, 'start overlay not created');
-  assert.ok(calls.text && calls.text.obj.interactive, 'start button not interactive');
-  assert.strictEqual(calls.text.txt, 'Start Shift', 'start button text mismatch');
+  assert.ok(calls.container && calls.container.interactive, 'start button not interactive');
+  assert.strictEqual(calls.text.txt, 'Clock In', 'start button text mismatch');
   console.log('showStartScreen test passed');
 }
 
@@ -161,7 +170,7 @@ function testStartButtonPlaysIntro() {
   vm.createContext(context);
   context.fnStart = null;
   context.fnIntro = null;
-  vm.runInContext('var startOverlay,startButton,truck,girl; const dur=v=>v;\n' +
+  vm.runInContext('var startOverlay,startButton,startMessage,truck,girl; const dur=v=>v;\n' +
     introMatch[0] + '\n' + startMatch[0] + '\nfnStart=showStartScreen; fnIntro=playIntro;', context);
   const showStartScreen = context.fnStart;
   const realPlayIntro = context.fnIntro;
@@ -175,9 +184,17 @@ function testStartButtonPlaysIntro() {
   const scene = {
     add: {
       rectangle() { return { setDepth() { return this; }, destroy() { this.destroyed = true; } }; },
+      graphics() { return { fillStyle() { return this; }, fillRoundedRect() { return this; } }; },
       text() {
         const obj = {
           setOrigin() { return obj; },
+          setDepth() { return obj; },
+        };
+        return obj;
+      },
+      container() {
+        const obj = {
+          setSize() { return obj; },
           setDepth() { return obj; },
           setInteractive() { return obj; },
           on(event, cb) { if (event === 'pointerdown') pointerCb = cb; return obj; },
@@ -324,7 +341,8 @@ async function testIntroSequence() {
 
 async function run() {
   const serverPath = require.resolve('http-server/bin/http-server');
-  const server = spawn(process.execPath, [serverPath, '-p', '8080', '-c-1'], { stdio: 'inherit' });
+  const port = 8123;
+  const server = spawn(process.execPath, [serverPath, '-p', String(port), '-c-1'], { stdio: 'inherit' });
 
   // wait a bit for the server to start
   await new Promise(r => setTimeout(r, 1000));
@@ -332,7 +350,7 @@ async function run() {
   const errors = [];
 
   await new Promise((resolve) => {
-    http.get('http://localhost:8080', res => {
+    http.get(`http://localhost:${port}`, res => {
       if (res.statusCode !== 200) errors.push(`Status ${res.statusCode}`);
       res.resume();
       res.on('end', resolve);

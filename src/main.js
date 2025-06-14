@@ -323,14 +323,18 @@
     console.log('showStartScreen called');
     startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.5)
       .setDepth(14);
-    startMessage = scene.add.text(240,360,'Click to begin',{
-        font:'20px sans-serif',fill:'#fff'})
-      .setOrigin(0.5).setDepth(15);
-    startButton = scene.add.text(240,320,'Start Shift',{
-        font:'32px sans-serif',fill:'#fff',backgroundColor:'#006400',
-        padding:{x:20,y:10}})
-      .setOrigin(0.5).setDepth(15);
-    startButton.setInteractive({useHandCursor:true})
+    // Create a rounded blue "Clock In" button styled like a text message
+    const width=200, height=60, radius=20;
+    const g=scene.add.graphics();
+    g.fillStyle(0x2196f3,1); // blue background
+    g.fillRoundedRect(-width/2,-height/2,width,height,radius);
+    const t=scene.add.text(0,0,'Clock In',{
+        font:'32px sans-serif',fill:'#fff'})
+      .setOrigin(0.5);
+    startButton = scene.add.container(240,320,[g,t])
+      .setSize(width,height)
+      .setDepth(15)
+      .setInteractive({useHandCursor:true})
       .on('pointerdown',()=>{
 
         // Log click registration to help debug input issues

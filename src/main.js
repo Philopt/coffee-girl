@@ -67,6 +67,11 @@
 
   const dur=v=>v;
 
+  const QUEUE_WALK_MS_PER_PX = 24;
+  function walkDuration(dist){
+    return dur(Math.max(500, dist * QUEUE_WALK_MS_PER_PX));
+  }
+
   const supers={
     '0':'\u2070','1':'\u00b9','2':'\u00b2','3':'\u00b3','4':'\u2074',
     '5':'\u2075','6':'\u2076','7':'\u2077','8':'\u2078','9':'\u2079'
@@ -226,15 +231,16 @@
         c.walkTween.remove();
         c.walkTween=null;
       }
-      const idx=queue.length;
+      const idx=queue.filter(q=>!q.leaving).length;
       c.atOrder=false;
+      c.leaving=false;
       queue.push(c);
       activeCustomer=queue[0];
       const targetX = idx===0 ? ORDER_X : QUEUE_X - QUEUE_SPACING*(idx-1);
       const targetY = idx===0 ? ORDER_Y : QUEUE_Y - QUEUE_OFFSET*(idx-1);
       const dist=Phaser.Math.Distance.Between(c.sprite.x,c.sprite.y,targetX,targetY);
       c.sprite.setDepth(5);
-      c.walkTween=scene.tweens.add({targets:c.sprite,x:targetX,y:targetY,scale:scaleForY(targetY),duration:dur(1200+dist*4),ease:'Sine.easeIn',callbackScope:scene,
+      c.walkTween=scene.tweens.add({targets:c.sprite,x:targetX,y:targetY,scale:scaleForY(targetY),duration:walkDuration(dist),ease:'Sine.easeIn',callbackScope:scene,
         onComplete:()=>{c.walkTween=null; if(idx===0) showDialog.call(scene);} });
     }
   }
@@ -242,11 +248,12 @@
   function moveQueueForward(){
     const scene=this;
     let willShow=false;
-    queue.forEach((cust, idx)=>{
+    queue.filter(c=>!c.leaving).forEach((cust, idx)=>{
       const tx = idx===0 ? ORDER_X : QUEUE_X - QUEUE_SPACING*(idx-1);
       const ty = idx===0 ? ORDER_Y : QUEUE_Y - QUEUE_OFFSET*(idx-1);
       if(cust.sprite.y!==ty || cust.sprite.x!==tx){
-        const cfg={targets:cust.sprite,x:tx,y:ty,scale:scaleForY(ty),duration:dur(300)};
+        const dist=Phaser.Math.Distance.Between(cust.sprite.x,cust.sprite.y,tx,ty);
+        const cfg={targets:cust.sprite,x:tx,y:ty,scale:scaleForY(ty),duration:walkDuration(dist)};
         if(idx===0){
           cfg.onComplete=()=>{ showDialog.call(scene); };
           willShow=true;
@@ -254,13 +261,13 @@
         scene.tweens.add(cfg);
       }
     });
-    activeCustomer=queue[0]||null;
+    activeCustomer=queue.find(c=>!c.leaving) || null;
     if(activeCustomer){
       if(!willShow && activeCustomer.sprite.y===ORDER_Y && activeCustomer.sprite.x===ORDER_X){
         showDialog.call(scene);
       }
     }
-    if(queue.length < queueLimit()){
+    if(queue.filter(c=>!c.leaving).length < queueLimit()){
       lureNextWanderer(scene);
     }
   }
@@ -289,7 +296,8 @@
     if (spawnTimer) {
       spawnTimer.remove(false);
     }
-    const needed = queueLimit() - (queue.length + wanderers.length);
+    const activeQueue = queue.filter(c=>!c.leaving).length;
+    const needed = queueLimit() - (activeQueue + wanderers.length);
     let delay;
     if(needed > 0){
       delay = 500;
@@ -559,7 +567,7 @@
       return {coins, req:item.name, price:item.price, qty};
     };
 
-    const c={ orders:[] };
+    const c={ orders:[], leaving:false };
     const used=new Set();
     if(typeof queue!=='undefined') queue.forEach(cu=>used.add(cu.key));
     if(typeof wanderers!=='undefined') wanderers.forEach(cu=>used.add(cu.key));
@@ -607,12 +615,13 @@
     const c=activeCustomer;
     if(!c.atOrder && (c.sprite.y!==ORDER_Y || c.sprite.x!==ORDER_X)){
       c.atOrder=true;
+      const dist=Phaser.Math.Distance.Between(c.sprite.x,c.sprite.y,ORDER_X,ORDER_Y);
       this.tweens.add({
         targets: c.sprite,
         x: ORDER_X,
         y: ORDER_Y,
         scale: scaleForY(ORDER_Y),
-        duration: dur(300),
+        duration: walkDuration(dist),
         onComplete: ()=>{ showDialog.call(this); }
       });
       return;
@@ -708,6 +717,7 @@
     clearDialog(type!=='refuse');
     const current=activeCustomer;
     if(!current) return;
+    current.leaving = true;
     const orderCount=current.orders.length;
     const totalCost=current.orders.reduce((s,o)=>s+o.price*o.qty,0);
 

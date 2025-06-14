@@ -434,7 +434,7 @@
     const createButton=(x,label,color,handler)=>{
       const width=120, height=40, radius=8;
       const g=this.add.graphics();
-      g.fillStyle(color,1).setShadow(2,2,'#000',4);
+      g.fillStyle(color,1);
       g.fillRoundedRect(-width/2,-height/2,width,height,radius);
       const t=this.add.text(0,0,label,{font:'20px sans-serif',fill:'#fff'}).setOrigin(0.5);
       const c=this.add.container(x,500,[g,t]).setSize(width,height).setDepth(12).setVisible(false);

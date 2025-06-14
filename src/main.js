@@ -482,7 +482,7 @@
 
     // helper to create a rounded rectangle button with consistent sizing
     const createButton=(x,label,iconChar,iconSize,color,handler)=>{
-      const width=140, height=50, radius=8;
+      const width=120, height=60, radius=8;
       const g=this.add.graphics();
       // Graphics objects do not support setShadow. Draw a simple shadow
       // manually by rendering a darker rect slightly offset behind the button.

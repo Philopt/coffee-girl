@@ -4,6 +4,7 @@
   "description": "Coffee Clicker game",
   "scripts": {
     "start": "http-server -p 8080 -c-1",
+    "pretest": "npm install",
     "test": "node test/test.js"
   },
   "devDependencies": {

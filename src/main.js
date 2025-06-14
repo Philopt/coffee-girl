@@ -54,6 +54,7 @@
   const BASE_WAITERS=3;
   const WALK_OFF_BASE=1000;
   const MAX_M=100, MAX_L=100;
+  const MIN_ATTACK_SPACING=25;
 
 
   let money=10.00, love=10, gameOver=false;
@@ -1033,6 +1034,21 @@
     const scene=this;
     const attackers=[];
     const gatherStartY = Math.max(WANDER_TOP, girl.y + 60);
+    const placed=[];
+    const randomPos=()=>({
+      x:Phaser.Math.Between(girl.x-40,girl.x+40),
+      y:Math.max(gatherStartY,girl.y+20+Phaser.Math.Between(-10,10))
+    });
+    const pickPos=()=>{
+      let pos=randomPos();
+      let tries=0;
+      while(tries<10 && placed.some(p=>Phaser.Math.Distance.Between(p.x,p.y,pos.x,pos.y)<MIN_ATTACK_SPACING)){
+        pos=randomPos();
+        tries++;
+      }
+      placed.push(pos);
+      return pos;
+    };
     const gather=(arr)=>{
       arr.forEach(c=>{
         if(c.walkTween){ c.walkTween.stop(); c.walkTween=null; }
@@ -1051,15 +1067,27 @@
 
     while(attackers.length<3){
       const k=Phaser.Utils.Array.GetRandom(keys);
-      const ay=Phaser.Math.Between(gatherStartY, WANDER_BOTTOM);
-      const a=scene.add.sprite(Phaser.Math.Between(-40,520), ay, k)
-        .setScale(scaleForY(ay)).setDepth(20);
+      const {x, y}=pickPos();
+      const a=scene.add.sprite(x, y, k)
+        .setScale(scaleForY(y)).setDepth(20);
       attackers.push(a);
     }
 
     const loops=new Map();
     let hits=0;
     let finished=false;
+
+    const repositionIfTooClose=sprite=>{
+      for(const other of attackers){
+        if(other===sprite) continue;
+        if(Phaser.Math.Distance.Between(sprite.x,sprite.y,other.x,other.y)<MIN_ATTACK_SPACING){
+          const {x,y}=pickPos();
+          sprite.setPosition(x,y);
+          sprite.setScale(scaleForY(y));
+          break;
+        }
+      }
+    };
 
     function blinkGirl(){
       scene.tweens.add({targets:girl,duration:dur(60),repeat:2,yoyo:true,x:'+=4',
@@ -1083,8 +1111,21 @@
             });
           }
         });
-        scene.tweens.add({targets:driver,x:truck.x-40,y:truck.y,duration:dur(300),onComplete:()=>driver.destroy()});
-        scene.tweens.add({targets:truck,x:-200,duration:dur(800),delay:dur(300),onComplete:()=>{if(cb) cb();}});
+        scene.tweens.add({
+          targets:driver,
+          x:truck.x-40,
+          y:truck.y,
+          duration:dur(300),
+          onComplete:()=>{
+            driver.destroy();
+            scene.tweens.add({
+              targets:truck,
+              x:-200,
+              duration:dur(800),
+              onComplete:()=>{if(cb) cb();}
+            });
+          }
+        });
       }
 
     function attack(a){
@@ -1104,6 +1145,7 @@
             finished=true;
             sendDriver(a);
           } else {
+            repositionIfTooClose(a);
             loops.set(a, scene.time.delayedCall(dur(Phaser.Math.Between(200,400)),()=>attack(a),[],scene));
           }
         }
@@ -1111,8 +1153,7 @@
     }
 
     attackers.forEach(a=>{
-      const tx = Phaser.Math.Between(girl.x - 30, girl.x + 30);
-      const ty = Math.max(gatherStartY, girl.y + 20);
+      const {x:tx, y:ty}=pickPos();
       scene.tweens.add({
         targets:a,
         x:tx,
@@ -1120,6 +1161,7 @@
         scale:scaleForY(ty),
         duration:dur(400),
         onComplete:()=>{
+          repositionIfTooClose(a);
           loops.set(a, scene.time.delayedCall(dur(Phaser.Math.Between(100,300)),()=>attack(a),[],scene));
         }
       });

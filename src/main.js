@@ -143,9 +143,11 @@
     });
   }
 
+  function update(){}
+
   const config={ type:Phaser.AUTO, parent:'game-container', backgroundColor:'#f2e5d7',
     scale:{ mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH, width:480, height:640 },
-    pixelArt:true, scene:{ preload, create } };
+    pixelArt:true, scene:{ preload, create, update } };
   new Phaser.Game(config);
 
   let moneyText, loveText, queueLevelText;

@@ -189,9 +189,10 @@
     const dir = Phaser.Math.Between(0,1)?1:-1;
     const targetX = dir===1?520:-40;
     const targets=[c.sprite];
+
     wanderers.splice(wanderers.indexOf(c),1);
-    scene.tweens.add({targets:targets,x:targetX,duration:dur(WALK_OFF_BASE),onComplete:()=>{
-        targets.forEach(t=>t.destroy());
+    scene.tweens.add({targets:c.sprite,x:targetX,duration:dur(WALK_OFF_BASE),onComplete:()=>{
+        c.sprite.destroy();
     }});
   }
 

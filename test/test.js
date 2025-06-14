@@ -28,6 +28,38 @@ function testBlinkButton() {
   console.log('blinkButton interactivity test passed');
 }
 
+function testShowStartScreen() {
+  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+  const match = /function showStartScreen\(scene\)[\s\S]*?\n\s*\}\);\n\s*\}/.exec(code);
+  if (!match) throw new Error('showStartScreen not found');
+  const context = {};
+  vm.createContext(context);
+  context.fn = null;
+  vm.runInContext('let startOverlay,startButton;const playIntro=()=>{};\n' + match[0] + '\nfn=showStartScreen;', context);
+  const showStartScreen = context.fn;
+  const calls = { rects: 0, text: null };
+  const scene = {
+    add: {
+      rectangle() { calls.rects++; return { setDepth() { return this; } }; },
+      text(x, y, txt, style) {
+        const obj = {
+          setOrigin() { return obj; },
+          setDepth() { return obj; },
+          setInteractive() { obj.interactive = true; return obj; },
+          on() { return obj; }
+        };
+        calls.text = { txt, obj };
+        return obj;
+      }
+    }
+  };
+  showStartScreen.call(scene);
+  assert.strictEqual(calls.rects, 1, 'start overlay not created');
+  assert.ok(calls.text && calls.text.obj.interactive, 'start button not interactive');
+  assert.strictEqual(calls.text.txt, 'Start Shift', 'start button text mismatch');
+  console.log('showStartScreen test passed');
+}
+
 async function run() {
   const serverPath = path.join(__dirname, '..', 'node_modules', '.bin', 'http-server');
   const server = spawn(serverPath, ['-p', '8080', '-c-1'], { stdio: 'inherit' });
@@ -54,6 +86,7 @@ async function run() {
     process.exit(1);
   } else {
     console.log('Game loaded without errors');
+    testShowStartScreen();
     testBlinkButton();
   }
 }

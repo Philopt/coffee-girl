@@ -890,27 +890,29 @@
     falconActive = true;
     gameOver = true;
     if (spawnTimer) { spawnTimer.remove(false); spawnTimer = null; }
-    // make all customers flee when the falcon appears
-    const fleeing=[...queue, ...wanderers];
-    fleeing.forEach(c=>{
-      if(c.walkTween){ c.walkTween.stop(); c.walkTween=null; }
-      const dir=c.sprite.x<ORDER_X? -1:1;
-      const targetX=dir===1?520:-40;
-      const tl=scene.tweens.createTimeline();
-      for(let i=0;i<3;i++){
+
+    function panicCustomers(){
+      const fleeing=[...queue, ...wanderers];
+      fleeing.forEach(c=>{
+        if(c.walkTween){ c.walkTween.stop(); c.walkTween=null; }
+        const dir=c.sprite.x<ORDER_X? -1:1;
+        const targetX=dir===1?520:-40;
+        const tl=scene.tweens.createTimeline();
+        for(let i=0;i<3;i++){
+          tl.add({targets:c.sprite,
+                  x:Phaser.Math.Between(40,440),
+                  y:Phaser.Math.Between(WANDER_TOP,WANDER_BOTTOM),
+                  duration:dur(Phaser.Math.Between(200,400)),
+                  ease:'Sine.easeInOut'});
+        }
         tl.add({targets:c.sprite,
-                x:Phaser.Math.Between(40,440),
-                y:Phaser.Math.Between(WANDER_TOP,WANDER_BOTTOM),
-                duration:dur(Phaser.Math.Between(200,400)),
-                ease:'Sine.easeInOut'});
-      }
-      tl.add({targets:c.sprite,
-              x:targetX,
-              duration:dur(WALK_OFF_BASE/1.5),
-              onComplete:()=>c.sprite.destroy()});
-      tl.play();
-    });
-    queue.length=0; wanderers.length=0;
+                x:targetX,
+                duration:dur(WALK_OFF_BASE/1.5),
+                onComplete:()=>c.sprite.destroy()});
+        tl.play();
+      });
+      queue.length=0; wanderers.length=0;
+    }
 
     const falcon=scene.add.sprite(-40,-40,'lady_falcon',0)
       .setScale(1.4)
@@ -925,6 +927,7 @@
       duration:dur(900),
       ease:'Cubic.easeIn',
       onComplete:()=>{
+        panicCustomers();
         blinkAngry(scene);
         const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
             falcon.destroy();

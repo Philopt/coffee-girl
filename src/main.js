@@ -1,8 +1,10 @@
 (() => {
-  console.log('main.js loaded');
+  const DEBUG = false;
+  const debugLog = (...args) => { if (DEBUG) console.log(...args); };
+  if (typeof debugLog === 'function') debugLog('main.js loaded');
   let initCalled = false;
   function init(){
-    console.log('init() executing');
+    if (typeof debugLog === 'function') debugLog('init() executing');
     initCalled = true;
   // full drink menu with prices
   const MENU=[
@@ -314,7 +316,7 @@
 
   function showStartScreen(scene){
     scene = scene || this;
-    console.log('showStartScreen called');
+    if (typeof debugLog === 'function') debugLog('showStartScreen called');
     startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.5)
       .setDepth(14);
     startButton = scene.add.text(240,320,'Start Shift',{
@@ -333,7 +335,7 @@
       console.warn('playIntro skipped: missing truck or girl');
       return;
     }
-    console.log('playIntro starting');
+    if (typeof debugLog === 'function') debugLog('playIntro starting');
     scene = scene || this;
     if(!truck || !girl) return;
     truck.setPosition(560,245);

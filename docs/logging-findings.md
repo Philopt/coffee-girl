@@ -1,0 +1,1 @@
+After adding logging around the start screen and intro sequence, running the game shows that the pointerdown event fires when the "Start Shift" button is clicked. `playIntro` begins immediately and the timeline completes, triggering the spawn of the first customer. These logs help confirm input registration and intro flow.

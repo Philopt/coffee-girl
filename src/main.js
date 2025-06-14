@@ -1264,15 +1264,29 @@
     showStartScreen.call(this);
   }
 
+  function update(){
+    // Ensure customers closer to the bottom appear in front
+    queue.forEach(c=>{
+      if(c.sprite && c.sprite.depth < 20){
+        c.sprite.setDepth(5 + c.sprite.y/1000);
+      }
+    });
+    wanderers.forEach(c=>{
+      if(c.sprite && c.sprite.depth < 20){
+        c.sprite.setDepth(4 + c.sprite.y/1000);
+      }
+    });
+  }
+
   const Assets = { keys, requiredAssets, preload };
-  const Scene = { create, showStartScreen, playIntro };
+  const Scene = { create, update, showStartScreen, playIntro };
   const Customers = { spawnCustomer, lureNextWanderer, moveQueueForward, scheduleNextSpawn,
                       showDialog, clearDialog, handleAction, showFalconAttack,
                       showCustomerRevolt, restartGame };
 
   const config={ type:Phaser.AUTO, parent:'game-container', backgroundColor:'#f2e5d7',
     scale:{ mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH, width:480, height:640 },
-    pixelArt:true, scene:{ preload: Assets.preload, create: Scene.create } };
+    pixelArt:true, scene:{ preload: Assets.preload, create: Scene.create, update: Scene.update } };
 
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
     init();

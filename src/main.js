@@ -112,12 +112,14 @@
     const color = up ? '#0f0' : '#f00';
     const by = up ? -8 : 8;
     const originalY = obj.y;
-    scene.tweens.add({targets:obj, y:originalY+by, duration:dur(120), yoyo:true});
+    const moveDur = isLove && !up ? 160 : 120;
+    scene.tweens.add({targets:obj, y:originalY+by, duration:dur(moveDur), yoyo:true});
     let on=true;
     const flashes = isLove && !up ? 4 : 2;
+    const flashDelay = isLove && !up ? 120 : 80;
     scene.time.addEvent({
       repeat:flashes,
-      delay:dur(80),
+      delay:dur(flashDelay),
       callback:()=>{
         obj.setColor(on?color:'#fff');
         if(isLove && !up){
@@ -126,10 +128,21 @@
         on=!on;
       }
     });
-    scene.time.delayedCall(dur(80)*(flashes+1)+dur(10),()=>{
+    scene.time.delayedCall(dur(flashDelay)*(flashes+1)+dur(10),()=>{
       obj.setColor('#fff');
       if(isLove && !up){
         obj.setText('❤️ '+love);
+        scene.tweens.add({
+          targets:obj,
+          angle:{from:-15,to:15},
+          duration:dur(160),
+          repeat:2,
+          yoyo:true,
+          ease:'Sine.easeInOut',
+          onComplete:()=>{
+            scene.tweens.add({targets:obj,angle:0,duration:dur(180),ease:'Sine.easeOut'});
+          }
+        });
       }
     },[],scene);
   }
@@ -153,7 +166,6 @@
   let moneyText, loveText, queueLevelText;
   let dialogBg, dialogText, dialogCoins, dialogPriceLabel, dialogPriceValue,
       btnSell, btnGive, btnRef;
-  let iconSell, iconGive, iconRef;
   let reportLine1, reportLine2, reportLine3, reportLine4, tipText;
   let paidStamp, lossStamp;
   let truck, girl;
@@ -431,7 +443,7 @@
       .setOrigin(0.5).setVisible(false).setDepth(11);
 
     // helper to create a rounded rectangle button with consistent sizing
-    const createButton=(x,label,color,handler)=>{
+    const createButton=(x,label,iconChar,iconSize,color,handler)=>{
       const width=120, height=40, radius=8;
       const g=this.add.graphics();
       // Graphics objects do not support setShadow. Draw a simple shadow
@@ -441,9 +453,12 @@
 
       g.fillStyle(color,1);
       g.fillRoundedRect(-width/2,-height/2,width,height,radius);
-      const t=this.add.text(0,0,label,{font:'20px sans-serif',fill:'#fff'}).setOrigin(0.5);
+      const t=this.add.text(-width/2+10,0,label,{font:'20px sans-serif',fill:'#fff'})
+        .setOrigin(0,0.5);
+      const icon=this.add.text(width/2-10,0,iconChar,{font:`${iconSize}px sans-serif`,fill:'#fff'})
+        .setOrigin(1,0.5);
       // position the button slightly lower so it peeks out of the dialog box
-      const c=this.add.container(x,520,[g,t])
+      const c=this.add.container(x,520,[g,t,icon])
         .setSize(width,height)
         .setDepth(12)
         .setVisible(false);
@@ -453,17 +468,10 @@
     };
 
     // buttons evenly spaced
-    btnSell=createButton(120,'SELL',0x00a000,()=>handleAction.call(this,'sell'));
-    btnGive=createButton(240,'GIVE FREE',0x87cefa,()=>handleAction.call(this,'give'));
-    btnRef=createButton(360,'REFUSE',0x800000,()=>handleAction.call(this,'refuse'));
 
-    // emoji icons behind buttons (smaller & less transparent)
-    iconSell=this.add.text(btnSell.x,btnSell.y,'💵',{font:'40px sans-serif',fill:'#000'})
-      .setOrigin(0.5).setAlpha(0.5).setDepth(13).setVisible(false);
-    iconGive=this.add.text(btnGive.x,btnGive.y,'💝',{font:'40px sans-serif',fill:'#000'})
-      .setOrigin(0.5).setAlpha(0.5).setDepth(13).setVisible(false);
-    iconRef=this.add.text(btnRef.x,btnRef.y,'✋',{font:'40px sans-serif',fill:'#000'})
-      .setOrigin(0.5).setAlpha(0.5).setDepth(13).setVisible(false);
+    btnSell=createButton(100,'SELL','💵',32,0x006400,()=>handleAction.call(this,'sell'));
+    btnGive=createButton(240,'GIVE','💝',28,0x008000,()=>handleAction.call(this,'give'));
+    btnRef=createButton(380,'REFUSE','✋',32,0x800000,()=>handleAction.call(this,'refuse'));
 
 
     // sliding report texts
@@ -598,7 +606,6 @@
     if (btnGive.input) btnGive.input.enabled = true;
     btnRef.setVisible(true);
     if (btnRef.input) btnRef.input.enabled = true;
-    iconSell.setVisible(canAfford); iconGive.setVisible(true); iconRef.setVisible(true);
   }
 
   function clearDialog(keepPrice=false){
@@ -621,8 +628,8 @@
     if (btnGive.input) btnGive.input.enabled = false;
     btnRef.setVisible(false);
     if (btnRef.input) btnRef.input.enabled = false;
-    iconSell.setVisible(false); iconGive.setVisible(false); iconRef.setVisible(false);
     tipText.setVisible(false);
+    
   }
 
   function handleAction(type){

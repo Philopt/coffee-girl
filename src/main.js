@@ -1,8 +1,10 @@
 (() => {
-  console.log('main.js loaded');
+  const DEBUG = false;
+  const debugLog = (...args) => { if (DEBUG) console.log(...args); };
+  if (typeof debugLog === 'function') debugLog('main.js loaded');
   let initCalled = false;
   function init(){
-    console.log('init() executing');
+    if (typeof debugLog === 'function') debugLog('init() executing');
     initCalled = true;
     new Phaser.Game(config);
   }
@@ -312,6 +314,7 @@
 
   function showStartScreen(scene){
     scene = scene || this;
+    if (typeof debugLog === 'function') debugLog('showStartScreen called');
     // Log when the start screen is shown so we know the overlay is active
     console.log('showStartScreen called');
     startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.5)
@@ -342,7 +345,7 @@
       console.warn('playIntro skipped: missing truck or girl');
       return;
     }
-    console.log('playIntro starting');
+    if (typeof debugLog === 'function') debugLog('playIntro starting');
     scene = scene || this;
     if(!truck || !girl) return;
     truck.setPosition(560,245);

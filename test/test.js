@@ -222,7 +222,7 @@ function testStartButtonPlaysIntro() {
 
 function testShowDialogButtons() {
   const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
-  const match = /function showDialog\(\)[\s\S]*?iconRef\.setVisible\(true\);\n\s*\}/.exec(code);
+  const match = /function showDialog\(\)[\s\S]*?btnRef\.setVisible\(true\);[\s\S]*?\}/.exec(code);
   if (!match) throw new Error('showDialog not found');
   const makeObj = () => ({
     visible: false,
@@ -247,9 +247,6 @@ function testShowDialogButtons() {
     btnSell: makeObj(),
     btnGive: makeObj(),
     btnRef: makeObj(),
-    iconSell: makeObj(),
-    iconGive: makeObj(),
-    iconRef: makeObj(),
     tipText: makeObj(),
     activeBubble: null,
     articleFor: () => 'a',

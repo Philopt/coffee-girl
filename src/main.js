@@ -321,6 +321,8 @@
       return;
     }
     console.log('playIntro starting');
+    scene = scene || this;
+    if(!truck || !girl) return;
     truck.setPosition(520,245);
     girl.setPosition(520,260).setVisible(false);
     const intro=scene.tweens.createTimeline({callbackScope:scene,
@@ -360,6 +362,10 @@
       console.error(msg);
       this.add.text(240,320,msg,{font:'16px sans-serif',fill:'#f00',align:'center',wordWrap:{width:460}})
         .setOrigin(0.5).setDepth(30);
+      this.add.text(240,360,'Retry Loading',{font:'20px sans-serif',fill:'#00f'})
+        .setOrigin(0.5).setDepth(30).setInteractive({useHandCursor:true})
+        .on('pointerdown',()=>window.location.reload());
+      return;
     }
     // background
     let bg=this.add.image(0,0,'bg').setOrigin(0).setDepth(0);
@@ -439,7 +445,7 @@
       .setOrigin(0.5).setDepth(12).setVisible(false);
 
     // start intro after assets are ready
-    this.time.delayedCall(0, () => playIntro(this));
+    playIntro.call(this);
   }
 
   function spawnCustomer(){

@@ -1,5 +1,9 @@
 (() => {
+  console.log('main.js loaded');
+  let initCalled = false;
   function init(){
+    console.log('init() executing');
+    initCalled = true;
   // full drink menu with prices
   const MENU=[
     {name:"Lady Roaster Drip", price:3.90},
@@ -312,7 +316,11 @@
   }
 
   function playIntro(scene){
-    if(!truck || !girl) return;
+    if(!truck || !girl) {
+      console.warn('playIntro skipped: missing truck or girl');
+      return;
+    }
+    console.log('playIntro starting');
     truck.setPosition(520,245);
     girl.setPosition(520,260).setVisible(false);
     const intro=scene.tweens.createTimeline({callbackScope:scene,
@@ -1048,5 +1056,10 @@
     init();
   } else {
     window.addEventListener('load', init);
+    setTimeout(() => {
+      if (!initCalled) {
+        console.error('init() did not execute');
+      }
+    }, 3000);
   }
 })();

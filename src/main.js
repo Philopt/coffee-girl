@@ -890,7 +890,10 @@
   }
 
   function showFalconAttack(cb){
+    if (falconActive) return;
     const scene=this;
+    clearDialog();
+    if(activeBubble){ activeBubble.destroy(); activeBubble=null; }
     falconActive = true;
     gameOver = true;
     if (spawnTimer) { spawnTimer.remove(false); spawnTimer = null; }

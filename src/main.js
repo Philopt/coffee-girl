@@ -521,7 +521,7 @@
       // visible button. Using the direct form prevents Phaser from shifting the
       // rectangle when enabling input.
       c.setInteractive(
-        new Phaser.Geom.Rectangle(-width/2,-height/2,width,height),
+        new Phaser.Geom.Rectangle(0,0,width,height),
         Phaser.Geom.Rectangle.Contains
       );
       if (c.input) {

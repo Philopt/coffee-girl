@@ -76,6 +76,6 @@ npm test
 
 ## License
 
-This project is not licensed
+This project is released under the MIT License
 
 

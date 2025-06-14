@@ -989,7 +989,8 @@
     }
 
     const falcon=scene.add.sprite(-40,-40,'lady_falcon',0)
-      .setScale(1.4,1.68)
+      // give the falcon some extra height so she looks less squashed
+      .setScale(1.4,2.016)
       .setDepth(20);
     falcon.anims.play('falcon_fly');
     const targetX=girl.x;

@@ -314,6 +314,7 @@
 
   function showStartScreen(scene){
     scene = scene || this;
+    // Log when the start screen is shown so we know the overlay is active
     console.log('showStartScreen called');
     startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.5)
       .setDepth(14);
@@ -322,8 +323,11 @@
         padding:{x:20,y:10}})
       .setOrigin(0.5).setDepth(15).setInteractive({useHandCursor:true})
       .on('pointerdown',()=>{
+        // Log click registration to help debug input issues
+        console.log('start button clicked');
         startButton.destroy();
         if(startOverlay){ startOverlay.destroy(); startOverlay=null; }
+        // playIntro will kick off the intro tween sequence
         playIntro.call(scene);
       });
   }
@@ -340,6 +344,7 @@
     girl.setPosition(560,260).setVisible(false);
     const intro=scene.tweens.createTimeline({callbackScope:scene,
       onComplete:()=>{
+        console.log('playIntro finished');
         spawnCustomer.call(scene);
         scheduleNextSpawn(scene);
       }});

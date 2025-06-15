@@ -1012,20 +1012,21 @@ export function setupGame(){
 
   function showDialog(){
     if (typeof debugLog === 'function') debugLog('showDialog start');
-    if(!dialogBg || !dialogText || !dialogCoins || !dialogPriceLabel ||
-       !dialogPriceValue || !btnSell || !btnGive || !btnRef){
+    const missingElems = [];
+    if (!dialogBg) missingElems.push('dialogBg');
+    if (!dialogText) missingElems.push('dialogText');
+    if (!dialogCoins) missingElems.push('dialogCoins');
+    if (!dialogPriceLabel) missingElems.push('dialogPriceLabel');
+    if (!dialogPriceValue) missingElems.push('dialogPriceValue');
+    if (!btnSell) missingElems.push('btnSell');
+    if (!btnGive) missingElems.push('btnGive');
+    if (!btnRef) missingElems.push('btnRef');
+    if (missingElems.length){
+      if (typeof debugLog === 'function') {
+        debugLog('showDialog early exit, missing:', missingElems.join(', '));
+      }
       if (DEBUG) {
-        const missing = [
-          !dialogBg && 'dialogBg',
-          !dialogText && 'dialogText',
-          !dialogCoins && 'dialogCoins',
-          !dialogPriceLabel && 'dialogPriceLabel',
-          !dialogPriceValue && 'dialogPriceValue',
-          !btnSell && 'btnSell',
-          !btnGive && 'btnGive',
-          !btnRef && 'btnRef'
-        ].filter(Boolean).join(', ');
-        console.warn(`showDialog skipped: missing ${missing}`);
+        console.warn(`showDialog skipped: missing ${missingElems.join(', ')}`);
       }
       return;
     }

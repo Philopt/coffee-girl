@@ -60,8 +60,8 @@
   const START_PHONE_H = 500;
 
   // dimensions/positioning for the action buttons
-  const BUTTON_WIDTH = 160;
-  const BUTTON_HEIGHT = 60;
+  const BUTTON_WIDTH = 140;
+  const BUTTON_HEIGHT = 80;
   const BUTTON_Y = 560;
 
 
@@ -157,20 +157,15 @@
       repeat: 1,
       onComplete: () => {
         if (btn.setInteractive) {
-          const area = btn.myHitArea ||
-            (btn.width !== undefined && btn.height !== undefined &&
-             Phaser && Phaser.Geom && Phaser.Geom.Rectangle
-              ? new Phaser.Geom.Rectangle(-btn.width/2, -btn.height/2, btn.width, btn.height)
-              : null);
-          if (area) {
-            btn.setInteractive({
-              hitArea: area,
-              hitAreaCallback: Phaser.Geom.Rectangle.Contains,
-              useHandCursor: true
-            });
-          } else {
-            btn.setInteractive({useHandCursor:true});
-          }
+          const w = btn.width !== undefined ? btn.width : (btn.displayWidth || 0);
+          const h = btn.height !== undefined ? btn.height : (btn.displayHeight || 0);
+          const area = new Phaser.Geom.Rectangle(-w/2, -h/2, w, h);
+          btn.myHitArea = area;
+          btn.setInteractive({
+            hitArea: area,
+            hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+            useHandCursor: true
+          });
         }
         if (onComplete) onComplete();
       }
@@ -604,9 +599,9 @@
 
     // buttons evenly spaced
 
-    btnSell=createButton(100,'SELL','💵',32,0x006400,()=>handleAction.call(this,'sell'));
+    btnSell=createButton(70,'SELL','💵',32,0x006400,()=>handleAction.call(this,'sell'));
     btnGive=createButton(240,'GIVE','💝',28,0x008000,()=>handleAction.call(this,'give'));
-    btnRef=createButton(380,'REFUSE','✋',32,0x800000,()=>handleAction.call(this,'refuse'));
+    btnRef=createButton(410,'REFUSE','✋',32,0x800000,()=>handleAction.call(this,'refuse'));
 
 
     // sliding report texts

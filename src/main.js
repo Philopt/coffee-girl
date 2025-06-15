@@ -376,8 +376,14 @@
     btnBg.fillRoundedRect(-bw/2,-bh/2,bw,bh,15);
     const offsetY = phoneH/2 - homeH/2 - 12;
     startButton = scene.add.container(0,offsetY,[btnBg,btnLabel])
-      .setSize(bw,bh)
-      .setInteractive({useHandCursor:true});
+      .setSize(bw,bh);
+    startButton.setInteractive(
+        new Phaser.Geom.Rectangle(-bw/2, -bh/2, bw, bh),
+        Phaser.Geom.Rectangle.Contains
+    );
+    if (startButton.input) {
+      startButton.input.cursor = 'pointer';
+    }
 
     // position the phone closer to the center of the screen
     const containerY = 320;

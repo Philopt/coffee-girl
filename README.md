@@ -6,7 +6,9 @@ Coffee Clicker is a small browser game built with [Phaser](https://phaser.io/). 
 
 This project requires **Node.js 20 or newer**.
 
-1. From the repository root, start the local development server:
+1. From the repository root, start the local development server. If you haven't
+   installed the dependencies yet, run `npm install` or `npm ci` (or
+   `scripts/setup.sh`):
 
    ```bash
    npm install
@@ -79,7 +81,8 @@ Customers can now order any of the following drinks:
 
 ## Running tests
 
-Before running the tests, **install all dependencies** using `npm ci` or `npm install`:
+Before running `npm test`, **you must** install all dependencies. Run `npm ci`
+(or `npm install`) first, or execute `scripts/setup.sh` to do it automatically:
 
 ```bash
 npm ci

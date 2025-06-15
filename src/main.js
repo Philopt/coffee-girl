@@ -497,7 +497,8 @@ export function setupGame(){
     if (typeof debugLog === 'function') debugLog('playIntro starting');
     scene = scene || this;
     if(!truck || !girl) return;
-    const offscreenX = scene.scale.width + 100;
+    const width = (scene.scale && scene.scale.width) ? scene.scale.width : 480;
+    const offscreenX = width + 100;
     truck.setPosition(offscreenX,245).setScale(0.462);
     girl.setPosition(offscreenX,260).setVisible(false);
     // engine vibration while the truck is driving
@@ -784,7 +785,7 @@ export function setupGame(){
     dialogBg.lineStyle(2,0x000,1);
     dialogBg.fillRoundedRect(-w/2,-h/2,w,h,24); // rounder corners
     dialogBg.strokeRoundedRect(-w/2,-h/2,w,h,24);
-    if(targetX!==undefined && targetY!==undefined){
+    if (targetX !== undefined && targetY !== undefined) {
       const tx = targetX - dialogBg.x;
       const ty = targetY - dialogBg.y;
       const bx1 = -10;
@@ -792,14 +793,14 @@ export function setupGame(){
       const by = -h / 2;
       const tipX = tx * 0.5;
       const tipY = by + (ty - by) * 0.5;
-      dialogBg.fillTriangle(bx1, by+1, bx2, by+1, tipX, tipY);
+      dialogBg.fillTriangle(bx1, by + 1, bx2, by + 1, tipX, tipY);
       dialogBg.beginPath();
       dialogBg.moveTo(tipX, tipY);
-      dialogBg.lineTo(bx1, by+1);
+      dialogBg.lineTo(bx1, by + 1);
       dialogBg.moveTo(tipX, tipY);
-      dialogBg.lineTo(bx2, by+1);
-    dialogBg.strokePath();
-  }
+      dialogBg.lineTo(bx2, by + 1);
+      dialogBg.strokePath();
+    }
   }
 
   function resetPriceBox(){

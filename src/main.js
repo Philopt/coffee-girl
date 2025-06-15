@@ -19,6 +19,8 @@ export let Assets, Scene, Customers, config;
   let spawnTimer = null;
   let falconActive = false;
   let loveLevel=1;
+  let phoneDamage = 0;
+  let flickerEvent;
   const keys=[];
   const requiredAssets=['bg','truck','girl','lady_falcon','falcon_end','revolt_end'];
   const genzSprites=[

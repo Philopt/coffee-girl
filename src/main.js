@@ -659,7 +659,17 @@ export function setupGame(){
         } else {
           truck.y = 245;
         }
-        scheduleNextSpawn(scene);
+        // Start the first wanderers once the intro finishes
+        spawnCustomer.call(scene,{wanderOnly:true});
+        if(scene.time && scene.time.delayedCall){
+          scene.time.delayedCall(500,()=>{
+            spawnCustomer.call(scene,{wanderOnly:true});
+          },[],scene);
+          scene.time.delayedCall(1000,()=>scheduleNextSpawn(scene),[],scene);
+        }else{
+          spawnCustomer.call(scene,{wanderOnly:true});
+          scheduleNextSpawn(scene);
+        }
       }});
     intro.add({targets:truck,x:240,scale:0.924,duration:dur(1500),ease:'Sine.easeOut'});
     intro.add({targets:girl,x:240,duration:dur(1200)},0);
@@ -834,7 +844,6 @@ export function setupGame(){
 
     // wait for player to start the shift
     showStartScreen.call(this);
-    spawnCustomer.call(this,{wanderOnly:true});
 
     // ensure customer sprites always match their vertical scale
     this.events.on('update', enforceCustomerScaling);

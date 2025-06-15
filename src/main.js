@@ -160,7 +160,7 @@
         if (btn.setInteractive) {
           const w = btn.width !== undefined ? btn.width : (btn.displayWidth || 0);
           const h = btn.height !== undefined ? btn.height : (btn.displayHeight || 0);
-          const area = new Phaser.Geom.Rectangle(-w/2, -h/2, w, h);
+          const area = btn.myHitArea || new Phaser.Geom.Rectangle(0, 0, w, h);
           btn.myHitArea = area;
           btn.setInteractive({
             hitArea: area,
@@ -372,18 +372,18 @@
     homeG.fillStyle(0xf0f0f0,1);
     homeG.fillRoundedRect(-phoneW/2+12,phoneH/2-homeH-12,phoneW-24,homeH,20);
 
-    const btnLabel = scene.add.text(0,0,'Clock In',{
-        font:'32px sans-serif',fill:'#fff'})
-      .setOrigin(0.5);
+    const btnLabel = scene.add.text(0,0,'Clock In',{ font:'32px sans-serif',fill:'#fff'})
+      .setOrigin(0.5,0.5);
     const bw = btnLabel.width + 60;
     const bh = btnLabel.height + 20;
     const btnBg = scene.add.graphics();
     btnBg.fillStyle(0x007bff,1);
-    btnBg.fillRoundedRect(-bw/2,-bh/2,bw,bh,15);
+    btnBg.fillRoundedRect(0,0,bw,bh,15);
+    btnLabel.setPosition(bw/2, bh/2);
     const offsetY = phoneH/2 - homeH/2 - 12;
-    startButton = scene.add.container(0,offsetY,[btnBg,btnLabel])
+    startButton = scene.add.container(-bw/2, offsetY - bh/2, [btnBg, btnLabel])
       .setSize(bw,bh);
-    startButton.myHitArea = new Phaser.Geom.Rectangle(-bw/2, -bh/2, bw, bh);
+    startButton.myHitArea = new Phaser.Geom.Rectangle(0, 0, bw, bh);
     startButton.setInteractive({
         hitArea: startButton.myHitArea,
         hitAreaCallback: Phaser.Geom.Rectangle.Contains,
@@ -587,26 +587,26 @@
       // Graphics objects do not support setShadow. Draw a simple shadow
       // manually by rendering a darker rect slightly offset behind the button.
       g.fillStyle(0x000000,0.3);
-      g.fillRoundedRect(-width/2+2,-height/2+2,width,height,radius);
+      g.fillRoundedRect(2,2,width,height,radius);
 
       g.fillStyle(color,1);
-      g.fillRoundedRect(-width/2,-height/2,width,height,radius);
-      let t=this.add.text(-width/2+10,0,label,{font:'20px sans-serif',fill:'#fff'})
+      g.fillRoundedRect(0,0,width,height,radius);
+      let t=this.add.text(10,height/2,label,{font:'20px sans-serif',fill:'#fff'})
         .setOrigin(0,0.5);
-      let icon=this.add.text(width/2-10,0,iconChar,{font:`${iconSize}px sans-serif`,fill:'#fff'})
+      let icon=this.add.text(width-10,height/2,iconChar,{font:`${iconSize}px sans-serif`,fill:'#fff'})
         .setOrigin(1,0.5);
       let children=[g,t,icon];
       if(label==='REFUSE'){
         t.setFontSize(18);
-        icon.setX(width/2-4);
+        icon.setX(width-4);
         children=[g,icon,t];
       }
       // position the button slightly lower so it peeks out of the dialog box
-      const c=this.add.container(x,BUTTON_Y,children)
+      const c=this.add.container(x-width/2,BUTTON_Y-height/2,children)
         .setSize(width,height)
         .setDepth(12)
         .setVisible(false);
-      c.myHitArea = new Phaser.Geom.Rectangle(-width/2,-height/2,width,height);
+      c.myHitArea = new Phaser.Geom.Rectangle(0,0,width,height);
       // Explicitly specify the hit area so the pointer box aligns with the
       // visible button.
       c.setInteractive({

@@ -55,8 +55,8 @@ function testBlinkButton() {
   assert.strictEqual(btn.input.enabled, true, 'button not re-enabled');
   assert.ok(setArgs && setArgs.rect && setArgs.cb, 'setInteractive should be called with shape');
   assert.strictEqual(setArgs.useHand, true, 'useHandCursor should be true');
-  assert.strictEqual(setArgs.rect.x, -btn.width / 2, 'hitbox x not centered');
-  assert.strictEqual(setArgs.rect.y, -btn.height / 2, 'hitbox y not centered');
+  assert.strictEqual(setArgs.rect.x, 0, 'hitbox x not aligned');
+  assert.strictEqual(setArgs.rect.y, 0, 'hitbox y not aligned');
   console.log('blinkButton interactivity test passed');
 }
 
@@ -173,6 +173,7 @@ function testShowStartScreen() {
         const obj = {
           setOrigin() { return obj; },
           setDepth() { return obj; },
+          setPosition() { return obj; },
           width: 100,
           height: 40
         };
@@ -226,7 +227,7 @@ function testStartButtonPlaysIntro() {
   const scene = {
     add: {
       rectangle() { return { setDepth() { return this; }, destroy() { this.destroyed = true; } }; },
-      text() { return { setOrigin() { return this; }, setDepth() { return this; }, width: 100, height: 40 }; },
+      text() { return { setOrigin() { return this; }, setDepth() { return this; }, setPosition() { return this; }, width: 100, height: 40 }; },
       graphics() { return { fillStyle() { return this; }, fillRoundedRect() { return this; } }; },
       container() {
         const obj = {

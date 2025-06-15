@@ -56,6 +56,7 @@ function testBlinkButton() {
   const blinkButton = context.blinkBtn;
   let disableCalled = false;
   let setArgs = null;
+  let duringBlinkEnabled = null;
   const btn = {
     width: BUTTON_WIDTH,
     height: BUTTON_HEIGHT,
@@ -66,12 +67,12 @@ function testBlinkButton() {
       this.input.enabled = true;
     }
   };
-  const scene = { tweens: { add(cfg) { if (cfg.onComplete) cfg.onComplete(); return {}; } } };
+  const scene = { tweens: { add(cfg) { duringBlinkEnabled = btn.input.enabled; if (cfg.onComplete) cfg.onComplete(); return {}; } } };
   blinkButton.call(scene, btn);
-  assert(disableCalled, 'disableInteractive not called');
+  assert.strictEqual(disableCalled, false, 'disableInteractive should not be called');
+  assert.strictEqual(duringBlinkEnabled, false, 'input not disabled during blink');
   assert.strictEqual(btn.input.enabled, true, 'button not re-enabled');
-  assert.ok(setArgs && setArgs.options, 'setInteractive should be called');
-  assert.strictEqual(setArgs.options.useHandCursor, true, 'useHandCursor should be true');
+  assert.ok(!setArgs, 'setInteractive should not be called');
   console.log('blinkButton interactivity test passed');
 }
 

@@ -1035,7 +1035,10 @@
         }});
         for(let i=0;i<5;i++){
           tl.add({targets:falcon,y:targetY+10,duration:dur(80),yoyo:true});
-          tl.add({targets:girl,y:girl.y+5,duration:dur(80),yoyo:true},'<');
+          tl.add({targets:girl,y:girl.y+5,duration:dur(80),yoyo:true,
+                   onStart:()=>{ girl.setTint(0xff0000); sprinkleBursts(scene); },
+                   onYoyo:()=>{ girl.setTint(0xff0000); sprinkleBursts(scene); },
+                   onComplete:()=>girl.clearTint()},'<');
           const debris=createDebrisEmoji(scene, falcon.x, falcon.y);
           tl.add({targets:debris,
                   x:debris.x+Phaser.Math.Between(-60,60),
@@ -1056,6 +1059,16 @@
         onYoyo:()=>girl.setTint(0xff0000),
         onRepeat:()=>girl.clearTint(),
         onComplete:()=>girl.clearTint()});
+    }
+
+    function sprinkleBursts(s){
+      for(let b=0;b<3;b++){
+        const bx=girl.x+Phaser.Math.Between(-20,20);
+        const by=girl.y+Phaser.Math.Between(-40,0);
+        const burst=s.add.text(bx,by,'💢',{font:'24px sans-serif',fill:'#f00'})
+          .setOrigin(0.5).setDepth(21);
+        s.tweens.add({targets:burst,scale:1.5,alpha:0,duration:dur(200),onComplete:()=>burst.destroy()});
+      }
     }
 
     function createDebrisEmoji(s, x, y){

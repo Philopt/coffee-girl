@@ -693,8 +693,9 @@
     dialogBg.clear();
     dialogBg.fillStyle(0xffffff,1);
     dialogBg.lineStyle(2,0x000,1);
-    dialogBg.fillRoundedRect(-w/2,-h/2,w,h,16);
-    dialogBg.strokeRoundedRect(-w/2,-h/2,w,h,16);
+    const radius=24; // more rounded corners
+    dialogBg.fillRoundedRect(-w/2,-h/2,w,h,radius);
+    dialogBg.strokeRoundedRect(-w/2,-h/2,w,h,radius);
     if(targetX!==undefined && targetY!==undefined){
       const tx = targetX - dialogBg.x;
       const ty = targetY - dialogBg.y;
@@ -704,7 +705,11 @@
       const tipX = tx * 0.5;
       const tipY = by + (ty - by) * 0.5;
       dialogBg.fillTriangle(bx1, by, bx2, by, tipX, tipY);
-      dialogBg.strokeTriangle(bx1, by, bx2, by, tipX, tipY);
+      dialogBg.beginPath();
+      dialogBg.moveTo(bx1, by);
+      dialogBg.lineTo(tipX, tipY);
+      dialogBg.lineTo(bx2, by);
+      dialogBg.strokePath();
     }
   }
 
@@ -728,30 +733,14 @@
       });
       return;
     }
-    dialogBg.setVisible(true);
-    drawDialogBubble(c.sprite.x, c.sprite.y);
-    dialogPriceBox
-      .setPosition(dialogBg.x + dialogBg.width/2 - 60, dialogBg.y - dialogBg.height)
-      .setVisible(true);
+    const padding=20, spacing=10;
     const itemStr=c.orders.map(o=>{
       return o.qty>1 ? `${o.qty} ${o.req}` : o.req;
     }).join(' and ');
     const wantLine=(c.orders.length===1 && c.orders[0].qty===1)
       ? `I want ${articleFor(c.orders[0].req)} ${c.orders[0].req}`
       : `I want ${itemStr}`;
-    if(activeBubble){
-      activeBubble.destroy();
-      activeBubble=null;
-    }
-    const bubble=this.add.text(c.sprite.x,c.sprite.y-50,'💬',{font:'32px sans-serif',fill:'#000'})
-      .setOrigin(0.5).setDepth(11);
-    activeBubble=bubble;
-    this.tweens.add({targets:bubble,y:c.sprite.y-70,alpha:0,duration:dur(600),onComplete:()=>{bubble.destroy(); activeBubble=null;}});
-    dialogText
-      .setOrigin(0,0.5)
-      .setPosition(dialogBg.x-dialogBg.width/2+40,440)
-      .setText(wantLine)
-      .setVisible(true);
+    dialogText.setText(wantLine);
     const totalCost=c.orders.reduce((s,o)=>s+o.price*o.qty,0);
     const canAfford = c.orders[0].coins >= totalCost;
     let coinLine;
@@ -763,9 +752,33 @@
     } else {
       coinLine = `...but I only have $${c.orders[0].coins}`;
     }
+    dialogCoins.setText(coinLine);
+    const contentW=Math.max(dialogText.width, dialogCoins.width);
+    dialogBg.width=contentW+padding*2;
+    dialogBg.height=dialogText.height+dialogCoins.height+spacing+padding*2;
+    dialogBg.setVisible(true);
+    drawDialogBubble(c.sprite.x, c.sprite.y);
+    dialogPriceBox
+      .setPosition(dialogBg.x + dialogBg.width/2 - 60, dialogBg.y - dialogBg.height)
+      .setVisible(true);
+    if(activeBubble){
+      activeBubble.destroy();
+      activeBubble=null;
+    }
+    const bubble=this.add.text(c.sprite.x,c.sprite.y-50,'💬',{font:'32px sans-serif',fill:'#000'})
+      .setOrigin(0.5).setDepth(11);
+    activeBubble=bubble;
+    this.tweens.add({targets:bubble,y:c.sprite.y-70,alpha:0,duration:dur(600),onComplete:()=>{bubble.destroy(); activeBubble=null;}});
+    dialogText
+      .setOrigin(0,0.5)
+      .setPosition(dialogBg.x-dialogBg.width/2+padding,
+                   dialogBg.y-dialogBg.height/2+padding+dialogText.height/2)
+      .setText(wantLine)
+      .setVisible(true);
     dialogCoins
       .setOrigin(0,0.5)
-      .setPosition(dialogBg.x-dialogBg.width/2+40,470)
+      .setPosition(dialogBg.x-dialogBg.width/2+padding,
+                   dialogText.y+dialogText.height/2+spacing+dialogCoins.height/2)
       .setStyle({fontSize:'20px'})
       .setText(coinLine)
       .setVisible(true);

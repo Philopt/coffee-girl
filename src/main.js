@@ -730,8 +730,8 @@ import { debugLog } from './debug.js';
     dialogPriceContainer
       .setPosition(dialogBg.x + dialogBg.width/2 - 60, dialogBg.y - dialogBg.height)
       .setScale(1)
-
       .setVisible(true);
+    dialogPriceContainer.alpha = 1;
     const itemStr=c.orders.map(o=>{
       return o.qty>1 ? `${o.qty} ${o.req}` : o.req;
     }).join(' and ');

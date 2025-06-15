@@ -1,13 +1,14 @@
+/* global phoneDamage */
 import { debugLog } from './debug.js';
 import { dur, scaleForY, articleFor, flashMoney, START_PHONE_W, START_PHONE_H, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_Y, DIALOG_Y } from "./ui.js";
 import { MENU, SPAWN_DELAY, SPAWN_VARIANCE, QUEUE_SPACING, ORDER_X, ORDER_Y, QUEUE_X, QUEUE_OFFSET, QUEUE_Y, WANDER_TOP, WANDER_BOTTOM, BASE_WAITERS, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel, maxWanderers as customersMaxWanderers, queueLimit as customersQueueLimit } from "./customers.js";
 import { baseConfig } from "./scene.js";
 export let Assets, Scene, Customers, config;
 (() => {
-  if (typeof debugLog === 'function') debugLog('main.js loaded');
+  debugLog('main.js loaded');
   let initCalled = false;
   function init(){
-    if (typeof debugLog === 'function') debugLog('init() executing');
+    debugLog('init() executing');
     initCalled = true;
     new Phaser.Game(config);
   }
@@ -19,7 +20,9 @@ export let Assets, Scene, Customers, config;
   let spawnTimer = null;
   let falconActive = false;
   let loveLevel=1;
+
   let phoneDamage = 0;
+
   let flickerEvent;
   const keys=[];
   const requiredAssets=['bg','truck','girl','lady_falcon','falcon_end','revolt_end'];
@@ -231,14 +234,6 @@ export let Assets, Scene, Customers, config;
   let startMsgTimers=[];
   let startMsgBubbles=[];
 
-
-  function calcLoveLevel(v){
-    if(v>=100) return 4;
-    if(v>=50) return 3;
-    if(v>=20) return 2;
-    return 1;
-  }
-
   function maxWanderers(){
     return customersMaxWanderers(love);
   }
@@ -429,7 +424,7 @@ export let Assets, Scene, Customers, config;
 
   function showStartScreen(scene){
     scene = scene || this;
-    if (typeof debugLog === 'function') debugLog('showStartScreen called');
+    debugLog('showStartScreen called');
     // reset any pending timers or bubbles from a previous session
     startMsgTimers.forEach(t => t.remove(false));
     startMsgTimers = [];
@@ -516,7 +511,7 @@ export let Assets, Scene, Customers, config;
         }
       }
       startZone.on('pointerdown',()=>{
-        if (typeof debugLog === 'function') debugLog('start button clicked');
+        debugLog('start button clicked');
         startMsgTimers.forEach(t=>t.remove(false));
         startMsgTimers=[];
         startMsgBubbles=[];
@@ -536,15 +531,15 @@ export let Assets, Scene, Customers, config;
       console.warn('playIntro skipped: missing truck or girl');
       return;
     }
-    if (typeof debugLog === 'function') debugLog('playIntro starting');
+    debugLog('playIntro starting');
     scene = scene || this;
     if(!truck || !girl) return;
     truck.setPosition(560,245);
     girl.setPosition(560,260).setVisible(false);
     const intro=scene.tweens.createTimeline({callbackScope:scene,
       onComplete:()=>{
-        if (typeof debugLog === 'function') debugLog('intro finished');
-        if (typeof debugLog === 'function') debugLog('playIntro finished');
+        debugLog('intro finished');
+        debugLog('playIntro finished');
         spawnCustomer.call(scene);
         scheduleNextSpawn(scene);
       }});
@@ -804,10 +799,6 @@ export let Assets, Scene, Customers, config;
       activeBubble.destroy();
       activeBubble=null;
     }
-    const bubble=this.add.text(c.sprite.x,c.sprite.y-50,'💬',{font:'32px sans-serif',fill:'#000'})
-      .setOrigin(0.5).setDepth(11);
-    activeBubble=bubble;
-    this.tweens.add({targets:bubble,y:c.sprite.y-70,alpha:0,duration:dur(600),onComplete:()=>{bubble.destroy(); activeBubble=null;}});
 
     dialogText
       .setOrigin(0.5)

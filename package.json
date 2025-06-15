@@ -27,9 +27,7 @@
       "sourceType": "module"
     },
     "globals": {
-      "Phaser": "readonly",
-      "phoneDamage": "writable",
-      "flickerEvent": "writable"
+      "Phaser": "readonly"
     },
     "extends": "eslint:recommended",
     "rules": {

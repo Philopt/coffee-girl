@@ -558,7 +558,7 @@
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
     reportLine4=this.add.text(0,0,'',{font:'14px sans-serif',fill:'#fff'})
       .setVisible(false).setDepth(11);
-    tipText=this.add.text(0,0,'',{font:'24px sans-serif',fill:'#0a0'})
+    tipText=this.add.text(0,0,'',{font:'20px sans-serif',fill:'#0a0'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
     paidStamp=this.add.text(0,0,'PAID',{font:'24px sans-serif',fill:'#0a0'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
@@ -707,14 +707,14 @@
       .setText(coinLine)
       .setVisible(true);
     dialogPriceLabel
-      .setOrigin(0.5,0.5)
-      .setPosition(dialogPriceBox.x, dialogPriceBox.y - 20)
+      .setOrigin(1,0.5)
+      .setPosition(dialogPriceBox.x + dialogPriceBox.width/2 - 4, dialogPriceBox.y - 20)
       .setStyle({fontSize:'14px'})
       .setText('Total\nCost')
       .setVisible(true);
     dialogPriceValue
-      .setOrigin(0.5,0.5)
-      .setPosition(dialogPriceBox.x, dialogPriceBox.y + 10)
+      .setOrigin(1,0.5)
+      .setPosition(dialogPriceBox.x + dialogPriceBox.width/2 - 4, dialogPriceBox.y + 14)
       .setStyle({fontSize:'32px'})
       .setText(`$${totalCost.toFixed(2)}`)
       .setColor('#000')
@@ -824,12 +824,18 @@
       t.setVisible(true);
       t.setDepth(paidStamp.depth+1);
       t.setText(receipt(totalCost));
+      const boxX = (typeof dialogPriceBox !== 'undefined' && dialogPriceBox.x) || t.x;
+      const boxY = (typeof dialogPriceBox !== 'undefined' && dialogPriceBox.y) || t.y;
       paidStamp
         .setText('PAID')
         .setScale(1.5)
-        .setPosition(t.x - 20, t.y)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
+      if(tip>0){
+        paidStamp.setPosition(boxX - 20, boxY);
+      }else{
+        paidStamp.setPosition(boxX, boxY);
+      }
 
       const flashPrice=()=>{
         const oy=t.y;
@@ -842,9 +848,9 @@
       if(tip>0){
         this.time.delayedCall(delay,()=>{
           tipText
-            .setText('TIP')
-            .setScale(1.6)
-            .setPosition(paidStamp.x, paidStamp.y-40)
+            .setText('+ TIP')
+            .setScale(1.2)
+            .setPosition(boxX + 20, boxY)
             .setVisible(true);
           t.setText(receipt(totalCost + tip));
           flashPrice();
@@ -877,7 +883,8 @@
       lossStamp
         .setText('LOSS')
         .setScale(1.5)
-        .setPosition(t.x - 20, t.y)
+        .setPosition((typeof dialogPriceBox !== 'undefined' && dialogPriceBox.x) || t.x,
+                    (typeof dialogPriceBox !== 'undefined' && dialogPriceBox.y) || t.y)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
       this.time.delayedCall(dur(1000),()=>{

@@ -127,10 +127,13 @@ export function setupGame(){
   function blinkButton(btn, onComplete, inputObj){
     // Temporarily disable input while the button blinks. The optional
     // inputObj parameter allows specifying a separate interactive
-    // object (e.g. an invisible zone) to disable during the blink.
+    // object (e.g. an invisible zone) to disable during the blink
+    // without destroying its hit area.
 
     const target = inputObj || btn;
-    if (target.disableInteractive) target.disableInteractive();
+    if (target.input) {
+      target.input.enabled = false;
+    }
     this.tweens.add({
       targets: btn,
       alpha: 0,
@@ -138,8 +141,8 @@ export function setupGame(){
       duration: dur(80),
       repeat: 1,
       onComplete: () => {
-        if (target.setInteractive) {
-          target.setInteractive({ useHandCursor: true });
+        if (target.input) {
+          target.input.enabled = true;
         }
         if (onComplete) onComplete();
       }

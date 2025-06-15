@@ -7,8 +7,20 @@ const assert = require('assert');
 
 function testBlinkButton() {
   const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
-  const match = /function blinkButton\(btn, onComplete\)[\s\S]*?\n\s*\}\);\n\s*\}/.exec(code);
-  if (!match) throw new Error('blinkButton not found');
+  const start = code.indexOf('function blinkButton');
+  if (start === -1) throw new Error('blinkButton not found');
+  let depth = 0;
+  let end = -1;
+  for (let i = start; i < code.length; i++) {
+    const ch = code[i];
+    if (ch === '{') depth++;
+    else if (ch === '}') {
+      depth--;
+      if (depth === 0) { end = i + 1; break; }
+    }
+  }
+  if (end === -1) throw new Error('blinkButton not closed');
+  const match = code.slice(start, end);
   function RectStub(x, y, w, h) {
     return { x, y, width: w, height: h };
   }
@@ -16,7 +28,7 @@ function testBlinkButton() {
   const context = { Phaser: { Geom: { Rectangle: RectStub } } };
   vm.createContext(context);
   context.blinkBtn = null;
-  vm.runInContext('const dur=v=>v;\n' + match[0] + '\nblinkBtn=blinkButton;', context);
+  vm.runInContext('const dur=v=>v;\n' + match + '\nblinkBtn=blinkButton;', context);
   const blinkButton = context.blinkBtn;
   let disableCalled = false;
   let setArgs = null;
@@ -25,13 +37,21 @@ function testBlinkButton() {
     height: 60,
     input: { enabled: true },
     disableInteractive() { disableCalled = true; this.input.enabled = false; },
-    setInteractive(rect, cb) { setArgs = { rect, cb }; this.input.enabled = true; }
+    setInteractive(arg1, arg2) {
+      if (arg1 && arg1.hitArea) {
+        setArgs = { rect: arg1.hitArea, cb: arg1.hitAreaCallback, useHand: arg1.useHandCursor };
+      } else {
+        setArgs = { rect: arg1, cb: arg2 };
+      }
+      this.input.enabled = true;
+    }
   };
   const scene = { tweens: { add(cfg) { if (cfg.onComplete) cfg.onComplete(); return {}; } } };
   blinkButton.call(scene, btn);
   assert(disableCalled, 'disableInteractive not called');
   assert.strictEqual(btn.input.enabled, true, 'button not re-enabled');
   assert.ok(setArgs && setArgs.rect && setArgs.cb, 'setInteractive should be called with shape');
+  assert.strictEqual(setArgs.useHand, true, 'useHandCursor should be true');
   assert.strictEqual(setArgs.rect.x, -btn.width / 2, 'hitbox x not centered');
   assert.strictEqual(setArgs.rect.y, -btn.height / 2, 'hitbox y not centered');
   console.log('blinkButton interactivity test passed');

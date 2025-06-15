@@ -606,7 +606,10 @@ export let Assets, Scene, Customers, config;
     reportLine3=this.add.text(480,loveText.y,'',{font:'16px sans-serif',fill:'#fff'})
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
     tipText=this.add.text(0,0,'',{font:'28px sans-serif',fill:'#0a0'})
-      .setOrigin(0.5).setDepth(12).setVisible(false);
+      .setOrigin(0.5)
+      .setDepth(12)
+      .setVisible(false)
+      .setAlpha(0.5);
     paidStamp=this.add.text(0,0,'PAID',{
         font:'40px sans-serif',
         fill:'#0a0',
@@ -963,23 +966,17 @@ export let Assets, Scene, Customers, config;
       if(type==='refuse'){
         const tl=this.tweens.createTimeline({callbackScope:this,onComplete:exit});
         const dir = sprite.x < girl.x ? -1 : 1;
-        let hopX = sprite.x;
-        for(let i=0;i<2;i++){
-          hopX += dir * 20;
-          tl.add({targets:sprite,x:hopX,y:sprite.y-20,duration:dur(150),yoyo:true});
-        }
-        const leaveDir = Phaser.Math.RND.pick([-1,0,1]);
-        for(let j=0;j<3;j++){
-          tl.add({targets:sprite,
-                  x:sprite.x+Phaser.Math.Between(-15,15),
-                  y:sprite.y+Phaser.Math.Between(-15,15),
-                  duration:dur(80)});
-        }
-        let destX=sprite.x, destY=sprite.y;
-        if(leaveDir===-1){ destX=-50; }
-        else if(leaveDir===1){ destX=520; }
-        else { destY=700; }
-        tl.add({targets:sprite,x:destX,y:destY,alpha:0,duration:dur(WALK_OFF_BASE*1.2)});
+        const startX=sprite.x;
+        const startY=sprite.y;
+        tl.add({targets:sprite,
+                x:startX+dir*40,
+                y:startY-30,
+                duration:dur(200),
+                yoyo:true});
+        tl.add({targets:sprite,x:startX+dir*80,duration:dur(300)});
+        tl.add({targets:sprite,x:startX-dir*40,duration:dur(300)});
+        const destX = dir===-1 ? -50 : 520;
+        tl.add({targets:sprite,x:destX,y:startY,alpha:0,duration:dur(WALK_OFF_BASE*1.2)});
         tl.play();
       }else{
         const dir = Phaser.Math.Between(0,1)?1:-1;
@@ -1034,7 +1031,7 @@ export let Assets, Scene, Customers, config;
           const tipY = ticket.y - ticketH * 0.25;
           const oldLeft = t.x - t.displayWidth/2;
           tipText
-            .setText('+TIP')
+            .setText('TIP')
             .setScale(1.4)
             .setPosition(tipX, tipY)
             .setAngle(Phaser.Math.Between(-15,15))
@@ -1078,8 +1075,8 @@ export let Assets, Scene, Customers, config;
       const destY=moneyText.y+10;
       t.setVisible(true)
         .setDepth(lossStamp.depth+1);
-      const stampX=ticket.x + t.x * ticket.scaleX;
-      const stampY=ticket.y + t.y * ticket.scaleY;
+      const stampX=ticket.x + Phaser.Math.Between(-5,5);
+      const stampY=ticket.y + Phaser.Math.Between(-5,5);
       lossStamp
         .setText('LOSS')
         .setScale(1.5)

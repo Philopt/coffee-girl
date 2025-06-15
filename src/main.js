@@ -58,6 +58,7 @@
   // dimensions for the phone graphic shown on the start screen
   const START_PHONE_W = 260;
   const START_PHONE_H = 500;
+  const TRUCK_START_X = 620;
 
   // dimensions/positioning for the action buttons
   const BUTTON_WIDTH = 140;
@@ -343,6 +344,15 @@
     if (typeof debugLog === 'function') debugLog('showStartScreen called');
     if (typeof startMsgTimers === 'undefined') startMsgTimers = [];
     if (typeof startMsgBubbles === 'undefined') startMsgBubbles = [];
+    if (typeof document !== 'undefined') {
+      const container = document.getElementById('game-container');
+      if (container) container.classList.add('blur');
+    }
+    if (typeof moneyText !== 'undefined' && typeof loveText !== 'undefined' && typeof queueLevelText !== 'undefined') {
+      if (moneyText) moneyText.setVisible(false);
+      if (loveText) loveText.setVisible(false);
+      if (queueLevelText) queueLevelText.setVisible(false);
+    }
     startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.5)
       .setDepth(14);
 
@@ -442,6 +452,15 @@
         const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
           if(startButton) startButton.destroy();
           phoneContainer.destroy(); phoneContainer=null;
+          if (typeof document !== 'undefined') {
+            const container = document.getElementById('game-container');
+            if (container) container.classList.remove('blur');
+          }
+          if (typeof moneyText !== 'undefined' && typeof loveText !== 'undefined' && typeof queueLevelText !== 'undefined') {
+            if (moneyText) moneyText.setVisible(true);
+            if (loveText) loveText.setVisible(true);
+            if (queueLevelText) queueLevelText.setVisible(true);
+          }
         }});
         tl.add({targets:phoneContainer,y:-320,duration:600,ease:'Sine.easeIn'});
         tl.add({targets:startOverlay,alpha:0,duration:600,onComplete:()=>{ if(startOverlay){startOverlay.destroy(); startOverlay=null;} }});
@@ -459,8 +478,9 @@
     if (typeof debugLog === 'function') debugLog('playIntro starting');
     scene = scene || this;
     if(!truck || !girl) return;
-    truck.setPosition(560,245);
-    girl.setPosition(560,260).setVisible(false);
+    const startX = (typeof TRUCK_START_X !== 'undefined') ? TRUCK_START_X : 560;
+    truck.setPosition(startX,245);
+    girl.setPosition(startX,260).setVisible(false);
     const intro=scene.tweens.createTimeline({callbackScope:scene,
       onComplete:()=>{
         if (typeof debugLog === 'function') debugLog('intro finished');
@@ -468,7 +488,7 @@
         spawnCustomer.call(scene);
         scheduleNextSpawn(scene);
       }});
-    intro.add({targets:[truck,girl],x:240,duration:dur(600)});
+    intro.add({targets:[truck,girl],x:240,duration:dur(600),delay:500});
     intro.add({targets:girl,y:292,duration:dur(300),onStart:()=>girl.setVisible(true)});
     intro.play();
   }
@@ -523,9 +543,10 @@
       .setOrigin(0.5).setDepth(1);
     updateLevelDisplay();
     // truck & girl
-    truck=this.add.image(560,245,'truck').setScale(0.924).setDepth(2);
+    const startX = (typeof TRUCK_START_X !== 'undefined') ? TRUCK_START_X : 560;
+    truck=this.add.image(startX,245,'truck').setScale(0.924).setDepth(2);
 
-    girl=this.add.image(560,260,'girl').setScale(0.5).setDepth(3).setVisible(false);
+    girl=this.add.image(startX,260,'girl').setScale(0.5).setDepth(3).setVisible(false);
 
     // create lady falcon animation
     this.anims.create({

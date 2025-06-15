@@ -946,21 +946,33 @@ export let Assets, Scene, Customers, config;
 
       if(type==='refuse'){
         const tl=this.tweens.createTimeline({callbackScope:this,onComplete:exit});
+        const dir = sprite.x < girl.x ? -1 : 1;
+        let hopX = sprite.x;
         for(let i=0;i<2;i++){
-          tl.add({targets:sprite,y:sprite.y-20,duration:dur(120),yoyo:true});
+          hopX += dir * 20;
+          tl.add({targets:sprite,x:hopX,y:sprite.y-20,duration:dur(150),yoyo:true});
         }
-        for(let i=0;i<2;i++){
-          tl.add({targets:sprite,x:'+=10',duration:dur(80),yoyo:true});
+        const leaveDir = Phaser.Math.RND.pick([-1,0,1]);
+        for(let j=0;j<3;j++){
+          tl.add({targets:sprite,
+                  x:sprite.x+Phaser.Math.Between(-15,15),
+                  y:sprite.y+Phaser.Math.Between(-15,15),
+                  duration:dur(80)});
         }
-        tl.add({targets:sprite,x:-50,alpha:0,duration:dur(WALK_OFF_BASE)});
+        let destX=sprite.x, destY=sprite.y;
+        if(leaveDir===-1){ destX=-50; }
+        else if(leaveDir===1){ destX=520; }
+        else { destY=700; }
+        tl.add({targets:sprite,x:destX,y:destY,alpha:0,duration:dur(WALK_OFF_BASE*1.2)});
         tl.play();
       }else{
-        const startX=sprite.x;
-        const destY=700;
+        const dir = Phaser.Math.Between(0,1)?1:-1;
+        const targetX = dir===1?520:-40;
+        const startY=sprite.y;
         const amp=Phaser.Math.Between(10,25);
         const freq=Phaser.Math.Between(2,4);
-        this.tweens.add({targets:sprite,y:destY,alpha:0,duration:dur(WALK_OFF_BASE),callbackScope:this,
-          onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+Math.sin(p*Math.PI*freq)*amp;},
+        this.tweens.add({targets:sprite,x:targetX,duration:dur(7000),callbackScope:this,
+          onUpdate:(tw,t)=>{const p=tw.progress; t.y=startY+Math.sin(p*Math.PI*freq)*amp;},
           onComplete:exit});
       }
     };
@@ -1155,6 +1167,10 @@ export let Assets, Scene, Customers, config;
   function animateLoveChange(delta, customer, cb){
     const count=Math.abs(delta);
     const emoji=delta>0?'❤️':'😠';
+
+    if(delta<0){
+      this.tweens.add({targets:customer,y:customer.y-20,duration:dur(150),yoyo:true});
+    }
 
     const baseX=customer.x - 20*(count-1)/2;
     const baseY=customer.y + 40;

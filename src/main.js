@@ -1058,7 +1058,8 @@ export function setupGame(){
     dialogBg.setScale(0).setVisible(true);
     dialogText.setScale(0);
     dialogCoins.setScale(0);
-    let bubbleColor=0xffffff;
+    // use a static bubble color to avoid expensive image analysis
+    let bubbleColor = 0xffffff;
     drawDialogBubble(c.sprite.x, c.sprite.y, bubbleColor);
 
     const priceTargetXDefault = dialogBg.x + dialogBg.width/2 - 40;

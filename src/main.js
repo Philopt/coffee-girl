@@ -343,8 +343,6 @@
   function showStartScreen(scene){
     scene = scene || this;
     if (typeof debugLog === 'function') debugLog('showStartScreen called');
-    // Log when the start screen is shown so we know the overlay is active
-    console.log('showStartScreen called');
     if (typeof startMsgTimers === 'undefined') startMsgTimers = [];
     if (typeof startMsgBubbles === 'undefined') startMsgBubbles = [];
     startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.5)
@@ -444,7 +442,7 @@
     startButton.on('pointerdown',()=>{
 
         // Log click registration to help debug input issues
-        console.log('start button clicked');
+        if (typeof debugLog === 'function') debugLog('start button clicked');
 
         // cancel any pending start messages
         startMsgTimers.forEach(t=>t.remove(false));
@@ -475,8 +473,8 @@
     girl.setPosition(560,260).setVisible(false);
     const intro=scene.tweens.createTimeline({callbackScope:scene,
       onComplete:()=>{
-        console.log('intro finished');
-        console.log('playIntro finished');
+        if (typeof debugLog === 'function') debugLog('intro finished');
+        if (typeof debugLog === 'function') debugLog('playIntro finished');
         spawnCustomer.call(scene);
         scheduleNextSpawn(scene);
       }});

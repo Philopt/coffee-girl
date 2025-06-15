@@ -86,6 +86,7 @@ function testSpawnCustomer() {
     maxWanderers: () => 5,
     scheduleNextSpawn: () => {},
     lureNextWanderer: () => {},
+    sendDogOffscreen: () => {},
     keys: ['c1'],
     MENU: [{ name: 'Coffee', price: 5 }],
     WANDER_TOP: 0,
@@ -109,7 +110,10 @@ function testSpawnCustomer() {
       }
     },
     tweens: { add(cfg) { if (cfg.onComplete) cfg.onComplete(); return { progress: 0 }; } },
-    time: { addEvent() { return { remove() {} }; } }
+    time: {
+      addEvent() { return { remove() {} }; },
+      delayedCall() { return { remove() {} }; }
+    }
   };
   spawnCustomer.call(scene);
   assert.strictEqual(context.wanderers.length, 1, 'customer not added to wanderers');

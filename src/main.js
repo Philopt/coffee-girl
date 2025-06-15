@@ -60,7 +60,7 @@
   const START_PHONE_H = 500;
 
   // dimensions/positioning for the action buttons
-  const BUTTON_WIDTH = 140;
+  const BUTTON_WIDTH = 120;
   const BUTTON_HEIGHT = 80;
   const BUTTON_Y = 560;
 
@@ -599,9 +599,9 @@
 
     // buttons evenly spaced
 
-    btnSell=createButton(70,'SELL','💵',32,0x006400,()=>handleAction.call(this,'sell'));
+    btnSell=createButton(80,'SELL','💵',32,0x006400,()=>handleAction.call(this,'sell'));
     btnGive=createButton(240,'GIVE','💝',28,0x008000,()=>handleAction.call(this,'give'));
-    btnRef=createButton(410,'REFUSE','✋',32,0x800000,()=>handleAction.call(this,'refuse'));
+    btnRef=createButton(400,'REFUSE','✋',32,0x800000,()=>handleAction.call(this,'refuse'));
 
 
     // sliding report texts

@@ -78,32 +78,23 @@ export let Assets, Scene, Customers, config;
     },[],scene);
   }
 
-  function scatterMoney(scene, container, dollars, tip){
-    const count=Math.min(10, Math.floor(dollars));
-    for(let i=0;i<count;i++){
-      const bill=scene.add.text(container.x, container.y,'💵',
-        {font:'22px sans-serif',fill:'#0f0'})
-        .setOrigin(0.5)
-        .setDepth(container.depth+2);
-      const dx=Phaser.Math.Between(-container.width/2+10, container.width/2-10);
-      const dy=Phaser.Math.Between(-container.height/2+10, container.height/2-10);
-      scene.tweens.add({targets:bill,x:container.x+dx,y:container.y+dy,
-        angle:Phaser.Math.Between(-180,180),duration:dur(400),alpha:0,
-        onComplete:()=>bill.destroy()});
-    }
-    if(tip>0){
-      for(let i=0;i<2;i++){
-        const coin=scene.add.text(container.x, container.y,'🪙',
-          {font:'16px sans-serif',fill:'#ff0'})
+  function scatterMoney(scene, container, dollars, tip, fromX=container.x, fromY=container.y){
+    const items=[];
+    const addMoney=(emoji,fontSize,count,color)=>{
+      for(let i=0;i<count;i++){
+        const item=scene.add.text(fromX,fromY,emoji,{font:`${fontSize}px sans-serif`,fill:color})
           .setOrigin(0.5)
           .setDepth(container.depth+2);
-        const dx=Phaser.Math.Between(-container.width/2+10, container.width/2-10);
-        const dy=Phaser.Math.Between(-container.height/2+10, container.height/2-10);
-        scene.tweens.add({targets:coin,x:container.x+dx,y:container.y+dy,
-          angle:Phaser.Math.Between(-180,180),duration:dur(400),alpha:0,
-          onComplete:()=>coin.destroy()});
+        container.add(item);
+        const dx=Phaser.Math.Between(-container.width/2+10,container.width/2-10);
+        const dy=Phaser.Math.Between(-container.height/2+10,container.height/2-10);
+        scene.tweens.add({targets:item,x:dx,y:dy,angle:Phaser.Math.Between(-180,180),duration:dur(400),ease:'Cubic.easeOut'});
+        items.push(item);
       }
-    }
+    };
+    addMoney('💵',22,Math.min(10,Math.floor(dollars)),'#0f0');
+    if(tip>0) addMoney('🪙',16,2,'#ff0');
+    return items;
   }
 
   function animateStatChange(obj, scene, delta, isLove=false){
@@ -948,6 +939,7 @@ export let Assets, Scene, Customers, config;
       flashMoney(t,this);
 
       let delay=dur(300);
+      let moneyIcons=null;
       if(tip>0){
         this.time.delayedCall(delay,()=>{
           tipText
@@ -969,6 +961,7 @@ export let Assets, Scene, Customers, config;
         const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
             clearDialog();
             ticket.setVisible(false);
+            if(moneyIcons){ moneyIcons.forEach(m=>m.destroy()); }
             money=+(money+mD).toFixed(2);
             moneyText.setText('🪙 '+receipt(money));
             animateStatChange(moneyText, this, mD);
@@ -978,7 +971,7 @@ export let Assets, Scene, Customers, config;
           onStart:()=>{
             flashBorder(dialogPriceBox,this,0x00ff00);
             flashFill(dialogPriceBox,this,0x00ff00);
-            scatterMoney(this, ticket, totalCost, tip);
+            moneyIcons=scatterMoney(this, ticket, totalCost, tip, customer.x, customer.y);
             if(this.tweens){
               this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});
             }

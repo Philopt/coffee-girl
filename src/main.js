@@ -71,6 +71,13 @@ import { debugLog } from './debug.js';
   let loveLevel=1;
   const keys=[];
   const requiredAssets=['bg','truck','girl','lady_falcon','falcon_end','revolt_end'];
+  const genzSprites=[
+    'new_kid_0_0','new_kid_0_1','new_kid_0_2','new_kid_0_4','new_kid_0_5',
+    'new_kid_1_0','new_kid_1_1','new_kid_1_2','new_kid_1_3','new_kid_1_4','new_kid_1_5',
+    'new_kid_2_0','new_kid_2_1','new_kid_2_2','new_kid_2_3','new_kid_2_4','new_kid_2_5',
+    'new_kid_3_0','new_kid_3_1','new_kid_3_2','new_kid_3_3','new_kid_3_4','new_kid_3_5',
+    'new_kid_4_0','new_kid_4_1','new_kid_4_2','new_kid_4_3','new_kid_4_4','new_kid_4_5'
+  ];
 
   const dur=v=>v;
 
@@ -493,9 +500,7 @@ import { debugLog } from './debug.js';
     loader.spritesheet('lady_falcon','assets/lady_falcon.png',{frameWidth:64,frameHeight:64});
     loader.image('falcon_end','assets/ladyfalconend.png');
     loader.image('revolt_end','assets/revolt.png');
-    for(let r=0;r<5;r++)for(let c=0;c<6;c++){
-      if(r===0 && c===3) continue; // skip missing sprite
-      const k=`new_kid_${r}_${c}`;
+    for(const k of genzSprites){
       keys.push(k);
       requiredAssets.push(k);
       loader.image(k,`assets/genz/${k}.png`);

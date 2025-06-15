@@ -557,8 +557,8 @@ export function setupGame(){
         spawnCustomer.call(scene);
         scheduleNextSpawn(scene);
       }});
-    intro.add({targets:truck,x:240,scale:0.924,duration:dur(600)});
-    intro.add({targets:girl,x:240,duration:dur(600)},0);
+    intro.add({targets:truck,x:240,scale:0.924,duration:dur(1200)});
+    intro.add({targets:girl,x:240,duration:dur(1200)},0);
     intro.add({targets:girl,y:292,duration:dur(300),onStart:()=>girl.setVisible(true)});
     intro.play();
   }

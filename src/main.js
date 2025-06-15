@@ -681,14 +681,14 @@ export function setupGame(){
           truck.y = 245;
         }
         // Start the first wanderers once the intro finishes
-        spawnCustomer.call(scene,{wanderOnly:true});
+        spawnCustomer.call(scene);
         if(scene.time && scene.time.delayedCall){
           scene.time.delayedCall(500,()=>{
-            spawnCustomer.call(scene,{wanderOnly:true});
+            spawnCustomer.call(scene);
           },[],scene);
           scene.time.delayedCall(1000,()=>scheduleNextSpawn(scene),[],scene);
         }else{
-          spawnCustomer.call(scene,{wanderOnly:true});
+          spawnCustomer.call(scene);
           scheduleNextSpawn(scene);
         }
       }});
@@ -884,8 +884,7 @@ export function setupGame(){
     this.events.on('update', enforceCustomerScaling);
   }
 
-  function spawnCustomer(opts={}){
-    const wanderOnly = opts.wanderOnly || false;
+  function spawnCustomer(){
     if(gameOver) return;
     const createOrder=()=>{
       const coins=Phaser.Math.Between(0,20);
@@ -950,9 +949,13 @@ export function setupGame(){
         c.sprite.destroy();
       }});
     wanderers.push(c);
-    if(!wanderOnly){
-      lureNextWanderer(this);
-      scheduleNextSpawn(this);
+    scheduleNextSpawn(this);
+    if(this.time && this.time.delayedCall){
+      this.time.delayedCall(1000, ()=>{
+        if(queue.length===0 && wanderers.includes(c)){
+          lureNextWanderer(this);
+        }
+      }, [], this);
     }
 
   }

@@ -197,7 +197,7 @@ export let Assets, Scene, Customers, config;
       dialogPriceLabel, dialogPriceValue, dialogPriceBox,
       dialogPriceContainer,
       btnSell, btnGive, btnRef;
-  let reportLine1, reportLine2, reportLine3, reportLine4, tipText;
+  let reportLine1, reportLine2, reportLine3, tipText;
   let paidStamp, lossStamp;
   let truck, girl;
   let activeBubble=null;
@@ -606,8 +606,6 @@ export let Assets, Scene, Customers, config;
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
     reportLine3=this.add.text(480,loveText.y,'',{font:'16px sans-serif',fill:'#fff'})
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
-    reportLine4=this.add.text(0,0,'',{font:'14px sans-serif',fill:'#fff'})
-      .setVisible(false).setDepth(11);
     tipText=this.add.text(0,0,'',{font:'28px sans-serif',fill:'#0a0'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
     paidStamp=this.add.text(0,0,'PAID',{font:'40px sans-serif',fill:'#0a0'})
@@ -1441,7 +1439,6 @@ export let Assets, Scene, Customers, config;
     reportLine1.setVisible(false);
     reportLine2.setVisible(false);
     reportLine3.setVisible(false);
-    reportLine4.setVisible(false);
     tipText.setVisible(false);
     paidStamp.setVisible(false);
     lossStamp.setVisible(false);

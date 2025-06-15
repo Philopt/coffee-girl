@@ -246,6 +246,7 @@ export let Assets, Scene, Customers, config;
       c.sprite.setDepth(5);
       c.walkTween=scene.tweens.add({targets:c.sprite,x:targetX,y:targetY,scale:scaleForY(targetY),duration:dur(600+dist*2),ease:'Sine.easeIn',callbackScope:scene,
         onComplete:()=>{c.walkTween=null; if(idx===0) showDialog.call(scene);} });
+      if(typeof checkQueueSpacing==='function') checkQueueSpacing(scene);
     }
   }
 
@@ -273,6 +274,23 @@ export let Assets, Scene, Customers, config;
     if(queue.length < queueLimit()){
       lureNextWanderer(scene);
     }
+    if(typeof checkQueueSpacing==='function') checkQueueSpacing(scene);
+  }
+
+  function checkQueueSpacing(scene){
+    queue.forEach((cust, idx)=>{
+      const tx = idx===0 ? ORDER_X : QUEUE_X - QUEUE_SPACING*(idx-1);
+      const ty = idx===0 ? ORDER_Y : QUEUE_Y - QUEUE_OFFSET*(idx-1);
+      const dist = Phaser.Math.Distance.Between(cust.sprite.x,cust.sprite.y,tx,ty);
+      if(dist > 2){
+        if(cust.walkTween){
+          cust.walkTween.stop();
+          cust.walkTween.remove();
+          cust.walkTween=null;
+        }
+        scene.tweens.add({targets:cust.sprite,x:tx,y:ty,scale:scaleForY(ty),duration:dur(200)});
+      }
+    });
   }
 
   function updateLevelDisplay(){

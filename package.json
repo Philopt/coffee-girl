@@ -6,7 +6,7 @@
     "start": "http-server -p 8080 -c-1",
     "pretest": "npm run lint",
     "test": "node test/test.js",
-    "lint": "eslint src/*.js test/*.js",
+    "lint": "eslint -c eslint.config.js src/*.js test/*.js",
     "lint:syntax": "node -c src/main.js"
   },
   "devDependencies": {
@@ -14,24 +14,6 @@
     "puppeteer": "^24.10.1",
     "pngjs": "^7.0.0",
     "eslint": "^8.57.1"
-  },
-  "eslintConfig": {
-    "env": {
-      "browser": true,
-      "node": true,
-      "es6": true
-    },
-    "parserOptions": {
-      "ecmaVersion": 2020,
-      "sourceType": "module"
-    },
-    "globals": {
-      "Phaser": "readonly"
-    },
-    "extends": "eslint:recommended",
-    "rules": {
-      "no-unused-vars": "warn"
-    }
   },
   "license": "MIT"
 }

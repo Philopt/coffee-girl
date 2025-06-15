@@ -910,7 +910,22 @@ export let Assets, Scene, Customers, config;
             scale:1,
             duration:dur(300),
             ease:'Sine.easeOut',
-            onComplete:()=>{ fadeInButtons.call(this, canAfford); }
+            onComplete:()=>{
+              if (typeof fadeInButtons === 'function') {
+                fadeInButtons.call(this, canAfford);
+              } else {
+                if (canAfford) {
+                  btnSell.setVisible(true);
+                  if (btnSell.input) btnSell.input.enabled = true;
+                } else {
+                  btnSell.setVisible(false);
+                  if (btnSell.input) btnSell.input.enabled = false;
+                }
+                btnGive.setVisible(true);
+                if (btnGive.input) btnGive.input.enabled = true;
+                if (btnRef.input) btnRef.input.enabled = true;
+              }
+            }
           });
         };
         if(this.time && this.time.delayedCall){
@@ -921,6 +936,7 @@ export let Assets, Scene, Customers, config;
       }
     });
 
+    btnRef.setVisible(true);
     tipText.setVisible(false);
   }
 
@@ -1043,7 +1059,7 @@ export let Assets, Scene, Customers, config;
     if(type==='sell'){
       const ticket=dialogPriceContainer;
       const t=dialogPriceValue;
-      const ticketW = dialogPriceBox.width;
+      const ticketW = typeof dialogPriceBox !== 'undefined' && dialogPriceBox ? dialogPriceBox.width : 0;
       const destX=moneyText.x+moneyText.width-15;
       const destY=moneyText.y+10;
       t.setVisible(true);
@@ -1108,10 +1124,12 @@ export let Assets, Scene, Customers, config;
         }});
         tl.add({targets:ticket,x:destX,y:destY,scale:0,duration:dur(400),
           onStart:()=>{
-            flashBorder(dialogPriceBox,this,0x00ff00);
-            flashFill(dialogPriceBox,this,0x00ff00);
+            if (typeof dialogPriceBox !== 'undefined' && dialogPriceBox) {
+              flashBorder(dialogPriceBox,this,0x00ff00);
+              flashFill(dialogPriceBox,this,0x00ff00);
+            }
             moneyIcons=scatterMoney(this, ticket, totalCost, tip, customer.x, customer.y);
-            if(this.tweens){
+            if(this.tweens && typeof dialogPriceBox !== 'undefined' && dialogPriceBox){
               this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});
             }
           }});
@@ -1148,11 +1166,13 @@ export let Assets, Scene, Customers, config;
             done();
         }});
         flashMoney(t,this,'#f00');
-        flashBorder(dialogPriceBox,this,0xff0000);
-        flashFill(dialogPriceBox,this,0xff0000);
+        if (typeof dialogPriceBox !== 'undefined' && dialogPriceBox) {
+          flashBorder(dialogPriceBox,this,0xff0000);
+          flashFill(dialogPriceBox,this,0xff0000);
+        }
         tl.add({targets:ticket,x:destX,y:destY,scale:0,duration:dur(400),
           onStart:()=>{
-            if(this.tweens){
+            if(this.tweens && typeof dialogPriceBox !== 'undefined' && dialogPriceBox){
               this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});
             }
           }});

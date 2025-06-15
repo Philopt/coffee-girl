@@ -20,6 +20,8 @@ export let Assets, Scene, Customers, config;
   let spawnTimer = null;
   let falconActive = false;
   let loveLevel=1;
+  let phoneDamage = 0;
+  let flickerEvent = null;
   const keys=[];
   const requiredAssets=['bg','truck','girl','lady_falcon','falcon_end','revolt_end'];
   const genzSprites=[
@@ -412,6 +414,50 @@ export let Assets, Scene, Customers, config;
     }
   }
 
+  function addPhoneDamageEffects(scene, container, phoneW, phoneH, homeH){
+    if(phoneDamage<=0 || !scene || !container) return;
+    const screenTop=-phoneH/2+6;
+    const screenBottom=phoneH/2-homeH-12;
+    const screenH=screenBottom-screenTop;
+    const cracks=scene.add.graphics();
+    cracks.lineStyle(2,0x000000,0.9);
+    if(phoneDamage>=1){
+      cracks.beginPath();
+      cracks.moveTo(-phoneW/2+20, screenTop+screenH*0.4);
+      cracks.lineTo(-phoneW/4, screenTop+screenH*0.55);
+      cracks.lineTo(-phoneW/8, screenTop+screenH*0.65);
+      cracks.strokePath();
+    }
+    if(phoneDamage>=2){
+      cracks.lineStyle(3,0x000000,0.9);
+      cracks.beginPath();
+      cracks.moveTo(phoneW/2-20, screenTop+screenH*0.1);
+      cracks.lineTo(phoneW/8, screenTop+screenH*0.25);
+      cracks.lineTo(phoneW/4, screenTop+screenH*0.45);
+      cracks.strokePath();
+      const darkH=screenH*0.18;
+      const dark=scene.add.rectangle(0,screenTop,phoneW-12,darkH,0x000000,0.4).setOrigin(0.5,0);
+      container.add(dark);
+    }
+    if(phoneDamage>=3){
+      cracks.beginPath();
+      cracks.moveTo(-phoneW/2+30, screenBottom-screenH*0.1);
+      cracks.lineTo(0, screenBottom-screenH*0.25);
+      cracks.lineTo(phoneW/3, screenBottom-screenH*0.15);
+      cracks.strokePath();
+      const flick=scene.add.rectangle(0,screenTop,phoneW-12,screenH,0x000000,0).setOrigin(0.5,0);
+      container.add(flick);
+      const blink=()=>{
+        scene.tweens.add({targets:flick,alpha:1,duration:dur(60),yoyo:true});
+        if(typeof flickerEvent!=='undefined')
+          flickerEvent=scene.time.delayedCall(Phaser.Math.Between(1500,3000),blink,[],scene);
+      };
+      if(typeof flickerEvent!=='undefined')
+        flickerEvent=scene.time.delayedCall(Phaser.Math.Between(1000,2000),blink,[],scene);
+    }
+    container.add(cracks);
+  }
+
   function showStartScreen(scene){
     scene = scene || this;
     if (typeof debugLog === 'function') debugLog('showStartScreen called');
@@ -420,6 +466,7 @@ export let Assets, Scene, Customers, config;
     startMsgTimers = [];
     startMsgBubbles.forEach(b => b.destroy());
     startMsgBubbles = [];
+    if(typeof flickerEvent!=='undefined' && flickerEvent){ flickerEvent.remove(false); flickerEvent=null; }
     // Increase opacity of the start screen overlay for a darker background
     startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.75)
       .setDepth(14);
@@ -461,6 +508,9 @@ export let Assets, Scene, Customers, config;
     phoneContainer = scene.add.container(240,containerY,[caseG,blackG,whiteG,homeG,startButton])
       .setDepth(15)
       .setInteractive();
+    if(typeof addPhoneDamageEffects==='function'){
+      addPhoneDamageEffects(scene, phoneContainer, phoneW, phoneH, homeH);
+    }
 
     // track where to place the first start message
     let startMsgY = -phoneH/2 + 20;
@@ -505,6 +555,7 @@ export let Assets, Scene, Customers, config;
         startMsgTimers.forEach(t=>t.remove(false));
         startMsgTimers=[];
         startMsgBubbles=[];
+        if(typeof flickerEvent!=='undefined' && flickerEvent){ flickerEvent.remove(false); flickerEvent=null; }
         const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
           if(startButton) startButton.destroy();
           phoneContainer.destroy(); phoneContainer=null;
@@ -922,6 +973,8 @@ export let Assets, Scene, Customers, config;
 
     btnRef.setVisible(true);
     tipText.setVisible(false);
+    if(typeof fadeInButtons==='function')
+      fadeInButtons.call(this, canAfford);
     btnSell.setVisible(canAfford);
     if (btnSell.input) btnSell.input.enabled = canAfford;
     btnGive.setVisible(true);
@@ -1566,9 +1619,11 @@ export let Assets, Scene, Customers, config;
     if(/lady falcon reclaims the coffee truck/i.test(msg)){
       img=this.add.image(240,200,'falcon_end').setScale(1.2).setDepth(20);
       bgY=480;
+      phoneDamage = Math.min(3, phoneDamage + 1);
     } else if(/customer.*revolt/i.test(msg)){
       img=this.add.image(240,200,'revolt_end').setScale(1.2).setDepth(20);
       bgY=480;
+      phoneDamage = Math.min(3, phoneDamage + 1);
     }
     const bg=this.add.rectangle(240,bgY,480,240,0xffffff).setStrokeStyle(2,0x000).setDepth(20);
     const lines=msg.split('\n');

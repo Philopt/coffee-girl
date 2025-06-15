@@ -65,10 +65,9 @@ function testSpawnCustomer() {
   const match = /function spawnCustomer\(\)[\s\S]*?\n\s*\}\n(?=\s*function)/.exec(code);
   if (!match) throw new Error('spawnCustomer not found');
   const context = {
-    Phaser: { Math: { Between: (min, max) => min }, Utils: { Array: { GetRandom: a => a[0] } } },
+    Phaser: { Math: { Between: min => min }, Utils: { Array: { GetRandom: a => a[0] } } },
     wanderers: [],
     gameOver: false,
-    spawnCount: 0,
     maxWanderers: () => 5,
     scheduleNextSpawn: () => {},
     lureNextWanderer: () => {},
@@ -170,7 +169,7 @@ function testShowStartScreen() {
   const scene = {
     add: {
       rectangle() { calls.rects++; return { setDepth() { return this; } }; },
-      text(x, y, txt, style) {
+      text(x, y, txt) {
         const obj = {
           setOrigin() { return obj; },
           setDepth() { return obj; },
@@ -181,7 +180,7 @@ function testShowStartScreen() {
         return obj;
       },
       graphics() { return { fillStyle() { return this; }, fillRoundedRect() { return this; } }; },
-      container(x,y,children) {
+      container() {
         const obj = {
           setSize() { return obj; },
           setDepth() { return obj; },

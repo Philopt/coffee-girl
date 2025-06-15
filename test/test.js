@@ -351,6 +351,117 @@ function testShowDialogButtons() {
   console.log('showDialog button visibility test passed');
 }
 
+function testAnimateLoveChange() {
+  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+  const match = /function animateLoveChange\([^)]*\)[\s\S]*?\n\s*\}\n(?=\s*function)/.exec(code);
+  if (!match) throw new Error('animateLoveChange not found');
+  const context = {
+    love: 19,
+    loveLevel: 1,
+    queueLevelText: {
+      text: '',
+      visible: false,
+      x: 0,
+      y: 0,
+      depth: 1,
+      setText(t) { this.text = t; return this; },
+      setVisible(v) { this.visible = v; return this; },
+      scene: { add: { text() { return { setOrigin() { return this; }, setDepth() { return this; }, destroy() {} }; } },
+               tweens: { add() { return {}; }, createTimeline({ callbackScope }) { const steps = []; return { add(cfg) { steps.push(cfg); }, play() { steps.forEach(s => { if (s.onComplete) s.onComplete.call(callbackScope || null); }); } }; } } },
+    },
+    loveText: { x: 0, y: 0, setText(t) { this.text = t; return this; } },
+    lureNextWanderer: () => {},
+    animateStatChange: () => {},
+    calcLoveLevel(v) { if (v >= 100) return 4; if (v >= 50) return 3; if (v >= 20) return 2; return 1; },
+    updateLevelDisplay: null,
+    dur: v => v,
+    fn: null
+  };
+  vm.createContext(context);
+  vm.runInContext(
+    'updateLevelDisplay = function(){ const lvl = calcLoveLevel(love); queueLevelText.setText("Lv. " + lvl); queueLevelText.setVisible(lvl >= 2); loveLevel = lvl; };',
+    context
+  );
+  vm.runInContext(match[0] + '\nfn=animateLoveChange;', context);
+  const animateLoveChange = context.fn;
+  const scene = {
+    add: { text() { return { setOrigin() { return this; }, setDepth() { return this; }, destroy() {} }; } },
+    tweens: { add(cfg) { if (cfg.onComplete) cfg.onComplete(); return {}; }, createTimeline({ callbackScope }) { const steps = []; return { add(cfg) { steps.push(cfg); }, play() { steps.forEach(s => { if (s.onComplete) s.onComplete.call(callbackScope || null); }); } }; } },
+    time: { delayedCall(d, cb, args, s) { if (cb) cb.apply(s || this, args || []); return {}; } }
+  };
+  const cust = { x: 100, y: 100 };
+
+  animateLoveChange.call(scene, 1, cust);
+  assert.strictEqual(context.love, 20, 'love not incremented');
+  assert.strictEqual(context.queueLevelText.text, 'Lv. 2', 'queue level up not reflected');
+  assert.strictEqual(context.queueLevelText.visible, true, 'queue level text should be visible');
+
+  animateLoveChange.call(scene, -2, cust);
+  assert.strictEqual(context.love, 18, 'love not decremented');
+  assert.strictEqual(context.queueLevelText.text, 'Lv. 1', 'queue level down not reflected');
+  assert.strictEqual(context.queueLevelText.visible, false, 'queue level text should hide');
+  console.log('animateLoveChange update test passed');
+}
+
+function testScheduleNextSpawn() {
+  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+  const start = code.indexOf('function scheduleNextSpawn');
+  if (start === -1) throw new Error('scheduleNextSpawn not found');
+  let depth = 0;
+  let end = -1;
+  for (let i = start; i < code.length; i++) {
+    const ch = code[i];
+    if (ch === '{') depth++;
+    else if (ch === '}') {
+      depth--;
+      if (depth === 0) { end = i + 1; break; }
+    }
+  }
+  if (end === -1) throw new Error('scheduleNextSpawn not closed');
+  const match = code.slice(start, end);
+  const context = {
+    falconActive: false,
+    spawnTimer: null,
+    queue: [],
+    wanderers: [],
+    queueLimit: () => 2,
+    SPAWN_DELAY: 2000,
+    SPAWN_VARIANCE: 1500,
+    spawnCustomer: () => {},
+    Phaser: { Math: { Between: () => 0 } },
+    fn: null
+  };
+  vm.createContext(context);
+  vm.runInContext(match + '\nfn=scheduleNextSpawn;', context);
+  const scheduleNextSpawn = context.fn;
+  const scene = { time: { delayedCall(delay, cb, args, s) { scene.lastDelay = delay; return { remove() {} }; } } };
+
+  let oldTimer = { removed: false, remove() { this.removed = true; } };
+  context.spawnTimer = oldTimer;
+  scheduleNextSpawn(scene);
+  assert.ok(oldTimer.removed, 'existing timer not cleared');
+  assert.notStrictEqual(context.spawnTimer, oldTimer, 'spawnTimer not replaced');
+  assert.strictEqual(scene.lastDelay, 500, 'short delay expected when slots available');
+
+  oldTimer = { removed: false, remove() { this.removed = true; } };
+  context.spawnTimer = oldTimer;
+  context.falconActive = true;
+  scene.lastDelay = null;
+  scheduleNextSpawn(scene);
+  assert.strictEqual(context.spawnTimer, oldTimer, 'spawnTimer changed when falconActive');
+  assert.ok(!oldTimer.removed, 'timer removed during falcon attack');
+  assert.strictEqual(scene.lastDelay, null, 'timer scheduled during falcon attack');
+  context.falconActive = false;
+
+  context.spawnTimer = null;
+  context.queue = [1, 2];
+  scene.lastDelay = null;
+  scheduleNextSpawn(scene);
+  assert.ok(context.spawnTimer, 'spawnTimer not scheduled when queue full');
+  assert.strictEqual(scene.lastDelay, 2000, 'long delay expected when queue full');
+  console.log('scheduleNextSpawn behavior test passed');
+}
+
 async function testIntroSequence() {
   const puppeteer = require('puppeteer');
   const { PNG } = require('pngjs');
@@ -418,6 +529,8 @@ async function run() {
     testStartButtonPlaysIntro();
     testBlinkButton();
     testShowDialogButtons();
+    testAnimateLoveChange();
+    testScheduleNextSpawn();
     await testIntroSequence();
     server.kill();
   }

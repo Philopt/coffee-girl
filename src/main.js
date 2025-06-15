@@ -408,10 +408,31 @@
     };
 
       if(scene.time && scene.time.delayedCall){
-        startMsgTimers.push(scene.time.delayedCall(5000,()=>addStartMessage('hey, you coming in? 😊'),[],scene));
-        startMsgTimers.push(scene.time.delayedCall(10000,()=>addStartMessage('you better not still be in bed... 😜'),[],scene));
-        startMsgTimers.push(scene.time.delayedCall(15000,()=>addStartMessage('guess you had a late night 💃😴'),[],scene));
-        startMsgTimers.push(scene.time.delayedCall(22000,()=>addStartMessage('... hope you\'re okay 😟❤️'),[],scene));
+        const msgOptions=[
+          ['hey, you coming in?', 'where are you at?', 'good morning ☀️'],
+          [
+            'you better not be in bed... 🛌😉',
+            'you better not still be in bed... 😜',
+            "don't ignore me",
+            'yo, coffee girl? ☕'
+          ],
+          [
+            'guess you had a late night 💃😴',
+            'you forgot to charge your phone 🔋',
+            'you lost? I gotta tell you about this boy I met 😉'
+          ],
+          [
+            "I hope you're okay",
+            "I hope everything's all right",
+            '... I\'m sorry'
+          ]
+        ];
+        let delay=0;
+        for(const opts of msgOptions){
+          delay += Phaser.Math.Between(5000,15000);
+          const msg = Phaser.Utils.Array.GetRandom(opts);
+          startMsgTimers.push(scene.time.delayedCall(delay,()=>addStartMessage(msg),[],scene));
+        }
       }
 
     startButton.on('pointerdown',()=>{

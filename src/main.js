@@ -369,6 +369,13 @@ export function setupGame(){
     let targetX = ms.x, targetY = ms.y;
 
     const others=[...queue,...wanderers].filter(c=>c!==owner&&c.sprite);
+    // Stop any existing movement tweens so new motions start from the dog's
+    // current position. This prevents teleport-like jumps when multiple tweens
+    // overlap.
+    if(dog.currentTween){
+      dog.currentTween.stop();
+      dog.currentTween=null;
+    }
     if(!dog.excited){
       const seen=others.find(o=>Phaser.Math.Distance.Between(dog.x,dog.y,o.sprite.x,o.sprite.y)<80);
       if(seen){
@@ -381,7 +388,8 @@ export function setupGame(){
         tl.add({targets:dog,x:'+=24',duration:dur(120),yoyo:true,repeat:1});
         tl.add({targets:dog,x:ms.x,y:ms.y,duration:dur(400)});
         tl.setCallback('onUpdate',()=>{dog.setScale(scaleForY(dog.y)*0.5);});
-        tl.setCallback('onComplete',()=>{dog.excited=false;});
+        tl.setCallback('onComplete',()=>{dog.excited=false; dog.currentTween=null;});
+        dog.currentTween=tl;
         tl.play();
         return;
       }
@@ -413,8 +421,9 @@ export function setupGame(){
     const distance = Phaser.Math.Distance.Between(dog.x,dog.y,targetX,targetY);
     const speed = dogDist>DOG_FAST_DISTANCE?DOG_SPEED*1.5:DOG_SPEED;
     const duration = dur(Math.max(200,(distance/speed)*1000));
-    this.tweens.add({targets:dog,x:targetX,y:targetY,duration,
-      onUpdate:(tw,t)=>{t.setScale(scaleForY(t.y)*0.5); t.setDepth(3+t.y*0.006);} });
+    dog.currentTween=this.tweens.add({targets:dog,x:targetX,y:targetY,duration,
+      onUpdate:(tw,t)=>{t.setScale(scaleForY(t.y)*0.5); t.setDepth(3+t.y*0.006);},
+      onComplete:()=>{dog.currentTween=null;}});
   }
 
   function updateLevelDisplay(){

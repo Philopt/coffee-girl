@@ -159,13 +159,14 @@
         if (btn.setInteractive) {
           if (btn.width !== undefined && btn.height !== undefined &&
               Phaser && Phaser.Geom && Phaser.Geom.Rectangle) {
-            btn.setInteractive(
-              new Phaser.Geom.Rectangle(-btn.width/2, -btn.height/2,
-                                        btn.width, btn.height),
-              Phaser.Geom.Rectangle.Contains
-            );
+            btn.setInteractive({
+              hitArea: new Phaser.Geom.Rectangle(-btn.width/2, -btn.height/2,
+                                               btn.width, btn.height),
+              hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+              useHandCursor: true
+            });
           } else {
-            btn.setInteractive();
+            btn.setInteractive({useHandCursor:true});
           }
         }
         if (onComplete) onComplete();
@@ -594,10 +595,11 @@
       // Explicitly specify the hit area so the pointer box aligns with the
       // visible button. Using the direct form avoids Phaser resetting the
       // rectangle's position when the interactive object is created.
-      c.setInteractive(
-        new Phaser.Geom.Rectangle(-width/2,-height/2,width,height),
-        Phaser.Geom.Rectangle.Contains
-      )
+      c.setInteractive({
+        hitArea: new Phaser.Geom.Rectangle(-width/2,-height/2,width,height),
+        hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+        useHandCursor: true
+      })
         .on('pointerdown',()=>blinkButton.call(this,c,handler));
       return c;
     };

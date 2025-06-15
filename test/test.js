@@ -434,7 +434,14 @@ function testScheduleNextSpawn() {
   vm.createContext(context);
   vm.runInContext(match + '\nfn=scheduleNextSpawn;', context);
   const scheduleNextSpawn = context.fn;
-  const scene = { time: { delayedCall(delay, cb, args, s) { scene.lastDelay = delay; return { remove() {} }; } } };
+  const scene = {
+    time: {
+      delayedCall(delay) {
+        scene.lastDelay = delay;
+        return { remove() {} };
+      }
+    }
+  };
 
   let oldTimer = { removed: false, remove() { this.removed = true; } };
   context.spawnTimer = oldTimer;

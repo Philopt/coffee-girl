@@ -1,5 +1,5 @@
 import { debugLog } from './debug.js';
-import { dur, scaleForY, articleFor, flashMoney, START_PHONE_W, START_PHONE_H, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_Y } from "./ui.js";
+import { dur, scaleForY, articleFor, flashMoney, START_PHONE_W, START_PHONE_H, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_Y, DIALOG_Y } from "./ui.js";
 import { MENU, SPAWN_DELAY, SPAWN_VARIANCE, QUEUE_SPACING, ORDER_X, ORDER_Y, QUEUE_X, QUEUE_OFFSET, QUEUE_Y, WANDER_TOP, WANDER_BOTTOM, BASE_WAITERS, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel, maxWanderers as customersMaxWanderers, queueLimit as customersQueueLimit } from "./customers.js";
 import { baseConfig } from "./scene.js";
 export let Assets, Scene, Customers, config;
@@ -502,7 +502,7 @@ export let Assets, Scene, Customers, config;
       .setVisible(false)
       .setDepth(10);
     dialogBg.x=240;
-    dialogBg.y=430; // raise bubble slightly
+    dialogBg.y=DIALOG_Y; // raise bubble slightly
     dialogBg.width=360; // starting size, adjusted later
     dialogBg.height=120;
 
@@ -663,6 +663,8 @@ export let Assets, Scene, Customers, config;
       return;
     }
     if(dialogPriceBox) dialogPriceBox.fillAlpha = 1;
+    // reset the dialog position in case previous animations moved it
+    dialogBg.y = typeof DIALOG_Y === 'number' ? DIALOG_Y : 430;
     activeCustomer=queue[0]||null;
     if(!activeCustomer) return;
     const c=activeCustomer;

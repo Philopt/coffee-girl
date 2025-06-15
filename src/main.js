@@ -878,6 +878,8 @@ export let Assets, Scene, Customers, config;
         }
       }
     });
+    if(typeof fadeInButtons==='function')
+      fadeInButtons.call(this, canAfford);
 
     tipText.setVisible(false);
     btnSell.setVisible(canAfford);
@@ -1183,8 +1185,6 @@ export let Assets, Scene, Customers, config;
     const count=Math.abs(delta);
     const emoji=delta>0?'❤️':'😠';
 
-    if(delta>0) heartBroken=false; else if(delta<0) heartBroken=true;
-    if(typeof updateLoveDisplay==='function') updateLoveDisplay();
 
     const baseX=customer.x - 20*(count-1)/2;
     const baseY=customer.y + 40;
@@ -1218,6 +1218,9 @@ export let Assets, Scene, Customers, config;
       tl.add({targets:h,x:loveText.x,y:loveText.y,scaleX:0,scaleY:1.2,duration:dur(125)});
       tl.add({targets:h,scaleX:1,alpha:0,duration:dur(125),onComplete:()=>{
             love+=delta>0?1:-1;
+            if(idx===0){
+              if(delta>0) heartBroken=false; else if(delta<0) heartBroken=true;
+            }
             if(typeof updateLoveDisplay==='function') updateLoveDisplay();
             updateLevelDisplay();
             h.destroy();

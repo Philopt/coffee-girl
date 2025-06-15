@@ -148,8 +148,13 @@
   }
 
   function blinkButton(btn, onComplete){
+    // Temporarily disable input while the button blinks.
+    // Recalculate the hit area afterwards in case the button
+    // changed size or scale during the tween.
+
     const w = btn.width !== undefined ? btn.width : (btn.displayWidth || 0);
     const h = btn.height !== undefined ? btn.height : (btn.displayHeight || 0);
+
     btn.disableInteractive();
     this.tweens.add({
       targets: btn,
@@ -159,13 +164,20 @@
       repeat: 1,
       onComplete: () => {
         if (btn.setInteractive) {
+
+          const w = btn.width !== undefined ? btn.width : (btn.displayWidth || 0);
+          const h = btn.height !== undefined ? btn.height : (btn.displayHeight || 0);
+          const area = new Phaser.Geom.Rectangle(-w/2, -h/2, w, h);
+
           const area = new Phaser.Geom.Rectangle(-w/2, -h/2, w, h);
           btn.myHitArea = area;
+
           btn.setInteractive({
             hitArea: area,
             hitAreaCallback: Phaser.Geom.Rectangle.Contains,
             useHandCursor: true
           });
+          btn.myHitArea = area;
           if (btn.input && btn.input.hitArea) {
             btn.input.hitArea.x = area.x;
             btn.input.hitArea.y = area.y;

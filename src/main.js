@@ -434,12 +434,13 @@ export let Assets, Scene, Customers, config;
         startMsgBubbles=[];
         const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
           if(startButton) startButton.destroy();
+          if(startOverlay){startOverlay.destroy(); startOverlay=null;}
           phoneContainer.destroy(); phoneContainer=null;
+          playIntro.call(scene);
         }});
         tl.add({targets:phoneContainer,y:-320,duration:600,ease:'Sine.easeIn'});
-        tl.add({targets:startOverlay,alpha:0,duration:600,onComplete:()=>{ if(startOverlay){startOverlay.destroy(); startOverlay=null;} }});
+        tl.add({targets:startOverlay,alpha:0,duration:600},0);
         tl.play();
-        playIntro.call(scene);
       });
   }
 
@@ -453,6 +454,37 @@ export let Assets, Scene, Customers, config;
     if(!truck || !girl) return;
     truck.setPosition(560,245);
     girl.setPosition(560,260).setVisible(false);
+    // engine vibration while the truck is driving
+    const vibrateTween = (scene.tweens && scene.tweens.add) ? scene.tweens.add({
+      targets: truck,
+      y: '-=2',
+      duration: dur(50),
+      yoyo: true,
+      repeat: -1
+    }) : { stop: ()=>{} };
+
+    // emit smoke puffs as the truck drives in
+    const smokeEvent = (scene.time && scene.time.addEvent) ? scene.time.addEvent({
+      delay: dur(150),
+      loop: true,
+      callback: () => {
+        const puff = scene.add.text(truck.x + 60, truck.y - 20, '💨', { font: '20px sans-serif', fill: '#fff' })
+          .setDepth(1);
+        if (scene.tweens && scene.tweens.add) {
+          scene.tweens.add({
+            targets: puff,
+            x: puff.x + 30,
+            y: puff.y - 10,
+            alpha: 0,
+            duration: dur(800),
+            onComplete: () => puff.destroy()
+          });
+        } else {
+          puff.destroy();
+        }
+      }
+    }) : { remove: ()=>{} };
+
     const intro=scene.tweens.createTimeline({callbackScope:scene,
       onComplete:()=>{
 
@@ -460,6 +492,13 @@ export let Assets, Scene, Customers, config;
           debugLog('intro finished');
         }
 
+        smokeEvent.remove();
+        vibrateTween.stop();
+        if (truck.setY) {
+          truck.setY(245);
+        } else {
+          truck.y = 245;
+        }
         spawnCustomer.call(scene);
         scheduleNextSpawn(scene);
       }});

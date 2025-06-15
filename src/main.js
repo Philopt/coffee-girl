@@ -15,13 +15,10 @@ export let Assets, Scene, Customers, config;
 
 
   let money=10.00, love=10, gameOver=false;
-  let heartBroken=false;
   let queue=[], activeCustomer=null, wanderers=[];
   let spawnTimer = null;
   let falconActive = false;
   let loveLevel=1;
-  let phoneDamage = 0;
-  let flickerEvent = null;
   const keys=[];
   const requiredAssets=['bg','truck','girl','lady_falcon','falcon_end','revolt_end'];
   const genzSprites=[
@@ -87,24 +84,11 @@ export let Assets, Scene, Customers, config;
       for(let i=0;i<count;i++){
         const item=scene.add.text(fromX,fromY,emoji,{font:`${fontSize}px sans-serif`,fill:color})
           .setOrigin(0.5)
-          .setDepth(container.depth+2)
-          .setScale(0.2);
+          .setDepth(container.depth+2);
         container.add(item);
-        item.x = fromX - container.x;
-        item.y = fromY - container.y;
         const dx=Phaser.Math.Between(-container.width/2+10,container.width/2-10);
         const dy=Phaser.Math.Between(-container.height/2+10,container.height/2-10);
-        scene.tweens.add({
-          targets:item,
-          x:dx,
-          y:dy,
-          scale:1,
-          duration:dur(300),
-          ease:'Sine.easeOut',
-          onComplete:()=>{
-            scene.tweens.add({targets:item,y:dy-6,duration:dur(80),yoyo:true});
-          }
-        });
+        scene.tweens.add({targets:item,x:dx,y:dy,angle:Phaser.Math.Between(-180,180),duration:dur(400),ease:'Cubic.easeOut'});
         items.push(item);
       }
     };
@@ -120,9 +104,6 @@ export let Assets, Scene, Customers, config;
     const by = up ? -8 : 8;
     const originalY = obj.y;
     const moveDur = isLove && !up ? 160 : 120;
-    if(isLove){
-      if(up) heartBroken=false; else heartBroken=true;
-    }
     scene.tweens.add({targets:obj, y:originalY+by, duration:dur(moveDur), yoyo:true});
     let on=true;
     const flashes = isLove && !up ? 4 : 2;
@@ -132,15 +113,18 @@ export let Assets, Scene, Customers, config;
       delay:dur(flashDelay),
       callback:()=>{
         obj.setColor(on?color:'#fff');
-        if(isLove){
-          obj.setText((heartBroken?'💔':'❤️')+' '+love);
+        if(isLove && !up){
+          obj.setText((on?'💔':'❤️')+' '+love);
         }
         on=!on;
       }
     });
     scene.time.delayedCall(dur(flashDelay)*(flashes+1)+dur(10),()=>{
       obj.setColor('#fff');
-      if(isLove && typeof updateLoveDisplay==='function') updateLoveDisplay();
+      if(isLove && !up){
+        obj.setText('❤️ '+love);
+        // removed wobble animation for the love counter
+      }
     },[],scene);
   }
 
@@ -184,27 +168,6 @@ export let Assets, Scene, Customers, config;
         if (btnRef.input) btnRef.input.enabled = true;
       }
     });
-  }
-
-  function fitPriceBox(){
-    if(typeof dialogPriceBox==='undefined' ||
-       typeof dialogPriceLabel==='undefined' ||
-       typeof dialogPriceValue==='undefined') return;
-    const margin = 12; // small margin total
-    const maxW = Math.max(dialogPriceLabel.width, dialogPriceValue.width);
-    const w = maxW + margin;
-    if(dialogPriceBox.setSize){
-      dialogPriceBox.setSize(w, dialogPriceBox.height);
-    }
-    dialogPriceBox.width = w;
-    dialogPriceLabel.setPosition(dialogPriceBox.width/2 - margin/2, -20);
-    dialogPriceValue.setPosition(dialogPriceBox.width/2 - margin/2, 10);
-    if(ticketMask && ticketMask.destroy){
-      ticketMask.destroy();
-    }
-    if(dialogPriceBox && dialogPriceBox.createGeometryMask){
-      ticketMask = dialogPriceBox.createGeometryMask();
-    }
   }
 
   const colorCache = {};
@@ -252,7 +215,7 @@ export let Assets, Scene, Customers, config;
       dialogPriceContainer,
       btnSell, btnGive, btnRef;
   let reportLine1, reportLine2, reportLine3, reportLine4, tipText;
-  let paidStamp, lossStamp, ticketMask;
+  let paidStamp, lossStamp;
   let truck, girl;
   let activeBubble=null;
   let sideCText;
@@ -265,12 +228,6 @@ export let Assets, Scene, Customers, config;
   let phoneContainer=null;
   let startMsgTimers=[];
   let startMsgBubbles=[];
-
-  function updateLoveDisplay(){
-    if(loveText){
-      loveText.setText((heartBroken?'💔':'❤️')+' '+love);
-    }
-  }
 
 
   function calcLoveLevel(v){
@@ -362,14 +319,6 @@ export let Assets, Scene, Customers, config;
     }
   }
 
-  function emojiForItem(name){
-    const l = (name || '').toLowerCase();
-    if(l.includes('tea')) return '🍵';
-    if(l.includes('chocolate')) return '🍫';
-    if(l.includes('iced')) return '🥤';
-    return '☕';
-  }
-
   function scheduleNextSpawn(scene){
     if(falconActive) return;
     if (spawnTimer) {
@@ -414,50 +363,6 @@ export let Assets, Scene, Customers, config;
     }
   }
 
-  function addPhoneDamageEffects(scene, container, phoneW, phoneH, homeH){
-    if(phoneDamage<=0 || !scene || !container) return;
-    const screenTop=-phoneH/2+6;
-    const screenBottom=phoneH/2-homeH-12;
-    const screenH=screenBottom-screenTop;
-    const cracks=scene.add.graphics();
-    cracks.lineStyle(2,0x000000,0.9);
-    if(phoneDamage>=1){
-      cracks.beginPath();
-      cracks.moveTo(-phoneW/2+20, screenTop+screenH*0.4);
-      cracks.lineTo(-phoneW/4, screenTop+screenH*0.55);
-      cracks.lineTo(-phoneW/8, screenTop+screenH*0.65);
-      cracks.strokePath();
-    }
-    if(phoneDamage>=2){
-      cracks.lineStyle(3,0x000000,0.9);
-      cracks.beginPath();
-      cracks.moveTo(phoneW/2-20, screenTop+screenH*0.1);
-      cracks.lineTo(phoneW/8, screenTop+screenH*0.25);
-      cracks.lineTo(phoneW/4, screenTop+screenH*0.45);
-      cracks.strokePath();
-      const darkH=screenH*0.18;
-      const dark=scene.add.rectangle(0,screenTop,phoneW-12,darkH,0x000000,0.4).setOrigin(0.5,0);
-      container.add(dark);
-    }
-    if(phoneDamage>=3){
-      cracks.beginPath();
-      cracks.moveTo(-phoneW/2+30, screenBottom-screenH*0.1);
-      cracks.lineTo(0, screenBottom-screenH*0.25);
-      cracks.lineTo(phoneW/3, screenBottom-screenH*0.15);
-      cracks.strokePath();
-      const flick=scene.add.rectangle(0,screenTop,phoneW-12,screenH,0x000000,0).setOrigin(0.5,0);
-      container.add(flick);
-      const blink=()=>{
-        scene.tweens.add({targets:flick,alpha:1,duration:dur(60),yoyo:true});
-        if(typeof flickerEvent!=='undefined')
-          flickerEvent=scene.time.delayedCall(Phaser.Math.Between(1500,3000),blink,[],scene);
-      };
-      if(typeof flickerEvent!=='undefined')
-        flickerEvent=scene.time.delayedCall(Phaser.Math.Between(1000,2000),blink,[],scene);
-    }
-    container.add(cracks);
-  }
-
   function showStartScreen(scene){
     scene = scene || this;
     if (typeof debugLog === 'function') debugLog('showStartScreen called');
@@ -466,7 +371,6 @@ export let Assets, Scene, Customers, config;
     startMsgTimers = [];
     startMsgBubbles.forEach(b => b.destroy());
     startMsgBubbles = [];
-    if(typeof flickerEvent!=='undefined' && flickerEvent){ flickerEvent.remove(false); flickerEvent=null; }
     // Increase opacity of the start screen overlay for a darker background
     startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.75)
       .setDepth(14);
@@ -508,9 +412,6 @@ export let Assets, Scene, Customers, config;
     phoneContainer = scene.add.container(240,containerY,[caseG,blackG,whiteG,homeG,startButton])
       .setDepth(15)
       .setInteractive();
-    if(typeof addPhoneDamageEffects==='function'){
-      addPhoneDamageEffects(scene, phoneContainer, phoneW, phoneH, homeH);
-    }
 
     // track where to place the first start message
     let startMsgY = -phoneH/2 + 20;
@@ -555,7 +456,6 @@ export let Assets, Scene, Customers, config;
         startMsgTimers.forEach(t=>t.remove(false));
         startMsgTimers=[];
         startMsgBubbles=[];
-        if(typeof flickerEvent!=='undefined' && flickerEvent){ flickerEvent.remove(false); flickerEvent=null; }
         const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
           if(startButton) startButton.destroy();
           phoneContainer.destroy(); phoneContainer=null;
@@ -630,7 +530,6 @@ export let Assets, Scene, Customers, config;
     // HUD
     moneyText=this.add.text(20,20,'🪙 '+receipt(money),{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
     loveText=this.add.text(20,50,'❤️ '+love,{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
-    updateLoveDisplay();
     queueLevelText=this.add.text(304,316,'Lv. '+loveLevel,{font:'16px sans-serif',fill:'#000'})
       .setOrigin(0.5).setDepth(1);
     updateLevelDisplay();
@@ -664,8 +563,6 @@ export let Assets, Scene, Customers, config;
       .setOrigin(0.5);
     dialogPriceValue=this.add.text(0,10,'',{font:'32px sans-serif',fill:'#000'})
       .setOrigin(0.5);
-
-    ticketMask = dialogPriceBox.createGeometryMask();
 
     dialogPriceContainer=this.add.container(0,0,[dialogPriceBox, dialogPriceLabel, dialogPriceValue])
       .setDepth(11)
@@ -733,9 +630,9 @@ export let Assets, Scene, Customers, config;
       .setVisible(false).setDepth(11);
     tipText=this.add.text(0,0,'',{font:'24px sans-serif',fill:'#0a0'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
-    paidStamp=this.add.text(0,0,'PAID',{font:'bold 36px sans-serif',fill:'#0a0'})
+    paidStamp=this.add.text(0,0,'PAID',{font:'24px sans-serif',fill:'#0a0'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
-    lossStamp=this.add.text(0,0,'LOSS',{font:'bold 36px sans-serif',fill:'#a00'})
+    lossStamp=this.add.text(0,0,'LOSS',{font:'24px sans-serif',fill:'#a00'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
 
     // wait for player to start the shift
@@ -838,6 +735,16 @@ export let Assets, Scene, Customers, config;
     const wantLine=(c.orders.length===1 && c.orders[0].qty===1)
       ? `I want ${articleFor(c.orders[0].req)} ${c.orders[0].req}`
       : `I want ${itemStr}`;
+
+    if(activeBubble){
+      activeBubble.destroy();
+      activeBubble=null;
+    }
+    const bubble=this.add.text(c.sprite.x,c.sprite.y-50,'💬',{font:'32px sans-serif',fill:'#000'})
+      .setOrigin(0.5).setDepth(11);
+    activeBubble=bubble;
+    this.tweens.add({targets:bubble,y:c.sprite.y-70,alpha:0,duration:dur(600),onComplete:()=>{bubble.destroy(); activeBubble=null;}});
+
     dialogText
       .setOrigin(0.5)
       .setStyle({fontSize:'24px'})
@@ -886,34 +793,18 @@ export let Assets, Scene, Customers, config;
     }
     drawDialogBubble(c.sprite.x, c.sprite.y, bubbleColor);
 
-    dialogPriceLabel
-      .setStyle({fontSize:'14px',align:'right'})
-      .setText('Total\nCost')
-      .setOrigin(1,0.5)
-      .setPosition(dialogPriceBox.width/2 - 6, -20);
-    dialogPriceValue
-      .setStyle({fontSize:'32px'})
-      .setText(`$${totalCost.toFixed(2)}`)
-      .setColor('#000')
-      .setOrigin(1,0.5)
-      .setPosition(dialogPriceBox.width/2 - 6, 10)
-      .setScale(1)
-      .setAlpha(1);
-
-    if(typeof fitPriceBox === 'function') fitPriceBox();
-
     const priceTargetXDefault = dialogBg.x + dialogBg.width/2 - 40;
     const priceTargetY = dialogBg.y - dialogBg.height;
-    const ticketW = (typeof dialogPriceBox!=='undefined' && dialogPriceBox)? dialogPriceBox.width : 120;
+    const ticketW = dialogPriceBox.width;
     const ticketOffset = ticketW/2 + 10;
     const girlRight = (typeof girl !== 'undefined' && girl) ?
       girl.x + girl.displayWidth/2 : dialogBg.x;
     const minX = girlRight + ticketOffset;
     const priceTargetX = Math.max(priceTargetXDefault, minX);
-    const startX = (typeof girl !== 'undefined' && girl) ? girl.x : dialogBg.x;
-    const startY = (typeof girl !== 'undefined' && girl) ? girl.y : dialogBg.y;
+    const girlX = minX;
+    const girlY = (typeof girl !== 'undefined' && girl) ? girl.y - 20 : dialogBg.y;
     dialogPriceContainer
-      .setPosition(startX, startY)
+      .setPosition(girlX, girlY)
       .setScale(0.2)
       .setVisible(false);
       if(dialogPriceBox){
@@ -928,6 +819,19 @@ export let Assets, Scene, Customers, config;
       dialogPriceBox.fillAlpha=1;
     }
     dialogPriceContainer.alpha = 1;
+    dialogPriceLabel
+      .setStyle({fontSize:'14px',align:'right'})
+      .setText('Total\nCost')
+      .setOrigin(1,0.5)
+      .setPosition(dialogPriceBox.width/2 - 6, -20);
+    dialogPriceValue
+      .setStyle({fontSize:'32px'})
+      .setText(`$${totalCost.toFixed(2)}`)
+      .setColor('#000')
+      .setOrigin(1,0.5)
+      .setPosition(dialogPriceBox.width/2 - 6, 10)
+      .setScale(1)
+      .setAlpha(1);
 
     this.tweens.add({
       targets:[dialogBg, dialogText, dialogCoins],
@@ -943,24 +847,8 @@ export let Assets, Scene, Customers, config;
             y:priceTargetY,
             scale:1,
             duration:dur(300),
-
             ease:'Sine.easeOut',
-            onComplete:()=>{
-              if(typeof fadeInButtons==='function'){
-                fadeInButtons.call(this, canAfford);
-              }else{
-                if(canAfford){
-                  btnSell.setVisible(true);
-                  if(btnSell.input) btnSell.input.enabled = true;
-                }else{
-                  btnSell.setVisible(false);
-                  if(btnSell.input) btnSell.input.enabled = false;
-                }
-                btnGive.setVisible(true);
-                if(btnGive.input) btnGive.input.enabled = true;
-              }
-            }
-
+            onComplete:()=>{ fadeInButtons.call(this, canAfford); }
           });
         };
         if(this.time && this.time.delayedCall){
@@ -971,17 +859,7 @@ export let Assets, Scene, Customers, config;
       }
     });
 
-    btnRef.setVisible(true);
     tipText.setVisible(false);
-    if(typeof fadeInButtons==='function')
-      fadeInButtons.call(this, canAfford);
-    btnSell.setVisible(canAfford);
-    if (btnSell.input) btnSell.input.enabled = canAfford;
-    btnGive.setVisible(true);
-    if (btnGive.input) btnGive.input.enabled = true;
-    btnRef.setVisible(true);
-    if (btnRef.input) btnRef.input.enabled = true;
-    if (typeof fadeInButtons === 'function') fadeInButtons.call(this, canAfford);
   }
 
   function clearDialog(keepPrice=false){
@@ -1066,33 +944,32 @@ export let Assets, Scene, Customers, config;
     activeCustomer=null;
 
     const finish=()=>{
-      const afterWalk=()=>{
-        current.sprite.destroy();
-        queue.shift();
-        moveQueueForward.call(this);
-        if(money<=0){
-          showFalconAttack.call(this,()=>{
-            showEnd.call(this,'Game Over\nYou lost all the money.\nLady Falcon reclaims the coffee truck.');
-          });
-          return;
+      const targets=[current.sprite];
+      targets.forEach(t=>t.setDepth(5));
+      this.tweens.add({ targets: targets, x: (type==='refuse'? -50:520), alpha:0, duration:dur(WALK_OFF_BASE), callbackScope:this,
+        onComplete:()=>{
+          current.sprite.destroy();
+          queue.shift();
+          moveQueueForward.call(this);
+          if(money<=0){
+            showFalconAttack.call(this,()=>{
+              showEnd.call(this,'Game Over\nYou lost all the money.\nLady Falcon reclaims the coffee truck.');
+            });
+            return;
+          }
+          if(love<=0){
+            showCustomerRevolt.call(this,()=>{
+              showEnd.call(this,'Game Over\nThe Customers Revolt!\n(and they stole your truck)');
+            });
+            return;
+          }
+          if(money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
+          if(love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
+          scheduleNextSpawn(this);
+          servedCount++;
+          updateSideC.call(this);
         }
-        if(love<=0){
-          showCustomerRevolt.call(this,()=>{
-            showEnd.call(this,'Game Over\nThe Customers Revolt!\n(and they stole your truck)');
-          });
-          return;
-        }
-        if(money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
-        if(love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
-        scheduleNextSpawn(this);
-        servedCount++;
-        updateSideC.call(this);
-      };
-      if (typeof leaveCustomer === 'function') {
-        leaveCustomer.call(this, current, type==='refuse', afterWalk);
-      } else if (afterWalk) {
-        afterWalk();
-      }
+      });
     };
 
     // animated report using timelines
@@ -1104,33 +981,30 @@ export let Assets, Scene, Customers, config;
     if(type==='sell'){
       const ticket=dialogPriceContainer;
       const t=dialogPriceValue;
-
-    const ticketW = (typeof dialogPriceBox!=='undefined' && dialogPriceBox)? dialogPriceBox.width : 120;
-
+      const ticketW = dialogPriceBox.width;
       const destX=moneyText.x+moneyText.width-15;
       const destY=moneyText.y+10;
       t.setVisible(true);
       t.setDepth(paidStamp.depth+1);
       t.setText(receipt(totalCost));
-      const stampX=ticket.x;
+      const stampX=ticket.x + t.x * ticket.scaleX;
       const stampY=ticket.y + t.y * ticket.scaleY;
-      const boxW = (typeof dialogPriceBox !== 'undefined' && dialogPriceBox) ? dialogPriceBox.width : 120;
-      const boxH = (typeof dialogPriceBox !== 'undefined' && dialogPriceBox) ? dialogPriceBox.height : 80;
-      const ox = Phaser.Math.Between(-boxW * 0.2, boxW * 0.2);
-      const oy = Phaser.Math.Between(-boxH * 0.1, boxH * 0.1);
-      const scaleS = Phaser.Math.FloatBetween
-        ? Phaser.Math.FloatBetween(1.8, 2.2)
-        : Phaser.Math.Between(18, 22) / 10;
       paidStamp
         .setText('PAID 💵')
-        .setScale(scaleS)
-        .setPosition(stampX + ox, stampY + oy)
+        .setScale(1.5)
+        .setPosition(stampX, stampY)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
-      if(paidStamp.setAlpha) paidStamp.setAlpha(0);
-      if(paidStamp.setMask && ticketMask) paidStamp.setMask(ticketMask);
-      this.tweens.add({targets:paidStamp,alpha:0.6,duration:dur(200)});
 
+      if(this.add && this.add.text){
+        const cha = this.add.text(ticket.x, ticket.y - 30, '💸',
+            {font:'28px sans-serif',fill:'#0f0'})
+          .setOrigin(0.5)
+          .setDepth(ticket.depth+2)
+          .setAlpha(0);
+        this.tweens.add({targets:cha,alpha:1,y:cha.y-10,duration:dur(200),yoyo:true,
+          onComplete:()=>cha.destroy()});
+      }
 
       const flashPrice=()=>{
         const oy=t.y;
@@ -1143,17 +1017,14 @@ export let Assets, Scene, Customers, config;
       let moneyIcons=null;
       if(tip>0){
         this.time.delayedCall(delay,()=>{
-          const boxW = (typeof dialogPriceBox !== 'undefined' && dialogPriceBox.width)
-            ? dialogPriceBox.width : 120;
-          const tipX = paidStamp.x - boxW*0.25;
-          const tipY = paidStamp.y - boxW*0.25;
+          const tipX = paidStamp.x - ticketW*0.25;
+          const tipY = paidStamp.y - ticketW*0.25;
           tipText
             .setText('TIP 🪙')
             .setScale(1.6)
             .setPosition(tipX, tipY)
             .setVisible(true);
           t.setText(receipt(totalCost + tip));
-          if(typeof fitPriceBox === 'function') fitPriceBox();
           flashPrice();
         },[],this);
         delay+=dur(300);
@@ -1163,7 +1034,6 @@ export let Assets, Scene, Customers, config;
       delay+=dur(1000);
       this.time.delayedCall(delay,()=>{
         paidStamp.setVisible(false);
-        if(paidStamp.clearMask) paidStamp.clearMask(true);
         tipText.setVisible(false);
         const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
             clearDialog();
@@ -1176,14 +1046,12 @@ export let Assets, Scene, Customers, config;
         }});
         tl.add({targets:ticket,x:destX,y:destY,scale:0,duration:dur(400),
           onStart:()=>{
-            if(typeof dialogPriceBox!=='undefined'){
-              flashBorder(dialogPriceBox,this,0x00ff00);
-              flashFill(dialogPriceBox,this,0x00ff00);
-              if(this.tweens){
-                this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});
-              }
-            }
+            flashBorder(dialogPriceBox,this,0x00ff00);
+            flashFill(dialogPriceBox,this,0x00ff00);
             moneyIcons=scatterMoney(this, ticket, totalCost, tip, customer.x, customer.y);
+            if(this.tweens){
+              this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});
+            }
           }});
         tl.play();
       },[],this);
@@ -1194,27 +1062,16 @@ export let Assets, Scene, Customers, config;
       const destY=moneyText.y+10;
       t.setVisible(true)
         .setDepth(lossStamp.depth+1);
-      const stampX=ticket.x;
+      const stampX=ticket.x + t.x * ticket.scaleX;
       const stampY=ticket.y + t.y * ticket.scaleY;
-      const boxW = (typeof dialogPriceBox !== 'undefined' && dialogPriceBox) ? dialogPriceBox.width : 120;
-      const boxH = (typeof dialogPriceBox !== 'undefined' && dialogPriceBox) ? dialogPriceBox.height : 80;
-      const ox = Phaser.Math.Between(-boxW * 0.2, boxW * 0.2);
-      const oy = Phaser.Math.Between(-boxH * 0.1, boxH * 0.1);
-      const scaleL = Phaser.Math.FloatBetween
-        ? Phaser.Math.FloatBetween(1.8, 2.2)
-        : Phaser.Math.Between(18, 22) / 10;
       lossStamp
         .setText('LOSS')
-        .setScale(scaleL)
-        .setPosition(stampX + ox, stampY + oy)
+        .setScale(1.5)
+        .setPosition(stampX - 20, stampY)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
-      if(lossStamp.setAlpha) lossStamp.setAlpha(0);
-      if(lossStamp.setMask && ticketMask) lossStamp.setMask(ticketMask);
-      this.tweens.add({targets:lossStamp,alpha:0.6,duration:dur(200)});
       this.time.delayedCall(dur(1000),()=>{
         lossStamp.setVisible(false);
-        if(lossStamp.clearMask) lossStamp.clearMask(true);
         dialogBg.setVisible(false);
         dialogText.setVisible(false);
         if(this.tweens){
@@ -1229,13 +1086,11 @@ export let Assets, Scene, Customers, config;
             done();
         }});
         flashMoney(t,this,'#f00');
-        if(typeof dialogPriceBox!=='undefined'){
-          flashBorder(dialogPriceBox,this,0xff0000);
-          flashFill(dialogPriceBox,this,0xff0000);
-        }
+        flashBorder(dialogPriceBox,this,0xff0000);
+        flashFill(dialogPriceBox,this,0xff0000);
         tl.add({targets:ticket,x:destX,y:destY,scale:0,duration:dur(400),
           onStart:()=>{
-            if(this.tweens && typeof dialogPriceBox!=='undefined'){
+            if(this.tweens){
               this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});
             }
           }});
@@ -1311,9 +1166,6 @@ export let Assets, Scene, Customers, config;
     const count=Math.abs(delta);
     const emoji=delta>0?'❤️':'😠';
 
-    if(delta>0) heartBroken=false; else if(delta<0) heartBroken=true;
-    if(typeof updateLoveDisplay==='function') updateLoveDisplay();
-
     const baseX=customer.x - 20*(count-1)/2;
     const baseY=customer.y + 40;
 
@@ -1346,7 +1198,7 @@ export let Assets, Scene, Customers, config;
       tl.add({targets:h,x:loveText.x,y:loveText.y,scaleX:0,scaleY:1.2,duration:dur(125)});
       tl.add({targets:h,scaleX:1,alpha:0,duration:dur(125),onComplete:()=>{
             love+=delta>0?1:-1;
-            if(typeof updateLoveDisplay==='function') updateLoveDisplay();
+            loveText.setText('❤️ '+love);
             updateLevelDisplay();
             h.destroy();
             popOne(idx+1);
@@ -1354,65 +1206,6 @@ export let Assets, Scene, Customers, config;
       tl.play();
     };
     this.time.delayedCall(dur(400),()=>popOne(0),[],this);
-  }
-
-  function adjustLeavingDepth(sprite){
-    let d=5;
-    queue.forEach(c=>{
-      if(c.sprite && sprite.y < c.sprite.y - 16) d=4;
-    });
-    wanderers.forEach(c=>{
-      if(c.sprite && sprite.y < c.sprite.y - 8) d=4;
-    });
-    sprite.setDepth(d);
-  }
-
-  function leaveCustomer(customer, angry, cb){
-    const scene=this;
-    const sprite = customer.sprite;
-    adjustLeavingDepth(sprite);
-    const dir=Phaser.Math.Between(0,1)?1:-1;
-    const destX=dir===1?520:-40;
-    const destY=Phaser.Math.Between(WANDER_TOP,WANDER_BOTTOM);
-    let emoji;
-    if(angry){
-      emoji='😠';
-    }else{
-      const req = customer.orders && customer.orders[0] ? customer.orders[0].req : '';
-      emoji = emojiForItem(req);
-    }
-    const offsetX = angry ? 0 : dir*12;
-    const offsetY = angry ? -30 : -10;
-    const mood=scene.add.text(sprite.x+offsetX, sprite.y+offsetY, emoji,{font:'24px sans-serif',fill:'#fff'})
-      .setOrigin(0.5).setDepth(sprite.depth+1);
-    const amp=angry?4:10;
-    const freq=angry?6:3;
-    const durBase=angry?WALK_OFF_BASE:WALK_OFF_BASE*1.2;
-    const startY=sprite.y;
-    const main=scene.tweens.add({
-      targets:sprite,
-      x:destX,
-      duration:dur(durBase),
-      onUpdate:(tw,t)=>{
-        const p=tw.progress;
-        t.y=Phaser.Math.Linear(startY,destY,p)+Math.sin(p*Math.PI*freq)*amp;
-        mood.setPosition(t.x+offsetX, t.y+offsetY);
-        adjustLeavingDepth(t);
-      },
-      onComplete:()=>{ mood.destroy(); if(cb) cb(); }
-    });
-    if(angry){
-      main.pause();
-      scene.tweens.add({
-        targets:sprite,
-        y:'+=12',
-        duration:dur(80),
-        yoyo:true,
-        repeat:2,
-        onUpdate:()=>{ mood.setPosition(sprite.x+offsetX, sprite.y+offsetY); },
-        onComplete:()=>{ main.play(); }
-      });
-    }
   }
 
   function showFalconAttack(cb){
@@ -1619,11 +1412,9 @@ export let Assets, Scene, Customers, config;
     if(/lady falcon reclaims the coffee truck/i.test(msg)){
       img=this.add.image(240,200,'falcon_end').setScale(1.2).setDepth(20);
       bgY=480;
-      phoneDamage = Math.min(3, phoneDamage + 1);
     } else if(/customer.*revolt/i.test(msg)){
       img=this.add.image(240,200,'revolt_end').setScale(1.2).setDepth(20);
       bgY=480;
-      phoneDamage = Math.min(3, phoneDamage + 1);
     }
     const bg=this.add.rectangle(240,bgY,480,240,0xffffff).setStrokeStyle(2,0x000).setDepth(20);
     const lines=msg.split('\n');
@@ -1670,13 +1461,10 @@ export let Assets, Scene, Customers, config;
     reportLine4.setVisible(false);
     tipText.setVisible(false);
     paidStamp.setVisible(false);
-    if(paidStamp.clearMask) paidStamp.clearMask(true);
     lossStamp.setVisible(false);
-    if(lossStamp.clearMask) lossStamp.clearMask(true);
     money=10.00; love=10;
     moneyText.setText('🪙 '+receipt(money));
-    heartBroken=false;
-    updateLoveDisplay();
+    loveText.setText('❤️ '+love);
     updateLevelDisplay();
     if(activeCustomer){
       activeCustomer.sprite.destroy();

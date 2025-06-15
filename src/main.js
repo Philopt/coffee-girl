@@ -319,13 +319,17 @@ export function setupGame(){
   }
 
   function enforceCustomerScaling(){
-    const scaleDog = d => { if(d) d.setScale(scaleForY(d.y)*0.5); };
+    const setDepth = (sprite, base=5)=>{
+      if(!sprite) return;
+      sprite.setDepth(base + sprite.y*0.006);
+    };
+    const scaleDog = d => { if(d){ d.setScale(scaleForY(d.y)*0.5); setDepth(d,3); } };
     queue.forEach(c=>{
-      if(c.sprite) c.sprite.setScale(scaleForY(c.sprite.y));
+      if(c.sprite){ c.sprite.setScale(scaleForY(c.sprite.y)); setDepth(c.sprite,5); }
       if(c.dog) scaleDog(c.dog);
     });
     wanderers.forEach(c=>{
-      if(c.sprite) c.sprite.setScale(scaleForY(c.sprite.y));
+      if(c.sprite){ c.sprite.setScale(scaleForY(c.sprite.y)); setDepth(c.sprite,5); }
       if(c.dog) scaleDog(c.dog);
     });
   }
@@ -335,9 +339,13 @@ export function setupGame(){
     if(!dog || !owner.sprite) return;
     const ms = owner.sprite;
     const dogDist = Phaser.Math.Distance.Between(dog.x,dog.y,ms.x,ms.y);
-    const radius = 40;
-    const near = 50;
+    const radius = 80;
+    const near = 60;
     let targetX = ms.x, targetY = ms.y;
+
+    if(dog.restUntil && this.time.now < dog.restUntil && dogDist <= radius){
+      return;
+    }
     if(dogDist <= radius){
       const others=[...queue,...wanderers].filter(c=>c!==owner&&c.sprite);
       for(const o of others){
@@ -346,21 +354,26 @@ export function setupGame(){
           const ang=Phaser.Math.Angle.Between(o.sprite.x,o.sprite.y,dog.x,dog.y);
           targetX=dog.x+Math.cos(ang)*(near-d);
           targetY=dog.y+Math.sin(ang)*(near-d);
+          dog.restUntil=this.time.now+Phaser.Math.Between(5000,10000);
           break;
         }
       }
       if(targetX===ms.x && targetY===ms.y){
-        const ang=Phaser.Math.FloatBetween(0,Math.PI*2);
-        const dist=Phaser.Math.Between(10,radius);
-        targetX=ms.x+Math.cos(ang)*dist;
-        targetY=ms.y+Math.sin(ang)*dist;
+        const side=Phaser.Math.Between(0,1)?1:-1;
+        const offsetX=side*Phaser.Math.Between(20,30);
+        const offsetY=Phaser.Math.Between(10,20);
+        targetX=ms.x+offsetX;
+        targetY=ms.y+offsetY;
+        dog.restUntil=this.time.now+Phaser.Math.Between(5000,10000);
       }
+    } else {
+      dog.restUntil=0;
     }
     if(targetY < DOG_MIN_Y) targetY = DOG_MIN_Y;
     const distance = Phaser.Math.Distance.Between(dog.x,dog.y,targetX,targetY);
     const duration = dur(Math.max(300,(distance/DOG_SPEED)*1000));
     this.tweens.add({targets:dog,x:targetX,y:targetY,duration,
-      onUpdate:(tw,t)=>{t.setScale(scaleForY(t.y)*0.5);} });
+      onUpdate:(tw,t)=>{t.setScale(scaleForY(t.y)*0.5); t.setDepth(3+t.y*0.006);} });
   }
 
   function updateLevelDisplay(){
@@ -815,11 +828,15 @@ export function setupGame(){
 
     // occasionally spawn a dog to accompany the wanderer
     if(Phaser.Math.Between(0,4)===0){
-      const dog=this.add.sprite(startX,startY,k)
+      const side=Phaser.Math.Between(0,1)?1:-1;
+      const offsetX=side*Phaser.Math.Between(20,30);
+      const offsetY=Phaser.Math.Between(10,20);
+      const dog=this.add.sprite(startX+offsetX,startY+offsetY,k)
         .setScale(distScale*0.5)
         .setDepth(3)
         .setAngle(-90);
       c.dog=dog;
+      dog.restUntil=this.time.now+Phaser.Math.Between(5000,10000);
       dog.followEvent=this.time.addEvent({
         delay:dur(Phaser.Math.Between(800,1200)),
         loop:true,

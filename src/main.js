@@ -944,32 +944,29 @@ export let Assets, Scene, Customers, config;
     activeCustomer=null;
 
     const finish=()=>{
-      const targets=[current.sprite];
-      targets.forEach(t=>t.setDepth(5));
-      this.tweens.add({ targets: targets, x: (type==='refuse'? -50:520), alpha:0, duration:dur(WALK_OFF_BASE), callbackScope:this,
-        onComplete:()=>{
-          current.sprite.destroy();
-          queue.shift();
-          moveQueueForward.call(this);
-          if(money<=0){
-            showFalconAttack.call(this,()=>{
-              showEnd.call(this,'Game Over\nYou lost all the money.\nLady Falcon reclaims the coffee truck.');
-            });
-            return;
-          }
-          if(love<=0){
-            showCustomerRevolt.call(this,()=>{
-              showEnd.call(this,'Game Over\nThe Customers Revolt!\n(and they stole your truck)');
-            });
-            return;
-          }
-          if(money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
-          if(love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
-          scheduleNextSpawn(this);
-          servedCount++;
-          updateSideC.call(this);
+      const afterWalk=()=>{
+        current.sprite.destroy();
+        queue.shift();
+        moveQueueForward.call(this);
+        if(money<=0){
+          showFalconAttack.call(this,()=>{
+            showEnd.call(this,'Game Over\nYou lost all the money.\nLady Falcon reclaims the coffee truck.');
+          });
+          return;
         }
-      });
+        if(love<=0){
+          showCustomerRevolt.call(this,()=>{
+            showEnd.call(this,'Game Over\nThe Customers Revolt!\n(and they stole your truck)');
+          });
+          return;
+        }
+        if(money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
+        if(love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
+        scheduleNextSpawn(this);
+        servedCount++;
+        updateSideC.call(this);
+      };
+      leaveCustomer.call(this, current.sprite, type==='refuse', afterWalk);
     };
 
     // animated report using timelines
@@ -1206,6 +1203,56 @@ export let Assets, Scene, Customers, config;
       tl.play();
     };
     this.time.delayedCall(dur(400),()=>popOne(0),[],this);
+  }
+
+  function adjustLeavingDepth(sprite){
+    let d=5;
+    queue.forEach(c=>{
+      if(c.sprite && sprite.y < c.sprite.y - 16) d=4;
+    });
+    wanderers.forEach(c=>{
+      if(c.sprite && sprite.y < c.sprite.y - 8) d=4;
+    });
+    sprite.setDepth(d);
+  }
+
+  function leaveCustomer(sprite, angry, cb){
+    const scene=this;
+    adjustLeavingDepth(sprite);
+    const dir=Phaser.Math.Between(0,1)?1:-1;
+    const destX=dir===1?520:-40;
+    const destY=Phaser.Math.Between(WANDER_TOP,WANDER_BOTTOM);
+    const emoji=angry?'😠':'☕';
+    const mood=scene.add.text(sprite.x, sprite.y-30, emoji,{font:'24px sans-serif',fill:'#fff'})
+      .setOrigin(0.5).setDepth(sprite.depth+1);
+    const amp=angry?4:10;
+    const freq=angry?6:3;
+    const durBase=angry?WALK_OFF_BASE:WALK_OFF_BASE*1.2;
+    const startY=sprite.y;
+    const main=scene.tweens.add({
+      targets:sprite,
+      x:destX,
+      duration:dur(durBase),
+      onUpdate:(tw,t)=>{
+        const p=tw.progress;
+        t.y=Phaser.Math.Linear(startY,destY,p)+Math.sin(p*Math.PI*freq)*amp;
+        mood.setPosition(t.x, t.y-30);
+        adjustLeavingDepth(t);
+      },
+      onComplete:()=>{ mood.destroy(); if(cb) cb(); }
+    });
+    if(angry){
+      main.pause();
+      scene.tweens.add({
+        targets:sprite,
+        y:'+=12',
+        duration:dur(80),
+        yoyo:true,
+        repeat:2,
+        onUpdate:()=>{ mood.setPosition(sprite.x, sprite.y-30); },
+        onComplete:()=>{ main.play(); }
+      });
+    }
   }
 
   function showFalconAttack(cb){

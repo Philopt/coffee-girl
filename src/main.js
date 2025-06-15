@@ -316,6 +316,11 @@ export function setupGame(){
     });
   }
 
+  function enforceCustomerScaling(){
+    queue.forEach(c=>{ if(c.sprite) c.sprite.setScale(scaleForY(c.sprite.y)); });
+    wanderers.forEach(c=>{ if(c.sprite) c.sprite.setScale(scaleForY(c.sprite.y)); });
+  }
+
   function updateLevelDisplay(){
     const newLevel=calcLoveLevel(love);
     if(queueLevelText){
@@ -714,6 +719,9 @@ export function setupGame(){
 
     // wait for player to start the shift
     showStartScreen.call(this);
+
+    // ensure customer sprites always match their vertical scale
+    this.events.on('update', enforceCustomerScaling);
   }
 
   function spawnCustomer(){
@@ -746,6 +754,7 @@ export function setupGame(){
     c.walkTween=this.tweens.add({targets:c.sprite,x:targetX,duration:dur(6000),onUpdate:(tw,t)=>{
         const p=tw.progress;
         t.y=startY+Math.sin(p*Math.PI*freq)*amp;
+        t.setScale(scaleForY(t.y));
       },onComplete:()=>{
         const idx=wanderers.indexOf(c);
         if(idx>=0) wanderers.splice(idx,1);
@@ -1085,6 +1094,7 @@ export function setupGame(){
           onUpdate: (tw, t) => {
             const p = tw.progress;
             t.x = startX + p * distanceX + Math.sin(p * Math.PI * freq) * amp;
+            t.setScale(scaleForY(t.y));
           },
           onComplete: exit
         });
@@ -1097,7 +1107,7 @@ export function setupGame(){
         const amp=Phaser.Math.Between(10,25);
         const freq=Phaser.Math.Between(2,4);
         this.tweens.add({targets:sprite,y:targetY,duration:dur(6000),callbackScope:this,
-          onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+p*distanceX+Math.sin(p*Math.PI*freq)*amp;},
+          onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+p*distanceX+Math.sin(p*Math.PI*freq)*amp; t.setScale(scaleForY(t.y));},
           onComplete:exit});
       }
     };

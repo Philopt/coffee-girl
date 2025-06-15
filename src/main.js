@@ -919,9 +919,22 @@ export let Assets, Scene, Customers, config;
       if(typeof dialogText!=='undefined') objs.push(dialogText);
       if(typeof dialogCoins!=='undefined') objs.push(dialogCoins);
       if(this.tweens && objs.length){
-        this.tweens.add({targets:objs, y:current.sprite.y, scale:0, duration:dur(200), onComplete:()=>{
-          clearDialog.call(this, type!=='refuse');
-        }});
+        if(type==='refuse'){
+          if(dialogBg.setTint) dialogBg.setTint(0xff0000);
+          if(dialogText.setColor) dialogText.setColor('#f00');
+          if(dialogCoins.setColor) dialogCoins.setColor('#f00');
+          this.tweens.add({targets:objs, y:current.sprite.y+80, scale:1.5, alpha:0,
+                          duration:dur(300), ease:'Cubic.easeIn', onComplete:()=>{
+            if(dialogBg.clearTint) dialogBg.clearTint();
+            if(dialogText.setColor) dialogText.setColor('#000');
+            if(dialogCoins.setColor) dialogCoins.setColor('#000');
+            clearDialog.call(this, false);
+          }});
+        } else {
+          this.tweens.add({targets:objs, y:current.sprite.y, scale:0, duration:dur(200), onComplete:()=>{
+            clearDialog.call(this, true);
+          }});
+        }
       } else {
         clearDialog.call(this, type!=='refuse');
       }

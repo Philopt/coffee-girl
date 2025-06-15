@@ -171,12 +171,13 @@ import { debugLog } from './debug.js';
     },[],scene);
   }
 
-  function blinkButton(btn, onComplete){
-    // Temporarily disable input while the button blinks.
-    // Recalculate the hit area afterwards in case the button
-    // changed size or scale during the tween.
+  function blinkButton(btn, onComplete, inputObj){
+    // Temporarily disable input while the button blinks. The optional
+    // inputObj parameter allows specifying a separate interactive
+    // object (e.g. an invisible zone) to disable during the blink.
 
-    btn.disableInteractive();
+    const target = inputObj || btn;
+    if (target.disableInteractive) target.disableInteractive();
     this.tweens.add({
       targets: btn,
       alpha: 0,
@@ -184,26 +185,8 @@ import { debugLog } from './debug.js';
       duration: dur(80),
       repeat: 1,
       onComplete: () => {
-        if (btn.setInteractive) {
-
-          const w = btn.width !== undefined ? btn.width : (btn.displayWidth || 0);
-          const h = btn.height !== undefined ? btn.height : (btn.displayHeight || 0);
-          const area = new Phaser.Geom.Rectangle(-w/2, -h/2, w, h);
-          btn.myHitArea = area;
-
-          btn.setInteractive({
-            hitArea: area,
-            hitAreaCallback: Phaser.Geom.Rectangle.Contains,
-            useHandCursor: true
-          });
-          btn.myHitArea = area;
-          if (btn.input && btn.input.hitArea) {
-            btn.input.hitArea.x = area.x;
-            btn.input.hitArea.y = area.y;
-            if (typeof btn.input.hitArea.setTo === 'function') {
-              btn.input.hitArea.setTo(area.x, area.y, area.width, area.height);
-            }
-          }
+        if (target.setInteractive) {
+          target.setInteractive({ useHandCursor: true });
         }
         if (onComplete) onComplete();
       }
@@ -403,20 +386,10 @@ import { debugLog } from './debug.js';
     const offsetY = phoneH/2 - homeH/2 - 12;
     startButton = scene.add.container(0,offsetY,[btnBg,btnLabel])
       .setSize(bw,bh);
-    startButton.myHitArea = new Phaser.Geom.Rectangle(-bw/2, -bh/2, bw, bh);
-    startButton.setInteractive({
-        hitArea: startButton.myHitArea,
-        hitAreaCallback: Phaser.Geom.Rectangle.Contains,
-        useHandCursor: true
-    });
-    if (startButton.input && startButton.input.hitArea) {
-      startButton.input.hitArea.x = startButton.myHitArea.x;
-      startButton.input.hitArea.y = startButton.myHitArea.y;
-      if (typeof startButton.input.hitArea.setTo === 'function') {
-        startButton.input.hitArea.setTo(startButton.myHitArea.x, startButton.myHitArea.y,
-          startButton.myHitArea.width, startButton.myHitArea.height);
-      }
-    }
+
+    const startZone = scene.add.zone(0,0,bw,bh).setOrigin(0.5);
+    startZone.setInteractive({ useHandCursor:true });
+    startButton.add(startZone);
 
     // position the phone closer to the center of the screen
     const containerY = 320;
@@ -462,17 +435,11 @@ import { debugLog } from './debug.js';
           startMsgTimers.push(scene.time.delayedCall(delay,()=>addStartMessage(msg),[],scene));
         }
       }
-
-    startButton.on('pointerdown',()=>{
-
-        // Log click registration to help debug input issues
+      startZone.on('pointerdown',()=>{
         if (typeof debugLog === 'function') debugLog('start button clicked');
-
-        // cancel any pending start messages
         startMsgTimers.forEach(t=>t.remove(false));
         startMsgTimers=[];
         startMsgBubbles=[];
-
         const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
           if(startButton) startButton.destroy();
           phoneContainer.destroy(); phoneContainer=null;
@@ -480,7 +447,6 @@ import { debugLog } from './debug.js';
         tl.add({targets:phoneContainer,y:-320,duration:600,ease:'Sine.easeIn'});
         tl.add({targets:startOverlay,alpha:0,duration:600,onComplete:()=>{ if(startOverlay){startOverlay.destroy(); startOverlay=null;} }});
         tl.play();
-        // playIntro will kick off the intro tween sequence
         playIntro.call(scene);
       });
   }
@@ -536,20 +502,9 @@ import { debugLog } from './debug.js';
         .setOrigin(0.5).setDepth(30);
       const retry=this.add.text(240,360,'Retry Loading',{font:'20px sans-serif',fill:'#00f'})
         .setOrigin(0.5).setDepth(30);
-      retry.setInteractive({
-        hitArea:new Phaser.Geom.Rectangle(-retry.width/2,-retry.height/2,retry.width,retry.height),
-        hitAreaCallback:Phaser.Geom.Rectangle.Contains,
-        useHandCursor:true
-      });
-      if (retry.input && retry.input.hitArea) {
-        retry.input.hitArea.x = -retry.width / 2;
-        retry.input.hitArea.y = -retry.height / 2;
-        if (typeof retry.input.hitArea.setTo === 'function') {
-          retry.input.hitArea.setTo(-retry.width / 2, -retry.height / 2,
-            retry.width, retry.height);
-        }
-      }
-      retry.on('pointerdown',()=>window.location.reload());
+      const retryZone=this.add.zone(240,360,retry.width,retry.height).setOrigin(0.5);
+      retryZone.setInteractive({ useHandCursor:true });
+      retryZone.on('pointerdown',()=>window.location.reload());
       return;
     }
     // background
@@ -581,10 +536,10 @@ import { debugLog } from './debug.js';
       .setDepth(10);
     dialogBg.x=240;
     dialogBg.y=430; // raise bubble slightly
-    dialogBg.width=360; // narrower bubble
+    dialogBg.width=360; // starting size, adjusted later
     dialogBg.height=120;
 
-    dialogPriceBox=this.add.rectangle(0,0,120,80,0xffffff)
+    dialogPriceBox=this.add.rectangle(0,0,120,80,0xdddddd)
       .setStrokeStyle(2,0x000)
       .setOrigin(0.5);
 
@@ -633,25 +588,11 @@ import { debugLog } from './debug.js';
         .setSize(width,height)
         .setDepth(12)
         .setVisible(false);
-      c.myHitArea = new Phaser.Geom.Rectangle(-width/2,-height/2,width,height);
-      // Explicitly specify the hit area so the pointer box aligns with the
-      // visible button.
-      c.setInteractive({
-        hitArea: c.myHitArea,
-        hitAreaCallback: Phaser.Geom.Rectangle.Contains,
-        useHandCursor: true
-      });
-      if (c.input && c.input.hitArea) {
-        // containers don't respect negative hitArea offsets unless we
-        // explicitly adjust the input shape after setInteractive
-        c.input.hitArea.x = c.myHitArea.x;
-        c.input.hitArea.y = c.myHitArea.y;
-        if (typeof c.input.hitArea.setTo === 'function') {
-          c.input.hitArea.setTo(c.myHitArea.x, c.myHitArea.y,
-            c.myHitArea.width, c.myHitArea.height);
-        }
-      }
-      c.on('pointerdown',()=>blinkButton.call(this,c,handler));
+
+      const zone=this.add.zone(0,0,width,height).setOrigin(0.5);
+      zone.setInteractive({ useHandCursor:true });
+      zone.on('pointerdown',()=>blinkButton.call(this,c,handler,zone));
+      c.add(zone);
       return c;
     };
 
@@ -740,6 +681,12 @@ import { debugLog } from './debug.js';
       const tipX = tx * 0.5;
       const tipY = by + (ty - by) * 0.5;
       dialogBg.fillTriangle(bx1, by, bx2, by, tipX, tipY);
+      dialogBg.beginPath();
+      dialogBg.moveTo(tipX, tipY);
+      dialogBg.lineTo(bx1, by);
+      dialogBg.moveTo(tipX, tipY);
+      dialogBg.lineTo(bx2, by);
+      dialogBg.strokePath();
     }
   }
 
@@ -763,19 +710,13 @@ import { debugLog } from './debug.js';
       });
       return;
     }
-    dialogBg.setVisible(true);
-    drawDialogBubble(c.sprite.x, c.sprite.y);
-    dialogPriceContainer
-      .setPosition(dialogBg.x + dialogBg.width/2 - 60, dialogBg.y - dialogBg.height)
-      .setScale(1)
-      .setVisible(true);
-    dialogPriceContainer.alpha = 1;
     const itemStr=c.orders.map(o=>{
       return o.qty>1 ? `${o.qty} ${o.req}` : o.req;
     }).join(' and ');
     const wantLine=(c.orders.length===1 && c.orders[0].qty===1)
       ? `I want ${articleFor(c.orders[0].req)} ${c.orders[0].req}`
       : `I want ${itemStr}`;
+
     if(activeBubble){
       activeBubble.destroy();
       activeBubble=null;
@@ -784,11 +725,12 @@ import { debugLog } from './debug.js';
       .setOrigin(0.5).setDepth(11);
     activeBubble=bubble;
     this.tweens.add({targets:bubble,y:c.sprite.y-70,alpha:0,duration:dur(600),onComplete:()=>{bubble.destroy(); activeBubble=null;}});
+
     dialogText
-      .setOrigin(0,0.5)
-      .setPosition(dialogBg.x - dialogBg.width/2 + 40, dialogBg.y - 20)
+      .setOrigin(0,0)
       .setText(wantLine)
       .setVisible(true);
+
     const totalCost=c.orders.reduce((s,o)=>s+o.price*o.qty,0);
     const canAfford = c.orders[0].coins >= totalCost;
     let coinLine;
@@ -801,11 +743,31 @@ import { debugLog } from './debug.js';
       coinLine = `...but I only have $${c.orders[0].coins}`;
     }
     dialogCoins
-      .setOrigin(0,0.5)
-      .setPosition(dialogBg.x - dialogBg.width/2 + 40, dialogBg.y + 10)
+      .setOrigin(0,0)
       .setStyle({fontSize:'20px'})
       .setText(coinLine)
       .setVisible(true);
+
+    const maxW=Math.max(dialogText.width, dialogCoins.width);
+    dialogBg.width=Math.max(maxW+80,160);
+    dialogBg.height=dialogText.height+dialogCoins.height+60;
+
+    const bubbleTop=dialogBg.y - dialogBg.height/2;
+    dialogText.setPosition(dialogBg.x - dialogBg.width/2 + 40, bubbleTop + 30);
+    dialogCoins.setPosition(dialogBg.x - dialogBg.width/2 + 40, bubbleTop + 30 + dialogText.height + 10);
+
+    dialogBg.setScale(0).setVisible(true);
+    dialogText.setScale(0);
+    dialogCoins.setScale(0);
+    drawDialogBubble(c.sprite.x, c.sprite.y);
+
+    const priceTargetX = dialogBg.x + dialogBg.width/2 - 60;
+    const priceTargetY = dialogBg.y - dialogBg.height;
+    dialogPriceContainer
+      .setPosition(dialogBg.x, dialogBg.y)
+      .setScale(0)
+      .setVisible(false);
+    dialogPriceContainer.alpha = 1;
     dialogPriceLabel
       .setStyle({fontSize:'14px'})
       .setText('Total\nCost');
@@ -815,6 +777,25 @@ import { debugLog } from './debug.js';
       .setColor('#000')
       .setScale(1)
       .setAlpha(1);
+
+    this.tweens.add({
+      targets:[dialogBg, dialogText, dialogCoins],
+      scale:1,
+      ease:'Back.easeOut',
+      duration:dur(300),
+      onComplete:()=>{
+        dialogPriceContainer.setVisible(true);
+        this.tweens.add({
+          targets:dialogPriceContainer,
+          x:priceTargetX,
+          y:priceTargetY,
+          scale:1,
+          duration:dur(300),
+          ease:'Sine.easeOut'
+        });
+      }
+    });
+
     tipText.setVisible(false);
     btnSell.setVisible(canAfford);
     if (btnSell.input) btnSell.input.enabled = canAfford;
@@ -831,6 +812,15 @@ import { debugLog } from './debug.js';
       dialogCoins.setVisible(false);
       dialogPriceContainer.setVisible(false);
       dialogPriceValue.setColor('#000');
+
+        if(dialogPriceBox){
+          if(dialogPriceBox.setFillStyle){
+            dialogPriceBox.setFillStyle(0xdddddd,1);
+          }else if(dialogPriceBox.fillStyle){
+            dialogPriceBox.fillStyle(0xdddddd,1);
+          }
+        }
+
     }else{
       dialogBg.setVisible(true);
       dialogText.setVisible(false);
@@ -1366,20 +1356,9 @@ import { debugLog } from './debug.js';
       .setOrigin(0.5).setDepth(21);
     const btn=this.add.text(240,bgY+80,'Try Again',{font:'20px sans-serif',fill:'#fff',backgroundColor:'#006400',padding:{x:14,y:8}})
       .setOrigin(0.5).setDepth(22);
-    btn.setInteractive({
-      hitArea:new Phaser.Geom.Rectangle(-btn.width/2,-btn.height/2,btn.width,btn.height),
-      hitAreaCallback:Phaser.Geom.Rectangle.Contains,
-      useHandCursor:true
-    });
-    if (btn.input && btn.input.hitArea) {
-      btn.input.hitArea.x = -btn.width / 2;
-      btn.input.hitArea.y = -btn.height / 2;
-      if (typeof btn.input.hitArea.setTo === 'function') {
-        btn.input.hitArea.setTo(-btn.width / 2, -btn.height / 2,
-          btn.width, btn.height);
-      }
-    }
-    btn.on('pointerdown',()=>{
+    const againZone=this.add.zone(240,bgY+80,btn.width,btn.height).setOrigin(0.5);
+    againZone.setInteractive({ useHandCursor:true });
+    againZone.on('pointerdown',()=>{
         bg.destroy(); txt.destroy(); btn.destroy(); if(titleText) titleText.destroy(); if(img) img.destroy();
         if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
         restartGame.call(this);

@@ -166,6 +166,10 @@
             hitAreaCallback: Phaser.Geom.Rectangle.Contains,
             useHandCursor: true
           });
+          if (btn.input && btn.input.hitArea) {
+            btn.input.hitArea.x = area.x;
+            btn.input.hitArea.y = area.y;
+          }
         }
         if (onComplete) onComplete();
       }
@@ -379,6 +383,10 @@
         hitAreaCallback: Phaser.Geom.Rectangle.Contains,
         useHandCursor: true
     });
+    if (startButton.input && startButton.input.hitArea) {
+      startButton.input.hitArea.x = startButton.myHitArea.x;
+      startButton.input.hitArea.y = startButton.myHitArea.y;
+    }
 
     // position the phone closer to the center of the screen
     const containerY = 320;
@@ -508,8 +516,12 @@
         hitArea:new Phaser.Geom.Rectangle(-retry.width/2,-retry.height/2,retry.width,retry.height),
         hitAreaCallback:Phaser.Geom.Rectangle.Contains,
         useHandCursor:true
-      })
-        .on('pointerdown',()=>window.location.reload());
+      });
+      if (retry.input && retry.input.hitArea) {
+        retry.input.hitArea.x = -retry.width / 2;
+        retry.input.hitArea.y = -retry.height / 2;
+      }
+      retry.on('pointerdown',()=>window.location.reload());
       return;
     }
     // background
@@ -592,8 +604,14 @@
         hitArea: c.myHitArea,
         hitAreaCallback: Phaser.Geom.Rectangle.Contains,
         useHandCursor: true
-      })
-        .on('pointerdown',()=>blinkButton.call(this,c,handler));
+      });
+      if (c.input && c.input.hitArea) {
+        // containers don't respect negative hitArea offsets unless we
+        // explicitly adjust the input shape after setInteractive
+        c.input.hitArea.x = c.myHitArea.x;
+        c.input.hitArea.y = c.myHitArea.y;
+      }
+      c.on('pointerdown',()=>blinkButton.call(this,c,handler));
       return c;
     };
 
@@ -1281,8 +1299,12 @@
       hitArea:new Phaser.Geom.Rectangle(-btn.width/2,-btn.height/2,btn.width,btn.height),
       hitAreaCallback:Phaser.Geom.Rectangle.Contains,
       useHandCursor:true
-    })
-      .on('pointerdown',()=>{
+    });
+    if (btn.input && btn.input.hitArea) {
+      btn.input.hitArea.x = -btn.width / 2;
+      btn.input.hitArea.y = -btn.height / 2;
+    }
+    btn.on('pointerdown',()=>{
         bg.destroy(); txt.destroy(); btn.destroy(); if(titleText) titleText.destroy(); if(img) img.destroy();
         if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
         restartGame.call(this);

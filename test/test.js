@@ -9,6 +9,26 @@ const { BUTTON_WIDTH, BUTTON_HEIGHT } = require('../src/ui.js');
 
 const DEBUG = process.env.DEBUG === '1';
 
+let server = null;
+function killServer() {
+  return new Promise(resolve => {
+    if (server && !server.killed) {
+      server.once('close', resolve);
+      server.kill();
+      server = null;
+    } else {
+      resolve();
+    }
+  });
+}
+
+process.on('SIGINT', () => {
+  killServer().then(() => process.exit(1));
+});
+process.on('SIGTERM', () => {
+  killServer().then(() => process.exit(1));
+});
+
 function testBlinkButton() {
   const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
   const start = code.indexOf('function blinkButton');
@@ -520,7 +540,7 @@ async function testIntroSequence() {
 
 async function run() {
   const serverPath = require.resolve('http-server/bin/http-server');
-  const server = spawn(process.execPath, [serverPath, '-p', '8080', '-c-1'], { stdio: 'inherit' });
+  server = spawn(process.execPath, [serverPath, '-p', '8080', '-c-1'], { stdio: 'inherit' });
 
   // wait a bit for the server to start
   await new Promise(r => setTimeout(r, 1000));
@@ -540,10 +560,12 @@ async function run() {
 
   if (errors.length) {
     if (DEBUG) console.error('Failed:', errors);
-    server.kill();
+    await killServer();
     process.exit(1);
-  } else {
-    console.log('Game loaded without errors');
+  }
+
+  console.log('Game loaded without errors');
+  try {
     testSpawnCustomer();
     testHandleActionSell();
     testShowStartScreen();
@@ -553,11 +575,12 @@ async function run() {
     testAnimateLoveChange();
     testScheduleNextSpawn();
     await testIntroSequence();
-    server.kill();
+  } finally {
+    await killServer();
   }
 }
 
 run().catch(err => {
   if (DEBUG) console.error(err);
-  process.exit(1);
+  killServer().then(() => process.exit(1));
 });

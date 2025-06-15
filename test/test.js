@@ -116,7 +116,6 @@ function testHandleActionSell() {
     reportLine1: { setStyle() { return this; }, setText() { return this; }, setPosition() { return this; }, setScale() { return this; }, setVisible() { return this; }, setColor() { return this; } },
     reportLine2: { setStyle() { return this; }, setText() { return this; }, setPosition() { return this; }, setScale() { return this; }, setVisible() { return this; }, setColor() { return this; } },
     reportLine3: { setStyle() { return this; }, setText() { return this; }, setPosition() { return this; }, setOrigin() { return this; }, setAlpha() { return this; }, setVisible() { return this; }, setColor() { return this; } },
-    dialogPriceBox: { setStrokeStyle() { return this; }, setFillStyle() { return this; }, fillAlpha: 1 },
     dialogPriceValue: { setVisible() { return this; }, setDepth() { return this; }, setText() { return this; }, setPosition() { return this; }, setScale() { return this; }, setAlpha() { return this; }, setColor() { return this; }, x:0, y:0 },
     dialogPriceContainer: { x:0, y:0, scaleX:1, scaleY:1, setVisible() { return this; }, setPosition(x,y){ this.x=x; this.y=y; return this; }, setScale(s){ this.scaleX=s; this.scaleY=s; return this; } },
     paidStamp: { setText() { return this; }, setScale() { return this; }, setPosition() { return this; }, setAngle() { return this; }, setVisible() { return this; } },
@@ -274,7 +273,7 @@ function testStartButtonPlaysIntro() {
 
 function testShowDialogButtons() {
   const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
-  const match = /function showDialog\(\)[\s\S]*?fadeInButtons\.call\(this,[^)]*\);[\s\S]*?\}/.exec(code);
+  const match = /function showDialog\(\)[\s\S]*?btnRef\.setVisible\(true\);[\s\S]*?\}/.exec(code);
   if (!match) throw new Error('showDialog not found');
   const makeObj = () => ({
     visible: false,

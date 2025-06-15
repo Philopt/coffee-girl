@@ -432,8 +432,7 @@ export function setupGame(){
     // position the phone closer to the center of the screen
     const containerY = 320;
     phoneContainer = scene.add.container(240,containerY,[caseG,blackG,whiteG,homeG,startButton])
-      .setDepth(15)
-      .setInteractive();
+      .setDepth(15);
 
     // track where to place the first start message
     let startMsgY = -phoneH/2 + 20;

@@ -59,14 +59,6 @@
   const START_PHONE_W = 260;
   const START_PHONE_H = 500;
 
-  // layout for the customer dialog
-  const DIALOG_BUBBLE_W = 340;
-  const DIALOG_BUBBLE_X = 180;
-  const DIALOG_Y = 460;
-  const COST_BOX_W = 90;
-  const COST_BOX_H = 80;
-  const COST_BOX_X = DIALOG_BUBBLE_X + DIALOG_BUBBLE_W/2 + 10 + COST_BOX_W/2;
-
 
   let money=10.00, love=10, gameOver=false;
   let queue=[], activeCustomer=null, wanderers=[];
@@ -178,8 +170,8 @@
 
 
   let moneyText, loveText, queueLevelText;
-  let dialogBg, dialogCostBg, dialogText, dialogCoins, dialogPriceLabel,
-      dialogPriceValue, btnSell, btnGive, btnRef;
+  let dialogBg, dialogText, dialogCoins, dialogPriceLabel, dialogPriceValue,
+      btnSell, btnGive, btnRef;
   let reportLine1, reportLine2, reportLine3, reportLine4, tipText;
   let paidStamp, lossStamp;
   let truck, girl;
@@ -517,16 +509,14 @@
     });
 
     // dialog
-    dialogBg=this.add.graphics().setVisible(false).setDepth(10);
-    dialogCostBg=this.add.rectangle(COST_BOX_X,DIALOG_Y,COST_BOX_W,COST_BOX_H,0xffffff)
-      .setStrokeStyle(2,0x000).setVisible(false).setDepth(11);
-    dialogText=this.add.text(0,0,'',{font:'20px sans-serif',fill:'#000',wordWrap:{width:DIALOG_BUBBLE_W-40}})
-                     .setOrigin(0,0.5).setVisible(false).setDepth(11);
-    dialogCoins=this.add.text(0,0,'',{font:'20px sans-serif',fill:'#000'})
-      .setOrigin(0,0.5).setVisible(false).setDepth(11);
-    dialogPriceLabel=this.add.text(0,0,'',{font:'14px sans-serif',fill:'#000',align:'center'})
+    dialogBg=this.add.rectangle(240,460,460,120,0xffffff).setStrokeStyle(2,0x000).setVisible(false).setDepth(10);
+    dialogText=this.add.text(240,440,'',{font:'20px sans-serif',fill:'#000',align:'center',wordWrap:{width:420}})
+                     .setOrigin(0.5).setVisible(false).setDepth(11);
+    dialogCoins=this.add.text(240,470,'',{font:'20px sans-serif',fill:'#000'})
       .setOrigin(0.5).setVisible(false).setDepth(11);
-    dialogPriceValue=this.add.text(0,0,'',{font:'32px sans-serif',fill:'#000'})
+    dialogPriceLabel=this.add.text(240,456,'',{font:'14px sans-serif',fill:'#000',align:'center'})
+      .setOrigin(0.5).setVisible(false).setDepth(11);
+    dialogPriceValue=this.add.text(240,480,'',{font:'32px sans-serif',fill:'#000'})
       .setOrigin(0.5).setVisible(false).setDepth(11);
 
     // helper to create a rounded rectangle button with consistent sizing
@@ -634,6 +624,7 @@
 
     spawnCount++;
   }
+
   function showDialog(){
     if(!dialogBg || !dialogText || !dialogCoins || !dialogPriceLabel ||
        !dialogPriceValue || !btnSell || !btnGive || !btnRef){
@@ -654,29 +645,7 @@
       });
       return;
     }
-    const radius=16;
-    const bubbleX=180;
-    const bubbleWidth=340;
-    const left=bubbleX-bubbleWidth/2;
-    const top=460-60;
-    if(dialogBg.clear){
-      dialogBg.clear();
-      dialogBg.lineStyle(2,0x000000,1);
-      if(dialogBg.fillRoundedRect){
-        dialogBg.fillStyle(0xffffff,1);
-        dialogBg.fillRoundedRect(left,top,bubbleWidth,120,radius);
-        dialogBg.strokeRoundedRect(left,top,bubbleWidth,120,radius);
-        const baseX=left+60;
-        const baseY=top+120;
-        dialogBg.fillTriangle(baseX,baseY,baseX+30,baseY,c.sprite.x,c.sprite.y-20);
-        dialogBg.lineStyle(2,0x000000,1);
-        dialogBg.strokeTriangle(baseX,baseY,baseX+30,baseY,c.sprite.x,c.sprite.y-20);
-      }
-    }
     dialogBg.setVisible(true);
-    if(typeof dialogCostBg!=='undefined' && dialogCostBg.setVisible){
-      dialogCostBg.setVisible(true);
-    }
     const itemStr=c.orders.map(o=>{
       return o.qty>1 ? `${o.qty} ${o.req}` : o.req;
     }).join(' and ');
@@ -691,10 +660,9 @@
       .setOrigin(0.5).setDepth(11);
     activeBubble=bubble;
     this.tweens.add({targets:bubble,y:c.sprite.y-70,alpha:0,duration:dur(600),onComplete:()=>{bubble.destroy(); activeBubble=null;}});
-    const textLeft=bubbleX-bubbleWidth/2;
     dialogText
       .setOrigin(0,0.5)
-      .setPosition(textLeft+20,440)
+      .setPosition(dialogBg.x-dialogBg.width/2+40,440)
       .setText(wantLine)
       .setVisible(true);
     const totalCost=c.orders.reduce((s,o)=>s+o.price*o.qty,0);
@@ -710,19 +678,19 @@
     }
     dialogCoins
       .setOrigin(0,0.5)
-      .setPosition(textLeft+20,470)
+      .setPosition(dialogBg.x-dialogBg.width/2+40,470)
       .setStyle({fontSize:'20px'})
       .setText(coinLine)
       .setVisible(true);
     dialogPriceLabel
-      .setOrigin(0.5)
-      .setPosition(405,440)
+      .setOrigin(1,0.5)
+      .setPosition(dialogBg.x+dialogBg.width/2-60,440)
       .setStyle({fontSize:'14px'})
       .setText('Total\nCost')
       .setVisible(true);
     dialogPriceValue
-      .setOrigin(0.5)
-      .setPosition(405,470)
+      .setOrigin(1,0.5)
+      .setPosition(dialogBg.x+dialogBg.width/2-60,470)
       .setStyle({fontSize:'32px'})
       .setText(`$${totalCost.toFixed(2)}`)
       .setColor('#000')
@@ -741,18 +709,12 @@
   function clearDialog(keepPrice=false){
     if(!keepPrice){
       dialogBg.setVisible(false);
-      if(typeof dialogCostBg!=='undefined' && dialogCostBg.setVisible){
-        dialogCostBg.setVisible(false);
-      }
       dialogText.setVisible(false);
       dialogCoins.setVisible(false);
       dialogPriceLabel.setVisible(false);
       dialogPriceValue.setVisible(false).setColor('#000');
     }else{
       dialogBg.setVisible(true);
-      if(typeof dialogCostBg!=='undefined' && dialogCostBg.setVisible){
-        dialogCostBg.setVisible(true);
-      }
       dialogText.setVisible(false);
       dialogCoins.setVisible(false);
       dialogPriceLabel.setVisible(true);

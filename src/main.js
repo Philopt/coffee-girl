@@ -690,11 +690,11 @@ export let Assets, Scene, Customers, config;
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
     reportLine4=this.add.text(0,0,'',{font:'14px sans-serif',fill:'#fff'})
       .setVisible(false).setDepth(11);
-    tipText=this.add.text(0,0,'',{font:'24px sans-serif',fill:'#0a0'})
+    tipText=this.add.text(0,0,'',{font:'28px sans-serif',fill:'#0a0'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
-    paidStamp=this.add.text(0,0,'PAID',{font:'24px sans-serif',fill:'#0a0'})
+    paidStamp=this.add.text(0,0,'PAID',{font:'40px sans-serif',fill:'#0a0'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
-    lossStamp=this.add.text(0,0,'LOSS',{font:'24px sans-serif',fill:'#a00'})
+    lossStamp=this.add.text(0,0,'LOSS',{font:'40px sans-serif',fill:'#a00'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
 
     // wait for player to start the shift
@@ -882,16 +882,16 @@ export let Assets, Scene, Customers, config;
     }
     dialogPriceContainer.alpha = 1;
     dialogPriceLabel
-      .setStyle({fontSize:'14px',align:'right'})
+      .setStyle({fontSize:'14px',align:'center'})
       .setText('Total\nCost')
-      .setOrigin(1,0.5)
-      .setPosition(dialogPriceBox.width/2 - 6, -20);
+      .setOrigin(0.5)
+      .setPosition(0, -20);
     dialogPriceValue
       .setStyle({fontSize:'32px'})
       .setText(`$${totalCost.toFixed(2)}`)
       .setColor('#000')
-      .setOrigin(1,0.5)
-      .setPosition(dialogPriceBox.width/2 - 6, 10)
+      .setOrigin(0.5)
+      .setPosition(0, 10)
       .setScale(1)
       .setAlpha(1);
 
@@ -1052,21 +1052,11 @@ export let Assets, Scene, Customers, config;
       const stampX=ticket.x + t.x * ticket.scaleX;
       const stampY=ticket.y + t.y * ticket.scaleY;
       paidStamp
-        .setText('PAID 💵')
-        .setScale(1.5)
+        .setText('PAID')
+        .setScale(2)
         .setPosition(stampX, stampY)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
-
-      if(this.add && this.add.text){
-        const cha = this.add.text(ticket.x, ticket.y - 30, '💸',
-            {font:'28px sans-serif',fill:'#0f0'})
-          .setOrigin(0.5)
-          .setDepth(ticket.depth+2)
-          .setAlpha(0);
-        this.tweens.add({targets:cha,alpha:1,y:cha.y-10,duration:dur(200),yoyo:true,
-          onComplete:()=>cha.destroy()});
-      }
 
       const flashPrice=()=>{
         const oy=t.y;
@@ -1076,14 +1066,13 @@ export let Assets, Scene, Customers, config;
       flashMoney(t,this);
 
       let delay=dur(300);
-      let moneyIcons=null;
       if(tip>0){
         this.time.delayedCall(delay,()=>{
-          const tipX = paidStamp.x - ticketW*0.25;
-          const tipY = paidStamp.y - ticketW*0.25;
+          const tipX = paidStamp.x - ticketW * 0.4;
+          const tipY = paidStamp.y;
           tipText
-            .setText('TIP 🪙')
-            .setScale(1.6)
+            .setText('TIP')
+            .setScale(1.2)
             .setPosition(tipX, tipY)
             .setVisible(true);
           t.setText(receipt(totalCost + tip));
@@ -1100,7 +1089,6 @@ export let Assets, Scene, Customers, config;
         const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
             clearDialog();
             ticket.setVisible(false);
-            if(moneyIcons){ moneyIcons.forEach(m=>m.destroy()); }
             money=+(money+mD).toFixed(2);
             moneyText.setText('🪙 '+receipt(money));
             animateStatChange(moneyText, this, mD);
@@ -1110,7 +1098,6 @@ export let Assets, Scene, Customers, config;
           onStart:()=>{
             flashBorder(dialogPriceBox,this,0x00ff00);
             flashFill(dialogPriceBox,this,0x00ff00);
-            moneyIcons=scatterMoney(this, ticket, totalCost, tip, customer.x, customer.y);
             if(this.tweens){
               this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});
             }
@@ -1128,8 +1115,8 @@ export let Assets, Scene, Customers, config;
       const stampY=ticket.y + t.y * ticket.scaleY;
       lossStamp
         .setText('LOSS')
-        .setScale(1.5)
-        .setPosition(stampX - 20, stampY)
+        .setScale(2)
+        .setPosition(stampX, stampY)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
       this.time.delayedCall(dur(1000),()=>{

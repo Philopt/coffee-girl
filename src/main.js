@@ -6,7 +6,8 @@ export let Assets, Scene, Customers, config;
 export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;
 export const GameState = {};
 const DOG_MIN_Y = ORDER_Y + 20;
-const DOG_SPEED = 80; // pixels per second limit for dog movement
+const DOG_SPEED = 120; // base movement speed for the dog
+const DOG_FAST_DISTANCE = 160; // accelerate when farther than this from owner
 export function setupGame(){
   if (typeof debugLog === 'function') debugLog('main.js loaded');
   let initCalled = false;
@@ -338,8 +339,25 @@ export function setupGame(){
     const radius = 40;
     const near = 50;
     let targetX = ms.x, targetY = ms.y;
+    const others=[...queue,...wanderers].filter(c=>c!==owner&&c.sprite);
+    if(!dog.excited){
+      const seen=others.find(o=>Phaser.Math.Distance.Between(dog.x,dog.y,o.sprite.x,o.sprite.y)<80);
+      if(seen){
+        dog.excited=true;
+        const s=seen.sprite;
+        const tl=this.tweens.createTimeline();
+        tl.add({targets:dog,y:'-=15',duration:dur(100),yoyo:true,repeat:1});
+        tl.add({targets:dog,x:s.x,y:s.y,duration:dur(300)});
+        tl.add({targets:dog,x:'-=12',duration:dur(120),yoyo:true,repeat:1});
+        tl.add({targets:dog,x:'+=24',duration:dur(120),yoyo:true,repeat:1});
+        tl.add({targets:dog,x:ms.x,y:ms.y,duration:dur(400)});
+        tl.setCallback('onUpdate',()=>{dog.setScale(scaleForY(dog.y)*0.5);});
+        tl.setCallback('onComplete',()=>{dog.excited=false;});
+        tl.play();
+        return;
+      }
+    }
     if(dogDist <= radius){
-      const others=[...queue,...wanderers].filter(c=>c!==owner&&c.sprite);
       for(const o of others){
         const d=Phaser.Math.Distance.Between(dog.x,dog.y,o.sprite.x,o.sprite.y);
         if(d<near){
@@ -358,7 +376,8 @@ export function setupGame(){
     }
     if(targetY < DOG_MIN_Y) targetY = DOG_MIN_Y;
     const distance = Phaser.Math.Distance.Between(dog.x,dog.y,targetX,targetY);
-    const duration = dur(Math.max(300,(distance/DOG_SPEED)*1000));
+    const speed = dogDist>DOG_FAST_DISTANCE?DOG_SPEED*1.5:DOG_SPEED;
+    const duration = dur(Math.max(200,(distance/speed)*1000));
     this.tweens.add({targets:dog,x:targetX,y:targetY,duration,
       onUpdate:(tw,t)=>{t.setScale(scaleForY(t.y)*0.5);} });
   }
@@ -1136,7 +1155,15 @@ export function setupGame(){
         }
         if(current.dog){
           if(current.dog.followEvent) current.dog.followEvent.remove(false);
-          current.dog.destroy();
+          if(typeof current.exitX==='number' && typeof current.exitY==='number'){
+            const ex=current.exitX, ey=current.exitY;
+            const dist=Phaser.Math.Distance.Between(current.dog.x,current.dog.y,ex,ey);
+            this.tweens.add({targets:current.dog,x:ex,y:ey,duration:dur((dist/DOG_SPEED)*1000),
+              onUpdate:(tw,t)=>{t.setScale(scaleForY(t.y)*0.5);},
+              onComplete:()=>current.dog.destroy()});
+          } else {
+            current.dog.destroy();
+          }
         }
         current.sprite.destroy();
         if(money<=0){
@@ -1172,6 +1199,8 @@ export function setupGame(){
         const distanceX = Phaser.Math.Between(80, 160) * dir;
         const amp = Phaser.Math.Between(10, 25);
         const freq = Phaser.Math.Between(2, 4);
+        current.exitX = startX + distanceX;
+        current.exitY = targetY;
         this.tweens.add({
           targets: sprite,
           y: targetY,
@@ -1191,6 +1220,8 @@ export function setupGame(){
         const distanceX=Phaser.Math.Between(80,160)*dir;
         const amp=Phaser.Math.Between(10,25);
         const freq=Phaser.Math.Between(2,4);
+        current.exitX = startX + distanceX;
+        current.exitY = targetY;
         this.tweens.add({targets:sprite,y:targetY,duration:dur(6000),callbackScope:this,
           onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+p*distanceX+Math.sin(p*Math.PI*freq)*amp; t.setScale(scaleForY(t.y));},
           onComplete:exit});

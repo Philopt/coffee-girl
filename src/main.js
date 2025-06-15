@@ -575,10 +575,9 @@
     dialogCoins=this.add.text(240,440,'',{font:'20px sans-serif',fill:'#000'})
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
 
-    dialogPriceLabel=this.add.text(240,436,'',{font:'14px sans-serif',fill:'#000',align:'center'})
-      .setOrigin(0.5).setVisible(false).setDepth(11);
-    dialogPriceValue=this.add.text(240,460,'',{font:'32px sans-serif',fill:'#000'})
-      .setOrigin(0.5).setVisible(false).setDepth(11);
+    // price label/value are part of dialogPriceContainer and should not
+    // also be drawn inside the main dialog. Remove the duplicate texts that
+    // caused the total cost to appear in the dialog bubble.
 
 
     // helper to create a rounded rectangle button with consistent sizing

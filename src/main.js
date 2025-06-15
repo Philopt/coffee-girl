@@ -84,11 +84,24 @@ export let Assets, Scene, Customers, config;
       for(let i=0;i<count;i++){
         const item=scene.add.text(fromX,fromY,emoji,{font:`${fontSize}px sans-serif`,fill:color})
           .setOrigin(0.5)
-          .setDepth(container.depth+2);
+          .setDepth(container.depth+2)
+          .setScale(0.2);
         container.add(item);
+        item.x = fromX - container.x;
+        item.y = fromY - container.y;
         const dx=Phaser.Math.Between(-container.width/2+10,container.width/2-10);
         const dy=Phaser.Math.Between(-container.height/2+10,container.height/2-10);
-        scene.tweens.add({targets:item,x:dx,y:dy,angle:Phaser.Math.Between(-180,180),duration:dur(400),ease:'Cubic.easeOut'});
+        scene.tweens.add({
+          targets:item,
+          x:dx,
+          y:dy,
+          scale:1,
+          duration:dur(300),
+          ease:'Sine.easeOut',
+          onComplete:()=>{
+            scene.tweens.add({targets:item,y:dy-6,duration:dur(80),yoyo:true});
+          }
+        });
         items.push(item);
       }
     };
@@ -996,15 +1009,6 @@ export let Assets, Scene, Customers, config;
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
 
-      if(this.add && this.add.text){
-        const cha = this.add.text(ticket.x, ticket.y - 30, '💸',
-            {font:'28px sans-serif',fill:'#0f0'})
-          .setOrigin(0.5)
-          .setDepth(ticket.depth+2)
-          .setAlpha(0);
-        this.tweens.add({targets:cha,alpha:1,y:cha.y-10,duration:dur(200),yoyo:true,
-          onComplete:()=>cha.destroy()});
-      }
 
       const flashPrice=()=>{
         const oy=t.y;

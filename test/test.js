@@ -276,7 +276,7 @@ function testShowDialogButtons() {
     destroy() { this.destroyed = true; },
   });
   const context = {
-    dialogBg: Object.assign(makeObj(), { width: 460, height: 120, x: 240, y: 460 }),
+    dialogBg: Object.assign(makeObj(), { width: 360, height: 120, x: 240, y: 460 }),
     dialogText: makeObj(),
     dialogCoins: makeObj(),
     dialogPriceBox: makeObj(),

@@ -6,7 +6,8 @@ export let Assets, Scene, Customers, config;
 export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;
 export const GameState = {};
 const DOG_MIN_Y = ORDER_Y + 20;
-const DOG_SPEED = 80; // pixels per second limit for dog movement
+const DOG_SPEED = 120; // base movement speed for the dog
+const DOG_FAST_DISTANCE = 160; // accelerate when farther than this from owner
 export function setupGame(){
   if (typeof debugLog === 'function') debugLog('main.js loaded');
   let initCalled = false;
@@ -166,6 +167,7 @@ export function setupGame(){
   }
 
   const colorCache = {};
+  const colorRankCache = {};
 
   function getDominantColor(scene, key){
     if(colorCache[key]) return colorCache[key];
@@ -190,6 +192,29 @@ export function setupGame(){
     }
     colorCache[key]=color;
     return color;
+  }
+
+  function getNthMostCommonColor(scene, key, n=1){
+    if(colorRankCache[key] && colorRankCache[key][n-1] !== undefined){
+      return colorRankCache[key][n-1];
+    }
+    const tex = scene.textures.get(key);
+    if(!tex) return 0xffffff;
+    const src = tex.getSourceImage();
+    const cv = scene.textures.createCanvas('tmp-'+key, src.width, src.height);
+    cv.draw(0,0,src);
+    cv.update();
+    const data = cv.context.getImageData(0,0,src.width,src.height).data;
+    scene.textures.remove('tmp-'+key);
+    const counts = {};
+    for(let i=0;i<data.length;i+=4){
+      if(data[i+3]===0) continue;
+      const rgb=(data[i]<<16)|(data[i+1]<<8)|data[i+2];
+      counts[rgb]=(counts[rgb]||0)+1;
+    }
+    const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(e=>+e[0]);
+    colorRankCache[key] = sorted;
+    return sorted[n-1] !== undefined ? sorted[n-1] : 0xffffff;
   }
 
   function tintWithWhite(color, amount=0.2){
@@ -343,11 +368,26 @@ export function setupGame(){
     const near = 60;
     let targetX = ms.x, targetY = ms.y;
 
-    if(dog.restUntil && this.time.now < dog.restUntil && dogDist <= radius){
-      return;
+    const others=[...queue,...wanderers].filter(c=>c!==owner&&c.sprite);
+    if(!dog.excited){
+      const seen=others.find(o=>Phaser.Math.Distance.Between(dog.x,dog.y,o.sprite.x,o.sprite.y)<80);
+      if(seen){
+        dog.excited=true;
+        const s=seen.sprite;
+        const tl=this.tweens.createTimeline();
+        tl.add({targets:dog,y:'-=15',duration:dur(100),yoyo:true,repeat:1});
+        tl.add({targets:dog,x:s.x,y:s.y,duration:dur(300)});
+        tl.add({targets:dog,x:'-=12',duration:dur(120),yoyo:true,repeat:1});
+        tl.add({targets:dog,x:'+=24',duration:dur(120),yoyo:true,repeat:1});
+        tl.add({targets:dog,x:ms.x,y:ms.y,duration:dur(400)});
+        tl.setCallback('onUpdate',()=>{dog.setScale(scaleForY(dog.y)*0.5);});
+        tl.setCallback('onComplete',()=>{dog.excited=false;});
+        tl.play();
+        return;
+      }
+
     }
     if(dogDist <= radius){
-      const others=[...queue,...wanderers].filter(c=>c!==owner&&c.sprite);
       for(const o of others){
         const d=Phaser.Math.Distance.Between(dog.x,dog.y,o.sprite.x,o.sprite.y);
         if(d<near){
@@ -371,7 +411,8 @@ export function setupGame(){
     }
     if(targetY < DOG_MIN_Y) targetY = DOG_MIN_Y;
     const distance = Phaser.Math.Distance.Between(dog.x,dog.y,targetX,targetY);
-    const duration = dur(Math.max(300,(distance/DOG_SPEED)*1000));
+    const speed = dogDist>DOG_FAST_DISTANCE?DOG_SPEED*1.5:DOG_SPEED;
+    const duration = dur(Math.max(200,(distance/speed)*1000));
     this.tweens.add({targets:dog,x:targetX,y:targetY,duration,
       onUpdate:(tw,t)=>{t.setScale(scaleForY(t.y)*0.5); t.setDepth(3+t.y*0.006);} });
   }
@@ -620,7 +661,7 @@ export function setupGame(){
         }
         scheduleNextSpawn(scene);
       }});
-    intro.add({targets:truck,x:240,scale:0.924,duration:dur(1500)});
+    intro.add({targets:truck,x:240,scale:0.924,duration:dur(1500),ease:'Sine.easeOut'});
     intro.add({targets:girl,x:240,duration:dur(1200)},0);
     intro.add({targets:girl,y:292,duration:dur(300),onStart:()=>girl.setVisible(true)},1200);
     intro.play();
@@ -836,7 +877,12 @@ export function setupGame(){
         .setDepth(3)
         .setAngle(-90);
       c.dog=dog;
-      dog.restUntil=this.time.now+Phaser.Math.Between(5000,10000);
+
+      if(typeof getNthMostCommonColor==='function'){
+        const tint=getNthMostCommonColor(this,k,3);
+        dog.setTint(tint);
+      }
+
       dog.followEvent=this.time.addEvent({
         delay:dur(Phaser.Math.Between(800,1200)),
         loop:true,
@@ -1153,7 +1199,15 @@ export function setupGame(){
         }
         if(current.dog){
           if(current.dog.followEvent) current.dog.followEvent.remove(false);
-          current.dog.destroy();
+          if(typeof current.exitX==='number' && typeof current.exitY==='number'){
+            const ex=current.exitX, ey=current.exitY;
+            const dist=Phaser.Math.Distance.Between(current.dog.x,current.dog.y,ex,ey);
+            this.tweens.add({targets:current.dog,x:ex,y:ey,duration:dur((dist/DOG_SPEED)*1000),
+              onUpdate:(tw,t)=>{t.setScale(scaleForY(t.y)*0.5);},
+              onComplete:()=>current.dog.destroy()});
+          } else {
+            current.dog.destroy();
+          }
         }
         current.sprite.destroy();
         if(money<=0){
@@ -1189,6 +1243,8 @@ export function setupGame(){
         const distanceX = Phaser.Math.Between(80, 160) * dir;
         const amp = Phaser.Math.Between(10, 25);
         const freq = Phaser.Math.Between(2, 4);
+        current.exitX = startX + distanceX;
+        current.exitY = targetY;
         this.tweens.add({
           targets: sprite,
           y: targetY,
@@ -1208,6 +1264,8 @@ export function setupGame(){
         const distanceX=Phaser.Math.Between(80,160)*dir;
         const amp=Phaser.Math.Between(10,25);
         const freq=Phaser.Math.Between(2,4);
+        current.exitX = startX + distanceX;
+        current.exitY = targetY;
         this.tweens.add({targets:sprite,y:targetY,duration:dur(6000),callbackScope:this,
           onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+p*distanceX+Math.sin(p*Math.PI*freq)*amp; t.setScale(scaleForY(t.y));},
           onComplete:exit});

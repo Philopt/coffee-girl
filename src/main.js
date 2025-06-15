@@ -4,10 +4,10 @@ import { MENU, SPAWN_DELAY, SPAWN_VARIANCE, QUEUE_SPACING, ORDER_X, ORDER_Y, QUE
 import { baseConfig } from "./scene.js";
 export let Assets, Scene, Customers, config;
 (() => {
-  debugLog('main.js loaded');
+  if (typeof debugLog === 'function') debugLog('main.js loaded');
   let initCalled = false;
   function init(){
-    debugLog('init() executing');
+    if (typeof debugLog === 'function') debugLog('init() executing');
     initCalled = true;
     new Phaser.Game(config);
   }
@@ -19,7 +19,6 @@ export let Assets, Scene, Customers, config;
   let spawnTimer = null;
   let falconActive = false;
   let loveLevel=1;
-
 
   const keys=[];
   const requiredAssets=['bg','truck','girl','lady_falcon','falcon_end','revolt_end'];
@@ -340,11 +339,9 @@ export let Assets, Scene, Customers, config;
   }
 
 
-
-
   function showStartScreen(scene){
     scene = scene || this;
-    debugLog('showStartScreen called');
+    if (typeof debugLog === 'function') debugLog('showStartScreen called');
     // reset any pending timers or bubbles from a previous session
     startMsgTimers.forEach(t => t.remove(false));
     startMsgTimers = [];
@@ -431,7 +428,7 @@ export let Assets, Scene, Customers, config;
         }
       }
       startZone.on('pointerdown',()=>{
-        debugLog('start button clicked');
+        if (typeof debugLog === 'function') debugLog('start button clicked');
         startMsgTimers.forEach(t=>t.remove(false));
         startMsgTimers=[];
         startMsgBubbles=[];
@@ -451,15 +448,19 @@ export let Assets, Scene, Customers, config;
       console.warn('playIntro skipped: missing truck or girl');
       return;
     }
-    debugLog('playIntro starting');
+    if (typeof debugLog === 'function') debugLog('playIntro starting');
     scene = scene || this;
     if(!truck || !girl) return;
     truck.setPosition(560,245);
     girl.setPosition(560,260).setVisible(false);
     const intro=scene.tweens.createTimeline({callbackScope:scene,
       onComplete:()=>{
-        debugLog('intro finished');
-        debugLog('playIntro finished');
+
+        if (typeof debugLog === 'function') {
+          debugLog('intro finished');
+          debugLog('playIntro finished');
+        }
+
         spawnCustomer.call(scene);
         scheduleNextSpawn(scene);
       }});

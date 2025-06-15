@@ -1,6 +1,5 @@
+import { debugLog } from './debug.js';
 (() => {
-  const DEBUG = false;
-  const debugLog = (...args) => { if (DEBUG) console.log(...args); };
   if (typeof debugLog === 'function') debugLog('main.js loaded');
   let initCalled = false;
   function init(){
@@ -167,8 +166,6 @@
 
           const w = btn.width !== undefined ? btn.width : (btn.displayWidth || 0);
           const h = btn.height !== undefined ? btn.height : (btn.displayHeight || 0);
-          const area = new Phaser.Geom.Rectangle(-w/2, -h/2, w, h);
-
           const area = new Phaser.Geom.Rectangle(-w/2, -h/2, w, h);
           btn.myHitArea = area;
 

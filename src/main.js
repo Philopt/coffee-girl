@@ -15,6 +15,7 @@ export let Assets, Scene, Customers, config;
 
 
   let money=10.00, love=10, gameOver=false;
+  let heartBroken=false;
   let queue=[], activeCustomer=null, wanderers=[];
   let spawnTimer = null;
   let falconActive = false;
@@ -84,11 +85,24 @@ export let Assets, Scene, Customers, config;
       for(let i=0;i<count;i++){
         const item=scene.add.text(fromX,fromY,emoji,{font:`${fontSize}px sans-serif`,fill:color})
           .setOrigin(0.5)
-          .setDepth(container.depth+2);
+          .setDepth(container.depth+2)
+          .setScale(0.2);
         container.add(item);
+        item.x = fromX - container.x;
+        item.y = fromY - container.y;
         const dx=Phaser.Math.Between(-container.width/2+10,container.width/2-10);
         const dy=Phaser.Math.Between(-container.height/2+10,container.height/2-10);
-        scene.tweens.add({targets:item,x:dx,y:dy,angle:Phaser.Math.Between(-180,180),duration:dur(400),ease:'Cubic.easeOut'});
+        scene.tweens.add({
+          targets:item,
+          x:dx,
+          y:dy,
+          scale:1,
+          duration:dur(300),
+          ease:'Sine.easeOut',
+          onComplete:()=>{
+            scene.tweens.add({targets:item,y:dy-6,duration:dur(80),yoyo:true});
+          }
+        });
         items.push(item);
       }
     };
@@ -104,6 +118,9 @@ export let Assets, Scene, Customers, config;
     const by = up ? -8 : 8;
     const originalY = obj.y;
     const moveDur = isLove && !up ? 160 : 120;
+    if(isLove){
+      if(up) heartBroken=false; else heartBroken=true;
+    }
     scene.tweens.add({targets:obj, y:originalY+by, duration:dur(moveDur), yoyo:true});
     let on=true;
     const flashes = isLove && !up ? 4 : 2;
@@ -113,18 +130,15 @@ export let Assets, Scene, Customers, config;
       delay:dur(flashDelay),
       callback:()=>{
         obj.setColor(on?color:'#fff');
-        if(isLove && !up){
-          obj.setText((on?'💔':'❤️')+' '+love);
+        if(isLove){
+          obj.setText((heartBroken?'💔':'❤️')+' '+love);
         }
         on=!on;
       }
     });
     scene.time.delayedCall(dur(flashDelay)*(flashes+1)+dur(10),()=>{
       obj.setColor('#fff');
-      if(isLove && !up){
-        obj.setText('❤️ '+love);
-        // removed wobble animation for the love counter
-      }
+      if(isLove && typeof updateLoveDisplay==='function') updateLoveDisplay();
     },[],scene);
   }
 
@@ -249,6 +263,12 @@ export let Assets, Scene, Customers, config;
   let phoneContainer=null;
   let startMsgTimers=[];
   let startMsgBubbles=[];
+
+  function updateLoveDisplay(){
+    if(loveText){
+      loveText.setText((heartBroken?'💔':'❤️')+' '+love);
+    }
+  }
 
 
   function calcLoveLevel(v){
@@ -551,6 +571,7 @@ export let Assets, Scene, Customers, config;
     // HUD
     moneyText=this.add.text(20,20,'🪙 '+receipt(money),{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
     loveText=this.add.text(20,50,'❤️ '+love,{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
+    updateLoveDisplay();
     queueLevelText=this.add.text(304,316,'Lv. '+loveLevel,{font:'16px sans-serif',fill:'#000'})
       .setOrigin(0.5).setDepth(1);
     updateLevelDisplay();
@@ -758,16 +779,6 @@ export let Assets, Scene, Customers, config;
     const wantLine=(c.orders.length===1 && c.orders[0].qty===1)
       ? `I want ${articleFor(c.orders[0].req)} ${c.orders[0].req}`
       : `I want ${itemStr}`;
-
-    if(activeBubble){
-      activeBubble.destroy();
-      activeBubble=null;
-    }
-    const bubble=this.add.text(c.sprite.x,c.sprite.y-50,'💬',{font:'32px sans-serif',fill:'#000'})
-      .setOrigin(0.5).setDepth(11);
-    activeBubble=bubble;
-    this.tweens.add({targets:bubble,y:c.sprite.y-70,alpha:0,duration:dur(600),onComplete:()=>{bubble.destroy(); activeBubble=null;}});
-
     dialogText
       .setOrigin(0.5)
       .setStyle({fontSize:'24px'})
@@ -834,16 +845,16 @@ export let Assets, Scene, Customers, config;
 
     const priceTargetXDefault = dialogBg.x + dialogBg.width/2 - 40;
     const priceTargetY = dialogBg.y - dialogBg.height;
-    const ticketW = dialogPriceBox.width;
+    const ticketW = (typeof dialogPriceBox!=='undefined' && dialogPriceBox)? dialogPriceBox.width : 120;
     const ticketOffset = ticketW/2 + 10;
     const girlRight = (typeof girl !== 'undefined' && girl) ?
       girl.x + girl.displayWidth/2 : dialogBg.x;
     const minX = girlRight + ticketOffset;
     const priceTargetX = Math.max(priceTargetXDefault, minX);
-    const girlX = minX;
-    const girlY = (typeof girl !== 'undefined' && girl) ? girl.y - 20 : dialogBg.y;
+    const startX = (typeof girl !== 'undefined' && girl) ? girl.x : dialogBg.x;
+    const startY = (typeof girl !== 'undefined' && girl) ? girl.y : dialogBg.y;
     dialogPriceContainer
-      .setPosition(girlX, girlY)
+      .setPosition(startX, startY)
       .setScale(0.2)
       .setVisible(false);
       if(dialogPriceBox){
@@ -873,6 +884,7 @@ export let Assets, Scene, Customers, config;
             y:priceTargetY,
             scale:1,
             duration:dur(300),
+
             ease:'Sine.easeOut',
             onComplete:()=>{
               if(typeof fadeInButtons==='function'){
@@ -889,6 +901,7 @@ export let Assets, Scene, Customers, config;
                 if(btnGive.input) btnGive.input.enabled = true;
               }
             }
+
           });
         };
         if(this.time && this.time.delayedCall){
@@ -901,6 +914,12 @@ export let Assets, Scene, Customers, config;
 
     btnRef.setVisible(true);
     tipText.setVisible(false);
+    btnSell.setVisible(canAfford);
+    if (btnSell.input) btnSell.input.enabled = canAfford;
+    btnGive.setVisible(true);
+    if (btnGive.input) btnGive.input.enabled = true;
+    btnRef.setVisible(true);
+    if (btnRef.input) btnRef.input.enabled = true;
   }
 
   function clearDialog(keepPrice=false){
@@ -985,32 +1004,29 @@ export let Assets, Scene, Customers, config;
     activeCustomer=null;
 
     const finish=()=>{
-      const targets=[current.sprite];
-      targets.forEach(t=>t.setDepth(5));
-      this.tweens.add({ targets: targets, x: (type==='refuse'? -50:520), alpha:0, duration:dur(WALK_OFF_BASE), callbackScope:this,
-        onComplete:()=>{
-          current.sprite.destroy();
-          queue.shift();
-          moveQueueForward.call(this);
-          if(money<=0){
-            showFalconAttack.call(this,()=>{
-              showEnd.call(this,'Game Over\nYou lost all the money.\nLady Falcon reclaims the coffee truck.');
-            });
-            return;
-          }
-          if(love<=0){
-            showCustomerRevolt.call(this,()=>{
-              showEnd.call(this,'Game Over\nThe Customers Revolt!\n(and they stole your truck)');
-            });
-            return;
-          }
-          if(money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
-          if(love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
-          scheduleNextSpawn(this);
-          servedCount++;
-          updateSideC.call(this);
+      const afterWalk=()=>{
+        current.sprite.destroy();
+        queue.shift();
+        moveQueueForward.call(this);
+        if(money<=0){
+          showFalconAttack.call(this,()=>{
+            showEnd.call(this,'Game Over\nYou lost all the money.\nLady Falcon reclaims the coffee truck.');
+          });
+          return;
         }
-      });
+        if(love<=0){
+          showCustomerRevolt.call(this,()=>{
+            showEnd.call(this,'Game Over\nThe Customers Revolt!\n(and they stole your truck)');
+          });
+          return;
+        }
+        if(money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
+        if(love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
+        scheduleNextSpawn(this);
+        servedCount++;
+        updateSideC.call(this);
+      };
+      leaveCustomer.call(this, current.sprite, type==='refuse', afterWalk);
     };
 
     // animated report using timelines
@@ -1022,6 +1038,9 @@ export let Assets, Scene, Customers, config;
     if(type==='sell'){
       const ticket=dialogPriceContainer;
       const t=dialogPriceValue;
+
+    const ticketW = (typeof dialogPriceBox!=='undefined' && dialogPriceBox)? dialogPriceBox.width : 120;
+
       const destX=moneyText.x+moneyText.width-15;
       const destY=moneyText.y+10;
       t.setVisible(true);
@@ -1046,15 +1065,6 @@ export let Assets, Scene, Customers, config;
       if(paidStamp.setMask && ticketMask) paidStamp.setMask(ticketMask);
       this.tweens.add({targets:paidStamp,alpha:0.6,duration:dur(200)});
 
-      if(this.add && this.add.text){
-        const cha = this.add.text(ticket.x, ticket.y - 30, '💸',
-            {font:'28px sans-serif',fill:'#0f0'})
-          .setOrigin(0.5)
-          .setDepth(ticket.depth+2)
-          .setAlpha(0);
-        this.tweens.add({targets:cha,alpha:1,y:cha.y-10,duration:dur(200),yoyo:true,
-          onComplete:()=>cha.destroy()});
-      }
 
       const flashPrice=()=>{
         const oy=t.y;
@@ -1231,6 +1241,9 @@ export let Assets, Scene, Customers, config;
     const count=Math.abs(delta);
     const emoji=delta>0?'❤️':'😠';
 
+    if(delta>0) heartBroken=false; else if(delta<0) heartBroken=true;
+    if(typeof updateLoveDisplay==='function') updateLoveDisplay();
+
     const baseX=customer.x - 20*(count-1)/2;
     const baseY=customer.y + 40;
 
@@ -1263,7 +1276,7 @@ export let Assets, Scene, Customers, config;
       tl.add({targets:h,x:loveText.x,y:loveText.y,scaleX:0,scaleY:1.2,duration:dur(125)});
       tl.add({targets:h,scaleX:1,alpha:0,duration:dur(125),onComplete:()=>{
             love+=delta>0?1:-1;
-            loveText.setText('❤️ '+love);
+            if(typeof updateLoveDisplay==='function') updateLoveDisplay();
             updateLevelDisplay();
             h.destroy();
             popOne(idx+1);
@@ -1271,6 +1284,56 @@ export let Assets, Scene, Customers, config;
       tl.play();
     };
     this.time.delayedCall(dur(400),()=>popOne(0),[],this);
+  }
+
+  function adjustLeavingDepth(sprite){
+    let d=5;
+    queue.forEach(c=>{
+      if(c.sprite && sprite.y < c.sprite.y - 16) d=4;
+    });
+    wanderers.forEach(c=>{
+      if(c.sprite && sprite.y < c.sprite.y - 8) d=4;
+    });
+    sprite.setDepth(d);
+  }
+
+  function leaveCustomer(sprite, angry, cb){
+    const scene=this;
+    adjustLeavingDepth(sprite);
+    const dir=Phaser.Math.Between(0,1)?1:-1;
+    const destX=dir===1?520:-40;
+    const destY=Phaser.Math.Between(WANDER_TOP,WANDER_BOTTOM);
+    const emoji=angry?'😠':'☕';
+    const mood=scene.add.text(sprite.x, sprite.y-30, emoji,{font:'24px sans-serif',fill:'#fff'})
+      .setOrigin(0.5).setDepth(sprite.depth+1);
+    const amp=angry?4:10;
+    const freq=angry?6:3;
+    const durBase=angry?WALK_OFF_BASE:WALK_OFF_BASE*1.2;
+    const startY=sprite.y;
+    const main=scene.tweens.add({
+      targets:sprite,
+      x:destX,
+      duration:dur(durBase),
+      onUpdate:(tw,t)=>{
+        const p=tw.progress;
+        t.y=Phaser.Math.Linear(startY,destY,p)+Math.sin(p*Math.PI*freq)*amp;
+        mood.setPosition(t.x, t.y-30);
+        adjustLeavingDepth(t);
+      },
+      onComplete:()=>{ mood.destroy(); if(cb) cb(); }
+    });
+    if(angry){
+      main.pause();
+      scene.tweens.add({
+        targets:sprite,
+        y:'+=12',
+        duration:dur(80),
+        yoyo:true,
+        repeat:2,
+        onUpdate:()=>{ mood.setPosition(sprite.x, sprite.y-30); },
+        onComplete:()=>{ main.play(); }
+      });
+    }
   }
 
   function showFalconAttack(cb){
@@ -1531,7 +1594,8 @@ export let Assets, Scene, Customers, config;
     if(lossStamp.clearMask) lossStamp.clearMask(true);
     money=10.00; love=10;
     moneyText.setText('🪙 '+receipt(money));
-    loveText.setText('❤️ '+love);
+    heartBroken=false;
+    updateLoveDisplay();
     updateLevelDisplay();
     if(activeCustomer){
       activeCustomer.sprite.destroy();

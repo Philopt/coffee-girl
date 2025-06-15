@@ -966,20 +966,24 @@ export let Assets, Scene, Customers, config;
       moveQueueForward.call(this);
 
       if(type==='refuse'){
-        const tl=this.tweens.createTimeline({callbackScope:this,onComplete:exit});
         const dir = sprite.x < girl.x ? -1 : 1;
-        const startX=sprite.x;
-        const startY=sprite.y;
-        tl.add({targets:sprite,
-                x:startX+dir*40,
-                y:startY-30,
-                duration:dur(200),
-                yoyo:true});
-        tl.add({targets:sprite,x:startX+dir*80,duration:dur(300)});
-        tl.add({targets:sprite,x:startX-dir*40,duration:dur(300)});
-        const destX = dir===-1 ? -50 : 520;
-        tl.add({targets:sprite,x:destX,y:startY,alpha:0,duration:dur(WALK_OFF_BASE*1.2)});
-        tl.play();
+        const startX = sprite.x;
+        const startY = sprite.y;
+        const targetY = 700;
+        const distanceX = Phaser.Math.Between(80, 160) * dir;
+        const amp = Phaser.Math.Between(10, 25);
+        const freq = Phaser.Math.Between(2, 4);
+        this.tweens.add({
+          targets: sprite,
+          y: targetY,
+          duration: dur(WALK_OFF_BASE*1.2),
+          callbackScope: this,
+          onUpdate: (tw, t) => {
+            const p = tw.progress;
+            t.x = startX + p * distanceX + Math.sin(p * Math.PI * freq) * amp;
+          },
+          onComplete: exit
+        });
       }else{
         const dir = Phaser.Math.Between(0,1)?1:-1;
         const startX=sprite.x;

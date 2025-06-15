@@ -164,7 +164,7 @@ function testShowStartScreen() {
   const context = { Phaser: { Geom: { Rectangle: RectStub } } };
   vm.createContext(context);
   context.fn = null;
-  vm.runInContext('let startOverlay,startButton;const playIntro=()=>{};\n' + match[0] + '\nfn=showStartScreen;', context);
+  vm.runInContext('let startOverlay,startButton,startMsgTimers=[],startMsgBubbles=[];const playIntro=()=>{};\n' + match[0] + '\nfn=showStartScreen;', context);
   const showStartScreen = context.fn;
   const calls = { rects: 0, text: null, container: null };
   const scene = {
@@ -213,7 +213,7 @@ function testStartButtonPlaysIntro() {
   vm.createContext(context);
   context.fnStart = null;
   context.fnIntro = null;
-  vm.runInContext('var startOverlay,startButton,truck,girl; const dur=v=>v;\n' +
+  vm.runInContext('var startOverlay,startButton,truck,girl,startMsgTimers=[],startMsgBubbles=[]; const dur=v=>v;\n' +
     introMatch[0] + '\n' + startMatch[0] + '\nfnStart=showStartScreen; fnIntro=playIntro;', context);
   const showStartScreen = context.fnStart;
   const realPlayIntro = context.fnIntro;

@@ -346,8 +346,11 @@
   function showStartScreen(scene){
     scene = scene || this;
     if (typeof debugLog === 'function') debugLog('showStartScreen called');
-    if (typeof startMsgTimers === 'undefined') startMsgTimers = [];
-    if (typeof startMsgBubbles === 'undefined') startMsgBubbles = [];
+    // reset any pending timers or bubbles from a previous session
+    startMsgTimers.forEach(t => t.remove(false));
+    startMsgTimers = [];
+    startMsgBubbles.forEach(b => b.destroy());
+    startMsgBubbles = [];
     startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.5)
       .setDepth(14);
 
@@ -395,11 +398,7 @@
       .setDepth(15)
       .setInteractive();
 
-    // remove any prior timers or bubbles if restartGame triggered this screen
-    startMsgTimers.forEach(t=>t.remove(false));
-    startMsgTimers=[];
-    startMsgBubbles.forEach(b=>b.destroy());
-    startMsgBubbles=[];
+    // track where to place the first start message
     let startMsgY = -phoneH/2 + 20;
 
     const addStartMessage=(text)=>{

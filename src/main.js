@@ -4,10 +4,10 @@ import { MENU, SPAWN_DELAY, SPAWN_VARIANCE, QUEUE_SPACING, ORDER_X, ORDER_Y, QUE
 import { baseConfig } from "./scene.js";
 export let Assets, Scene, Customers, config;
 (() => {
-  if (typeof debugLog === 'function') debugLog('main.js loaded');
+  debugLog('main.js loaded');
   let initCalled = false;
   function init(){
-    if (typeof debugLog === 'function') debugLog('init() executing');
+    debugLog('init() executing');
     initCalled = true;
     new Phaser.Game(config);
   }
@@ -427,7 +427,7 @@ export let Assets, Scene, Customers, config;
 
   function showStartScreen(scene){
     scene = scene || this;
-    if (typeof debugLog === 'function') debugLog('showStartScreen called');
+    debugLog('showStartScreen called');
     // reset any pending timers or bubbles from a previous session
     startMsgTimers.forEach(t => t.remove(false));
     startMsgTimers = [];
@@ -514,7 +514,7 @@ export let Assets, Scene, Customers, config;
         }
       }
       startZone.on('pointerdown',()=>{
-        if (typeof debugLog === 'function') debugLog('start button clicked');
+        debugLog('start button clicked');
         startMsgTimers.forEach(t=>t.remove(false));
         startMsgTimers=[];
         startMsgBubbles=[];
@@ -534,15 +534,15 @@ export let Assets, Scene, Customers, config;
       console.warn('playIntro skipped: missing truck or girl');
       return;
     }
-    if (typeof debugLog === 'function') debugLog('playIntro starting');
+    debugLog('playIntro starting');
     scene = scene || this;
     if(!truck || !girl) return;
     truck.setPosition(560,245);
     girl.setPosition(560,260).setVisible(false);
     const intro=scene.tweens.createTimeline({callbackScope:scene,
       onComplete:()=>{
-        if (typeof debugLog === 'function') debugLog('intro finished');
-        if (typeof debugLog === 'function') debugLog('playIntro finished');
+        debugLog('intro finished');
+        debugLog('playIntro finished');
         spawnCustomer.call(scene);
         scheduleNextSpawn(scene);
       }});

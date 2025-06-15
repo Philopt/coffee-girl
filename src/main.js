@@ -1,6 +1,6 @@
 import { debugLog } from './debug.js';
 import { dur, scaleForY, articleFor, flashMoney, START_PHONE_W, START_PHONE_H, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_Y, DIALOG_Y } from "./ui.js";
-import { MENU, SPAWN_DELAY, SPAWN_VARIANCE, QUEUE_SPACING, ORDER_X, ORDER_Y, QUEUE_X, QUEUE_OFFSET, QUEUE_Y, WANDER_TOP, WANDER_BOTTOM, BASE_WAITERS, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel, maxWanderers as customersMaxWanderers, queueLimit as customersQueueLimit } from "./customers.js";
+import { MENU, SPAWN_DELAY, SPAWN_VARIANCE, QUEUE_SPACING, ORDER_X, ORDER_Y, QUEUE_X, QUEUE_OFFSET, QUEUE_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel, maxWanderers as customersMaxWanderers, queueLimit as customersQueueLimit } from "./customers.js";
 import { baseConfig } from "./scene.js";
 export let Assets, Scene, Customers, config;
 (() => {
@@ -79,24 +79,6 @@ export let Assets, Scene, Customers, config;
     },[],scene);
   }
 
-  function scatterMoney(scene, container, dollars, tip, fromX=container.x, fromY=container.y){
-    const items=[];
-    const addMoney=(emoji,fontSize,count,color)=>{
-      for(let i=0;i<count;i++){
-        const item=scene.add.text(fromX,fromY,emoji,{font:`${fontSize}px sans-serif`,fill:color})
-          .setOrigin(0.5)
-          .setDepth(container.depth+2);
-        container.add(item);
-        const dx=Phaser.Math.Between(-container.width/2+10,container.width/2-10);
-        const dy=Phaser.Math.Between(-container.height/2+10,container.height/2-10);
-        scene.tweens.add({targets:item,x:dx,y:dy,angle:Phaser.Math.Between(-180,180),duration:dur(400),ease:'Cubic.easeOut'});
-        items.push(item);
-      }
-    };
-    addMoney('💵',22,Math.min(10,Math.floor(dollars)),'#0f0');
-    if(tip>0) addMoney('🪙',16,2,'#ff0');
-    return items;
-  }
 
   function animateStatChange(obj, scene, delta, isLove=false){
     if(delta===0) return;

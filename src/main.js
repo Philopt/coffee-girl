@@ -176,6 +176,7 @@
   let moneyText, loveText, queueLevelText;
   let dialogBg, dialogText, dialogCoins,
       dialogPriceLabel, dialogPriceValue, dialogPriceBox,
+      dialogPriceContainer,
       btnSell, btnGive, btnRef;
   let reportLine1, reportLine2, reportLine3, reportLine4, tipText;
   let paidStamp, lossStamp;
@@ -546,18 +547,21 @@
 
     dialogPriceBox=this.add.rectangle(0,0,120,80,0xffffff)
       .setStrokeStyle(2,0x000)
-      .setOrigin(0.5)
-      .setVisible(false)
-      .setDepth(10);
+      .setOrigin(0.5);
+
+    dialogPriceLabel=this.add.text(0,-20,'',{font:'14px sans-serif',fill:'#000',align:'center'})
+      .setOrigin(0.5);
+    dialogPriceValue=this.add.text(0,10,'',{font:'32px sans-serif',fill:'#000'})
+      .setOrigin(0.5);
+
+    dialogPriceContainer=this.add.container(0,0,[dialogPriceBox, dialogPriceLabel, dialogPriceValue])
+      .setDepth(11)
+      .setVisible(false);
 
     dialogText=this.add.text(240,440,'',{font:'20px sans-serif',fill:'#000',align:'center',wordWrap:{width:300}})
                      .setOrigin(0,0.5).setVisible(false).setDepth(11);
     dialogCoins=this.add.text(240,470,'',{font:'20px sans-serif',fill:'#000'})
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
-    dialogPriceLabel=this.add.text(240,456,'',{font:'14px sans-serif',fill:'#000',align:'center'})
-      .setOrigin(0.5).setVisible(false).setDepth(11);
-    dialogPriceValue=this.add.text(240,480,'',{font:'32px sans-serif',fill:'#000'})
-      .setOrigin(0.5).setVisible(false).setDepth(11);
 
     // helper to create a rounded rectangle button with consistent sizing
     const createButton=(x,label,iconChar,iconSize,color,handler)=>{
@@ -709,8 +713,9 @@
     }
     dialogBg.setVisible(true);
     drawDialogBubble(c.sprite.x, c.sprite.y);
-    dialogPriceBox
+    dialogPriceContainer
       .setPosition(dialogBg.x + dialogBg.width/2 - 60, dialogBg.y - dialogBg.height)
+      .setScale(1)
       .setVisible(true);
     const itemStr=c.orders.map(o=>{
       return o.qty>1 ? `${o.qty} ${o.req}` : o.req;
@@ -749,20 +754,14 @@
       .setText(coinLine)
       .setVisible(true);
     dialogPriceLabel
-      .setOrigin(0.5,0.5)
-      .setPosition(dialogPriceBox.x, dialogPriceBox.y - 20)
       .setStyle({fontSize:'14px'})
-      .setText('Total\nCost')
-      .setVisible(true);
+      .setText('Total\nCost');
     dialogPriceValue
-      .setOrigin(0.5,0.5)
-      .setPosition(dialogPriceBox.x, dialogPriceBox.y + 10)
       .setStyle({fontSize:'32px'})
       .setText(`$${totalCost.toFixed(2)}`)
       .setColor('#000')
       .setScale(1)
-      .setAlpha(1)
-      .setVisible(true);
+      .setAlpha(1);
     tipText.setVisible(false);
     btnSell.setVisible(canAfford);
     if (btnSell.input) btnSell.input.enabled = canAfford;
@@ -777,16 +776,13 @@
       dialogBg.setVisible(false);
       dialogText.setVisible(false);
       dialogCoins.setVisible(false);
-      dialogPriceBox.setVisible(false);
-      dialogPriceLabel.setVisible(false);
-      dialogPriceValue.setVisible(false).setColor('#000');
+      dialogPriceContainer.setVisible(false);
+      dialogPriceValue.setColor('#000');
     }else{
       dialogBg.setVisible(true);
       dialogText.setVisible(false);
       dialogCoins.setVisible(false);
-      dialogPriceBox.setVisible(true);
-      dialogPriceLabel.setVisible(true);
-      dialogPriceValue.setVisible(true);
+      dialogPriceContainer.setVisible(true);
     }
     btnSell.setVisible(false);
     if (btnSell.input) btnSell.input.enabled = false;
@@ -860,16 +856,19 @@
     const done=()=>{ if(--pending<=0) finish(); };
 
     if(type==='sell'){
+      const ticket=dialogPriceContainer;
       const t=dialogPriceValue;
       const destX=moneyText.x+moneyText.width-15;
       const destY=moneyText.y+10;
       t.setVisible(true);
       t.setDepth(paidStamp.depth+1);
       t.setText(receipt(totalCost));
+      const stampX=ticket.x + t.x * ticket.scaleX;
+      const stampY=ticket.y + t.y * ticket.scaleY;
       paidStamp
         .setText('PAID')
         .setScale(1.5)
-        .setPosition(t.x - 20, t.y)
+        .setPosition(stampX - 20, stampY)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
 
@@ -901,25 +900,28 @@
         tipText.setVisible(false);
         const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
             clearDialog();
-            t.setVisible(false);
+            ticket.setVisible(false);
             money=+(money+mD).toFixed(2);
             moneyText.setText('🪙 '+receipt(money));
             animateStatChange(moneyText, this, mD);
             done();
         }});
-        tl.add({targets:t,x:destX,y:destY,scale:0,alpha:0,duration:dur(400)});
+        tl.add({targets:ticket,x:destX,y:destY,scale:0,alpha:0,duration:dur(400)});
         tl.play();
       },[],this);
     } else if(type==='give'){
+      const ticket=dialogPriceContainer;
       const t=dialogPriceValue;
       const destX=moneyText.x+moneyText.width-15;
       const destY=moneyText.y+10;
       t.setVisible(true)
         .setDepth(lossStamp.depth+1);
+      const stampX=ticket.x + t.x * ticket.scaleX;
+      const stampY=ticket.y + t.y * ticket.scaleY;
       lossStamp
         .setText('LOSS')
         .setScale(1.5)
-        .setPosition(t.x - 20, t.y)
+        .setPosition(stampX - 20, stampY)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
       this.time.delayedCall(dur(1000),()=>{
@@ -928,14 +930,14 @@
         dialogText.setVisible(false);
         const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
             clearDialog();
-            t.setVisible(false);
+            ticket.setVisible(false);
             money=+(money+mD).toFixed(2);
             moneyText.setText('🪙 '+receipt(money));
             animateStatChange(moneyText, this, mD);
             done();
         }});
         flashMoney(t,this,'#f00');
-        tl.add({targets:t,x:destX,y:destY,scale:0,alpha:0,duration:dur(400)});
+        tl.add({targets:ticket,x:destX,y:destY,scale:0,alpha:0,duration:dur(400)});
         tl.play();
       },[],this);
     } else if(type!=='refuse'){

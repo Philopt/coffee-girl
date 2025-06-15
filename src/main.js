@@ -1,4 +1,8 @@
 import { debugLog } from './debug.js';
+import { dur, scaleForY, articleFor, flashMoney, START_PHONE_W, START_PHONE_H, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_Y } from "./ui.js";
+import { MENU, SPAWN_DELAY, SPAWN_VARIANCE, QUEUE_SPACING, ORDER_X, ORDER_Y, QUEUE_X, QUEUE_OFFSET, QUEUE_Y, WANDER_TOP, WANDER_BOTTOM, BASE_WAITERS, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel, maxWanderers as customersMaxWanderers, queueLimit as customersQueueLimit } from "./customers.js";
+import { baseConfig } from "./scene.js";
+export let Assets, Scene, Customers, config;
 (() => {
   if (typeof debugLog === 'function') debugLog('main.js loaded');
   let initCalled = false;
@@ -8,60 +12,6 @@ import { debugLog } from './debug.js';
     new Phaser.Game(config);
   }
   // full drink menu with prices
-  const MENU=[
-    {name:"Lady Roaster Drip", price:3.90},
-    {name:"Falcon's Crest", price:4.83},
-    {name:"Espresso", price:4.25},
-    {name:"Macchiato", price:5.00},
-    {name:"Petite Latte", price:5.75},
-    {name:"Cappuccino", price:6.23},
-    {name:"Latte", price:6.97},
-    {name:"Mocha", price:6.97},
-    {name:"Starry Night Latte", price:6.56},
-    {name:"Hot Chocolate", price:5.70},
-    {name:"Under the Pink", price:5.70},
-    {name:"Rose Tea", price:5.70},
-    {name:"Starry Night Tea", price:5.70},
-    {name:"Cold Brew Iced Coffee", price:6.10},
-    {name:"Black N' Tan", price:6.80},
-    {name:"Chocolate Cold Brew", price:6.85},
-    {name:"Iced Latte", price:6.23},
-    {name:"Iced Mocha", price:6.90},
-    {name:"Iced Hot Chocolate", price:6.58},
-    {name:"Pink Crush", price:5.70},
-    {name:"Iced Under the Pink", price:6.10},
-    {name:"Iced Rose Tea", price:5.70},
-    {name:"Iced Starry Night Tea", price:5.70}
-  ];
-
-  // spawn new customers slowly to keep things manageable
-  // at least a few seconds between arrivals
-  const SPAWN_DELAY=2000;
-  const SPAWN_VARIANCE=1500;
-  const QUEUE_SPACING=36; // distance between queued customers (horizontal)
-  const ORDER_X=230; // ordering spot
-  const ORDER_Y=310; // ordering spot Y
-  // base position for the waiting line to the left of the order spot
-  const QUEUE_X=ORDER_X-QUEUE_SPACING-10; // nudge line left of ordering spot
-  // each waiting customer stands slightly higher than the one in front
-  const QUEUE_OFFSET=8;
-  // vertical position of the first waiting customer (slightly lower than order spot)
-  const QUEUE_Y=ORDER_Y+5;
-  const WANDER_TOP=ORDER_Y+50; // wander up to 50px below the order window
-  const WANDER_BOTTOM=580; // near bottom of the screen
-  // base number of customers that can linger nearby
-  const BASE_WAITERS=3;
-  const WALK_OFF_BASE=800;
-  const MAX_M=100, MAX_L=100;
-
-  // dimensions for the phone graphic shown on the start screen
-  const START_PHONE_W = 260;
-  const START_PHONE_H = 500;
-
-  // dimensions/positioning for the action buttons
-  const BUTTON_WIDTH = 120;
-  const BUTTON_HEIGHT = 80;
-  const BUTTON_Y = 560;
 
 
   let money=10.00, love=10, gameOver=false;
@@ -79,48 +29,18 @@ import { debugLog } from './debug.js';
     'new_kid_4_0','new_kid_4_1','new_kid_4_2','new_kid_4_3','new_kid_4_4','new_kid_4_5'
   ];
 
-  const dur=v=>v;
 
   const supers={
     '0':'\u2070','1':'\u00b9','2':'\u00b2','3':'\u00b3','4':'\u2074',
     '5':'\u2075','6':'\u2076','7':'\u2077','8':'\u2078','9':'\u2079'
   };
-
-  function scaleForY(y){
-    const minY = ORDER_Y;
-    const maxY = WANDER_BOTTOM;
-    const t = Phaser.Math.Clamp((y - minY) / (maxY - minY), 0, 1);
-    return 0.7 + t * 0.4; // grow larger toward the bottom
-  }
-
   function receipt(value){
-    const [d,c]=value.toFixed(2).split('.');
-    const cents=c.split('').map(ch=>supers[ch]||ch).join('');
+    const [d,c]=value.toFixed(2).split(".");
+    const cents=c.split("").map(ch=>supers[ch]||ch).join("");
     return `$${d}${cents}`;
   }
 
-  function articleFor(name){
-    const first=name.trim()[0].toLowerCase();
-    return 'aeiou'.includes(first)?'an':'a';
-  }
 
-  function flashMoney(obj, scene, color='#0f0'){
-    let on=true;
-    obj.setStyle({stroke:'#000', strokeThickness:3});
-    const flashes=5;
-    scene.time.addEvent({
-      repeat:flashes,
-      delay:dur(60),
-      callback:()=>{
-        obj.setColor(on?'#fff':color);
-        on=!on;
-      }
-    });
-    scene.time.delayedCall(dur(60)*(flashes+1)+dur(10),()=>{
-      obj.setColor('#000');
-      obj.setStyle({strokeThickness:0});
-    },[],scene);
-  }
 
   function flashBorder(rect, scene, color=0x00ff00){
     if(!rect || !rect.setStrokeStyle) return;
@@ -222,12 +142,11 @@ import { debugLog } from './debug.js';
   }
 
   function maxWanderers(){
-    return BASE_WAITERS + calcLoveLevel(love) - 1;
+    return customersMaxWanderers(love);
   }
 
   function queueLimit(){
-    // allow one person waiting even at level 1
-    return calcLoveLevel(love) + 1;
+    return customersQueueLimit(love);
   }
 
 
@@ -1406,15 +1325,13 @@ import { debugLog } from './debug.js';
     showStartScreen.call(this);
   }
 
-  const Assets = { keys, requiredAssets, preload };
-  const Scene = { create, showStartScreen, playIntro };
-  const Customers = { spawnCustomer, lureNextWanderer, moveQueueForward, scheduleNextSpawn,
+   Assets = { keys, requiredAssets, preload };
+   Scene = { create, showStartScreen, playIntro };
+   Customers = { spawnCustomer, lureNextWanderer, moveQueueForward, scheduleNextSpawn,
                       showDialog, clearDialog, handleAction, showFalconAttack,
                       showCustomerRevolt, restartGame };
 
-  const config={ type:Phaser.AUTO, parent:'game-container', backgroundColor:'#f2e5d7',
-    scale:{ mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH, width:480, height:640 },
-    pixelArt:true, scene:{ preload: Assets.preload, create: Scene.create } };
+   config={ ...baseConfig, scene:{ preload: Assets.preload, create: Scene.create } };
 
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
     init();

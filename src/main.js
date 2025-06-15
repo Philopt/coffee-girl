@@ -338,7 +338,8 @@ import { debugLog } from './debug.js';
     startMsgTimers = [];
     startMsgBubbles.forEach(b => b.destroy());
     startMsgBubbles = [];
-    startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.5)
+    // Increase opacity of the start screen overlay for a darker background
+    startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.75)
       .setDepth(14);
 
     const phoneW = (typeof START_PHONE_W === 'number') ? START_PHONE_W : 260;

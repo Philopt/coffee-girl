@@ -363,6 +363,68 @@ export let Assets, Scene, Customers, config;
     }
   }
 
+
+  function addPhoneDamageEffects(scene, container, phoneW, phoneH, homeH){
+    if(phoneDamage<=0 || !scene || !container) return;
+    const screenTop=-phoneH/2+6;
+    const screenBottom=phoneH/2-homeH-12;
+    const screenH=screenBottom-screenTop;
+    const cracks=scene.add.graphics();
+    cracks.lineStyle(2,0x000000,0.9);
+    if(phoneDamage>=1){
+      cracks.beginPath();
+      cracks.moveTo(-phoneW/2+20, screenTop+screenH*0.4);
+      cracks.lineTo(-phoneW/4, screenTop+screenH*0.55);
+      cracks.lineTo(-phoneW/8, screenTop+screenH*0.65);
+      cracks.strokePath();
+      const flick=scene.add.rectangle(0,screenTop,phoneW-12,screenH,0x000000,0).setOrigin(0.5,0);
+      container.add(flick);
+      const blink=()=>{
+        scene.tweens.add({targets:flick,alpha:1,duration:dur(60),yoyo:true});
+        if(typeof flickerEvent!=='undefined')
+          flickerEvent=scene.time.delayedCall(Phaser.Math.Between(1500,3000),blink,[],scene);
+      };
+      if(typeof flickerEvent!=='undefined')
+        flickerEvent=scene.time.delayedCall(Phaser.Math.Between(1000,2000),blink,[],scene);
+    }
+    if(phoneDamage>=2){
+      cracks.lineStyle(3,0x000000,0.9);
+      cracks.beginPath();
+      cracks.moveTo(phoneW/2-20, screenTop+screenH*0.1);
+      cracks.lineTo(phoneW/8, screenTop+screenH*0.25);
+      cracks.lineTo(phoneW/4, screenTop+screenH*0.45);
+      cracks.strokePath();
+      const p1={x:-phoneW/2+20,y:screenTop+screenH*0.4};
+      const p2={x:-phoneW/4,y:screenTop+screenH*0.55};
+      const p3={x:phoneW/2-20,y:screenTop+screenH*0.1};
+      const p4={x:phoneW/8,y:screenTop+screenH*0.25};
+      const denom=(p1.x-p2.x)*(p3.y-p4.y)-(p1.y-p2.y)*(p3.x-p4.x);
+      let ix=p4.x, iy=p4.y;
+      if(denom!==0){
+        ix=((p1.x*p2.y-p1.y*p2.x)*(p3.x-p4.x)-(p1.x-p2.x)*(p3.x*p4.y-p3.y*p4.x))/denom;
+        iy=((p1.x*p2.y-p1.y*p2.x)*(p3.y-p4.y)-(p1.y-p2.y)*(p3.x*p4.y-p3.y*p4.x))/denom;
+      }
+      const dark=scene.add.graphics();
+      dark.fillStyle(0x000000,0.4);
+      dark.beginPath();
+      dark.moveTo(p1.x,p1.y);
+      dark.lineTo(ix,iy);
+      dark.lineTo(p3.x,p3.y);
+      dark.closePath();
+      dark.fillPath();
+      container.add(dark);
+    }
+    if(phoneDamage>=3){
+      cracks.beginPath();
+      cracks.moveTo(-phoneW/2+30, screenBottom-screenH*0.1);
+      cracks.lineTo(0, screenBottom-screenH*0.25);
+      cracks.lineTo(phoneW/3, screenBottom-screenH*0.15);
+      cracks.strokePath();
+    }
+    container.add(cracks);
+  }
+
+
   function showStartScreen(scene){
     scene = scene || this;
     if (typeof debugLog === 'function') debugLog('showStartScreen called');

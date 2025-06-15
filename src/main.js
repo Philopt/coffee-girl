@@ -520,8 +520,13 @@
       console.error(msg);
       this.add.text(240,320,msg,{font:'16px sans-serif',fill:'#f00',align:'center',wordWrap:{width:460}})
         .setOrigin(0.5).setDepth(30);
-      this.add.text(240,360,'Retry Loading',{font:'20px sans-serif',fill:'#00f'})
-        .setOrigin(0.5).setDepth(30).setInteractive({useHandCursor:true})
+      const retry=this.add.text(240,360,'Retry Loading',{font:'20px sans-serif',fill:'#00f'})
+        .setOrigin(0.5).setDepth(30);
+      retry.setInteractive({
+        hitArea:new Phaser.Geom.Rectangle(-retry.width/2,-retry.height/2,retry.width,retry.height),
+        hitAreaCallback:Phaser.Geom.Rectangle.Contains,
+        useHandCursor:true
+      })
         .on('pointerdown',()=>window.location.reload());
       return;
     }
@@ -1289,7 +1294,12 @@
     const txt=this.add.text(240,offset,lines.slice(startIdx).join('\n'),{font:'24px sans-serif',fill:'#000',align:'center',wordWrap:{width:440}})
       .setOrigin(0.5).setDepth(21);
     const btn=this.add.text(240,bgY+80,'Try Again',{font:'20px sans-serif',fill:'#fff',backgroundColor:'#006400',padding:{x:14,y:8}})
-      .setOrigin(0.5).setDepth(22).setInteractive()
+      .setOrigin(0.5).setDepth(22);
+    btn.setInteractive({
+      hitArea:new Phaser.Geom.Rectangle(-btn.width/2,-btn.height/2,btn.width,btn.height),
+      hitAreaCallback:Phaser.Geom.Rectangle.Contains,
+      useHandCursor:true
+    })
       .on('pointerdown',()=>{
         bg.destroy(); txt.destroy(); btn.destroy(); if(titleText) titleText.destroy(); if(img) img.destroy();
         if(endOverlay){ endOverlay.destroy(); endOverlay=null; }

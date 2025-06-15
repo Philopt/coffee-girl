@@ -4,13 +4,32 @@
   "description": "Coffee Clicker game",
   "scripts": {
     "start": "http-server -p 8080 -c-1",
-    "pretest": "npm install",
-    "test": "node test/test.js"
+    "pretest": "npm install && npm run lint",
+    "test": "node test/test.js",
+    "lint": "eslint src/*.js test/*.js"
   },
   "devDependencies": {
     "http-server": "^14.1.1",
     "puppeteer": "^24.10.1",
-    "pngjs": "^7.0.0"
+    "pngjs": "^7.0.0",
+    "eslint": "^8.57.1"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "node": true,
+      "es6": true
+    },
+    "parserOptions": {
+      "ecmaVersion": 2020
+    },
+    "globals": {
+      "Phaser": "readonly"
+    },
+    "extends": "eslint:recommended",
+    "rules": {
+      "no-unused-vars": "off"
+    }
   },
   "license": "MIT"
 }

@@ -151,6 +151,10 @@
     // Temporarily disable input while the button blinks.
     // Recalculate the hit area afterwards in case the button
     // changed size or scale during the tween.
+
+    const w = btn.width !== undefined ? btn.width : (btn.displayWidth || 0);
+    const h = btn.height !== undefined ? btn.height : (btn.displayHeight || 0);
+
     btn.disableInteractive();
     this.tweens.add({
       targets: btn,
@@ -160,9 +164,14 @@
       repeat: 1,
       onComplete: () => {
         if (btn.setInteractive) {
+
           const w = btn.width !== undefined ? btn.width : (btn.displayWidth || 0);
           const h = btn.height !== undefined ? btn.height : (btn.displayHeight || 0);
           const area = new Phaser.Geom.Rectangle(-w/2, -h/2, w, h);
+
+          const area = new Phaser.Geom.Rectangle(-w/2, -h/2, w, h);
+          btn.myHitArea = area;
+
           btn.setInteractive({
             hitArea: area,
             hitAreaCallback: Phaser.Geom.Rectangle.Contains,
@@ -349,8 +358,11 @@
   function showStartScreen(scene){
     scene = scene || this;
     if (typeof debugLog === 'function') debugLog('showStartScreen called');
-    if (typeof startMsgTimers === 'undefined') startMsgTimers = [];
-    if (typeof startMsgBubbles === 'undefined') startMsgBubbles = [];
+    // reset any pending timers or bubbles from a previous session
+    startMsgTimers.forEach(t => t.remove(false));
+    startMsgTimers = [];
+    startMsgBubbles.forEach(b => b.destroy());
+    startMsgBubbles = [];
     startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.5)
       .setDepth(14);
 
@@ -398,11 +410,7 @@
       .setDepth(15)
       .setInteractive();
 
-    // remove any prior timers or bubbles if restartGame triggered this screen
-    startMsgTimers.forEach(t=>t.remove(false));
-    startMsgTimers=[];
-    startMsgBubbles.forEach(b=>b.destroy());
-    startMsgBubbles=[];
+    // track where to place the first start message
     let startMsgY = -phoneH/2 + 20;
 
     const addStartMessage=(text)=>{
@@ -578,10 +586,9 @@
     dialogCoins=this.add.text(240,440,'',{font:'20px sans-serif',fill:'#000'})
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
 
-    dialogPriceLabel=this.add.text(240,436,'',{font:'14px sans-serif',fill:'#000',align:'center'})
-      .setOrigin(0.5).setVisible(false).setDepth(11);
-    dialogPriceValue=this.add.text(240,460,'',{font:'32px sans-serif',fill:'#000'})
-      .setOrigin(0.5).setVisible(false).setDepth(11);
+    // price label/value are part of dialogPriceContainer and should not
+    // also be drawn inside the main dialog. Remove the duplicate texts that
+    // caused the total cost to appear in the dialog bubble.
 
 
     // helper to create a rounded rectangle button with consistent sizing

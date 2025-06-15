@@ -1110,12 +1110,14 @@ export let Assets, Scene, Customers, config;
         }});
         tl.add({targets:ticket,x:destX,y:destY,scale:0,duration:dur(400),
           onStart:()=>{
-            flashBorder(dialogPriceBox,this,0x00ff00);
-            flashFill(dialogPriceBox,this,0x00ff00);
-            moneyIcons=scatterMoney(this, ticket, totalCost, tip, customer.x, customer.y);
-            if(this.tweens){
-              this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});
+            if(typeof dialogPriceBox!=='undefined'){
+              flashBorder(dialogPriceBox,this,0x00ff00);
+              flashFill(dialogPriceBox,this,0x00ff00);
+              if(this.tweens){
+                this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});
+              }
             }
+            moneyIcons=scatterMoney(this, ticket, totalCost, tip, customer.x, customer.y);
           }});
         tl.play();
       },[],this);
@@ -1161,11 +1163,13 @@ export let Assets, Scene, Customers, config;
             done();
         }});
         flashMoney(t,this,'#f00');
-        flashBorder(dialogPriceBox,this,0xff0000);
-        flashFill(dialogPriceBox,this,0xff0000);
+        if(typeof dialogPriceBox!=='undefined'){
+          flashBorder(dialogPriceBox,this,0xff0000);
+          flashFill(dialogPriceBox,this,0xff0000);
+        }
         tl.add({targets:ticket,x:destX,y:destY,scale:0,duration:dur(400),
           onStart:()=>{
-            if(this.tweens){
+            if(this.tweens && typeof dialogPriceBox!=='undefined'){
               this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});
             }
           }});

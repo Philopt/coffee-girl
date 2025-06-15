@@ -522,26 +522,32 @@ export function setupGame(){
     }) : { stop: ()=>{} };
 
     // emit smoke puffs as the truck drives in
-    const smokeEvent = (scene.time && scene.time.addEvent) ? scene.time.addEvent({
-      delay: dur(150),
-      loop: true,
-      callback: () => {
-        const puff = scene.add.text(truck.x + 60, truck.y - 20, '💨', { font: '20px sans-serif', fill: '#fff' })
-          .setDepth(1);
-        if (scene.tweens && scene.tweens.add) {
-          scene.tweens.add({
-            targets: puff,
-            x: puff.x + 30,
-            y: puff.y - 10,
-            alpha: 0,
-            duration: dur(800),
-            onComplete: () => puff.destroy()
-          });
-        } else {
-          puff.destroy();
+    let smokeDelay = 150;
+    let smokeEvent = { remove: ()=>{} };
+    if (scene.time && scene.time.addEvent) {
+      smokeEvent = scene.time.addEvent({
+        delay: dur(smokeDelay),
+        loop: true,
+        callback: () => {
+          const puff = scene.add.text(truck.x + 60, truck.y + 20, '💨', { font: '20px sans-serif', fill: '#fff' })
+            .setDepth(1);
+          if (scene.tweens && scene.tweens.add) {
+            scene.tweens.add({
+              targets: puff,
+              x: puff.x + 30,
+              y: puff.y - 10,
+              alpha: 0,
+              duration: dur(800),
+              onComplete: () => puff.destroy()
+            });
+          } else {
+            puff.destroy();
+          }
+          smokeDelay += 75;
+          smokeEvent.delay = dur(smokeDelay);
         }
-      }
-    }) : { remove: ()=>{} };
+      });
+    }
 
     const intro=scene.tweens.createTimeline({callbackScope:scene,
       onComplete:()=>{

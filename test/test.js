@@ -77,7 +77,7 @@ function testBlinkButton() {
 
 function testSpawnCustomer() {
   const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
-  const match = /function spawnCustomer\(\)[\s\S]*?\n\s*\}\n(?=\s*function)/.exec(code);
+  const match = /function spawnCustomer\([^)]*\)[\s\S]*?\n\s*\}\n(?=\s*function)/.exec(code);
   if (!match) throw new Error('spawnCustomer not found');
   const context = {
     Phaser: { Math: { Between: min => min }, Utils: { Array: { GetRandom: a => a[0] } } },

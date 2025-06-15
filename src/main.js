@@ -422,17 +422,20 @@ export function setupGame(){
     btnBg.fillStyle(0x007bff,1);
     btnBg.fillRoundedRect(-bw/2,-bh/2,bw,bh,15);
     const offsetY = phoneH/2 - homeH/2 - 12;
+    // position the phone closer to the center of the screen
+    const containerY = 320;
+    phoneContainer = scene.add.container(240,containerY,[caseG,blackG,whiteG,homeG])
+      .setDepth(15);
+
     startButton = scene.add.container(0,offsetY,[btnBg,btnLabel])
-      .setSize(bw,bh);
+      .setSize(bw,bh)
+      .setInteractive({ useHandCursor: true });
 
     const startZone = scene.add.zone(0,0,bw,bh).setOrigin(0.5);
     startZone.setInteractive({ useHandCursor:true });
     startButton.add(startZone);
 
-    // position the phone closer to the center of the screen
-    const containerY = 320;
-    phoneContainer = scene.add.container(240,containerY,[caseG,blackG,whiteG,homeG,startButton])
-      .setDepth(15);
+    phoneContainer.add(startButton);
 
     // track where to place the first start message
     let startMsgY = -phoneH/2 + 20;

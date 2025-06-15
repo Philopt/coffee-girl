@@ -343,11 +343,14 @@
     scene = scene || this;
     if (typeof debugLog === 'function') debugLog('showStartScreen called');
     if (typeof startMsgTimers === 'undefined') startMsgTimers = [];
-    if (typeof startMsgBubbles === 'undefined') startMsgBubbles = [];
     if (typeof document !== 'undefined') {
-      const container = document.getElementById('game-container');
-      if (container) container.classList.add('blur');
+      startOverlay = document.getElementById('start-overlay');
+      startButton = document.getElementById('start-button');
+      phoneContainer = document.getElementById('start-messages');
     }
+    if (!startOverlay || !startButton || !phoneContainer) return;
+    startOverlay.classList.remove('hidden');
+    phoneContainer.innerHTML='';
     if (typeof moneyText !== 'undefined' && typeof loveText !== 'undefined' && typeof queueLevelText !== 'undefined') {
       if (moneyText) moneyText.setVisible(false);
       if (loveText) loveText.setVisible(false);
@@ -390,84 +393,42 @@
         useHandCursor: true
     });
 
-    // position the phone closer to the center of the screen
-    const containerY = 320;
-    phoneContainer = scene.add.container(240,containerY,[caseG,blackG,whiteG,homeG,startButton])
-      .setDepth(15)
-      .setInteractive();
 
-    // remove any prior timers or bubbles if restartGame triggered this screen
-    startMsgTimers.forEach(t=>t.remove(false));
-    startMsgTimers=[];
-    startMsgBubbles.forEach(b=>b.destroy());
-    startMsgBubbles=[];
-    let startMsgY = -phoneH/2 + 20;
-
-    const addStartMessage=(text)=>{
-      if(!phoneContainer) return;
-      const pad = 10;
-      const wrapWidth = phoneW - 60;
-      const txt = scene.add.text(0,0,text,{font:'20px sans-serif',fill:'#fff',wordWrap:{width:wrapWidth}})
-        .setOrigin(0,0.5);
-      const bw = txt.width + pad*2;
-      const bh = txt.height + pad*2;
-      const bg = scene.add.graphics();
-      bg.fillStyle(0x8bd48b,1);
-      bg.fillRoundedRect(-bw/2,-bh/2,bw,bh,10);
-      txt.setPosition(-bw/2 + pad, 0);
-      const xPos = -phoneW/2 + bw/2 + 20;
-      const yPos = startMsgY + bh/2;
-      const bubble = scene.add.container(xPos,yPos,[bg,txt]).setDepth(16).setAlpha(0);
-      phoneContainer.add(bubble);
-      startMsgBubbles.push(bubble);
-      startMsgY += bh + 10;
-      scene.tweens.add({targets:bubble,alpha:1,duration:300,ease:'Cubic.easeOut'});
+    const addStartMessage=text=>{
+      const div=document.createElement('div');
+      div.textContent=text;
+      phoneContainer.appendChild(div);
     };
 
-      if(scene.time && scene.time.delayedCall){
-        const msgOptions=[
-          ['u coming in? 🤔', 'where u at??', 'mornin ☀️'],
-          ['better not still be in bed 😜', 'yo coffee girl ☕', 'stop ghostin me'],
-          ['late night? 🥱💃', 'phone dead again? 🔋', 'omg wait till u hear about this guy 😏'],
-          ['u good?', 'hope everythin\'s chill', '…sry 😬']
-        ];
-        let delay=0;
-        for(const opts of msgOptions){
-          delay += Phaser.Math.Between(5000,15000);
-          const msg = Phaser.Utils.Array.GetRandom(opts);
-          startMsgTimers.push(scene.time.delayedCall(delay,()=>addStartMessage(msg),[],scene));
-        }
+    startMsgTimers.forEach(t=>t.remove(false));
+    startMsgTimers=[];
+    if(scene.time && scene.time.delayedCall){
+      const msgOptions=[
+        ['u coming in? 🤔', 'where u at??', 'mornin ☀️'],
+        ['better not still be in bed 😜', 'yo coffee girl ☕', 'stop ghostin me'],
+        ['late night? 🥱💃', 'phone dead again? 🔋', 'omg wait till u hear about this guy 😏'],
+        ['u good?', 'hope everythin\'s chill', '…sry 😬']
+      ];
+      let delay=0;
+      for(const opts of msgOptions){
+        delay += Phaser.Math.Between(5000,15000);
+        const msg = Phaser.Utils.Array.GetRandom(opts);
+        startMsgTimers.push(scene.time.delayedCall(delay,()=>addStartMessage(msg),[],scene));
       }
+    }
 
-    startButton.on('pointerdown',()=>{
-
-        // Log click registration to help debug input issues
-        if (typeof debugLog === 'function') debugLog('start button clicked');
-
-        // cancel any pending start messages
-        startMsgTimers.forEach(t=>t.remove(false));
-        startMsgTimers=[];
-        startMsgBubbles=[];
-
-        const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
-          if(startButton) startButton.destroy();
-          phoneContainer.destroy(); phoneContainer=null;
-          if (typeof document !== 'undefined') {
-            const container = document.getElementById('game-container');
-            if (container) container.classList.remove('blur');
-          }
-          if (typeof moneyText !== 'undefined' && typeof loveText !== 'undefined' && typeof queueLevelText !== 'undefined') {
-            if (moneyText) moneyText.setVisible(true);
-            if (loveText) loveText.setVisible(true);
-            if (queueLevelText) queueLevelText.setVisible(true);
-          }
-        }});
-        tl.add({targets:phoneContainer,y:-320,duration:600,ease:'Sine.easeIn'});
-        tl.add({targets:startOverlay,alpha:0,duration:600,onComplete:()=>{ if(startOverlay){startOverlay.destroy(); startOverlay=null;} }});
-        tl.play();
-        // playIntro will kick off the intro tween sequence
-        playIntro.call(scene);
-      });
+    startButton.onclick=()=>{
+      if (typeof debugLog === 'function') debugLog('start button clicked');
+      startMsgTimers.forEach(t=>t.remove(false));
+      startMsgTimers=[];
+      startOverlay.classList.add('hidden');
+      if (typeof moneyText !== 'undefined' && typeof loveText !== 'undefined' && typeof queueLevelText !== 'undefined') {
+        if (moneyText) moneyText.setVisible(true);
+        if (loveText) loveText.setVisible(true);
+        if (queueLevelText) queueLevelText.setVisible(true);
+      }
+      playIntro.call(scene);
+    };
   }
 
   function playIntro(scene){
@@ -634,7 +595,7 @@
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
     reportLine4=this.add.text(0,0,'',{font:'14px sans-serif',fill:'#fff'})
       .setVisible(false).setDepth(11);
-    tipText=this.add.text(0,0,'',{font:'24px sans-serif',fill:'#0a0'})
+    tipText=this.add.text(0,0,'',{font:'20px sans-serif',fill:'#0a0'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
     paidStamp=this.add.text(0,0,'PAID',{font:'24px sans-serif',fill:'#0a0'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
@@ -693,8 +654,9 @@
     dialogBg.clear();
     dialogBg.fillStyle(0xffffff,1);
     dialogBg.lineStyle(2,0x000,1);
-    dialogBg.fillRoundedRect(-w/2,-h/2,w,h,16);
-    dialogBg.strokeRoundedRect(-w/2,-h/2,w,h,16);
+    const radius=24; // more rounded corners
+    dialogBg.fillRoundedRect(-w/2,-h/2,w,h,radius);
+    dialogBg.strokeRoundedRect(-w/2,-h/2,w,h,radius);
     if(targetX!==undefined && targetY!==undefined){
       const tx = targetX - dialogBg.x;
       const ty = targetY - dialogBg.y;
@@ -704,7 +666,11 @@
       const tipX = tx * 0.5;
       const tipY = by + (ty - by) * 0.5;
       dialogBg.fillTriangle(bx1, by, bx2, by, tipX, tipY);
-      dialogBg.strokeTriangle(bx1, by, bx2, by, tipX, tipY);
+      dialogBg.beginPath();
+      dialogBg.moveTo(bx1, by);
+      dialogBg.lineTo(tipX, tipY);
+      dialogBg.lineTo(bx2, by);
+      dialogBg.strokePath();
     }
   }
 
@@ -728,30 +694,14 @@
       });
       return;
     }
-    dialogBg.setVisible(true);
-    drawDialogBubble(c.sprite.x, c.sprite.y);
-    dialogPriceBox
-      .setPosition(dialogBg.x + dialogBg.width/2 - 60, dialogBg.y - dialogBg.height)
-      .setVisible(true);
+    const padding=20, spacing=10;
     const itemStr=c.orders.map(o=>{
       return o.qty>1 ? `${o.qty} ${o.req}` : o.req;
     }).join(' and ');
     const wantLine=(c.orders.length===1 && c.orders[0].qty===1)
       ? `I want ${articleFor(c.orders[0].req)} ${c.orders[0].req}`
       : `I want ${itemStr}`;
-    if(activeBubble){
-      activeBubble.destroy();
-      activeBubble=null;
-    }
-    const bubble=this.add.text(c.sprite.x,c.sprite.y-50,'💬',{font:'32px sans-serif',fill:'#000'})
-      .setOrigin(0.5).setDepth(11);
-    activeBubble=bubble;
-    this.tweens.add({targets:bubble,y:c.sprite.y-70,alpha:0,duration:dur(600),onComplete:()=>{bubble.destroy(); activeBubble=null;}});
-    dialogText
-      .setOrigin(0,0.5)
-      .setPosition(dialogBg.x-dialogBg.width/2+40,440)
-      .setText(wantLine)
-      .setVisible(true);
+    dialogText.setText(wantLine);
     const totalCost=c.orders.reduce((s,o)=>s+o.price*o.qty,0);
     const canAfford = c.orders[0].coins >= totalCost;
     let coinLine;
@@ -763,21 +713,45 @@
     } else {
       coinLine = `...but I only have $${c.orders[0].coins}`;
     }
+    dialogCoins.setText(coinLine);
+    const contentW=Math.max(dialogText.width, dialogCoins.width);
+    dialogBg.width=contentW+padding*2;
+    dialogBg.height=dialogText.height+dialogCoins.height+spacing+padding*2;
+    dialogBg.setVisible(true);
+    drawDialogBubble(c.sprite.x, c.sprite.y);
+    dialogPriceBox
+      .setPosition(dialogBg.x + dialogBg.width/2 - 60, dialogBg.y - dialogBg.height)
+      .setVisible(true);
+    if(activeBubble){
+      activeBubble.destroy();
+      activeBubble=null;
+    }
+    const bubble=this.add.text(c.sprite.x,c.sprite.y-50,'💬',{font:'32px sans-serif',fill:'#000'})
+      .setOrigin(0.5).setDepth(11);
+    activeBubble=bubble;
+    this.tweens.add({targets:bubble,y:c.sprite.y-70,alpha:0,duration:dur(600),onComplete:()=>{bubble.destroy(); activeBubble=null;}});
+    dialogText
+      .setOrigin(0,0.5)
+      .setPosition(dialogBg.x-dialogBg.width/2+padding,
+                   dialogBg.y-dialogBg.height/2+padding+dialogText.height/2)
+      .setText(wantLine)
+      .setVisible(true);
     dialogCoins
       .setOrigin(0,0.5)
-      .setPosition(dialogBg.x-dialogBg.width/2+40,470)
+      .setPosition(dialogBg.x-dialogBg.width/2+padding,
+                   dialogText.y+dialogText.height/2+spacing+dialogCoins.height/2)
       .setStyle({fontSize:'20px'})
       .setText(coinLine)
       .setVisible(true);
     dialogPriceLabel
-      .setOrigin(0.5,0.5)
-      .setPosition(dialogPriceBox.x, dialogPriceBox.y - 20)
+      .setOrigin(1,0.5)
+      .setPosition(dialogPriceBox.x + dialogPriceBox.width/2 - 4, dialogPriceBox.y - 20)
       .setStyle({fontSize:'14px'})
       .setText('Total\nCost')
       .setVisible(true);
     dialogPriceValue
-      .setOrigin(0.5,0.5)
-      .setPosition(dialogPriceBox.x, dialogPriceBox.y + 10)
+      .setOrigin(1,0.5)
+      .setPosition(dialogPriceBox.x + dialogPriceBox.width/2 - 4, dialogPriceBox.y + 14)
       .setStyle({fontSize:'32px'})
       .setText(`$${totalCost.toFixed(2)}`)
       .setColor('#000')
@@ -887,12 +861,18 @@
       t.setVisible(true);
       t.setDepth(paidStamp.depth+1);
       t.setText(receipt(totalCost));
+      const boxX = (typeof dialogPriceBox !== 'undefined' && dialogPriceBox.x) || t.x;
+      const boxY = (typeof dialogPriceBox !== 'undefined' && dialogPriceBox.y) || t.y;
       paidStamp
         .setText('PAID')
         .setScale(1.5)
-        .setPosition(t.x - 20, t.y)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
+      if(tip>0){
+        paidStamp.setPosition(boxX - 20, boxY);
+      }else{
+        paidStamp.setPosition(boxX, boxY);
+      }
 
       const flashPrice=()=>{
         const oy=t.y;
@@ -905,9 +885,9 @@
       if(tip>0){
         this.time.delayedCall(delay,()=>{
           tipText
-            .setText('TIP')
-            .setScale(1.6)
-            .setPosition(paidStamp.x, paidStamp.y-40)
+            .setText('+ TIP')
+            .setScale(1.2)
+            .setPosition(boxX + 20, boxY)
             .setVisible(true);
           t.setText(receipt(totalCost + tip));
           flashPrice();
@@ -940,7 +920,8 @@
       lossStamp
         .setText('LOSS')
         .setScale(1.5)
-        .setPosition(t.x - 20, t.y)
+        .setPosition((typeof dialogPriceBox !== 'undefined' && dialogPriceBox.x) || t.x,
+                    (typeof dialogPriceBox !== 'undefined' && dialogPriceBox.y) || t.y)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
       this.time.delayedCall(dur(1000),()=>{

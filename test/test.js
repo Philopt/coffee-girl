@@ -272,7 +272,19 @@ function testStartButtonPlaysIntro() {
   assert.ok(called, 'playIntro not called');
   assert.strictEqual(truck.x, 240, 'truck x not moved');
   console.log('start button triggers playIntro test passed');
+  const code = fs.readFileSync(path.join(__dirname, "..", "src", "main.js"), "utf8");
+  assert(code.includes("start-overlay"), "start overlay element missing");
+  assert(code.includes("start-button"), "start button element missing");
+  console.log("showStartScreen DOM references test passed");
 }
+
+function testStartButtonPlaysIntro() {
+  const code = fs.readFileSync(path.join(__dirname, "..", "src", "main.js"), "utf8");
+  assert(/startButton\.onclick/.test(code), "start button click handler missing");
+  assert(/playIntro\.call\(scene\)/.test(code), "playIntro not invoked from handler");
+  console.log("start button triggers playIntro test passed");
+}
+
 
 function testShowDialogButtons() {
   const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');

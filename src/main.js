@@ -397,6 +397,7 @@
       const bg = scene.add.graphics();
       bg.fillStyle(0x8bd48b,1);
       bg.fillRoundedRect(-bw/2,-bh/2,bw,bh,10);
+      txt.setPosition(-bw/2 + pad, 0);
       const xPos = -phoneW/2 + bw/2 + 20;
       const yPos = startMsgY + bh/2;
       const bubble = scene.add.container(xPos,yPos,[bg,txt]).setDepth(16).setAlpha(0);
@@ -406,12 +407,12 @@
       scene.tweens.add({targets:bubble,alpha:1,duration:300,ease:'Cubic.easeOut'});
     };
 
-    if(scene.time && scene.time.delayedCall){
-      startMsgTimers.push(scene.time.delayedCall(5000,()=>addStartMessage('hey, you coming in? 😊'),[],scene));
-      startMsgTimers.push(scene.time.delayedCall(10000,()=>addStartMessage('you better not still be in bed... 😜'),[],scene));
-      startMsgTimers.push(scene.time.delayedCall(15000,()=>addStartMessage('I guess you had a late night. 😴'),[],scene));
-      startMsgTimers.push(scene.time.delayedCall(22000,()=>addStartMessage('... I hope you\'re okay 😟❤️'),[],scene));
-    }
+      if(scene.time && scene.time.delayedCall){
+        startMsgTimers.push(scene.time.delayedCall(5000,()=>addStartMessage('hey, you coming in? 😊'),[],scene));
+        startMsgTimers.push(scene.time.delayedCall(10000,()=>addStartMessage('you better not still be in bed... 😜'),[],scene));
+        startMsgTimers.push(scene.time.delayedCall(15000,()=>addStartMessage('guess you had a late night 💃😴'),[],scene));
+        startMsgTimers.push(scene.time.delayedCall(22000,()=>addStartMessage('... hope you\'re okay 😟❤️'),[],scene));
+      }
 
     startButton.on('pointerdown',()=>{
 

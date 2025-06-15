@@ -1081,7 +1081,6 @@ export function setupGame(){
       if(type==='refuse'){
         const dir = sprite.x < girl.x ? -1 : 1;
         const startX = sprite.x;
-        const startY = sprite.y;
         const targetY = 700;
         const distanceX = Phaser.Math.Between(80, 160) * dir;
         const amp = Phaser.Math.Between(10, 25);
@@ -1101,7 +1100,6 @@ export function setupGame(){
       }else{
         const dir = Phaser.Math.Between(0,1)?1:-1;
         const startX=sprite.x;
-        const startY=sprite.y;
         const targetY=700;
         const distanceX=Phaser.Math.Between(80,160)*dir;
         const amp=Phaser.Math.Between(10,25);

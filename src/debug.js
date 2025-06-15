@@ -3,7 +3,7 @@ export const DEBUG = (() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('debug') === '1') return true;
     if (window.localStorage.getItem('DEBUG') === '1') return true;
-  } catch (e) {
+  } catch {
     // ignore
   }
   return false;

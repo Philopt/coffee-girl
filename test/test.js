@@ -99,9 +99,17 @@ function testSpawnCustomer() {
   const spawnCustomer = context.fn;
   const scene = {
     add: {
-      sprite() { return { setScale() { return this; }, setDepth() { return this; }, destroy() {} }; }
+      sprite() {
+        return {
+          setScale() { return this; },
+          setDepth() { return this; },
+          setAngle() { return this; },
+          destroy() {}
+        };
+      }
     },
-    tweens: { add(cfg) { if (cfg.onComplete) cfg.onComplete(); return { progress: 0 }; } }
+    tweens: { add(cfg) { if (cfg.onComplete) cfg.onComplete(); return { progress: 0 }; } },
+    time: { addEvent() { return { remove() {} }; } }
   };
   spawnCustomer.call(scene);
   assert.strictEqual(context.wanderers.length, 1, 'customer not added to wanderers');

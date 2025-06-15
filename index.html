@@ -32,22 +32,11 @@
         border-radius:30px;
         background:#fff;
         box-shadow:0 4px 10px rgba(0,0,0,0.4);
-        transform:perspective(800px) rotateX(12deg);
         overflow:hidden;
         display:flex;
         flex-direction:column;
         justify-content:flex-end;
         pointer-events:auto;
-      }
-      #phone.gradient-blur::after {
-        content:'';
-        position:absolute;
-        inset:0;
-        pointer-events:none;
-        backdrop-filter:blur(2px);
-        -webkit-backdrop-filter:blur(2px);
-        mask-image:linear-gradient(to top, rgba(0,0,0,0) 60%, rgba(0,0,0,0.4) 100%);
-        -webkit-mask-image:linear-gradient(to top, rgba(0,0,0,0) 60%, rgba(0,0,0,0.4) 100%);
       }
       #start-messages {
         flex:1;
@@ -79,7 +68,7 @@
 <body>
   <div id="game-container"></div>
   <div id="start-overlay" class="hidden">
-    <div id="phone" class="gradient-blur">
+    <div id="phone">
       <div id="start-messages"></div>
       <div id="start-button">Clock In</div>
     </div>

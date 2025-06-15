@@ -6,18 +6,84 @@
   <title>Coffee Club</title>
   <script src="lib/phaser.min.js"></script>
   <script src="src/main.js" defer></script>
-  <style>
-    html, body, #game-container { margin:0; padding:0; width:100%; height:100%; overflow:hidden; }
-    body {
-      background: linear-gradient(to bottom, #cfa87e, #5c3b2a);
-    }
-    #game-container.blur {
-      filter: blur(4px);
-    }
-  </style>
+    <style>
+      html, body, #game-container { margin:0; padding:0; width:100%; height:100%; overflow:hidden; }
+      body {
+        background: linear-gradient(to bottom, #cfa87e, #5c3b2a);
+      }
+      #game-container.blur {
+        filter: blur(8px);
+      }
+      #start-overlay {
+        position:absolute;
+        top:0; left:0; right:0; bottom:0;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        pointer-events:none;
+      }
+      #start-overlay.hidden { display:none; }
+      #phone {
+        position:relative;
+        width:260px;
+        height:500px;
+        border-radius:30px;
+        background:#fff;
+        box-shadow:0 4px 10px rgba(0,0,0,0.4);
+        transform:perspective(800px) rotateX(12deg);
+        overflow:hidden;
+        display:flex;
+        flex-direction:column;
+        justify-content:flex-end;
+        pointer-events:auto;
+      }
+      #phone.gradient-blur::after {
+        content:'';
+        position:absolute;
+        inset:0;
+        pointer-events:none;
+        backdrop-filter:blur(2px);
+        -webkit-backdrop-filter:blur(2px);
+        mask-image:linear-gradient(to top, rgba(0,0,0,0) 60%, rgba(0,0,0,0.4) 100%);
+        -webkit-mask-image:linear-gradient(to top, rgba(0,0,0,0) 60%, rgba(0,0,0,0.4) 100%);
+      }
+      #start-messages {
+        flex:1;
+        padding:20px;
+        box-sizing:border-box;
+        display:flex;
+        flex-direction:column;
+        justify-content:flex-start;
+      }
+      #start-messages div {
+        background:#8bd48b;
+        padding:10px;
+        border-radius:10px;
+        margin-bottom:10px;
+        font:20px sans-serif;
+        color:#fff;
+      }
+      #start-button {
+        margin-bottom:40px;
+        padding:10px 20px;
+        background:#007bff;
+        color:#fff;
+        border-radius:15px;
+        font:32px sans-serif;
+        cursor:pointer;
+      }
+    </style>
 </head>
 <body>
   <div id="game-container"></div>
-</body>
+  <div id="start-overlay" class="hidden">
+    <div id="phone" class="gradient-blur">
+      <div id="start-messages"></div>
+      <div id="start-button">Clock In</div>
+    </div>
+  </div>
+  </body>
 </html>
 

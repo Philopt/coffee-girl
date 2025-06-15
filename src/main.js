@@ -497,7 +497,8 @@ export function setupGame(){
     if (typeof debugLog === 'function') debugLog('playIntro starting');
     scene = scene || this;
     if(!truck || !girl) return;
-    const offscreenX = scene.scale.width + 100;
+    const width = (scene.scale && scene.scale.width) ? scene.scale.width : 480;
+    const offscreenX = width + 100;
     truck.setPosition(offscreenX,245).setScale(0.462);
     girl.setPosition(offscreenX,260).setVisible(false);
     // engine vibration while the truck is driving

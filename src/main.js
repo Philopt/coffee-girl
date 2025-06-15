@@ -1148,6 +1148,9 @@ export let Assets, Scene, Customers, config;
 
   function showCustomerRevolt(cb){
     const scene=this;
+    clearDialog();
+    if(activeBubble){ activeBubble.destroy(); activeBubble=null; }
+    if (spawnTimer) { spawnTimer.remove(false); spawnTimer = null; }
     const attackers=[];
     const gatherStartY = Math.max(WANDER_TOP, girl.y + 60);
     const gather=(arr)=>{
@@ -1166,13 +1169,7 @@ export let Assets, Scene, Customers, config;
     gather(queue);
     gather(wanderers);
 
-    while(attackers.length<3){
-      const k=Phaser.Utils.Array.GetRandom(keys);
-      const ay=Phaser.Math.Between(gatherStartY, WANDER_BOTTOM);
-      const a=scene.add.sprite(Phaser.Math.Between(-40,520), ay, k)
-        .setScale(scaleForY(ay)).setDepth(20);
-      attackers.push(a);
-    }
+
 
     const loops=new Map();
     let hits=0;

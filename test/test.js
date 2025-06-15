@@ -315,7 +315,6 @@ function testShowDialogButtons() {
     scaleForY: () => 1,
     ORDER_X: 230,
     ORDER_Y: 310,
-    FRIEND_OFFSET: 40,
     queue: [],
     activeCustomer: null,
     drawDialogBubble: () => {},

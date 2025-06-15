@@ -596,14 +596,14 @@ export function setupGame(){
     truck.setPosition(offscreenX,245).setScale(0.462);
     girl.setPosition(offscreenX,260).setVisible(false);
     // engine vibration while the truck is driving
+    const vibrateAmp = { value: 2 * (truck.scaleX / 0.924) };
     const vibrateTween = (scene.tweens && scene.tweens.addCounter) ? scene.tweens.addCounter({
       from: 0,
       to: Math.PI * 2,
       duration: dur(100),
       repeat: -1,
       onUpdate: t => {
-        const amp = 2 * (truck.scaleX / 0.924);
-        const y = 245 + Math.sin(t.getValue()) * amp;
+        const y = 245 + Math.sin(t.getValue()) * vibrateAmp.value;
         if (truck.setY) {
           truck.setY(y);
         } else {
@@ -611,6 +611,15 @@ export function setupGame(){
         }
       }
     }) : { stop: ()=>{} };
+    if (scene.tweens && scene.tweens.add) {
+      scene.tweens.add({
+        targets: vibrateAmp,
+        value: 0,
+        duration: dur(600),
+        delay: dur(900),
+        ease: 'Sine.easeOut'
+      });
+    }
 
     // emit smoke puffs as the truck drives in
     let smokeDelay = 150;

@@ -7,6 +7,8 @@ const assert = require('assert');
 
 const { BUTTON_WIDTH, BUTTON_HEIGHT } = require('../src/ui.js');
 
+const DEBUG = process.env.DEBUG === '1';
+
 function testBlinkButton() {
   const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
   const start = code.indexOf('function blinkButton');
@@ -537,7 +539,7 @@ async function run() {
   });
 
   if (errors.length) {
-    console.error('Failed:', errors);
+    if (DEBUG) console.error('Failed:', errors);
     server.kill();
     process.exit(1);
   } else {
@@ -556,6 +558,6 @@ async function run() {
 }
 
 run().catch(err => {
-  console.error(err);
+  if (DEBUG) console.error(err);
   process.exit(1);
 });

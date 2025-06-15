@@ -31,7 +31,8 @@ The game uses [Phaser](https://phaser.io/). It will load `lib/phaser.min.js` by 
 
 1. Run `npm start` and open the game in a browser.
 2. If the truck never moves or "Clock In" does nothing, open the browser's developer console (usually F12).
-3. Look for messages like "Asset failed to load" or "init() did not execute."
+3. With debug logging enabled (see step 5), look for messages like
+   "Asset failed to load" or "init() did not execute."
 4. Verify all files in `assets/` load correctly and reload the page.
 5. To enable verbose logging, add `?debug=1` to the page URL or run
    `localStorage.DEBUG = '1'` in the browser console. For example:

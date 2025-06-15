@@ -802,10 +802,6 @@ export let Assets, Scene, Customers, config;
       activeBubble.destroy();
       activeBubble=null;
     }
-    const bubble=this.add.text(c.sprite.x,c.sprite.y-50,'💬',{font:'32px sans-serif',fill:'#000'})
-      .setOrigin(0.5).setDepth(11);
-    activeBubble=bubble;
-    this.tweens.add({targets:bubble,y:c.sprite.y-70,alpha:0,duration:dur(600),onComplete:()=>{bubble.destroy(); activeBubble=null;}});
 
     dialogText
       .setOrigin(0.5)

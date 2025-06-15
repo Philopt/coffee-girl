@@ -539,9 +539,9 @@ export let Assets, Scene, Customers, config;
       .setStrokeStyle(2,0x000)
       .setOrigin(0.5);
 
-    dialogPriceLabel=this.add.text(0,-20,'',{font:'14px sans-serif',fill:'#000',align:'center'})
+    dialogPriceLabel=this.add.text(0,-15,'',{font:'14px sans-serif',fill:'#000',align:'center'})
       .setOrigin(0.5);
-    dialogPriceValue=this.add.text(0,10,'',{font:'32px sans-serif',fill:'#000'})
+    dialogPriceValue=this.add.text(20,15,'',{font:'32px sans-serif',fill:'#000'})
       .setOrigin(0.5);
 
     dialogPriceContainer=this.add.container(0,0,[dialogPriceBox, dialogPriceLabel, dialogPriceValue])
@@ -797,13 +797,13 @@ export let Assets, Scene, Customers, config;
       .setStyle({fontSize:'14px',align:'center'})
       .setText('Total\nCost')
       .setOrigin(0.5)
-      .setPosition(0, -20);
+      .setPosition(0, -15);
     dialogPriceValue
       .setStyle({fontSize:'32px'})
       .setText(`$${totalCost.toFixed(2)}`)
       .setColor('#000')
       .setOrigin(0.5)
-      .setPosition(0, 10)
+      .setPosition(20, 15)
       .setScale(1)
       .setAlpha(1);
 
@@ -981,7 +981,7 @@ export let Assets, Scene, Customers, config;
       const stampY=ticket.y + t.y * ticket.scaleY;
       paidStamp
         .setText('PAID')
-        .setScale(2)
+        .setScale(1.5)
         .setPosition(stampX, stampY)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
@@ -996,12 +996,14 @@ export let Assets, Scene, Customers, config;
       let delay=dur(300);
       if(tip>0){
         this.time.delayedCall(delay,()=>{
-          const tipX = paidStamp.x - ticketW * 0.4;
-          const tipY = paidStamp.y;
+          const ticketH = dialogPriceBox.height;
+          const tipX = ticket.x - ticketW * 0.3;
+          const tipY = ticket.y - ticketH * 0.25;
           tipText
             .setText('TIP')
             .setScale(1.2)
             .setPosition(tipX, tipY)
+            .setAngle(Phaser.Math.Between(-15,15))
             .setVisible(true);
           t.setText(receipt(totalCost + tip));
           flashPrice();
@@ -1045,7 +1047,7 @@ export let Assets, Scene, Customers, config;
       const stampY=ticket.y + t.y * ticket.scaleY;
       lossStamp
         .setText('LOSS')
-        .setScale(2)
+        .setScale(1.5)
         .setPosition(stampX, stampY)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);

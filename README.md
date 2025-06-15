@@ -70,10 +70,10 @@ Customers can now order any of the following drinks:
 
 ## Running tests
 
-Before running the tests, install all dependencies:
+Before running the tests, install all dependencies using `npm ci` or `npm install`:
 
 ```bash
-npm install
+npm ci
 ```
 
 Then run the automated check. `npm test` relies on `node_modules/.bin/http-server` to start a local server and verify the page responds without errors:
@@ -82,9 +82,8 @@ Then run the automated check. `npm test` relies on `node_modules/.bin/http-serve
 npm test
 ```
 
-The test runner first verifies `src/main.js` parses without syntax errors by
-executing `npm run lint:syntax` as part of the `pretest` script before running
-ESLint.
+The test runner automatically runs `npm run lint` as part of the `pretest`
+script before executing the tests.
 
 ## GitHub Actions
 

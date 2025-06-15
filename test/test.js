@@ -553,6 +553,39 @@ async function testIntroSequence() {
   console.log('intro sequence test passed');
 }
 
+async function testFirstOrderDialog() {
+  const puppeteer = require('puppeteer');
+  const { PNG } = require('pngjs');
+  const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
+  const page = await browser.newPage();
+  await page.goto('http://localhost:8080');
+  await new Promise(r => setTimeout(r, 2000));
+
+  const rect = await page.evaluate(() => {
+    const c = document.querySelector('canvas');
+    const r = c.getBoundingClientRect();
+    return { x: r.left, y: r.top, w: r.width, h: r.height };
+  });
+
+  const clickX = rect.x + 240 * (rect.w / 480);
+  const clickY = rect.y + 508 * (rect.h / 640);
+  await page.mouse.click(clickX, clickY);
+  await new Promise(r => setTimeout(r, 7000));
+
+  const buf = await page.screenshot({ type: 'png' });
+  await browser.close();
+
+  const img = PNG.sync.read(buf);
+  const pixelX = Math.round(rect.x + 240 * (rect.w / 480));
+  const pixelY = Math.round(rect.y + 430 * (rect.h / 640));
+  const idx = (pixelY * img.width + pixelX) * 4;
+  const r = img.data[idx];
+  const g = img.data[idx + 1];
+  const b = img.data[idx + 2];
+  assert.ok(r > 200 && g > 200 && b > 200, 'order dialog not visible');
+  console.log('first order dialog test passed');
+}
+
 async function run() {
   const serverPath = require.resolve('http-server/bin/http-server');
   server = spawn(process.execPath, [serverPath, '-p', '8080', '-c-1'], { stdio: 'inherit' });
@@ -590,6 +623,7 @@ async function run() {
     testAnimateLoveChange();
     testScheduleNextSpawn();
     await testIntroSequence();
+    await testFirstOrderDialog();
   } finally {
     await killServer();
   }

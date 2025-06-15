@@ -59,6 +59,11 @@
   const START_PHONE_W = 260;
   const START_PHONE_H = 500;
 
+  // dimensions/positioning for the action buttons
+  const BUTTON_WIDTH = 160;
+  const BUTTON_HEIGHT = 60;
+  const BUTTON_Y = 560;
+
 
   let money=10.00, love=10, gameOver=false;
   let queue=[], activeCustomer=null, wanderers=[];
@@ -541,7 +546,7 @@
 
     // helper to create a rounded rectangle button with consistent sizing
     const createButton=(x,label,iconChar,iconSize,color,handler)=>{
-      const width=160, height=60, radius=8;
+      const width=BUTTON_WIDTH, height=BUTTON_HEIGHT, radius=8;
       const g=this.add.graphics();
       // Graphics objects do not support setShadow. Draw a simple shadow
       // manually by rendering a darker rect slightly offset behind the button.
@@ -561,7 +566,7 @@
         children=[g,icon,t];
       }
       // position the button slightly lower so it peeks out of the dialog box
-      const c=this.add.container(x,560,children)
+      const c=this.add.container(x,BUTTON_Y,children)
         .setSize(width,height)
         .setDepth(12)
         .setVisible(false);

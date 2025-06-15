@@ -168,8 +168,6 @@
           const w = btn.width !== undefined ? btn.width : (btn.displayWidth || 0);
           const h = btn.height !== undefined ? btn.height : (btn.displayHeight || 0);
           const area = new Phaser.Geom.Rectangle(-w/2, -h/2, w, h);
-
-          const area = new Phaser.Geom.Rectangle(-w/2, -h/2, w, h);
           btn.myHitArea = area;
 
           btn.setInteractive({

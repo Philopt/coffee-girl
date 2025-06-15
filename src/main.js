@@ -150,6 +150,26 @@ export let Assets, Scene, Customers, config;
     });
   }
 
+  function fadeInButtons(canAfford){
+    const buttons = [];
+    if (canAfford) buttons.push(btnSell);
+    buttons.push(btnGive, btnRef);
+    buttons.forEach(b => {
+      b.setAlpha(0).setVisible(true);
+      if (b.input) b.input.enabled = false;
+    });
+    this.tweens.add({
+      targets: buttons,
+      alpha: 1,
+      duration: dur(150),
+      onComplete: () => {
+        if (canAfford && btnSell.input) btnSell.input.enabled = true;
+        if (btnGive.input) btnGive.input.enabled = true;
+        if (btnRef.input) btnRef.input.enabled = true;
+      }
+    });
+  }
+
   const colorCache = {};
 
   function getDominantColor(scene, key){
@@ -827,11 +847,12 @@ export let Assets, Scene, Customers, config;
             y:priceTargetY,
             scale:1,
             duration:dur(300),
-            ease:'Sine.easeOut'
+            ease:'Sine.easeOut',
+            onComplete:()=>{ fadeInButtons.call(this, canAfford); }
           });
         };
         if(this.time && this.time.delayedCall){
-          this.time.delayedCall(dur(500), showPrice, [], this);
+          this.time.delayedCall(dur(250), showPrice, [], this);
         }else{
           showPrice();
         }
@@ -839,12 +860,6 @@ export let Assets, Scene, Customers, config;
     });
 
     tipText.setVisible(false);
-    btnSell.setVisible(canAfford);
-    if (btnSell.input) btnSell.input.enabled = canAfford;
-    btnGive.setVisible(true);
-    if (btnGive.input) btnGive.input.enabled = true;
-    btnRef.setVisible(true);
-    if (btnRef.input) btnRef.input.enabled = true;
   }
 
   function clearDialog(keepPrice=false){

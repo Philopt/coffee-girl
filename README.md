@@ -86,6 +86,12 @@ The test runner first verifies `src/main.js` parses without syntax errors by
 executing `npm run lint:syntax` as part of the `pretest` script before running
 ESLint.
 
+## GitHub Actions
+
+This project runs a continuous integration workflow defined in
+[`.github/workflows/node.yml`](.github/workflows/node.yml). The workflow runs on
+pushes and pull requests, caches npm modules, then runs `npm ci` and `npm test`.
+
 ## License
 
 This project is released under the MIT License.

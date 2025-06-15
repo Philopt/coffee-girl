@@ -626,7 +626,7 @@ export function setupGame(){
         }
         scheduleNextSpawn(scene);
       }});
-    intro.add({targets:truck,x:240,scale:0.924,duration:dur(1500)});
+    intro.add({targets:truck,x:240,scale:0.924,duration:dur(1500),ease:'Sine.easeOut'});
     intro.add({targets:girl,x:240,duration:dur(1200)},0);
     intro.add({targets:girl,y:292,duration:dur(300),onStart:()=>girl.setVisible(true)},1200);
     intro.play();

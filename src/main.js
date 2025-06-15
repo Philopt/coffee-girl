@@ -985,6 +985,19 @@ export function setupGame(){
   function showDialog(){
     if(!dialogBg || !dialogText || !dialogCoins || !dialogPriceLabel ||
        !dialogPriceValue || !btnSell || !btnGive || !btnRef){
+      if (DEBUG) {
+        const missing = [
+          !dialogBg && 'dialogBg',
+          !dialogText && 'dialogText',
+          !dialogCoins && 'dialogCoins',
+          !dialogPriceLabel && 'dialogPriceLabel',
+          !dialogPriceValue && 'dialogPriceValue',
+          !btnSell && 'btnSell',
+          !btnGive && 'btnGive',
+          !btnRef && 'btnRef'
+        ].filter(Boolean).join(', ');
+        console.warn(`showDialog skipped: missing ${missing}`);
+      }
       return;
     }
     if(dialogPriceBox) dialogPriceBox.fillAlpha = 1;

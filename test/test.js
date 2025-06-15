@@ -346,7 +346,6 @@ function testShowDialogButtons() {
     btnGive: makeObj(),
     btnRef: makeObj(),
     tipText: makeObj(),
-    activeBubble: null,
     emojiFor: () => '☕',
     articleFor: () => 'a',
     scaleForY: () => 1,

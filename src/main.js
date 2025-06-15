@@ -214,7 +214,6 @@ export function setupGame(){
   let reportLine1, reportLine2, reportLine3, tipText;
   let paidStamp, lossStamp;
   let truck, girl;
-  let activeBubble=null;
   let sideCText;
   let servedCount=0;
   let sideCAlpha=0;
@@ -1012,10 +1011,6 @@ export function setupGame(){
       ? `I want ${articleFor(c.orders[0].req)} ${c.orders[0].req}`
       : `I want ${itemStr}`;
 
-    if(activeBubble){
-      activeBubble.destroy();
-      activeBubble=null;
-    }
 
     dialogText
       .setOrigin(0.5)
@@ -1553,7 +1548,6 @@ export function setupGame(){
     scene.tweens.killAll();
     scene.time.removeAllEvents();
     clearDialog();
-    if(activeBubble){ activeBubble.destroy(); activeBubble=null; }
     falconActive = true;
     gameOver = true;
     if (spawnTimer) { spawnTimer.remove(false); spawnTimer = null; }
@@ -1658,7 +1652,6 @@ export function setupGame(){
     scene.tweens.killAll();
     scene.time.removeAllEvents();
     clearDialog();
-    if(activeBubble){ activeBubble.destroy(); activeBubble=null; }
     if (spawnTimer) { spawnTimer.remove(false); spawnTimer = null; }
     const attackers=[];
     const gatherStartY = Math.max(WANDER_TOP, girl.y + 60);
@@ -1809,7 +1802,6 @@ export function setupGame(){
     clearDialog();
     if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
     if(sideCText){ sideCText.destroy(); sideCText=null; }
-    if(activeBubble){ activeBubble.destroy(); activeBubble=null; }
     reportLine1.setVisible(false);
     reportLine2.setVisible(false);
     reportLine3.setVisible(false);

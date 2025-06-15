@@ -266,13 +266,18 @@ export function setupGame(){
       const idx=queue.length;
       c.atOrder=false;
       queue.push(c);
+      if (typeof debugLog === 'function') debugLog('customer lured to queue');
       activeCustomer=queue[0];
       const targetX = idx===0 ? ORDER_X : QUEUE_X - QUEUE_SPACING*(idx-1);
       const targetY = idx===0 ? ORDER_Y : QUEUE_Y - QUEUE_OFFSET*(idx-1);
       const dist=Phaser.Math.Distance.Between(c.sprite.x,c.sprite.y,targetX,targetY);
       c.sprite.setDepth(5);
       c.walkTween=scene.tweens.add({targets:c.sprite,x:targetX,y:targetY,scale:scaleForY(targetY),duration:dur(600+dist*2),ease:'Sine.easeIn',callbackScope:scene,
-        onComplete:()=>{c.walkTween=null; if(idx===0) showDialog.call(scene);} });
+        onComplete:()=>{
+          if (idx===0 && typeof debugLog === 'function') debugLog('customer reached order position');
+          c.walkTween=null;
+          if(idx===0) showDialog.call(scene);
+        }});
       if(typeof checkQueueSpacing==='function') checkQueueSpacing(scene);
     }
   }
@@ -286,7 +291,10 @@ export function setupGame(){
       if(cust.sprite.y!==ty || cust.sprite.x!==tx){
         const cfg={targets:cust.sprite,x:tx,y:ty,scale:scaleForY(ty),duration:dur(300)};
         if(idx===0){
-          cfg.onComplete=()=>{ showDialog.call(scene); };
+          cfg.onComplete=()=>{
+            if (typeof debugLog === 'function') debugLog('customer reached order position');
+            showDialog.call(scene);
+          };
           willShow=true;
         }
         scene.tweens.add(cfg);
@@ -295,6 +303,7 @@ export function setupGame(){
     activeCustomer=queue[0]||null;
     if(activeCustomer){
       if(!willShow && activeCustomer.sprite.y===ORDER_Y && activeCustomer.sprite.x===ORDER_X){
+        if (typeof debugLog === 'function') debugLog('customer reached order position');
         showDialog.call(scene);
       }
     }
@@ -983,6 +992,7 @@ export function setupGame(){
   }
 
   function showDialog(){
+    if (typeof debugLog === 'function') debugLog('showDialog start');
     if(!dialogBg || !dialogText || !dialogCoins || !dialogPriceLabel ||
        !dialogPriceValue || !btnSell || !btnGive || !btnRef){
       return;
@@ -1139,6 +1149,7 @@ export function setupGame(){
     });
 
     tipText.setVisible(false);
+    if (typeof debugLog === 'function') debugLog('showDialog end');
   }
 
   function clearDialog(keepPrice=false){

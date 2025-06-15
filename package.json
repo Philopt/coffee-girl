@@ -7,7 +7,7 @@
     "pretest": "npm run lint",
     "test": "node test/test.js",
     "lint": "eslint -c eslint.config.js src/*.js test/*.js",
-    "lint:syntax": "node -c src/main.js"
+    "lint:syntax": "sh -c 'for f in src/*.js; do node -c \"$f\"; done'"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",

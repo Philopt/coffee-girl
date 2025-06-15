@@ -1,4 +1,3 @@
-/* global phoneDamage */
 import { debugLog } from './debug.js';
 import { dur, scaleForY, articleFor, flashMoney, START_PHONE_W, START_PHONE_H, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_Y, DIALOG_Y } from "./ui.js";
 import { MENU, SPAWN_DELAY, SPAWN_VARIANCE, QUEUE_SPACING, ORDER_X, ORDER_Y, QUEUE_X, QUEUE_OFFSET, QUEUE_Y, WANDER_TOP, WANDER_BOTTOM, BASE_WAITERS, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel, maxWanderers as customersMaxWanderers, queueLimit as customersQueueLimit } from "./customers.js";
@@ -21,9 +20,6 @@ export let Assets, Scene, Customers, config;
   let falconActive = false;
   let loveLevel=1;
 
-  let phoneDamage = 0;
-
-  let flickerEvent;
   const keys=[];
   const requiredAssets=['bg','truck','girl','lady_falcon','falcon_end','revolt_end'];
   const genzSprites=[
@@ -361,70 +357,9 @@ export let Assets, Scene, Customers, config;
   }
 
 
-  function addPhoneDamageEffects(scene, container, phoneW, phoneH, homeH){
-    if(phoneDamage<=0 || !scene || !container) return;
-    const screenTop=-phoneH/2+6;
-    const screenBottom=phoneH/2-homeH-12;
-    const screenH=screenBottom-screenTop;
-    const cracks=scene.add.graphics();
-    cracks.lineStyle(2,0x000000,0.9);
-    if(phoneDamage>=1){
-      cracks.beginPath();
-      cracks.moveTo(-phoneW/2+20, screenTop+screenH*0.4);
-      cracks.lineTo(-phoneW/4, screenTop+screenH*0.55);
-      cracks.lineTo(-phoneW/8, screenTop+screenH*0.65);
-      cracks.strokePath();
-      const flick=scene.add.rectangle(0,screenTop,phoneW-12,screenH,0x000000,0).setOrigin(0.5,0);
-      container.add(flick);
-      const blink=()=>{
-        scene.tweens.add({targets:flick,alpha:1,duration:dur(60),yoyo:true});
-        if(typeof flickerEvent!=='undefined')
-          flickerEvent=scene.time.delayedCall(Phaser.Math.Between(1500,3000),blink,[],scene);
-      };
-      if(typeof flickerEvent!=='undefined')
-        flickerEvent=scene.time.delayedCall(Phaser.Math.Between(1000,2000),blink,[],scene);
-    }
-    if(phoneDamage>=2){
-      cracks.lineStyle(3,0x000000,0.9);
-      cracks.beginPath();
-      cracks.moveTo(phoneW/2-20, screenTop+screenH*0.1);
-      cracks.lineTo(phoneW/8, screenTop+screenH*0.25);
-      cracks.lineTo(phoneW/4, screenTop+screenH*0.45);
-      cracks.strokePath();
-      const p1={x:-phoneW/2+20,y:screenTop+screenH*0.4};
-      const p2={x:-phoneW/4,y:screenTop+screenH*0.55};
-      const p3={x:phoneW/2-20,y:screenTop+screenH*0.1};
-      const p4={x:phoneW/8,y:screenTop+screenH*0.25};
-      const denom=(p1.x-p2.x)*(p3.y-p4.y)-(p1.y-p2.y)*(p3.x-p4.x);
-      let ix=p4.x, iy=p4.y;
-      if(denom!==0){
-        ix=((p1.x*p2.y-p1.y*p2.x)*(p3.x-p4.x)-(p1.x-p2.x)*(p3.x*p4.y-p3.y*p4.x))/denom;
-        iy=((p1.x*p2.y-p1.y*p2.x)*(p3.y-p4.y)-(p1.y-p2.y)*(p3.x*p4.y-p3.y*p4.x))/denom;
-      }
-      const dark=scene.add.graphics();
-      dark.fillStyle(0x000000,0.4);
-      dark.beginPath();
-      dark.moveTo(p1.x,p1.y);
-      dark.lineTo(ix,iy);
-      dark.lineTo(p3.x,p3.y);
-      dark.closePath();
-      dark.fillPath();
-      container.add(dark);
-    }
-    if(phoneDamage>=3){
-      cracks.beginPath();
-      cracks.moveTo(-phoneW/2+30, screenBottom-screenH*0.1);
-      cracks.lineTo(0, screenBottom-screenH*0.25);
-      cracks.lineTo(phoneW/3, screenBottom-screenH*0.15);
-      cracks.strokePath();
-    }
-    container.add(cracks);
-  }
-
-
   function showStartScreen(scene){
     scene = scene || this;
-    debugLog('showStartScreen called');
+    if (typeof debugLog === 'function') debugLog('showStartScreen called');
     // reset any pending timers or bubbles from a previous session
     startMsgTimers.forEach(t => t.remove(false));
     startMsgTimers = [];
@@ -511,7 +446,7 @@ export let Assets, Scene, Customers, config;
         }
       }
       startZone.on('pointerdown',()=>{
-        debugLog('start button clicked');
+        if (typeof debugLog === 'function') debugLog('start button clicked');
         startMsgTimers.forEach(t=>t.remove(false));
         startMsgTimers=[];
         startMsgBubbles=[];
@@ -531,15 +466,17 @@ export let Assets, Scene, Customers, config;
       console.warn('playIntro skipped: missing truck or girl');
       return;
     }
-    debugLog('playIntro starting');
+    if (typeof debugLog === 'function') debugLog('playIntro starting');
     scene = scene || this;
     if(!truck || !girl) return;
     truck.setPosition(560,245);
     girl.setPosition(560,260).setVisible(false);
     const intro=scene.tweens.createTimeline({callbackScope:scene,
       onComplete:()=>{
-        debugLog('intro finished');
-        debugLog('playIntro finished');
+        if (typeof debugLog === 'function') {
+          debugLog('intro finished');
+          debugLog('playIntro finished');
+        }
         spawnCustomer.call(scene);
         scheduleNextSpawn(scene);
       }});

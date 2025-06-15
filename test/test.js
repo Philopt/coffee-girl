@@ -21,8 +21,8 @@ function testBlinkButton() {
   let disableCalled = false;
   let setArgs = null;
   const btn = {
-    width: 120,
-    height: 40,
+    width: 160,
+    height: 60,
     input: { enabled: true },
     disableInteractive() { disableCalled = true; this.input.enabled = false; },
     setInteractive(rect, cb) { setArgs = { rect, cb }; this.input.enabled = true; }

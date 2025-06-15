@@ -540,7 +540,7 @@
 
     // helper to create a rounded rectangle button with consistent sizing
     const createButton=(x,label,iconChar,iconSize,color,handler)=>{
-      const width=120, height=40, radius=8;
+      const width=160, height=60, radius=8;
       const g=this.add.graphics();
       // Graphics objects do not support setShadow. Draw a simple shadow
       // manually by rendering a darker rect slightly offset behind the button.
@@ -560,7 +560,7 @@
         children=[g,icon,t];
       }
       // position the button slightly lower so it peeks out of the dialog box
-      const c=this.add.container(x,520,children)
+      const c=this.add.container(x,560,children)
         .setSize(width,height)
         .setDepth(12)
         .setVisible(false);

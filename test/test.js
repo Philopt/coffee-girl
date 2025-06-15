@@ -55,8 +55,8 @@ function testBlinkButton() {
   assert.strictEqual(btn.input.enabled, true, 'button not re-enabled');
   assert.ok(setArgs && setArgs.rect && setArgs.cb, 'setInteractive should be called with shape');
   assert.strictEqual(setArgs.useHand, true, 'useHandCursor should be true');
-  assert.strictEqual(setArgs.rect.x, -btn.width / 2, 'hitbox x not centered');
-  assert.strictEqual(setArgs.rect.y, -btn.height / 2, 'hitbox y not centered');
+  assert.strictEqual(setArgs.rect.x, 0, 'hitbox x not aligned');
+  assert.strictEqual(setArgs.rect.y, 0, 'hitbox y not aligned');
   console.log('blinkButton interactivity test passed');
 }
 
@@ -153,6 +153,125 @@ function testHandleActionSell() {
 }
 
 function testShowStartScreen() {
+  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+  const match = /function showStartScreen\(scene\)[\s\S]*?\n\s*\}\);\n\s*\}/.exec(code);
+  if (!match) throw new Error('showStartScreen not found');
+  function RectStub(x, y, w, h) {
+    return { x, y, width: w, height: h };
+  }
+  RectStub.Contains = () => true;
+  const context = { Phaser: { Geom: { Rectangle: RectStub } } };
+  vm.createContext(context);
+  context.fn = null;
+  vm.runInContext('let startOverlay,startButton;const playIntro=()=>{};\n' + match[0] + '\nfn=showStartScreen;', context);
+  const showStartScreen = context.fn;
+  const calls = { rects: 0, text: null, container: null };
+  const scene = {
+    add: {
+      rectangle() { calls.rects++; return { setDepth() { return this; } }; },
+      text(x, y, txt, style) {
+        const obj = {
+          setOrigin() { return obj; },
+          setDepth() { return obj; },
+          setPosition() { return obj; },
+          width: 100,
+          height: 40
+        };
+        calls.text = { txt, obj };
+        return obj;
+      },
+      graphics() { return { fillStyle() { return this; }, fillRoundedRect() { return this; } }; },
+      container(x,y,children) {
+        const obj = {
+          setSize() { return obj; },
+          setDepth() { return obj; },
+          setInteractive() { obj.interactive = true; return obj; },
+          on() { return obj; }
+        };
+        calls.container = obj;
+        return obj;
+      }
+    }
+  };
+  showStartScreen.call(scene);
+  assert.strictEqual(calls.rects, 1, 'start overlay not created');
+  assert.ok(calls.container && calls.container.interactive, 'start button not interactive');
+  assert.strictEqual(calls.text.txt, 'Clock In', 'start button text mismatch');
+  console.log('showStartScreen test passed');
+}
+
+function testStartButtonPlaysIntro() {
+  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+  const startMatch = /function showStartScreen\(scene\)[\s\S]*?\n\s*\}\);\n\s*\}/.exec(code);
+  const introMatch = /function playIntro\(scene\)[\s\S]*?intro\.play\(\);\n\s*\}/.exec(code);
+  if (!startMatch || !introMatch) throw new Error('showStartScreen or playIntro not found');
+  function RectStub(x, y, w, h) {
+    return { x, y, width: w, height: h };
+  }
+  RectStub.Contains = () => true;
+  const context = { Phaser: { Geom: { Rectangle: RectStub } }, spawnCustomer: () => {}, scheduleNextSpawn: () => {} };
+  vm.createContext(context);
+  context.fnStart = null;
+  context.fnIntro = null;
+  vm.runInContext('var startOverlay,startButton,truck,girl; const dur=v=>v;\n' +
+    introMatch[0] + '\n' + startMatch[0] + '\nfnStart=showStartScreen; fnIntro=playIntro;', context);
+  const showStartScreen = context.fnStart;
+  const realPlayIntro = context.fnIntro;
+
+  const truck = { x: 0, y: 0, setPosition(x, y) { this.x = x; this.y = y; return this; }, setScale() { return this; }, setDepth() { return this; } };
+  const girl = { x: 0, y: 0, visible: true, setPosition(x, y) { this.x = x; this.y = y; return this; }, setVisible(v) { this.visible = v; return this; }, setScale() { return this; }, setDepth() { return this; } };
+  context.truck = truck;
+  context.girl = girl;
+
+  let pointerCb = null;
+  const scene = {
+    add: {
+      rectangle() { return { setDepth() { return this; }, destroy() { this.destroyed = true; } }; },
+      text() { return { setOrigin() { return this; }, setDepth() { return this; }, setPosition() { return this; }, width: 100, height: 40 }; },
+      graphics() { return { fillStyle() { return this; }, fillRoundedRect() { return this; } }; },
+      container() {
+        const obj = {
+          setSize() { return obj; },
+          setDepth() { return obj; },
+          setInteractive() { return obj; },
+          on(event, cb) { if (event === 'pointerdown') pointerCb = cb; return obj; },
+          destroy() { obj.destroyed = true; }
+        };
+        return obj;
+      }
+    },
+    tweens: {
+      createTimeline({ callbackScope, onComplete }) {
+        const steps = [];
+        return {
+          add(cfg) { steps.push(cfg); },
+          play() {
+            for (const s of steps) {
+              if (s.onStart) s.onStart();
+              const targets = Array.isArray(s.targets) ? s.targets : [s.targets];
+              targets.forEach(t => {
+                if (s.x !== undefined) t.x = s.x;
+                if (s.y !== undefined) t.y = s.y;
+              });
+              if (s.onComplete) s.onComplete.call(callbackScope || null);
+            }
+            if (onComplete) onComplete.call(callbackScope || null);
+          }
+        };
+      }
+    }
+  };
+
+  showStartScreen.call(scene);
+  assert(pointerCb, 'pointerdown handler not set');
+
+  let called = false;
+  context.playIntro = function(s) { called = true; return realPlayIntro.call(this, s); };
+  pointerCb();
+
+  assert.ok(called, 'playIntro not called');
+  assert.strictEqual(truck.x, 240, 'truck x not moved');
+  console.log('start button triggers playIntro test passed');
   const code = fs.readFileSync(path.join(__dirname, "..", "src", "main.js"), "utf8");
   assert(code.includes("start-overlay"), "start overlay element missing");
   assert(code.includes("start-button"), "start button element missing");

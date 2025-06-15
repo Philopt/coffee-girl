@@ -919,32 +919,51 @@ export let Assets, Scene, Customers, config;
     activeCustomer=null;
 
     const finish=()=>{
-      const targets=[current.sprite];
-      targets.forEach(t=>t.setDepth(5));
-      this.tweens.add({ targets: targets, x: (type==='refuse'? -50:520), alpha:0, duration:dur(WALK_OFF_BASE), callbackScope:this,
-        onComplete:()=>{
-          current.sprite.destroy();
-          queue.shift();
-          moveQueueForward.call(this);
-          if(money<=0){
-            showFalconAttack.call(this,()=>{
-              showEnd.call(this,'Game Over\nYou lost all the money.\nLady Falcon reclaims the coffee truck.');
-            });
-            return;
-          }
-          if(love<=0){
-            showCustomerRevolt.call(this,()=>{
-              showEnd.call(this,'Game Over\nThe Customers Revolt!\n(and they stole your truck)');
-            });
-            return;
-          }
-          if(money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
-          if(love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
-          scheduleNextSpawn(this);
-          servedCount++;
-          updateSideC.call(this);
+      const exit=()=>{
+        current.sprite.destroy();
+        queue.shift();
+        moveQueueForward.call(this);
+        if(money<=0){
+          showFalconAttack.call(this,()=>{
+            showEnd.call(this,'Game Over\nYou lost all the money.\nLady Falcon reclaims the coffee truck.');
+          });
+          return;
         }
-      });
+        if(love<=0){
+          showCustomerRevolt.call(this,()=>{
+            showEnd.call(this,'Game Over\nThe Customers Revolt!\n(and they stole your truck)');
+          });
+          return;
+        }
+        if(money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
+        if(love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
+        scheduleNextSpawn(this);
+        servedCount++;
+        updateSideC.call(this);
+      };
+
+      const sprite=current.sprite;
+      sprite.setDepth(5);
+
+      if(type==='refuse'){
+        const tl=this.tweens.createTimeline({callbackScope:this,onComplete:exit});
+        for(let i=0;i<2;i++){
+          tl.add({targets:sprite,y:sprite.y-20,duration:dur(120),yoyo:true});
+        }
+        for(let i=0;i<2;i++){
+          tl.add({targets:sprite,x:'+=10',duration:dur(80),yoyo:true});
+        }
+        tl.add({targets:sprite,x:-50,alpha:0,duration:dur(WALK_OFF_BASE)});
+        tl.play();
+      }else{
+        const startX=sprite.x;
+        const destY=700;
+        const amp=Phaser.Math.Between(10,25);
+        const freq=Phaser.Math.Between(2,4);
+        this.tweens.add({targets:sprite,y:destY,alpha:0,duration:dur(WALK_OFF_BASE),callbackScope:this,
+          onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+Math.sin(p*Math.PI*freq)*amp;},
+          onComplete:exit});
+      }
     };
 
     // animated report using timelines

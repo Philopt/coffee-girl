@@ -175,6 +175,9 @@ import { debugLog } from './debug.js';
           if (btn.input && btn.input.hitArea) {
             btn.input.hitArea.x = area.x;
             btn.input.hitArea.y = area.y;
+            if (typeof btn.input.hitArea.setTo === 'function') {
+              btn.input.hitArea.setTo(area.x, area.y, area.width, area.height);
+            }
           }
         }
         if (onComplete) onComplete();
@@ -384,6 +387,10 @@ import { debugLog } from './debug.js';
     if (startButton.input && startButton.input.hitArea) {
       startButton.input.hitArea.x = startButton.myHitArea.x;
       startButton.input.hitArea.y = startButton.myHitArea.y;
+      if (typeof startButton.input.hitArea.setTo === 'function') {
+        startButton.input.hitArea.setTo(startButton.myHitArea.x, startButton.myHitArea.y,
+          startButton.myHitArea.width, startButton.myHitArea.height);
+      }
     }
 
     // position the phone closer to the center of the screen
@@ -514,6 +521,10 @@ import { debugLog } from './debug.js';
       if (retry.input && retry.input.hitArea) {
         retry.input.hitArea.x = -retry.width / 2;
         retry.input.hitArea.y = -retry.height / 2;
+        if (typeof retry.input.hitArea.setTo === 'function') {
+          retry.input.hitArea.setTo(-retry.width / 2, -retry.height / 2,
+            retry.width, retry.height);
+        }
       }
       retry.on('pointerdown',()=>window.location.reload());
       return;
@@ -612,6 +623,10 @@ import { debugLog } from './debug.js';
         // explicitly adjust the input shape after setInteractive
         c.input.hitArea.x = c.myHitArea.x;
         c.input.hitArea.y = c.myHitArea.y;
+        if (typeof c.input.hitArea.setTo === 'function') {
+          c.input.hitArea.setTo(c.myHitArea.x, c.myHitArea.y,
+            c.myHitArea.width, c.myHitArea.height);
+        }
       }
       c.on('pointerdown',()=>blinkButton.call(this,c,handler));
       return c;
@@ -1302,6 +1317,10 @@ import { debugLog } from './debug.js';
     if (btn.input && btn.input.hitArea) {
       btn.input.hitArea.x = -btn.width / 2;
       btn.input.hitArea.y = -btn.height / 2;
+      if (typeof btn.input.hitArea.setTo === 'function') {
+        btn.input.hitArea.setTo(-btn.width / 2, -btn.height / 2,
+          btn.width, btn.height);
+      }
     }
     btn.on('pointerdown',()=>{
         bg.destroy(); txt.destroy(); btn.destroy(); if(titleText) titleText.destroy(); if(img) img.destroy();

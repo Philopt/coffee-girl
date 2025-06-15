@@ -540,7 +540,7 @@
       .setVisible(false)
       .setDepth(10);
     dialogBg.x=240;
-    dialogBg.y=460;
+    dialogBg.y=430; // raise bubble slightly
     dialogBg.width=360; // narrower bubble
     dialogBg.height=120;
 
@@ -550,13 +550,13 @@
       .setVisible(false)
       .setDepth(10);
 
-    dialogText=this.add.text(240,440,'',{font:'20px sans-serif',fill:'#000',align:'center',wordWrap:{width:300}})
+    dialogText=this.add.text(240,410,'',{font:'20px sans-serif',fill:'#000',align:'center',wordWrap:{width:300}})
                      .setOrigin(0,0.5).setVisible(false).setDepth(11);
-    dialogCoins=this.add.text(240,470,'',{font:'20px sans-serif',fill:'#000'})
+    dialogCoins=this.add.text(240,440,'',{font:'20px sans-serif',fill:'#000'})
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
-    dialogPriceLabel=this.add.text(240,456,'',{font:'14px sans-serif',fill:'#000',align:'center'})
+    dialogPriceLabel=this.add.text(240,436,'',{font:'14px sans-serif',fill:'#000',align:'center'})
       .setOrigin(0.5).setVisible(false).setDepth(11);
-    dialogPriceValue=this.add.text(240,480,'',{font:'32px sans-serif',fill:'#000'})
+    dialogPriceValue=this.add.text(240,460,'',{font:'32px sans-serif',fill:'#000'})
       .setOrigin(0.5).setVisible(false).setDepth(11);
 
     // helper to create a rounded rectangle button with consistent sizing
@@ -672,8 +672,8 @@
     dialogBg.clear();
     dialogBg.fillStyle(0xffffff,1);
     dialogBg.lineStyle(2,0x000,1);
-    dialogBg.fillRoundedRect(-w/2,-h/2,w,h,16);
-    dialogBg.strokeRoundedRect(-w/2,-h/2,w,h,16);
+    dialogBg.fillRoundedRect(-w/2,-h/2,w,h,24); // rounder corners
+    dialogBg.strokeRoundedRect(-w/2,-h/2,w,h,24);
     if(targetX!==undefined && targetY!==undefined){
       const tx = targetX - dialogBg.x;
       const ty = targetY - dialogBg.y;
@@ -683,7 +683,6 @@
       const tipX = tx * 0.5;
       const tipY = by + (ty - by) * 0.5;
       dialogBg.fillTriangle(bx1, by, bx2, by, tipX, tipY);
-      dialogBg.strokeTriangle(bx1, by, bx2, by, tipX, tipY);
     }
   }
 
@@ -710,7 +709,7 @@
     dialogBg.setVisible(true);
     drawDialogBubble(c.sprite.x, c.sprite.y);
     dialogPriceBox
-      .setPosition(dialogBg.x + dialogBg.width/2 - 60, dialogBg.y - dialogBg.height)
+      .setPosition(dialogBg.x + dialogBg.width/2 - 40, dialogBg.y - dialogBg.height + 10)
       .setVisible(true);
     const itemStr=c.orders.map(o=>{
       return o.qty>1 ? `${o.qty} ${o.req}` : o.req;
@@ -728,7 +727,7 @@
     this.tweens.add({targets:bubble,y:c.sprite.y-70,alpha:0,duration:dur(600),onComplete:()=>{bubble.destroy(); activeBubble=null;}});
     dialogText
       .setOrigin(0,0.5)
-      .setPosition(dialogBg.x-dialogBg.width/2+40,440)
+      .setPosition(dialogBg.x - dialogBg.width/2 + 40, dialogBg.y - 20)
       .setText(wantLine)
       .setVisible(true);
     const totalCost=c.orders.reduce((s,o)=>s+o.price*o.qty,0);
@@ -744,7 +743,7 @@
     }
     dialogCoins
       .setOrigin(0,0.5)
-      .setPosition(dialogBg.x-dialogBg.width/2+40,470)
+      .setPosition(dialogBg.x - dialogBg.width/2 + 40, dialogBg.y + 10)
       .setStyle({fontSize:'20px'})
       .setText(coinLine)
       .setVisible(true);

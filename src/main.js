@@ -150,6 +150,43 @@ export let Assets, Scene, Customers, config;
     });
   }
 
+  const colorCache = {};
+
+  function getDominantColor(scene, key){
+    if(colorCache[key]) return colorCache[key];
+    const tex = scene.textures.get(key);
+    if(!tex) return 0xffffff;
+    const src = tex.getSourceImage();
+    const cv = scene.textures.createCanvas('tmp-'+key, src.width, src.height);
+    cv.draw(0,0,src);
+    cv.update();
+    const data = cv.context.getImageData(0,0,src.width,src.height).data;
+    scene.textures.remove('tmp-'+key);
+    const counts = {};
+    for(let i=0;i<data.length;i+=4){
+      if(data[i+3]===0) continue;
+      const rgb=(data[i]<<16)|(data[i+1]<<8)|data[i+2];
+      counts[rgb]=(counts[rgb]||0)+1;
+    }
+    let best=0, color=0xffffff;
+    for(const k in counts){
+      const v=counts[k];
+      if(v>best){ best=v; color=+k; }
+    }
+    colorCache[key]=color;
+    return color;
+  }
+
+  function tintWithWhite(color, amount=0.2){
+    const r=(color>>16)&0xff;
+    const g=(color>>8)&0xff;
+    const b=color&0xff;
+    const r2=Math.round(255*(1-amount)+r*amount);
+    const g2=Math.round(255*(1-amount)+g*amount);
+    const b2=Math.round(255*(1-amount)+b*amount);
+    return (r2<<16)|(g2<<8)|b2;
+  }
+
 
 
   let moneyText, loveText, queueLevelText;
@@ -497,7 +534,7 @@ export let Assets, Scene, Customers, config;
     dialogBg.width=360; // starting size, adjusted later
     dialogBg.height=120;
 
-    dialogPriceBox=this.add.rectangle(0,0,120,80,0xdddddd)
+    dialogPriceBox=this.add.rectangle(0,0,120,80,0xffeeb5)
       .setStrokeStyle(2,0x000)
       .setOrigin(0.5);
 
@@ -622,11 +659,11 @@ export let Assets, Scene, Customers, config;
 
   }
 
-  function drawDialogBubble(targetX, targetY){
+  function drawDialogBubble(targetX, targetY, fillColor=0xffffff){
     if(!dialogBg) return;
     const w=dialogBg.width, h=dialogBg.height;
     dialogBg.clear();
-    dialogBg.fillStyle(0xffffff,1);
+    dialogBg.fillStyle(fillColor,1);
     dialogBg.lineStyle(2,0x000,1);
     dialogBg.fillRoundedRect(-w/2,-h/2,w,h,24); // rounder corners
     dialogBg.strokeRoundedRect(-w/2,-h/2,w,h,24);
@@ -722,21 +759,26 @@ export let Assets, Scene, Customers, config;
     dialogBg.setScale(0).setVisible(true);
     dialogText.setScale(0);
     dialogCoins.setScale(0);
-    drawDialogBubble(c.sprite.x, c.sprite.y);
+    let bubbleColor=0xffffff;
+    if(c.sprite.texture && typeof getDominantColor==='function' && typeof tintWithWhite==='function'){
+      const domColor=getDominantColor(this,c.sprite.texture.key);
+      bubbleColor=tintWithWhite(domColor,0.2);
+    }
+    drawDialogBubble(c.sprite.x, c.sprite.y, bubbleColor);
 
-    const priceTargetX = dialogBg.x + dialogBg.width/2 - 60;
+    const priceTargetX = dialogBg.x + dialogBg.width/2 - 40;
     const priceTargetY = dialogBg.y - dialogBg.height;
-    const girlX = (typeof girl !== 'undefined' && girl) ? girl.x : dialogBg.x;
+    const girlX = (typeof girl !== 'undefined' && girl) ? girl.x + 40 : dialogBg.x;
     const girlY = (typeof girl !== 'undefined' && girl) ? girl.y - 20 : dialogBg.y;
     dialogPriceContainer
       .setPosition(girlX, girlY)
       .setScale(0.2)
       .setVisible(false);
-    if(dialogPriceBox){
-      if(dialogPriceBox.setFillStyle){
-        dialogPriceBox.setFillStyle(0xdddddd,1);
-      }else if(dialogPriceBox.fillStyle){
-        dialogPriceBox.fillStyle(0xdddddd,1);
+      if(dialogPriceBox){
+        if(dialogPriceBox.setFillStyle){
+          dialogPriceBox.setFillStyle(0xffeeb5,1);
+        }else if(dialogPriceBox.fillStyle){
+          dialogPriceBox.fillStyle(0xffeeb5,1);
       }
       if(dialogPriceBox.setStrokeStyle){
         dialogPriceBox.setStrokeStyle(2,0x000000);
@@ -797,10 +839,10 @@ export let Assets, Scene, Customers, config;
       dialogPriceValue.setColor('#000');
 
         if(dialogPriceBox){
-          if(dialogPriceBox.setFillStyle){
-            dialogPriceBox.setFillStyle(0xdddddd,1);
-          }else if(dialogPriceBox.fillStyle){
-            dialogPriceBox.fillStyle(0xdddddd,1);
+        if(dialogPriceBox.setFillStyle){
+          dialogPriceBox.setFillStyle(0xffeeb5,1);
+        }else if(dialogPriceBox.fillStyle){
+          dialogPriceBox.fillStyle(0xffeeb5,1);
           }
         }
 
@@ -810,11 +852,11 @@ export let Assets, Scene, Customers, config;
       dialogCoins.setVisible(false);
       dialogPriceContainer.setVisible(true);
     }
-    if(dialogPriceBox){
-      if(dialogPriceBox.setFillStyle){
-        dialogPriceBox.setFillStyle(0xffffff,1);
-      }else if(dialogPriceBox.fillStyle){
-        dialogPriceBox.fillStyle(0xffffff,1);
+      if(dialogPriceBox){
+        if(dialogPriceBox.setFillStyle){
+          dialogPriceBox.setFillStyle(0xffeeb5,1);
+        }else if(dialogPriceBox.fillStyle){
+          dialogPriceBox.fillStyle(0xffeeb5,1);
       }
       dialogPriceBox.setStrokeStyle(2,0x000000);
       dialogPriceBox.fillAlpha = 1;

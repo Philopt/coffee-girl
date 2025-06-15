@@ -317,6 +317,7 @@ function testShowDialogButtons() {
     queue: [],
     activeCustomer: null,
     drawDialogBubble: () => {},
+    resetPriceBox: () => {},
     fadeInButtons(canAfford) {
       if (canAfford) {
         context.btnSell.setVisible(true);

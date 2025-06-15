@@ -541,7 +541,7 @@ export let Assets, Scene, Customers, config;
 
     dialogPriceLabel=this.add.text(0,-15,'',{font:'14px sans-serif',fill:'#000',align:'center'})
       .setOrigin(0.5);
-    dialogPriceValue=this.add.text(20,15,'',{font:'32px sans-serif',fill:'#000'})
+    dialogPriceValue=this.add.text(0,15,'',{font:'32px sans-serif',fill:'#000'})
       .setOrigin(0.5);
 
     dialogPriceContainer=this.add.container(0,0,[dialogPriceBox, dialogPriceLabel, dialogPriceValue])
@@ -806,7 +806,7 @@ export let Assets, Scene, Customers, config;
       .setText(`$${totalCost.toFixed(2)}`)
       .setColor('#000')
       .setOrigin(0.5)
-      .setPosition(20, 15)
+      .setPosition(0, 15)
       .setScale(1)
       .setAlpha(1);
 
@@ -970,6 +970,7 @@ export let Assets, Scene, Customers, config;
         .setPosition(stampX, stampY)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
+      t.setPosition(t.x, -10);
 
       const flashPrice=()=>{
         const oy=t.y;
@@ -1036,6 +1037,7 @@ export let Assets, Scene, Customers, config;
         .setPosition(stampX, stampY)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
+      t.setPosition(t.x, -10);
       this.time.delayedCall(dur(1000),()=>{
         lossStamp.setVisible(false);
         dialogBg.setVisible(false);

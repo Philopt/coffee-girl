@@ -330,6 +330,7 @@ function testShowDialogButtons() {
       context.btnRef.setVisible(true);
       if (context.btnRef.input) context.btnRef.input.enabled = true;
     },
+    resetPriceBox: () => {},
   };
   const scene = {
     add: { text() { return makeObj(); }, rectangle() { return makeObj(); }, graphics() { return makeObj(); } },

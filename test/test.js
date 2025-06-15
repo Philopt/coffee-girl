@@ -5,6 +5,9 @@ const fs = require('fs');
 const vm = require('vm');
 const assert = require('assert');
 
+const BUTTON_WIDTH = 160;
+const BUTTON_HEIGHT = 60;
+
 function testBlinkButton() {
   const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
   const match = /function blinkButton\(btn, onComplete\)[\s\S]*?\n\s*\}\);\n\s*\}/.exec(code);
@@ -21,8 +24,8 @@ function testBlinkButton() {
   let disableCalled = false;
   let setArgs = null;
   const btn = {
-    width: 160,
-    height: 60,
+    width: BUTTON_WIDTH,
+    height: BUTTON_HEIGHT,
     input: { enabled: true },
     disableInteractive() { disableCalled = true; this.input.enabled = false; },
     setInteractive(rect, cb) { setArgs = { rect, cb }; this.input.enabled = true; }

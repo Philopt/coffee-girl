@@ -5,6 +5,8 @@ import { baseConfig } from "./scene.js";
 export let Assets, Scene, Customers, config;
 export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;
 export const GameState = {};
+const DOG_MIN_Y = ORDER_Y + 20;
+const DOG_SPEED = 80; // pixels per second limit for dog movement
 export function setupGame(){
   if (typeof debugLog === 'function') debugLog('main.js loaded');
   let initCalled = false;
@@ -340,7 +342,12 @@ export function setupGame(){
       const others=[...queue,...wanderers].filter(c=>c!==owner&&c.sprite);
       for(const o of others){
         const d=Phaser.Math.Distance.Between(dog.x,dog.y,o.sprite.x,o.sprite.y);
-        if(d<near){ targetX=o.sprite.x; targetY=o.sprite.y; break; }
+        if(d<near){
+          const ang=Phaser.Math.Angle.Between(o.sprite.x,o.sprite.y,dog.x,dog.y);
+          targetX=dog.x+Math.cos(ang)*(near-d);
+          targetY=dog.y+Math.sin(ang)*(near-d);
+          break;
+        }
       }
       if(targetX===ms.x && targetY===ms.y){
         const ang=Phaser.Math.FloatBetween(0,Math.PI*2);
@@ -349,7 +356,10 @@ export function setupGame(){
         targetY=ms.y+Math.sin(ang)*dist;
       }
     }
-    this.tweens.add({targets:dog,x:targetX,y:targetY,duration:dur(300),
+    if(targetY < DOG_MIN_Y) targetY = DOG_MIN_Y;
+    const distance = Phaser.Math.Distance.Between(dog.x,dog.y,targetX,targetY);
+    const duration = dur(Math.max(300,(distance/DOG_SPEED)*1000));
+    this.tweens.add({targets:dog,x:targetX,y:targetY,duration,
       onUpdate:(tw,t)=>{t.setScale(scaleForY(t.y)*0.5);} });
   }
 

@@ -15,6 +15,7 @@ export let Assets, Scene, Customers, config;
 
 
   let money=10.00, love=10, gameOver=false;
+  let heartBroken=false;
   let queue=[], activeCustomer=null, wanderers=[];
   let spawnTimer = null;
   let falconActive = false;
@@ -104,6 +105,9 @@ export let Assets, Scene, Customers, config;
     const by = up ? -8 : 8;
     const originalY = obj.y;
     const moveDur = isLove && !up ? 160 : 120;
+    if(isLove){
+      if(up) heartBroken=false; else heartBroken=true;
+    }
     scene.tweens.add({targets:obj, y:originalY+by, duration:dur(moveDur), yoyo:true});
     let on=true;
     const flashes = isLove && !up ? 4 : 2;
@@ -113,18 +117,15 @@ export let Assets, Scene, Customers, config;
       delay:dur(flashDelay),
       callback:()=>{
         obj.setColor(on?color:'#fff');
-        if(isLove && !up){
-          obj.setText((on?'💔':'❤️')+' '+love);
+        if(isLove){
+          obj.setText((heartBroken?'💔':'❤️')+' '+love);
         }
         on=!on;
       }
     });
     scene.time.delayedCall(dur(flashDelay)*(flashes+1)+dur(10),()=>{
       obj.setColor('#fff');
-      if(isLove && !up){
-        obj.setText('❤️ '+love);
-        // removed wobble animation for the love counter
-      }
+      if(isLove && typeof updateLoveDisplay==='function') updateLoveDisplay();
     },[],scene);
   }
 
@@ -228,6 +229,12 @@ export let Assets, Scene, Customers, config;
   let phoneContainer=null;
   let startMsgTimers=[];
   let startMsgBubbles=[];
+
+  function updateLoveDisplay(){
+    if(loveText){
+      loveText.setText((heartBroken?'💔':'❤️')+' '+love);
+    }
+  }
 
 
   function calcLoveLevel(v){
@@ -530,6 +537,7 @@ export let Assets, Scene, Customers, config;
     // HUD
     moneyText=this.add.text(20,20,'🪙 '+receipt(money),{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
     loveText=this.add.text(20,50,'❤️ '+love,{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
+    updateLoveDisplay();
     queueLevelText=this.add.text(304,316,'Lv. '+loveLevel,{font:'16px sans-serif',fill:'#000'})
       .setOrigin(0.5).setDepth(1);
     updateLevelDisplay();
@@ -795,7 +803,7 @@ export let Assets, Scene, Customers, config;
 
     const priceTargetXDefault = dialogBg.x + dialogBg.width/2 - 40;
     const priceTargetY = dialogBg.y - dialogBg.height;
-    const ticketW = dialogPriceBox.width;
+    const ticketW = (typeof dialogPriceBox!=='undefined' && dialogPriceBox)? dialogPriceBox.width : 120;
     const ticketOffset = ticketW/2 + 10;
     const girlRight = (typeof girl !== 'undefined' && girl) ?
       girl.x + girl.displayWidth/2 : dialogBg.x;
@@ -847,8 +855,7 @@ export let Assets, Scene, Customers, config;
             y:priceTargetY,
             scale:1,
             duration:dur(300),
-            ease:'Sine.easeOut',
-            onComplete:()=>{ fadeInButtons.call(this, canAfford); }
+            ease:'Sine.easeOut'
           });
         };
         if(this.time && this.time.delayedCall){
@@ -860,6 +867,12 @@ export let Assets, Scene, Customers, config;
     });
 
     tipText.setVisible(false);
+    btnSell.setVisible(canAfford);
+    if (btnSell.input) btnSell.input.enabled = canAfford;
+    btnGive.setVisible(true);
+    if (btnGive.input) btnGive.input.enabled = true;
+    btnRef.setVisible(true);
+    if (btnRef.input) btnRef.input.enabled = true;
   }
 
   function clearDialog(keepPrice=false){
@@ -981,7 +994,7 @@ export let Assets, Scene, Customers, config;
     if(type==='sell'){
       const ticket=dialogPriceContainer;
       const t=dialogPriceValue;
-      const ticketW = dialogPriceBox.width;
+    const ticketW = (typeof dialogPriceBox!=='undefined' && dialogPriceBox)? dialogPriceBox.width : 120;
       const destX=moneyText.x+moneyText.width-15;
       const destY=moneyText.y+10;
       t.setVisible(true);
@@ -1166,6 +1179,9 @@ export let Assets, Scene, Customers, config;
     const count=Math.abs(delta);
     const emoji=delta>0?'❤️':'😠';
 
+    if(delta>0) heartBroken=false; else if(delta<0) heartBroken=true;
+    if(typeof updateLoveDisplay==='function') updateLoveDisplay();
+
     const baseX=customer.x - 20*(count-1)/2;
     const baseY=customer.y + 40;
 
@@ -1198,7 +1214,7 @@ export let Assets, Scene, Customers, config;
       tl.add({targets:h,x:loveText.x,y:loveText.y,scaleX:0,scaleY:1.2,duration:dur(125)});
       tl.add({targets:h,scaleX:1,alpha:0,duration:dur(125),onComplete:()=>{
             love+=delta>0?1:-1;
-            loveText.setText('❤️ '+love);
+            if(typeof updateLoveDisplay==='function') updateLoveDisplay();
             updateLevelDisplay();
             h.destroy();
             popOne(idx+1);
@@ -1464,7 +1480,8 @@ export let Assets, Scene, Customers, config;
     lossStamp.setVisible(false);
     money=10.00; love=10;
     moneyText.setText('🪙 '+receipt(money));
-    loveText.setText('❤️ '+love);
+    heartBroken=false;
+    updateLoveDisplay();
     updateLevelDisplay();
     if(activeCustomer){
       activeCustomer.sprite.destroy();

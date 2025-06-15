@@ -773,9 +773,15 @@ export let Assets, Scene, Customers, config;
     }
     drawDialogBubble(c.sprite.x, c.sprite.y, bubbleColor);
 
-    const priceTargetX = dialogBg.x + dialogBg.width/2 - 40;
+    const priceTargetXDefault = dialogBg.x + dialogBg.width/2 - 40;
     const priceTargetY = dialogBg.y - dialogBg.height;
-    const girlX = (typeof girl !== 'undefined' && girl) ? girl.x + 40 : dialogBg.x;
+    const ticketW = dialogPriceBox.width;
+    const ticketOffset = ticketW/2 + 10;
+    const girlRight = (typeof girl !== 'undefined' && girl) ?
+      girl.x + girl.displayWidth/2 : dialogBg.x;
+    const minX = girlRight + ticketOffset;
+    const priceTargetX = Math.max(priceTargetXDefault, minX);
+    const girlX = minX;
     const girlY = (typeof girl !== 'undefined' && girl) ? girl.y - 20 : dialogBg.y;
     dialogPriceContainer
       .setPosition(girlX, girlY)
@@ -794,12 +800,16 @@ export let Assets, Scene, Customers, config;
     }
     dialogPriceContainer.alpha = 1;
     dialogPriceLabel
-      .setStyle({fontSize:'14px'})
-      .setText('Total\nCost');
+      .setStyle({fontSize:'14px',align:'right'})
+      .setText('Total\nCost')
+      .setOrigin(1,0.5)
+      .setPosition(dialogPriceBox.width/2 - 6, -20);
     dialogPriceValue
       .setStyle({fontSize:'32px'})
       .setText(`$${totalCost.toFixed(2)}`)
       .setColor('#000')
+      .setOrigin(1,0.5)
+      .setPosition(dialogPriceBox.width/2 - 6, 10)
       .setScale(1)
       .setAlpha(1);
 
@@ -956,6 +966,7 @@ export let Assets, Scene, Customers, config;
     if(type==='sell'){
       const ticket=dialogPriceContainer;
       const t=dialogPriceValue;
+      const ticketW = dialogPriceBox.width;
       const destX=moneyText.x+moneyText.width-15;
       const destY=moneyText.y+10;
       t.setVisible(true);
@@ -964,9 +975,9 @@ export let Assets, Scene, Customers, config;
       const stampX=ticket.x + t.x * ticket.scaleX;
       const stampY=ticket.y + t.y * ticket.scaleY;
       paidStamp
-        .setText('PAID')
+        .setText('PAID 💵')
         .setScale(1.5)
-        .setPosition(stampX - 20, stampY)
+        .setPosition(stampX, stampY)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
 
@@ -991,10 +1002,12 @@ export let Assets, Scene, Customers, config;
       let moneyIcons=null;
       if(tip>0){
         this.time.delayedCall(delay,()=>{
+          const tipX = paidStamp.x - ticketW*0.25;
+          const tipY = paidStamp.y - ticketW*0.25;
           tipText
-            .setText('TIP')
+            .setText('TIP 🪙')
             .setScale(1.6)
-            .setPosition(paidStamp.x, paidStamp.y-40)
+            .setPosition(tipX, tipY)
             .setVisible(true);
           t.setText(receipt(totalCost + tip));
           flashPrice();

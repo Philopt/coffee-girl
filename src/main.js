@@ -60,7 +60,7 @@
   const START_PHONE_H = 500;
 
   // dimensions/positioning for the action buttons
-  const BUTTON_WIDTH = 140;
+  const BUTTON_WIDTH = 120;
   const BUTTON_HEIGHT = 80;
   const BUTTON_Y = 560;
 
@@ -166,6 +166,10 @@
             hitAreaCallback: Phaser.Geom.Rectangle.Contains,
             useHandCursor: true
           });
+          if (btn.input && btn.input.hitArea) {
+            btn.input.hitArea.x = area.x;
+            btn.input.hitArea.y = area.y;
+          }
         }
         if (onComplete) onComplete();
       }
@@ -380,6 +384,10 @@
         hitAreaCallback: Phaser.Geom.Rectangle.Contains,
         useHandCursor: true
     });
+    if (startButton.input && startButton.input.hitArea) {
+      startButton.input.hitArea.x = startButton.myHitArea.x;
+      startButton.input.hitArea.y = startButton.myHitArea.y;
+    }
 
     // position the phone closer to the center of the screen
     const containerY = 320;
@@ -509,8 +517,12 @@
         hitArea:new Phaser.Geom.Rectangle(-retry.width/2,-retry.height/2,retry.width,retry.height),
         hitAreaCallback:Phaser.Geom.Rectangle.Contains,
         useHandCursor:true
-      })
-        .on('pointerdown',()=>window.location.reload());
+      });
+      if (retry.input && retry.input.hitArea) {
+        retry.input.hitArea.x = -retry.width / 2;
+        retry.input.hitArea.y = -retry.height / 2;
+      }
+      retry.on('pointerdown',()=>window.location.reload());
       return;
     }
     // background
@@ -541,7 +553,7 @@
       .setVisible(false)
       .setDepth(10);
     dialogBg.x=240;
-    dialogBg.y=460;
+    dialogBg.y=430; // raise bubble slightly
     dialogBg.width=360; // narrower bubble
     dialogBg.height=120;
 
@@ -558,10 +570,16 @@
       .setDepth(11)
       .setVisible(false);
 
-    dialogText=this.add.text(240,440,'',{font:'20px sans-serif',fill:'#000',align:'center',wordWrap:{width:300}})
+    dialogText=this.add.text(240,410,'',{font:'20px sans-serif',fill:'#000',align:'center',wordWrap:{width:300}})
                      .setOrigin(0,0.5).setVisible(false).setDepth(11);
-    dialogCoins=this.add.text(240,470,'',{font:'20px sans-serif',fill:'#000'})
+    dialogCoins=this.add.text(240,440,'',{font:'20px sans-serif',fill:'#000'})
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
+
+    dialogPriceLabel=this.add.text(240,436,'',{font:'14px sans-serif',fill:'#000',align:'center'})
+      .setOrigin(0.5).setVisible(false).setDepth(11);
+    dialogPriceValue=this.add.text(240,460,'',{font:'32px sans-serif',fill:'#000'})
+      .setOrigin(0.5).setVisible(false).setDepth(11);
+
 
     // helper to create a rounded rectangle button with consistent sizing
     const createButton=(x,label,iconChar,iconSize,color,handler)=>{
@@ -596,16 +614,22 @@
         hitArea: c.myHitArea,
         hitAreaCallback: Phaser.Geom.Rectangle.Contains,
         useHandCursor: true
-      })
-        .on('pointerdown',()=>blinkButton.call(this,c,handler));
+      });
+      if (c.input && c.input.hitArea) {
+        // containers don't respect negative hitArea offsets unless we
+        // explicitly adjust the input shape after setInteractive
+        c.input.hitArea.x = c.myHitArea.x;
+        c.input.hitArea.y = c.myHitArea.y;
+      }
+      c.on('pointerdown',()=>blinkButton.call(this,c,handler));
       return c;
     };
 
     // buttons evenly spaced
 
-    btnSell=createButton(70,'SELL','💵',32,0x006400,()=>handleAction.call(this,'sell'));
+    btnSell=createButton(80,'SELL','💵',32,0x006400,()=>handleAction.call(this,'sell'));
     btnGive=createButton(240,'GIVE','💝',28,0x008000,()=>handleAction.call(this,'give'));
-    btnRef=createButton(410,'REFUSE','✋',32,0x800000,()=>handleAction.call(this,'refuse'));
+    btnRef=createButton(400,'REFUSE','✋',32,0x800000,()=>handleAction.call(this,'refuse'));
 
 
     // sliding report texts
@@ -676,8 +700,8 @@
     dialogBg.clear();
     dialogBg.fillStyle(0xffffff,1);
     dialogBg.lineStyle(2,0x000,1);
-    dialogBg.fillRoundedRect(-w/2,-h/2,w,h,16);
-    dialogBg.strokeRoundedRect(-w/2,-h/2,w,h,16);
+    dialogBg.fillRoundedRect(-w/2,-h/2,w,h,24); // rounder corners
+    dialogBg.strokeRoundedRect(-w/2,-h/2,w,h,24);
     if(targetX!==undefined && targetY!==undefined){
       const tx = targetX - dialogBg.x;
       const ty = targetY - dialogBg.y;
@@ -687,7 +711,6 @@
       const tipX = tx * 0.5;
       const tipY = by + (ty - by) * 0.5;
       dialogBg.fillTriangle(bx1, by, bx2, by, tipX, tipY);
-      dialogBg.strokeTriangle(bx1, by, bx2, by, tipX, tipY);
     }
   }
 
@@ -716,6 +739,7 @@
     dialogPriceContainer
       .setPosition(dialogBg.x + dialogBg.width/2 - 60, dialogBg.y - dialogBg.height)
       .setScale(1)
+
       .setVisible(true);
     const itemStr=c.orders.map(o=>{
       return o.qty>1 ? `${o.qty} ${o.req}` : o.req;
@@ -733,7 +757,7 @@
     this.tweens.add({targets:bubble,y:c.sprite.y-70,alpha:0,duration:dur(600),onComplete:()=>{bubble.destroy(); activeBubble=null;}});
     dialogText
       .setOrigin(0,0.5)
-      .setPosition(dialogBg.x-dialogBg.width/2+40,440)
+      .setPosition(dialogBg.x - dialogBg.width/2 + 40, dialogBg.y - 20)
       .setText(wantLine)
       .setVisible(true);
     const totalCost=c.orders.reduce((s,o)=>s+o.price*o.qty,0);
@@ -749,7 +773,7 @@
     }
     dialogCoins
       .setOrigin(0,0.5)
-      .setPosition(dialogBg.x-dialogBg.width/2+40,470)
+      .setPosition(dialogBg.x - dialogBg.width/2 + 40, dialogBg.y + 10)
       .setStyle({fontSize:'20px'})
       .setText(coinLine)
       .setVisible(true);
@@ -1283,8 +1307,12 @@
       hitArea:new Phaser.Geom.Rectangle(-btn.width/2,-btn.height/2,btn.width,btn.height),
       hitAreaCallback:Phaser.Geom.Rectangle.Contains,
       useHandCursor:true
-    })
-      .on('pointerdown',()=>{
+    });
+    if (btn.input && btn.input.hitArea) {
+      btn.input.hitArea.x = -btn.width / 2;
+      btn.input.hitArea.y = -btn.height / 2;
+    }
+    btn.on('pointerdown',()=>{
         bg.destroy(); txt.destroy(); btn.destroy(); if(titleText) titleText.destroy(); if(img) img.destroy();
         if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
         restartGame.call(this);

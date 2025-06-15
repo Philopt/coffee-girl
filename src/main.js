@@ -808,6 +808,13 @@ import { debugLog } from './debug.js';
       dialogCoins.setVisible(false);
       dialogPriceContainer.setVisible(false);
       dialogPriceValue.setColor('#000');
+      if(dialogPriceBox){
+        if(dialogPriceBox.setFillStyle){
+          dialogPriceBox.setFillStyle(0xffffff,1);
+        }else if(dialogPriceBox.fillStyle){
+          dialogPriceBox.fillStyle(0xffffff,1);
+        }
+      }
     }else{
       dialogBg.setVisible(true);
       dialogText.setVisible(false);
@@ -902,6 +909,16 @@ import { debugLog } from './debug.js';
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
 
+      if(this.add && this.add.text){
+        const cha = this.add.text(ticket.x, ticket.y - 30, '💸',
+            {font:'28px sans-serif',fill:'#0f0'})
+          .setOrigin(0.5)
+          .setDepth(ticket.depth+2)
+          .setAlpha(0);
+        this.tweens.add({targets:cha,alpha:1,y:cha.y-10,duration:dur(200),yoyo:true,
+          onComplete:()=>cha.destroy()});
+      }
+
       const flashPrice=()=>{
         const oy=t.y;
         this.tweens.add({targets:t,y:oy-30,duration:dur(100),yoyo:true});
@@ -936,7 +953,21 @@ import { debugLog } from './debug.js';
             animateStatChange(moneyText, this, mD);
             done();
         }});
-        tl.add({targets:ticket,x:destX,y:destY,scale:0,alpha:0,duration:dur(400)});
+        tl.add({targets:ticket,x:destX,y:destY,scale:0,alpha:0,duration:dur(400),
+          onStart:()=>{
+            if(dialogPriceBox && Phaser && Phaser.Display && Phaser.Display.Color){
+              this.tweens.addCounter({from:0,to:100,duration:dur(400),onUpdate:(tw)=>{
+                const c=Phaser.Display.Color.Interpolate.ColorWithColor(
+                  {r:255,g:255,b:255},{r:0,g:255,b:0},100,tw.getValue());
+                const col=Phaser.Display.Color.GetColor(c.r,c.g,c.b);
+                if(dialogPriceBox.setFillStyle){
+                  dialogPriceBox.setFillStyle(col,1);
+                }else if(dialogPriceBox.fillStyle){
+                  dialogPriceBox.fillStyle(col,1);
+                }
+              }});
+            }
+          }});
         tl.play();
       },[],this);
     } else if(type==='give'){
@@ -958,6 +989,16 @@ import { debugLog } from './debug.js';
         lossStamp.setVisible(false);
         dialogBg.setVisible(false);
         dialogText.setVisible(false);
+        if(dialogPriceBox){
+          if(dialogPriceBox.setFillStyle){
+            dialogPriceBox.setFillStyle(0xff0000,1);
+          }else if(dialogPriceBox.fillStyle){
+            dialogPriceBox.fillStyle(0xff0000,1);
+          }
+        }
+        if(this.tweens){
+          this.tweens.add({targets:ticket,x:'+=6',duration:dur(60),yoyo:true,repeat:2});
+        }
         const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
             clearDialog();
             ticket.setVisible(false);

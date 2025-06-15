@@ -417,6 +417,15 @@ export function setupGame(){
       onUpdate:(tw,t)=>{t.setScale(scaleForY(t.y)*0.5); t.setDepth(3+t.y*0.006);} });
   }
 
+  function sendDogOffscreen(dog, x, y){
+    if(!dog) return;
+    if(dog.followEvent) dog.followEvent.remove(false);
+    const dist = Phaser.Math.Distance.Between(dog.x, dog.y, x, y);
+    this.tweens.add({targets:dog,x,y,duration:dur((dist/DOG_SPEED)*1000),
+      onUpdate:(tw,t)=>{t.setScale(scaleForY(t.y)*0.5);},
+      onComplete:()=>dog.destroy()});
+  }
+
   function updateLevelDisplay(){
     const newLevel=calcLoveLevel(love);
     if(queueLevelText){
@@ -907,9 +916,10 @@ export function setupGame(){
       },onComplete:()=>{
         const idx=wanderers.indexOf(c);
         if(idx>=0) wanderers.splice(idx,1);
+        const ex=c.sprite.x, ey=c.sprite.y;
         if(c.dog){
-          if(c.dog.followEvent) c.dog.followEvent.remove(false);
-          c.dog.destroy();
+          sendDogOffscreen.call(this,c.dog,ex,ey);
+          c.dog=null;
         }
         c.sprite.destroy();
       }});
@@ -1207,14 +1217,10 @@ export function setupGame(){
           dialogDrinkEmoji.setVisible(false);
         }
         if(current.dog){
-          if(current.dog.followEvent) current.dog.followEvent.remove(false);
           if(typeof current.exitX==='number' && typeof current.exitY==='number'){
-            const ex=current.exitX, ey=current.exitY;
-            const dist=Phaser.Math.Distance.Between(current.dog.x,current.dog.y,ex,ey);
-            this.tweens.add({targets:current.dog,x:ex,y:ey,duration:dur((dist/DOG_SPEED)*1000),
-              onUpdate:(tw,t)=>{t.setScale(scaleForY(t.y)*0.5);},
-              onComplete:()=>current.dog.destroy()});
+            sendDogOffscreen.call(this,current.dog,current.exitX,current.exitY);
           } else {
+            if(current.dog.followEvent) current.dog.followEvent.remove(false);
             current.dog.destroy();
           }
         }
@@ -1562,9 +1568,10 @@ export function setupGame(){
                 x:targetX,
                 duration:dur(WALK_OFF_BASE/1.5),
                 onComplete:()=>{
+                  const ex=c.sprite.x, ey=c.sprite.y;
                   if(c.dog){
-                    if(c.dog.followEvent) c.dog.followEvent.remove(false);
-                    c.dog.destroy();
+                    sendDogOffscreen.call(scene,c.dog,ex,ey);
+                    c.dog=null;
                   }
                   c.sprite.destroy();
                 }});

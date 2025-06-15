@@ -10,12 +10,11 @@
     "lint:syntax": "node -c src/main.js"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "eslint": "^9.29.0",
     "http-server": "^14.1.1",
-    "puppeteer": "^24.10.1",
     "pngjs": "^7.0.0",
-
-    "eslint": "^9.29.0"
-
+    "puppeteer": "^24.10.1"
   },
   "eslintConfig": {
     "env": {

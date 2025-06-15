@@ -498,15 +498,24 @@ export function setupGame(){
     if (typeof debugLog === 'function') debugLog('playIntro starting');
     scene = scene || this;
     if(!truck || !girl) return;
-    truck.setPosition(560,245);
-    girl.setPosition(560,260).setVisible(false);
+    const offscreenX = scene.scale.width + 100;
+    truck.setPosition(offscreenX,245).setScale(0.462);
+    girl.setPosition(offscreenX,260).setVisible(false);
     // engine vibration while the truck is driving
-    const vibrateTween = (scene.tweens && scene.tweens.add) ? scene.tweens.add({
-      targets: truck,
-      y: '-=2',
-      duration: dur(50),
-      yoyo: true,
-      repeat: -1
+    const vibrateTween = (scene.tweens && scene.tweens.addCounter) ? scene.tweens.addCounter({
+      from: 0,
+      to: Math.PI * 2,
+      duration: dur(100),
+      repeat: -1,
+      onUpdate: t => {
+        const amp = 2 * (truck.scaleX / 0.924);
+        const y = 245 + Math.sin(t.getValue()) * amp;
+        if (truck.setY) {
+          truck.setY(y);
+        } else {
+          truck.y = y;
+        }
+      }
     }) : { stop: ()=>{} };
 
     // emit smoke puffs as the truck drives in
@@ -549,6 +558,7 @@ export function setupGame(){
         scheduleNextSpawn(scene);
       }});
     intro.add({targets:[truck,girl],x:240,duration:dur(600)});
+    intro.add({targets:truck,scale:0.924,duration:dur(600)},0);
     intro.add({targets:girl,y:292,duration:dur(300),onStart:()=>girl.setVisible(true)});
     intro.play();
   }
@@ -598,9 +608,10 @@ export function setupGame(){
       .setOrigin(0.5).setDepth(1);
     updateLevelDisplay();
     // truck & girl
-    truck=this.add.image(560,245,'truck').setScale(0.924).setDepth(2);
+    const startX=this.scale.width+100;
+    truck=this.add.image(startX,245,'truck').setScale(0.462).setDepth(2);
 
-    girl=this.add.image(560,260,'girl').setScale(0.5).setDepth(3).setVisible(false);
+    girl=this.add.image(startX,260,'girl').setScale(0.5).setDepth(3).setVisible(false);
 
     // create lady falcon animation
     this.anims.create({

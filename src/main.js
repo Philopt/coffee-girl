@@ -419,23 +419,10 @@
 
       if(scene.time && scene.time.delayedCall){
         const msgOptions=[
-          ['hey, you coming in?', 'where are you at?', 'good morning ☀️'],
-          [
-            'you better not be in bed... 🛌😉',
-            'you better not still be in bed... 😜',
-            "don't ignore me",
-            'yo, coffee girl? ☕'
-          ],
-          [
-            'guess you had a late night 💃😴',
-            'you forgot to charge your phone 🔋',
-            'you lost? I gotta tell you about this boy I met 😉'
-          ],
-          [
-            "I hope you're okay",
-            "I hope everything's all right",
-            '... I\'m sorry'
-          ]
+          ['u coming in? 🤔', 'where u at??', 'mornin ☀️'],
+          ['better not still be in bed 😜', 'yo coffee girl ☕', 'stop ghostin me'],
+          ['late night? 🥱💃', 'phone dead again? 🔋', 'omg wait till u hear about this guy 😏'],
+          ['u good?', 'hope everythin\'s chill', '…sry 😬']
         ];
         let delay=0;
         for(const opts of msgOptions){

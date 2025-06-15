@@ -169,33 +169,7 @@ export function setupGame(){
     });
   }
 
-  const colorCache = {};
   const colorRankCache = {};
-
-  function getDominantColor(scene, key){
-    if(colorCache[key]) return colorCache[key];
-    const tex = scene.textures.get(key);
-    if(!tex) return 0xffffff;
-    const src = tex.getSourceImage();
-    const cv = scene.textures.createCanvas('tmp-'+key, src.width, src.height);
-    cv.draw(0,0,src);
-    cv.update();
-    const data = cv.context.getImageData(0,0,src.width,src.height).data;
-    scene.textures.remove('tmp-'+key);
-    const counts = {};
-    for(let i=0;i<data.length;i+=4){
-      if(data[i+3]===0) continue;
-      const rgb=(data[i]<<16)|(data[i+1]<<8)|data[i+2];
-      counts[rgb]=(counts[rgb]||0)+1;
-    }
-    let best=0, color=0xffffff;
-    for(const k in counts){
-      const v=counts[k];
-      if(v>best){ best=v; color=+k; }
-    }
-    colorCache[key]=color;
-    return color;
-  }
 
   function getNthMostCommonColor(scene, key, n=1){
     if(colorRankCache[key] && colorRankCache[key][n-1] !== undefined){
@@ -1076,10 +1050,6 @@ export function setupGame(){
     dialogText.setScale(0);
     dialogCoins.setScale(0);
     let bubbleColor=0xffffff;
-    if(c.sprite.texture && typeof getDominantColor==='function' && typeof tintWithWhite==='function'){
-      const domColor=getDominantColor(this,c.sprite.texture.key);
-      bubbleColor=tintWithWhite(domColor,0.2);
-    }
     drawDialogBubble(c.sprite.x, c.sprite.y, bubbleColor);
 
     const priceTargetXDefault = dialogBg.x + dialogBg.width/2 - 40;

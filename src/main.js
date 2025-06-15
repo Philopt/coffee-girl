@@ -515,16 +515,16 @@
       .setDepth(10);
     dialogBg.x=240;
     dialogBg.y=460;
-    dialogBg.width=460;
+    dialogBg.width=360; // narrower bubble
     dialogBg.height=120;
 
-    dialogPriceBox=this.add.rectangle(0,0,110,68,0xffffff)
+    dialogPriceBox=this.add.rectangle(0,0,120,80,0xffffff)
       .setStrokeStyle(2,0x000)
       .setOrigin(0.5)
       .setVisible(false)
       .setDepth(10);
 
-    dialogText=this.add.text(240,440,'',{font:'20px sans-serif',fill:'#000',align:'center',wordWrap:{width:420}})
+    dialogText=this.add.text(240,440,'',{font:'20px sans-serif',fill:'#000',align:'center',wordWrap:{width:300}})
                      .setOrigin(0,0.5).setVisible(false).setDepth(11);
     dialogCoins=this.add.text(240,470,'',{font:'20px sans-serif',fill:'#000'})
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
@@ -648,10 +648,15 @@
     dialogBg.fillRoundedRect(-w/2,-h/2,w,h,16);
     dialogBg.strokeRoundedRect(-w/2,-h/2,w,h,16);
     if(targetX!==undefined && targetY!==undefined){
-      const tx=targetX-dialogBg.x;
-      const ty=targetY-dialogBg.y;
-      dialogBg.fillTriangle(-w/2, -10, -w/2, 10, tx, ty);
-      dialogBg.strokeTriangle(-w/2, -10, -w/2, 10, tx, ty);
+      const tx = targetX - dialogBg.x;
+      const ty = targetY - dialogBg.y;
+      const bx1 = -10;
+      const bx2 = 10;
+      const by = -h / 2;
+      const tipX = tx * 0.5;
+      const tipY = by + (ty - by) * 0.5;
+      dialogBg.fillTriangle(bx1, by, bx2, by, tipX, tipY);
+      dialogBg.strokeTriangle(bx1, by, bx2, by, tipX, tipY);
     }
   }
 
@@ -678,7 +683,7 @@
     dialogBg.setVisible(true);
     drawDialogBubble(c.sprite.x, c.sprite.y);
     dialogPriceBox
-      .setPosition(dialogBg.x + dialogBg.width/2 - 60, dialogBg.y)
+      .setPosition(dialogBg.x + dialogBg.width/2 - 60, dialogBg.y - dialogBg.height)
       .setVisible(true);
     const itemStr=c.orders.map(o=>{
       return o.qty>1 ? `${o.qty} ${o.req}` : o.req;
@@ -718,13 +723,13 @@
       .setVisible(true);
     dialogPriceLabel
       .setOrigin(0.5,0.5)
-      .setPosition(dialogPriceBox.x,440)
+      .setPosition(dialogPriceBox.x, dialogPriceBox.y - 20)
       .setStyle({fontSize:'14px'})
       .setText('Total\nCost')
       .setVisible(true);
     dialogPriceValue
       .setOrigin(0.5,0.5)
-      .setPosition(dialogPriceBox.x,470)
+      .setPosition(dialogPriceBox.x, dialogPriceBox.y + 10)
       .setStyle({fontSize:'32px'})
       .setText(`$${totalCost.toFixed(2)}`)
       .setColor('#000')
@@ -836,9 +841,9 @@
       t.setText(receipt(totalCost));
       paidStamp
         .setText('PAID')
-        .setScale(1.8)
+        .setScale(1.5)
         .setPosition(t.x - 20, t.y)
-        .setAngle(Phaser.Math.Between(-15,15))
+        .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
 
       const flashPrice=()=>{
@@ -886,9 +891,9 @@
         .setDepth(lossStamp.depth+1);
       lossStamp
         .setText('LOSS')
-        .setScale(1.8)
+        .setScale(1.5)
         .setPosition(t.x - 20, t.y)
-        .setAngle(Phaser.Math.Between(-15,15))
+        .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
       this.time.delayedCall(dur(1000),()=>{
         lossStamp.setVisible(false);

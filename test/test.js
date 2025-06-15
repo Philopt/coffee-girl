@@ -334,7 +334,8 @@ async function testIntroSequence() {
 
   const beforeBuf = await page.screenshot({ type: 'png' });
   const clickX = rect.x + 240 * (rect.w / 480);
-  const clickY = rect.y + 320 * (rect.h / 640);
+  // click the start button near the bottom of the phone
+  const clickY = rect.y + 578 * (rect.h / 640);
   await page.mouse.click(clickX, clickY);
   await new Promise(r => setTimeout(r, 3000));
   const afterBuf = await page.screenshot({ type: 'png' });

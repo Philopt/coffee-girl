@@ -372,7 +372,8 @@
       .setSize(bw,bh)
       .setInteractive({useHandCursor:true});
 
-    const containerY = 320 - offsetY;
+    // position the phone so the button sits near the bottom of the screen
+    const containerY = 640 - phoneH/2;
     phoneContainer = scene.add.container(240,containerY,[caseG,blackG,whiteG,homeG,startButton])
       .setDepth(15)
       .setInteractive();

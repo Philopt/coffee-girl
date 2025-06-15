@@ -7,6 +7,9 @@ export const BUTTON_WIDTH = 120;
 export const BUTTON_HEIGHT = 80;
 export const BUTTON_Y = 560;
 
+// Default vertical position for the order dialog bubble
+export const DIALOG_Y = 430;
+
 export const dur = v => v;
 
 export function scaleForY(y) {

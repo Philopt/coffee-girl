@@ -157,11 +157,14 @@
       repeat: 1,
       onComplete: () => {
         if (btn.setInteractive) {
-          if (btn.width !== undefined && btn.height !== undefined &&
-              Phaser && Phaser.Geom && Phaser.Geom.Rectangle) {
+          const area = btn.myHitArea ||
+            (btn.width !== undefined && btn.height !== undefined &&
+             Phaser && Phaser.Geom && Phaser.Geom.Rectangle
+              ? new Phaser.Geom.Rectangle(-btn.width/2, -btn.height/2, btn.width, btn.height)
+              : null);
+          if (area) {
             btn.setInteractive({
-              hitArea: new Phaser.Geom.Rectangle(-btn.width/2, -btn.height/2,
-                                               btn.width, btn.height),
+              hitArea: area,
               hitAreaCallback: Phaser.Geom.Rectangle.Contains,
               useHandCursor: true
             });
@@ -375,13 +378,12 @@
     const offsetY = phoneH/2 - homeH/2 - 12;
     startButton = scene.add.container(0,offsetY,[btnBg,btnLabel])
       .setSize(bw,bh);
-    startButton.setInteractive(
-        new Phaser.Geom.Rectangle(-bw/2, -bh/2, bw, bh),
-        Phaser.Geom.Rectangle.Contains
-    );
-    if (startButton.input) {
-      startButton.input.cursor = 'pointer';
-    }
+    startButton.myHitArea = new Phaser.Geom.Rectangle(-bw/2, -bh/2, bw, bh);
+    startButton.setInteractive({
+        hitArea: startButton.myHitArea,
+        hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+        useHandCursor: true
+    });
 
     // position the phone closer to the center of the screen
     const containerY = 320;
@@ -588,11 +590,11 @@
         .setSize(width,height)
         .setDepth(12)
         .setVisible(false);
+      c.myHitArea = new Phaser.Geom.Rectangle(-width/2,-height/2,width,height);
       // Explicitly specify the hit area so the pointer box aligns with the
-      // visible button. Using the direct form avoids Phaser resetting the
-      // rectangle's position when the interactive object is created.
+      // visible button.
       c.setInteractive({
-        hitArea: new Phaser.Geom.Rectangle(-width/2,-height/2,width,height),
+        hitArea: c.myHitArea,
         hitAreaCallback: Phaser.Geom.Rectangle.Contains,
         useHandCursor: true
       })

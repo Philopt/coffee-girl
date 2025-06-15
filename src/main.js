@@ -339,6 +339,14 @@ export let Assets, Scene, Customers, config;
     }
   }
 
+  function emojiForItem(name){
+    const l = (name || '').toLowerCase();
+    if(l.includes('tea')) return '🍵';
+    if(l.includes('chocolate')) return '🍫';
+    if(l.includes('iced')) return '🥤';
+    return '☕';
+  }
+
   function scheduleNextSpawn(scene){
     if(falconActive) return;
     if (spawnTimer) {
@@ -876,6 +884,7 @@ export let Assets, Scene, Customers, config;
     if (btnGive.input) btnGive.input.enabled = true;
     btnRef.setVisible(true);
     if (btnRef.input) btnRef.input.enabled = true;
+    if (typeof fadeInButtons === 'function') fadeInButtons.call(this, canAfford);
   }
 
   function clearDialog(keepPrice=false){
@@ -982,7 +991,11 @@ export let Assets, Scene, Customers, config;
         servedCount++;
         updateSideC.call(this);
       };
-      leaveCustomer.call(this, current.sprite, type==='refuse', afterWalk);
+      if (typeof leaveCustomer === 'function') {
+        leaveCustomer.call(this, current, type==='refuse', afterWalk);
+      } else if (afterWalk) {
+        afterWalk();
+      }
     };
 
     // animated report using timelines
@@ -1226,14 +1239,23 @@ export let Assets, Scene, Customers, config;
     sprite.setDepth(d);
   }
 
-  function leaveCustomer(sprite, angry, cb){
+  function leaveCustomer(customer, angry, cb){
     const scene=this;
+    const sprite = customer.sprite;
     adjustLeavingDepth(sprite);
     const dir=Phaser.Math.Between(0,1)?1:-1;
     const destX=dir===1?520:-40;
     const destY=Phaser.Math.Between(WANDER_TOP,WANDER_BOTTOM);
-    const emoji=angry?'😠':'☕';
-    const mood=scene.add.text(sprite.x, sprite.y-30, emoji,{font:'24px sans-serif',fill:'#fff'})
+    let emoji;
+    if(angry){
+      emoji='😠';
+    }else{
+      const req = customer.orders && customer.orders[0] ? customer.orders[0].req : '';
+      emoji = emojiForItem(req);
+    }
+    const offsetX = angry ? 0 : dir*12;
+    const offsetY = angry ? -30 : -10;
+    const mood=scene.add.text(sprite.x+offsetX, sprite.y+offsetY, emoji,{font:'24px sans-serif',fill:'#fff'})
       .setOrigin(0.5).setDepth(sprite.depth+1);
     const amp=angry?4:10;
     const freq=angry?6:3;
@@ -1246,7 +1268,7 @@ export let Assets, Scene, Customers, config;
       onUpdate:(tw,t)=>{
         const p=tw.progress;
         t.y=Phaser.Math.Linear(startY,destY,p)+Math.sin(p*Math.PI*freq)*amp;
-        mood.setPosition(t.x, t.y-30);
+        mood.setPosition(t.x+offsetX, t.y+offsetY);
         adjustLeavingDepth(t);
       },
       onComplete:()=>{ mood.destroy(); if(cb) cb(); }
@@ -1259,7 +1281,7 @@ export let Assets, Scene, Customers, config;
         duration:dur(80),
         yoyo:true,
         repeat:2,
-        onUpdate:()=>{ mood.setPosition(sprite.x, sprite.y-30); },
+        onUpdate:()=>{ mood.setPosition(sprite.x+offsetX, sprite.y+offsetY); },
         onComplete:()=>{ main.play(); }
       });
     }

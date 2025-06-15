@@ -8,6 +8,7 @@ export const GameState = {};
 const DOG_MIN_Y = ORDER_Y + 20;
 const DOG_SPEED = 120; // base movement speed for the dog
 const DOG_FAST_DISTANCE = 160; // accelerate when farther than this from owner
+const CUSTOMER_SPEED = 560 / 6; // pixels per second for wanderers
 export function setupGame(){
   if (typeof debugLog === 'function') debugLog('main.js loaded');
   let initCalled = false;
@@ -269,14 +270,13 @@ export function setupGame(){
       activeCustomer=queue[0];
       const targetX = idx===0 ? ORDER_X : QUEUE_X - QUEUE_SPACING*(idx-1);
       const targetY = idx===0 ? ORDER_Y : QUEUE_Y - QUEUE_OFFSET*(idx-1);
-      const dist=Phaser.Math.Distance.Between(c.sprite.x,c.sprite.y,targetX,targetY);
       c.sprite.setDepth(5);
-      c.walkTween=scene.tweens.add({targets:c.sprite,x:targetX,y:targetY,scale:scaleForY(targetY),duration:dur(600+dist*2),ease:'Sine.easeIn',callbackScope:scene,
-        onComplete:()=>{
-          if (idx===0 && typeof debugLog === 'function') debugLog('customer reached order position');
-          c.walkTween=null;
-          if(idx===0) showDialog.call(scene);
-        }});
+      const dir = c.dir || (c.sprite.x < targetX ? 1 : -1);
+      c.walkTween = curvedApproach(scene, c.sprite, dir, targetX, targetY, () => {
+        if (idx===0 && typeof debugLog === 'function') debugLog('customer reached order position');
+        c.walkTween = null;
+        if(idx===0) showDialog.call(scene);
+      });
       if(typeof checkQueueSpacing==='function') checkQueueSpacing(scene);
     }
   }
@@ -288,15 +288,14 @@ export function setupGame(){
       const tx = idx===0 ? ORDER_X : QUEUE_X - QUEUE_SPACING*(idx-1);
       const ty = idx===0 ? ORDER_Y : QUEUE_Y - QUEUE_OFFSET*(idx-1);
       if(cust.sprite.y!==ty || cust.sprite.x!==tx){
-        const cfg={targets:cust.sprite,x:tx,y:ty,scale:scaleForY(ty),duration:dur(300)};
-        if(idx===0){
-          cfg.onComplete=()=>{
+        const dir = cust.dir || (cust.sprite.x < tx ? 1 : -1);
+        cust.walkTween = curvedApproach(scene, cust.sprite, dir, tx, ty, () => {
+          if(idx===0){
             if (typeof debugLog === 'function') debugLog('customer reached order position');
             showDialog.call(scene);
-          };
-          willShow=true;
-        }
-        scene.tweens.add(cfg);
+          }
+        });
+        if(idx===0) willShow=true;
       }
     });
     activeCustomer=queue[0]||null;
@@ -324,6 +323,37 @@ export function setupGame(){
           cust.walkTween=null;
         }
         scene.tweens.add({targets:cust.sprite,x:tx,y:ty,scale:scaleForY(ty),duration:dur(200)});
+      }
+    });
+  }
+
+  function curvedApproach(scene, sprite, dir, targetX, targetY, onComplete){
+    const startX = sprite.x;
+    const startY = sprite.y;
+    const offset = 40 * dir;
+    const curve = new Phaser.Curves.CubicBezier(
+      new Phaser.Math.Vector2(startX, startY),
+      new Phaser.Math.Vector2(startX + offset, startY),
+      new Phaser.Math.Vector2(targetX - offset, targetY),
+      new Phaser.Math.Vector2(targetX, targetY)
+    );
+    const dist = Phaser.Math.Distance.Between(startX, startY, targetX, targetY);
+    const duration = dur((dist / CUSTOMER_SPEED) * 1000);
+    const follower = { t: 0, vec: new Phaser.Math.Vector2() };
+    return scene.tweens.add({
+      targets: follower,
+      t: 1,
+      duration,
+      ease: 'Linear',
+      onUpdate: () => {
+        curve.getPoint(follower.t, follower.vec);
+        sprite.setPosition(follower.vec.x, follower.vec.y);
+        sprite.setScale(scaleForY(sprite.y));
+      },
+      onComplete: () => {
+        sprite.setPosition(targetX, targetY);
+        sprite.setScale(scaleForY(targetY));
+        if(onComplete) onComplete();
       }
     });
   }
@@ -895,6 +925,7 @@ export function setupGame(){
     const dir=Phaser.Math.Between(0,1)?1:-1;
     const startX=dir===1?-40:520;
     const targetX=dir===1?520:-40;
+    c.dir = dir;
     const startY=Phaser.Math.Between(WANDER_TOP,WANDER_BOTTOM);
     const distScale=scaleForY(startY);
     c.orders.push(order);

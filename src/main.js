@@ -152,9 +152,6 @@
     // Recalculate the hit area afterwards in case the button
     // changed size or scale during the tween.
 
-    const w = btn.width !== undefined ? btn.width : (btn.displayWidth || 0);
-    const h = btn.height !== undefined ? btn.height : (btn.displayHeight || 0);
-
     btn.disableInteractive();
     this.tweens.add({
       targets: btn,
@@ -197,7 +194,6 @@
   let truck, girl;
   let activeBubble=null;
   let sideCText;
-  let spawnCount=0;
   let servedCount=0;
   let sideCAlpha=0;
   let sideCFadeTween=null;
@@ -224,17 +220,6 @@
     return calcLoveLevel(love) + 1;
   }
 
-
-  function wanderOff(c, scene){
-    const dir = Phaser.Math.Between(0,1)?1:-1;
-    const targetX = dir===1?520:-40;
-    const targets=[c.sprite];
-
-    wanderers.splice(wanderers.indexOf(c),1);
-    scene.tweens.add({targets:c.sprite,x:targetX,duration:dur(WALK_OFF_BASE),onComplete:()=>{
-        c.sprite.destroy();
-    }});
-  }
 
   function lureNextWanderer(scene){
     if(wanderers.length && queue.length < queueLimit()){
@@ -699,7 +684,6 @@
     lureNextWanderer(this);
     scheduleNextSpawn(this);
 
-    spawnCount++;
   }
 
   function drawDialogBubble(targetX, targetY){
@@ -1360,7 +1344,6 @@
     queue=[];
     Phaser.Actions.Call(wanderers,c=>{ c.sprite.destroy(); });
     wanderers=[];
-    spawnCount=0;
     servedCount=0;
     sideCAlpha=0;
     sideCFadeTween=null;

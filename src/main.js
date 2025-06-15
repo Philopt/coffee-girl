@@ -373,8 +373,8 @@
       .setSize(bw,bh)
       .setInteractive({useHandCursor:true});
 
-    // position the phone so the button sits near the bottom of the screen
-    const containerY = 640 - phoneH/2;
+    // position the phone closer to the center of the screen
+    const containerY = 320;
     phoneContainer = scene.add.container(240,containerY,[caseG,blackG,whiteG,homeG,startButton])
       .setDepth(15)
       .setInteractive();
@@ -395,17 +395,18 @@
       const bg=scene.add.graphics();
       bg.fillStyle(0x8bd48b,1);
       bg.fillRoundedRect(-bw/2,-bh/2,bw,bh,10);
-      const yStart=-phoneH/2-bh;
       const yEnd=-phoneH/2+bh/2+20+(startMsgBubbles.length)*(bh+10);
-      const bubble=scene.add.container(0,yStart,[bg,txt]).setDepth(16);
+      const bubble=scene.add.container(0,yEnd,[bg,txt]).setDepth(16).setAlpha(0);
       phoneContainer.add(bubble);
       startMsgBubbles.push(bubble);
-      scene.tweens.add({targets:bubble,y:yEnd,duration:300,ease:'Cubic.easeOut'});
+      scene.tweens.add({targets:bubble,alpha:1,duration:300,ease:'Cubic.easeOut'});
     };
 
     if(scene.time && scene.time.delayedCall){
-      startMsgTimers.push(scene.time.delayedCall(5000,()=>addStartMessage('hey, are you coming in today?'),[],scene));
-      startMsgTimers.push(scene.time.delayedCall(10000,()=>addStartMessage("Don't tell me you're still in bed."),[],scene));
+      startMsgTimers.push(scene.time.delayedCall(5000,()=>addStartMessage('hey, you coming in?'),[],scene));
+      startMsgTimers.push(scene.time.delayedCall(10000,()=>addStartMessage('you better not still be in bed...'),[],scene));
+      startMsgTimers.push(scene.time.delayedCall(15000,()=>addStartMessage('I guess you had a late night.'),[],scene));
+      startMsgTimers.push(scene.time.delayedCall(22000,()=>addStartMessage('... I hope you\'re okay 😟'),[],scene));
     }
 
     startButton.on('pointerdown',()=>{

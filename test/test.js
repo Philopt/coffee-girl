@@ -28,7 +28,7 @@ function testBlinkButton() {
     return { x, y, width: w, height: h };
   }
   RectStub.Contains = () => true;
-  const context = { Phaser: { Geom: { Rectangle: RectStub } } };
+  const context = { Phaser: { Geom: { Rectangle: RectStub } }, applyCenteredHitArea: obj => obj.setInteractive({ hitArea: new RectStub(-obj.width/2,-obj.height/2,obj.width,obj.height), hitAreaCallback: RectStub.Contains, useHandCursor: true }) };
   vm.createContext(context);
   context.blinkBtn = null;
   vm.runInContext('const dur=v=>v;\n' + match + '\nblinkBtn=blinkButton;', context);
@@ -160,7 +160,7 @@ function testShowStartScreen() {
     return { x, y, width: w, height: h };
   }
   RectStub.Contains = () => true;
-  const context = { Phaser: { Geom: { Rectangle: RectStub } } };
+  const context = { Phaser: { Geom: { Rectangle: RectStub } }, applyCenteredHitArea: obj => obj.setInteractive({ hitArea: new RectStub(-obj.width/2,-obj.height/2,obj.width,obj.height), hitAreaCallback: RectStub.Contains, useHandCursor: true }) };
   vm.createContext(context);
   context.fn = null;
   vm.runInContext('let startOverlay,startButton;const playIntro=()=>{};\n' + match[0] + '\nfn=showStartScreen;', context);
@@ -208,7 +208,7 @@ function testStartButtonPlaysIntro() {
     return { x, y, width: w, height: h };
   }
   RectStub.Contains = () => true;
-  const context = { Phaser: { Geom: { Rectangle: RectStub } }, spawnCustomer: () => {}, scheduleNextSpawn: () => {} };
+  const context = { Phaser: { Geom: { Rectangle: RectStub } }, spawnCustomer: () => {}, scheduleNextSpawn: () => {}, applyCenteredHitArea: obj => obj.setInteractive({ hitArea: new RectStub(-obj.width/2,-obj.height/2,obj.width,obj.height), hitAreaCallback: RectStub.Contains, useHandCursor: true }) };
   vm.createContext(context);
   context.fnStart = null;
   context.fnIntro = null;

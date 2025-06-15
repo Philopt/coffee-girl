@@ -158,18 +158,22 @@
       repeat: 1,
       onComplete: () => {
         if (btn.setInteractive) {
-          const w = btn.width !== undefined ? btn.width : (btn.displayWidth || 0);
-          const h = btn.height !== undefined ? btn.height : (btn.displayHeight || 0);
-          const area = new Phaser.Geom.Rectangle(-w/2, -h/2, w, h);
-          btn.myHitArea = area;
-          btn.setInteractive({
-            hitArea: area,
-            hitAreaCallback: Phaser.Geom.Rectangle.Contains,
-            useHandCursor: true
-          });
+          applyCenteredHitArea(btn);
         }
         if (onComplete) onComplete();
       }
+    });
+  }
+
+  function applyCenteredHitArea(obj){
+    const w = obj.width !== undefined ? obj.width : (obj.displayWidth || 0);
+    const h = obj.height !== undefined ? obj.height : (obj.displayHeight || 0);
+    const area = new Phaser.Geom.Rectangle(-w/2, -h/2, w, h);
+    obj.myHitArea = area;
+    obj.setInteractive({
+      hitArea: area,
+      hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+      useHandCursor: true
     });
   }
 
@@ -383,12 +387,7 @@
     const offsetY = phoneH/2 - homeH/2 - 12;
     startButton = scene.add.container(0,offsetY,[btnBg,btnLabel])
       .setSize(bw,bh);
-    startButton.myHitArea = new Phaser.Geom.Rectangle(-bw/2, -bh/2, bw, bh);
-    startButton.setInteractive({
-        hitArea: startButton.myHitArea,
-        hitAreaCallback: Phaser.Geom.Rectangle.Contains,
-        useHandCursor: true
-    });
+    applyCenteredHitArea(startButton);
 
     // position the phone closer to the center of the screen
     const containerY = 320;
@@ -524,12 +523,8 @@
         .setOrigin(0.5).setDepth(30);
       const retry=this.add.text(240,360,'Retry Loading',{font:'20px sans-serif',fill:'#00f'})
         .setOrigin(0.5).setDepth(30);
-      retry.setInteractive({
-        hitArea:new Phaser.Geom.Rectangle(-retry.width/2,-retry.height/2,retry.width,retry.height),
-        hitAreaCallback:Phaser.Geom.Rectangle.Contains,
-        useHandCursor:true
-      })
-        .on('pointerdown',()=>window.location.reload());
+      applyCenteredHitArea(retry);
+      retry.on('pointerdown',()=>window.location.reload());
       return;
     }
     // background
@@ -606,15 +601,10 @@
         .setSize(width,height)
         .setDepth(12)
         .setVisible(false);
-      c.myHitArea = new Phaser.Geom.Rectangle(-width/2,-height/2,width,height);
       // Explicitly specify the hit area so the pointer box aligns with the
       // visible button.
-      c.setInteractive({
-        hitArea: c.myHitArea,
-        hitAreaCallback: Phaser.Geom.Rectangle.Contains,
-        useHandCursor: true
-      })
-        .on('pointerdown',()=>blinkButton.call(this,c,handler));
+      applyCenteredHitArea(c);
+      c.on('pointerdown',()=>blinkButton.call(this,c,handler));
       return c;
     };
 
@@ -1298,12 +1288,8 @@
       .setOrigin(0.5).setDepth(21);
     const btn=this.add.text(240,bgY+80,'Try Again',{font:'20px sans-serif',fill:'#fff',backgroundColor:'#006400',padding:{x:14,y:8}})
       .setOrigin(0.5).setDepth(22);
-    btn.setInteractive({
-      hitArea:new Phaser.Geom.Rectangle(-btn.width/2,-btn.height/2,btn.width,btn.height),
-      hitAreaCallback:Phaser.Geom.Rectangle.Contains,
-      useHandCursor:true
-    })
-      .on('pointerdown',()=>{
+    applyCenteredHitArea(btn);
+    btn.on('pointerdown',()=>{
         bg.destroy(); txt.destroy(); btn.destroy(); if(titleText) titleText.destroy(); if(img) img.destroy();
         if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
         restartGame.call(this);

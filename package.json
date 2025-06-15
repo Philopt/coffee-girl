@@ -13,9 +13,10 @@
     "http-server": "^14.1.1",
     "puppeteer": "^24.10.1",
     "pngjs": "^7.0.0",
-    "eslint": "^9.29.0"
-  },
 
+    "eslint": "^9.29.0"
+
+  },
   "eslintConfig": {
     "env": {
       "browser": true,
@@ -34,6 +35,5 @@
       "no-unused-vars": "warn"
     }
   },
-
   "license": "MIT"
 }

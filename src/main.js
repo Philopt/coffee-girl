@@ -821,7 +821,7 @@ import { debugLog } from './debug.js';
     btnRef.setVisible(false);
     if (btnRef.input) btnRef.input.enabled = false;
     tipText.setVisible(false);
-    
+
   }
 
   function handleAction(type){

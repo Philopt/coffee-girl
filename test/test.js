@@ -518,31 +518,37 @@ async function testIntroSequence() {
   console.log('intro sequence test passed');
 }
 
+let server;
+
 async function run() {
   const serverPath = require.resolve('http-server/bin/http-server');
-  const server = spawn(process.execPath, [serverPath, '-p', '8080', '-c-1'], { stdio: 'inherit' });
+  server = spawn(process.execPath, [serverPath, '-p', '8080', '-c-1'], { stdio: 'inherit' });
 
-  // wait a bit for the server to start
-  await new Promise(r => setTimeout(r, 1000));
+  // ensure the server is cleaned up no matter how we exit
+  process.on('exit', () => server.kill());
 
-  const errors = [];
+  try {
+    // wait a bit for the server to start
+    await new Promise(r => setTimeout(r, 1000));
 
-  await new Promise((resolve) => {
-    http.get('http://localhost:8080', res => {
-      if (res.statusCode !== 200) errors.push(`Status ${res.statusCode}`);
-      res.resume();
-      res.on('end', resolve);
-    }).on('error', err => {
-      errors.push(err.message);
-      resolve();
+    const errors = [];
+
+    await new Promise((resolve) => {
+      http.get('http://localhost:8080', res => {
+        if (res.statusCode !== 200) errors.push(`Status ${res.statusCode}`);
+        res.resume();
+        res.on('end', resolve);
+      }).on('error', err => {
+        errors.push(err.message);
+        resolve();
+      });
     });
-  });
 
-  if (errors.length) {
-    if (DEBUG) console.error('Failed:', errors);
-    server.kill();
-    process.exit(1);
-  } else {
+    if (errors.length) {
+      if (DEBUG) console.error('Failed:', errors);
+      throw new Error(errors.join(', '));
+    }
+
     console.log('Game loaded without errors');
     testSpawnCustomer();
     testHandleActionSell();
@@ -553,11 +559,13 @@ async function run() {
     testAnimateLoveChange();
     testScheduleNextSpawn();
     await testIntroSequence();
+  } finally {
     server.kill();
   }
 }
 
 run().catch(err => {
+  if (server) server.kill();
   if (DEBUG) console.error(err);
   process.exit(1);
 });

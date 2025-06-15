@@ -150,8 +150,6 @@
   function blinkButton(btn, onComplete){
     const w = btn.width !== undefined ? btn.width : (btn.displayWidth || 0);
     const h = btn.height !== undefined ? btn.height : (btn.displayHeight || 0);
-    const area = btn.myHitArea || new Phaser.Geom.Rectangle(-w/2, -h/2, w, h);
-    btn.myHitArea = area;
     btn.disableInteractive();
     this.tweens.add({
       targets: btn,
@@ -161,14 +159,16 @@
       repeat: 1,
       onComplete: () => {
         if (btn.setInteractive) {
+          const area = new Phaser.Geom.Rectangle(-w/2, -h/2, w, h);
+          btn.myHitArea = area;
           btn.setInteractive({
-            hitArea: btn.myHitArea,
+            hitArea: area,
             hitAreaCallback: Phaser.Geom.Rectangle.Contains,
             useHandCursor: true
           });
           if (btn.input && btn.input.hitArea) {
-            btn.input.hitArea.x = btn.myHitArea.x;
-            btn.input.hitArea.y = btn.myHitArea.y;
+            btn.input.hitArea.x = area.x;
+            btn.input.hitArea.y = area.y;
           }
         }
         if (onComplete) onComplete();

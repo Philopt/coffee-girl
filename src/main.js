@@ -733,10 +733,23 @@ export let Assets, Scene, Customers, config;
 
     const priceTargetX = dialogBg.x + dialogBg.width/2 - 60;
     const priceTargetY = dialogBg.y - dialogBg.height;
+    const girlX = (typeof girl !== 'undefined' && girl) ? girl.x : dialogBg.x;
+    const girlY = (typeof girl !== 'undefined' && girl) ? girl.y - 20 : dialogBg.y;
     dialogPriceContainer
-      .setPosition(dialogBg.x, dialogBg.y)
-      .setScale(0)
+      .setPosition(girlX, girlY)
+      .setScale(0.2)
       .setVisible(false);
+    if(dialogPriceBox){
+      if(dialogPriceBox.setFillStyle){
+        dialogPriceBox.setFillStyle(0xdddddd,1);
+      }else if(dialogPriceBox.fillStyle){
+        dialogPriceBox.fillStyle(0xdddddd,1);
+      }
+      if(dialogPriceBox.setStrokeStyle){
+        dialogPriceBox.setStrokeStyle(2,0x000000);
+      }
+      dialogPriceBox.fillAlpha=1;
+    }
     dialogPriceContainer.alpha = 1;
     dialogPriceLabel
       .setStyle({fontSize:'14px'})
@@ -754,15 +767,22 @@ export let Assets, Scene, Customers, config;
       ease:'Back.easeOut',
       duration:dur(300),
       onComplete:()=>{
-        dialogPriceContainer.setVisible(true);
-        this.tweens.add({
-          targets:dialogPriceContainer,
-          x:priceTargetX,
-          y:priceTargetY,
-          scale:1,
-          duration:dur(300),
-          ease:'Sine.easeOut'
-        });
+        const showPrice=()=>{
+          dialogPriceContainer.setVisible(true);
+          this.tweens.add({
+            targets:dialogPriceContainer,
+            x:priceTargetX,
+            y:priceTargetY,
+            scale:1,
+            duration:dur(300),
+            ease:'Sine.easeOut'
+          });
+        };
+        if(this.time && this.time.delayedCall){
+          this.time.delayedCall(dur(500), showPrice, [], this);
+        }else{
+          showPrice();
+        }
       }
     });
 

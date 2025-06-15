@@ -1,6 +1,5 @@
+import { debugLog } from './debug.js';
 (() => {
-  const DEBUG = false;
-  const debugLog = (...args) => { if (DEBUG) console.log(...args); };
   if (typeof debugLog === 'function') debugLog('main.js loaded');
   let initCalled = false;
   function init(){

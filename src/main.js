@@ -563,10 +563,10 @@ import { debugLog } from './debug.js';
       .setDepth(10);
     dialogBg.x=240;
     dialogBg.y=430; // raise bubble slightly
-    dialogBg.width=360; // narrower bubble
+    dialogBg.width=360; // starting size, adjusted later
     dialogBg.height=120;
 
-    dialogPriceBox=this.add.rectangle(0,0,120,80,0xffffff)
+    dialogPriceBox=this.add.rectangle(0,0,120,80,0xdddddd)
       .setStrokeStyle(2,0x000)
       .setOrigin(0.5);
 
@@ -722,6 +722,12 @@ import { debugLog } from './debug.js';
       const tipX = tx * 0.5;
       const tipY = by + (ty - by) * 0.5;
       dialogBg.fillTriangle(bx1, by, bx2, by, tipX, tipY);
+      dialogBg.beginPath();
+      dialogBg.moveTo(tipX, tipY);
+      dialogBg.lineTo(bx1, by);
+      dialogBg.moveTo(tipX, tipY);
+      dialogBg.lineTo(bx2, by);
+      dialogBg.strokePath();
     }
   }
 
@@ -745,19 +751,13 @@ import { debugLog } from './debug.js';
       });
       return;
     }
-    dialogBg.setVisible(true);
-    drawDialogBubble(c.sprite.x, c.sprite.y);
-    dialogPriceContainer
-      .setPosition(dialogBg.x + dialogBg.width/2 - 60, dialogBg.y - dialogBg.height)
-      .setScale(1)
-      .setVisible(true);
-    dialogPriceContainer.alpha = 1;
     const itemStr=c.orders.map(o=>{
       return o.qty>1 ? `${o.qty} ${o.req}` : o.req;
     }).join(' and ');
     const wantLine=(c.orders.length===1 && c.orders[0].qty===1)
       ? `I want ${articleFor(c.orders[0].req)} ${c.orders[0].req}`
       : `I want ${itemStr}`;
+
     if(activeBubble){
       activeBubble.destroy();
       activeBubble=null;
@@ -766,11 +766,12 @@ import { debugLog } from './debug.js';
       .setOrigin(0.5).setDepth(11);
     activeBubble=bubble;
     this.tweens.add({targets:bubble,y:c.sprite.y-70,alpha:0,duration:dur(600),onComplete:()=>{bubble.destroy(); activeBubble=null;}});
+
     dialogText
-      .setOrigin(0,0.5)
-      .setPosition(dialogBg.x - dialogBg.width/2 + 40, dialogBg.y - 20)
+      .setOrigin(0,0)
       .setText(wantLine)
       .setVisible(true);
+
     const totalCost=c.orders.reduce((s,o)=>s+o.price*o.qty,0);
     const canAfford = c.orders[0].coins >= totalCost;
     let coinLine;
@@ -783,11 +784,31 @@ import { debugLog } from './debug.js';
       coinLine = `...but I only have $${c.orders[0].coins}`;
     }
     dialogCoins
-      .setOrigin(0,0.5)
-      .setPosition(dialogBg.x - dialogBg.width/2 + 40, dialogBg.y + 10)
+      .setOrigin(0,0)
       .setStyle({fontSize:'20px'})
       .setText(coinLine)
       .setVisible(true);
+
+    const maxW=Math.max(dialogText.width, dialogCoins.width);
+    dialogBg.width=Math.max(maxW+80,160);
+    dialogBg.height=dialogText.height+dialogCoins.height+60;
+
+    const bubbleTop=dialogBg.y - dialogBg.height/2;
+    dialogText.setPosition(dialogBg.x - dialogBg.width/2 + 40, bubbleTop + 30);
+    dialogCoins.setPosition(dialogBg.x - dialogBg.width/2 + 40, bubbleTop + 30 + dialogText.height + 10);
+
+    dialogBg.setScale(0).setVisible(true);
+    dialogText.setScale(0);
+    dialogCoins.setScale(0);
+    drawDialogBubble(c.sprite.x, c.sprite.y);
+
+    const priceTargetX = dialogBg.x + dialogBg.width/2 - 60;
+    const priceTargetY = dialogBg.y - dialogBg.height;
+    dialogPriceContainer
+      .setPosition(dialogBg.x, dialogBg.y)
+      .setScale(0)
+      .setVisible(false);
+    dialogPriceContainer.alpha = 1;
     dialogPriceLabel
       .setStyle({fontSize:'14px'})
       .setText('Total\nCost');
@@ -797,6 +818,25 @@ import { debugLog } from './debug.js';
       .setColor('#000')
       .setScale(1)
       .setAlpha(1);
+
+    this.tweens.add({
+      targets:[dialogBg, dialogText, dialogCoins],
+      scale:1,
+      ease:'Back.easeOut',
+      duration:dur(300),
+      onComplete:()=>{
+        dialogPriceContainer.setVisible(true);
+        this.tweens.add({
+          targets:dialogPriceContainer,
+          x:priceTargetX,
+          y:priceTargetY,
+          scale:1,
+          duration:dur(300),
+          ease:'Sine.easeOut'
+        });
+      }
+    });
+
     tipText.setVisible(false);
     btnSell.setVisible(canAfford);
     if (btnSell.input) btnSell.input.enabled = canAfford;
@@ -813,13 +853,13 @@ import { debugLog } from './debug.js';
       dialogCoins.setVisible(false);
       dialogPriceContainer.setVisible(false);
       dialogPriceValue.setColor('#000');
-      if(dialogPriceBox){
-        if(dialogPriceBox.setFillStyle){
-          dialogPriceBox.setFillStyle(0xffffff,1);
-        }else if(dialogPriceBox.fillStyle){
-          dialogPriceBox.fillStyle(0xffffff,1);
+        if(dialogPriceBox){
+          if(dialogPriceBox.setFillStyle){
+            dialogPriceBox.setFillStyle(0xdddddd,1);
+          }else if(dialogPriceBox.fillStyle){
+            dialogPriceBox.fillStyle(0xdddddd,1);
+          }
         }
-      }
     }else{
       dialogBg.setVisible(true);
       dialogText.setVisible(false);

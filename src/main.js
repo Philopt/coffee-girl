@@ -194,17 +194,6 @@ export function setupGame(){
     return sorted[n-1] !== undefined ? sorted[n-1] : 0xffffff;
   }
 
-  function tintWithWhite(color, amount=0.2){
-    const r=(color>>16)&0xff;
-    const g=(color>>8)&0xff;
-    const b=color&0xff;
-    const r2=Math.round(255*(1-amount)+r*amount);
-    const g2=Math.round(255*(1-amount)+g*amount);
-    const b2=Math.round(255*(1-amount)+b*amount);
-    return (r2<<16)|(g2<<8)|b2;
-  }
-
-
 
   let moneyText, loveText, queueLevelText;
   let dialogBg, dialogText, dialogCoins,

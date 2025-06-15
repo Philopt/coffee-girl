@@ -122,6 +122,24 @@ import { debugLog } from './debug.js';
     },[],scene);
   }
 
+  function flashBorder(rect, scene, color=0x00ff00){
+    if(!rect || !rect.setStrokeStyle) return;
+    const original=rect.strokeColor||0x000000;
+    let on=false;
+    const flashes=4;
+    scene.time.addEvent({
+      repeat:flashes,
+      delay:dur(60),
+      callback:()=>{
+        rect.setStrokeStyle(2, on?color:original);
+        on=!on;
+      }
+    });
+    scene.time.delayedCall(dur(60)*(flashes+1)+dur(10),()=>{
+      rect.setStrokeStyle(2, original);
+    },[],scene);
+  }
+
   function animateStatChange(obj, scene, delta, isLove=false){
     if(delta===0) return;
     const up = delta>0;
@@ -794,6 +812,7 @@ import { debugLog } from './debug.js';
       dialogCoins.setVisible(false);
       dialogPriceContainer.setVisible(false);
       dialogPriceValue.setColor('#000');
+
         if(dialogPriceBox){
           if(dialogPriceBox.setFillStyle){
             dialogPriceBox.setFillStyle(0xdddddd,1);
@@ -801,11 +820,21 @@ import { debugLog } from './debug.js';
             dialogPriceBox.fillStyle(0xdddddd,1);
           }
         }
+
     }else{
       dialogBg.setVisible(true);
       dialogText.setVisible(false);
       dialogCoins.setVisible(false);
       dialogPriceContainer.setVisible(true);
+    }
+    if(dialogPriceBox){
+      if(dialogPriceBox.setFillStyle){
+        dialogPriceBox.setFillStyle(0xffffff,1);
+      }else if(dialogPriceBox.fillStyle){
+        dialogPriceBox.fillStyle(0xffffff,1);
+      }
+      dialogPriceBox.setStrokeStyle(2,0x000000);
+      dialogPriceBox.fillAlpha = 1;
     }
     btnSell.setVisible(false);
     if (btnSell.input) btnSell.input.enabled = false;
@@ -939,19 +968,11 @@ import { debugLog } from './debug.js';
             animateStatChange(moneyText, this, mD);
             done();
         }});
-        tl.add({targets:ticket,x:destX,y:destY,scale:0,alpha:0,duration:dur(400),
+        tl.add({targets:ticket,x:destX,y:destY,scale:0,duration:dur(400),
           onStart:()=>{
-            if(dialogPriceBox && Phaser && Phaser.Display && Phaser.Display.Color){
-              this.tweens.addCounter({from:0,to:100,duration:dur(400),onUpdate:(tw)=>{
-                const c=Phaser.Display.Color.Interpolate.ColorWithColor(
-                  {r:255,g:255,b:255},{r:0,g:255,b:0},100,tw.getValue());
-                const col=Phaser.Display.Color.GetColor(c.r,c.g,c.b);
-                if(dialogPriceBox.setFillStyle){
-                  dialogPriceBox.setFillStyle(col,1);
-                }else if(dialogPriceBox.fillStyle){
-                  dialogPriceBox.fillStyle(col,1);
-                }
-              }});
+            flashBorder(dialogPriceBox,this,0x00ff00);
+            if(this.tweens){
+              this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});
             }
           }});
         tl.play();
@@ -975,13 +996,6 @@ import { debugLog } from './debug.js';
         lossStamp.setVisible(false);
         dialogBg.setVisible(false);
         dialogText.setVisible(false);
-        if(dialogPriceBox){
-          if(dialogPriceBox.setFillStyle){
-            dialogPriceBox.setFillStyle(0xff0000,1);
-          }else if(dialogPriceBox.fillStyle){
-            dialogPriceBox.fillStyle(0xff0000,1);
-          }
-        }
         if(this.tweens){
           this.tweens.add({targets:ticket,x:'+=6',duration:dur(60),yoyo:true,repeat:2});
         }
@@ -994,7 +1008,13 @@ import { debugLog } from './debug.js';
             done();
         }});
         flashMoney(t,this,'#f00');
-        tl.add({targets:ticket,x:destX,y:destY,scale:0,alpha:0,duration:dur(400)});
+        flashBorder(dialogPriceBox,this,0xff0000);
+        tl.add({targets:ticket,x:destX,y:destY,scale:0,duration:dur(400),
+          onStart:()=>{
+            if(this.tweens){
+              this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});
+            }
+          }});
         tl.play();
       },[],this);
     } else if(type!=='refuse'){

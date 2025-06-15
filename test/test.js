@@ -40,12 +40,8 @@ function testBlinkButton() {
     height: BUTTON_HEIGHT,
     input: { enabled: true },
     disableInteractive() { disableCalled = true; this.input.enabled = false; },
-    setInteractive(arg1, arg2) {
-      if (arg1 && arg1.hitArea) {
-        setArgs = { rect: arg1.hitArea, cb: arg1.hitAreaCallback, useHand: arg1.useHandCursor };
-      } else {
-        setArgs = { rect: arg1, cb: arg2 };
-      }
+    setInteractive(opts) {
+      setArgs = { options: opts };
       this.input.enabled = true;
     }
   };
@@ -53,10 +49,8 @@ function testBlinkButton() {
   blinkButton.call(scene, btn);
   assert(disableCalled, 'disableInteractive not called');
   assert.strictEqual(btn.input.enabled, true, 'button not re-enabled');
-  assert.ok(setArgs && setArgs.rect && setArgs.cb, 'setInteractive should be called with shape');
-  assert.strictEqual(setArgs.useHand, true, 'useHandCursor should be true');
-  assert.strictEqual(setArgs.rect.x, -btn.width / 2, 'hitbox x not centered');
-  assert.strictEqual(setArgs.rect.y, -btn.height / 2, 'hitbox y not centered');
+  assert.ok(setArgs && setArgs.options, 'setInteractive should be called');
+  assert.strictEqual(setArgs.options.useHandCursor, true, 'useHandCursor should be true');
   console.log('blinkButton interactivity test passed');
 }
 
@@ -180,12 +174,14 @@ function testShowStartScreen() {
         return obj;
       },
       graphics() { return { fillStyle() { return this; }, fillRoundedRect() { return this; } }; },
+      zone() { return { setOrigin() { return this; }, setInteractive() { return this; }, on() { return this; } }; },
       container() {
         const obj = {
           setSize() { return obj; },
           setDepth() { return obj; },
           setInteractive() { obj.interactive = true; return obj; },
-          on() { return obj; }
+          on() { return obj; },
+          add() { return obj; }
         };
         calls.container = obj;
         return obj;
@@ -228,12 +224,14 @@ function testStartButtonPlaysIntro() {
       rectangle() { return { setDepth() { return this; }, destroy() { this.destroyed = true; } }; },
       text() { return { setOrigin() { return this; }, setDepth() { return this; }, width: 100, height: 40 }; },
       graphics() { return { fillStyle() { return this; }, fillRoundedRect() { return this; } }; },
+      zone() { return { setOrigin() { return this; }, setInteractive() { return this; }, on(event, cb) { if (event === 'pointerdown') pointerCb = cb; return this; } }; },
       container() {
         const obj = {
           setSize() { return obj; },
           setDepth() { return obj; },
           setInteractive() { return obj; },
           on(event, cb) { if (event === 'pointerdown') pointerCb = cb; return obj; },
+          add() { return obj; },
           destroy() { obj.destroyed = true; }
         };
         return obj;

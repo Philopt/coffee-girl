@@ -181,6 +181,7 @@ export let Assets, Scene, Customers, config;
   let startMsgTimers=[];
   let startMsgBubbles=[];
 
+
   function calcLoveLevel(v){
     if(v>=100) return 4;
     if(v>=50) return 3;
@@ -519,7 +520,7 @@ export let Assets, Scene, Customers, config;
       .setDepth(11)
       .setVisible(false);
 
-    dialogText=this.add.text(240,410,'',{font:'20px sans-serif',fill:'#000',align:'center',wordWrap:{width:300}})
+    dialogText=this.add.text(240,410,'',{font:'20px sans-serif',fill:'#000',align:'center'})
                      .setOrigin(0,0.5).setVisible(false).setDepth(11);
     dialogCoins=this.add.text(240,440,'',{font:'20px sans-serif',fill:'#000'})
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
@@ -720,13 +721,19 @@ export let Assets, Scene, Customers, config;
       .setVisible(true);
 
     const maxW=Math.max(dialogText.width, dialogCoins.width);
-    dialogBg.width=Math.max(maxW+80,160);
-    dialogBg.height=dialogText.height+dialogCoins.height+60;
+    const hMargin = 20;
+    const vMargin = 15;
+    const lineGap = 10;
+    dialogBg.width = Math.max(maxW + hMargin * 2, 160);
+    dialogBg.height = dialogText.height + dialogCoins.height + lineGap + vMargin * 2;
 
     const bubbleTop=dialogBg.y - dialogBg.height/2;
-    const textY=bubbleTop+30+dialogText.height/2;
+    const textY=bubbleTop + vMargin + dialogText.height/2;
     dialogText.setPosition(dialogBg.x, textY);
-    dialogCoins.setPosition(dialogBg.x, textY + dialogText.height/2 + 10 + dialogCoins.height/2);
+    dialogCoins.setPosition(
+      dialogBg.x,
+      textY + dialogText.height/2 + lineGap + dialogCoins.height/2
+    );
 
     dialogBg.setScale(0).setVisible(true);
     dialogText.setScale(0);

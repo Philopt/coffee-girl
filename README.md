@@ -76,13 +76,19 @@ Customers can now order any of the following drinks:
 
 ## Running tests
 
-Before running the tests, install all dependencies using `npm ci` or `npm install`:
+Before running the tests, **install all dependencies** using `npm ci` or `npm install`:
 
 ```bash
 npm ci
 ```
 
-Then run the automated check. `npm test` relies on `node_modules/.bin/http-server` to start a local server and verify the page responds without errors:
+This step installs all dev dependencies, including `eslint` and `puppeteer`.
+`eslint` is executed automatically via the `pretest` script and `puppeteer`
+drives a headless browser for the integration tests.
+
+After installing the dependencies, run the automated check. `npm test` relies on
+`node_modules/.bin/http-server` to start a local server and verify the page
+responds without errors:
 
 ```bash
 npm test

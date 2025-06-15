@@ -1,13 +1,14 @@
+/* global phoneDamage */
 import { debugLog } from './debug.js';
 import { dur, scaleForY, articleFor, flashMoney, START_PHONE_W, START_PHONE_H, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_Y, DIALOG_Y } from "./ui.js";
 import { MENU, SPAWN_DELAY, SPAWN_VARIANCE, QUEUE_SPACING, ORDER_X, ORDER_Y, QUEUE_X, QUEUE_OFFSET, QUEUE_Y, WANDER_TOP, WANDER_BOTTOM, BASE_WAITERS, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel, maxWanderers as customersMaxWanderers, queueLimit as customersQueueLimit } from "./customers.js";
 import { baseConfig } from "./scene.js";
 export let Assets, Scene, Customers, config;
 (() => {
-  if (typeof debugLog === 'function') debugLog('main.js loaded');
+  debugLog('main.js loaded');
   let initCalled = false;
   function init(){
-    if (typeof debugLog === 'function') debugLog('init() executing');
+    debugLog('init() executing');
     initCalled = true;
     new Phaser.Game(config);
   }
@@ -19,6 +20,10 @@ export let Assets, Scene, Customers, config;
   let spawnTimer = null;
   let falconActive = false;
   let loveLevel=1;
+
+  let phoneDamage = 0;
+
+  let flickerEvent;
   const keys=[];
   const requiredAssets=['bg','truck','girl','lady_falcon','falcon_end','revolt_end'];
   const genzSprites=[
@@ -229,14 +234,6 @@ export let Assets, Scene, Customers, config;
   let startMsgTimers=[];
   let startMsgBubbles=[];
 
-
-  function calcLoveLevel(v){
-    if(v>=100) return 4;
-    if(v>=50) return 3;
-    if(v>=20) return 2;
-    return 1;
-  }
-
   function maxWanderers(){
     return customersMaxWanderers(love);
   }
@@ -427,7 +424,7 @@ export let Assets, Scene, Customers, config;
 
   function showStartScreen(scene){
     scene = scene || this;
-    if (typeof debugLog === 'function') debugLog('showStartScreen called');
+    debugLog('showStartScreen called');
     // reset any pending timers or bubbles from a previous session
     startMsgTimers.forEach(t => t.remove(false));
     startMsgTimers = [];
@@ -514,7 +511,7 @@ export let Assets, Scene, Customers, config;
         }
       }
       startZone.on('pointerdown',()=>{
-        if (typeof debugLog === 'function') debugLog('start button clicked');
+        debugLog('start button clicked');
         startMsgTimers.forEach(t=>t.remove(false));
         startMsgTimers=[];
         startMsgBubbles=[];
@@ -534,15 +531,15 @@ export let Assets, Scene, Customers, config;
       console.warn('playIntro skipped: missing truck or girl');
       return;
     }
-    if (typeof debugLog === 'function') debugLog('playIntro starting');
+    debugLog('playIntro starting');
     scene = scene || this;
     if(!truck || !girl) return;
     truck.setPosition(560,245);
     girl.setPosition(560,260).setVisible(false);
     const intro=scene.tweens.createTimeline({callbackScope:scene,
       onComplete:()=>{
-        if (typeof debugLog === 'function') debugLog('intro finished');
-        if (typeof debugLog === 'function') debugLog('playIntro finished');
+        debugLog('intro finished');
+        debugLog('playIntro finished');
         spawnCustomer.call(scene);
         scheduleNextSpawn(scene);
       }});
@@ -690,11 +687,11 @@ export let Assets, Scene, Customers, config;
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
     reportLine4=this.add.text(0,0,'',{font:'14px sans-serif',fill:'#fff'})
       .setVisible(false).setDepth(11);
-    tipText=this.add.text(0,0,'',{font:'24px sans-serif',fill:'#0a0'})
+    tipText=this.add.text(0,0,'',{font:'28px sans-serif',fill:'#0a0'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
-    paidStamp=this.add.text(0,0,'PAID',{font:'24px sans-serif',fill:'#0a0'})
+    paidStamp=this.add.text(0,0,'PAID',{font:'40px sans-serif',fill:'#0a0'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
-    lossStamp=this.add.text(0,0,'LOSS',{font:'24px sans-serif',fill:'#a00'})
+    lossStamp=this.add.text(0,0,'LOSS',{font:'40px sans-serif',fill:'#a00'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
 
     // wait for player to start the shift
@@ -802,10 +799,6 @@ export let Assets, Scene, Customers, config;
       activeBubble.destroy();
       activeBubble=null;
     }
-    const bubble=this.add.text(c.sprite.x,c.sprite.y-50,'💬',{font:'32px sans-serif',fill:'#000'})
-      .setOrigin(0.5).setDepth(11);
-    activeBubble=bubble;
-    this.tweens.add({targets:bubble,y:c.sprite.y-70,alpha:0,duration:dur(600),onComplete:()=>{bubble.destroy(); activeBubble=null;}});
 
     dialogText
       .setOrigin(0.5)
@@ -882,16 +875,16 @@ export let Assets, Scene, Customers, config;
     }
     dialogPriceContainer.alpha = 1;
     dialogPriceLabel
-      .setStyle({fontSize:'14px',align:'right'})
+      .setStyle({fontSize:'14px',align:'center'})
       .setText('Total\nCost')
-      .setOrigin(1,0.5)
-      .setPosition(dialogPriceBox.width/2 - 6, -20);
+      .setOrigin(0.5)
+      .setPosition(0, -20);
     dialogPriceValue
       .setStyle({fontSize:'32px'})
       .setText(`$${totalCost.toFixed(2)}`)
       .setColor('#000')
-      .setOrigin(1,0.5)
-      .setPosition(dialogPriceBox.width/2 - 6, 10)
+      .setOrigin(0.5)
+      .setPosition(0, 10)
       .setScale(1)
       .setAlpha(1);
 
@@ -1068,21 +1061,11 @@ export let Assets, Scene, Customers, config;
       const stampX=ticket.x + t.x * ticket.scaleX;
       const stampY=ticket.y + t.y * ticket.scaleY;
       paidStamp
-        .setText('PAID 💵')
-        .setScale(1.5)
+        .setText('PAID')
+        .setScale(2)
         .setPosition(stampX, stampY)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
-
-      if(this.add && this.add.text){
-        const cha = this.add.text(ticket.x, ticket.y - 30, '💸',
-            {font:'28px sans-serif',fill:'#0f0'})
-          .setOrigin(0.5)
-          .setDepth(ticket.depth+2)
-          .setAlpha(0);
-        this.tweens.add({targets:cha,alpha:1,y:cha.y-10,duration:dur(200),yoyo:true,
-          onComplete:()=>cha.destroy()});
-      }
 
       const flashPrice=()=>{
         const oy=t.y;
@@ -1092,14 +1075,13 @@ export let Assets, Scene, Customers, config;
       flashMoney(t,this);
 
       let delay=dur(300);
-      let moneyIcons=null;
       if(tip>0){
         this.time.delayedCall(delay,()=>{
-          const tipX = paidStamp.x - ticketW*0.25;
-          const tipY = paidStamp.y - ticketW*0.25;
+          const tipX = paidStamp.x - ticketW * 0.4;
+          const tipY = paidStamp.y;
           tipText
-            .setText('TIP 🪙')
-            .setScale(1.6)
+            .setText('TIP')
+            .setScale(1.2)
             .setPosition(tipX, tipY)
             .setVisible(true);
           t.setText(receipt(totalCost + tip));
@@ -1116,7 +1098,6 @@ export let Assets, Scene, Customers, config;
         const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
             clearDialog();
             ticket.setVisible(false);
-            if(moneyIcons){ moneyIcons.forEach(m=>m.destroy()); }
             money=+(money+mD).toFixed(2);
             moneyText.setText('🪙 '+receipt(money));
             animateStatChange(moneyText, this, mD);
@@ -1124,12 +1105,11 @@ export let Assets, Scene, Customers, config;
         }});
         tl.add({targets:ticket,x:destX,y:destY,scale:0,duration:dur(400),
           onStart:()=>{
-            if (typeof dialogPriceBox !== 'undefined' && dialogPriceBox) {
-              flashBorder(dialogPriceBox,this,0x00ff00);
-              flashFill(dialogPriceBox,this,0x00ff00);
-            }
-            moneyIcons=scatterMoney(this, ticket, totalCost, tip, customer.x, customer.y);
-            if(this.tweens && typeof dialogPriceBox !== 'undefined' && dialogPriceBox){
+
+            flashBorder(dialogPriceBox,this,0x00ff00);
+            flashFill(dialogPriceBox,this,0x00ff00);
+            if(this.tweens){
+
               this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});
             }
           }});
@@ -1146,8 +1126,8 @@ export let Assets, Scene, Customers, config;
       const stampY=ticket.y + t.y * ticket.scaleY;
       lossStamp
         .setText('LOSS')
-        .setScale(1.5)
-        .setPosition(stampX - 20, stampY)
+        .setScale(2)
+        .setPosition(stampX, stampY)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
       this.time.delayedCall(dur(1000),()=>{

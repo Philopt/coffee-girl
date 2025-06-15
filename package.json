@@ -15,5 +15,27 @@
     "pngjs": "^7.0.0",
     "eslint": "^8.57.1"
   },
+
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "node": true,
+      "es6": true
+    },
+    "parserOptions": {
+      "ecmaVersion": 2020,
+      "sourceType": "module"
+    },
+    "globals": {
+      "Phaser": "readonly",
+      "phoneDamage": "writable",
+      "flickerEvent": "writable"
+    },
+    "extends": "eslint:recommended",
+    "rules": {
+      "no-unused-vars": "warn"
+    }
+  },
+
   "license": "MIT"
 }

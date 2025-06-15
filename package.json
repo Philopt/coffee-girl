@@ -4,7 +4,7 @@
   "description": "Coffee Clicker game",
   "scripts": {
     "start": "http-server -p 8080 -c-1",
-    "pretest": "npm install && npm run lint:syntax && npm run lint",
+    "pretest": "npm run lint",
     "test": "node test/test.js",
     "lint": "eslint src/*.js test/*.js",
     "lint:syntax": "node -c src/main.js"

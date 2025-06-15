@@ -184,6 +184,27 @@ export let Assets, Scene, Customers, config;
     });
   }
 
+  function fitPriceBox(){
+    if(typeof dialogPriceBox==='undefined' ||
+       typeof dialogPriceLabel==='undefined' ||
+       typeof dialogPriceValue==='undefined') return;
+    const margin = 12; // small margin total
+    const maxW = Math.max(dialogPriceLabel.width, dialogPriceValue.width);
+    const w = maxW + margin;
+    if(dialogPriceBox.setSize){
+      dialogPriceBox.setSize(w, dialogPriceBox.height);
+    }
+    dialogPriceBox.width = w;
+    dialogPriceLabel.setPosition(dialogPriceBox.width/2 - margin/2, -20);
+    dialogPriceValue.setPosition(dialogPriceBox.width/2 - margin/2, 10);
+    if(ticketMask && ticketMask.destroy){
+      ticketMask.destroy();
+    }
+    if(dialogPriceBox && dialogPriceBox.createGeometryMask){
+      ticketMask = dialogPriceBox.createGeometryMask();
+    }
+  }
+
   const colorCache = {};
 
   function getDominantColor(scene, key){
@@ -229,7 +250,7 @@ export let Assets, Scene, Customers, config;
       dialogPriceContainer,
       btnSell, btnGive, btnRef;
   let reportLine1, reportLine2, reportLine3, reportLine4, tipText;
-  let paidStamp, lossStamp;
+  let paidStamp, lossStamp, ticketMask;
   let truck, girl;
   let activeBubble=null;
   let sideCText;
@@ -585,6 +606,8 @@ export let Assets, Scene, Customers, config;
     dialogPriceValue=this.add.text(0,10,'',{font:'32px sans-serif',fill:'#000'})
       .setOrigin(0.5);
 
+    ticketMask = dialogPriceBox.createGeometryMask();
+
     dialogPriceContainer=this.add.container(0,0,[dialogPriceBox, dialogPriceLabel, dialogPriceValue])
       .setDepth(11)
       .setVisible(false);
@@ -651,9 +674,9 @@ export let Assets, Scene, Customers, config;
       .setVisible(false).setDepth(11);
     tipText=this.add.text(0,0,'',{font:'24px sans-serif',fill:'#0a0'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
-    paidStamp=this.add.text(0,0,'PAID',{font:'24px sans-serif',fill:'#0a0'})
+    paidStamp=this.add.text(0,0,'PAID',{font:'bold 36px sans-serif',fill:'#0a0'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
-    lossStamp=this.add.text(0,0,'LOSS',{font:'24px sans-serif',fill:'#a00'})
+    lossStamp=this.add.text(0,0,'LOSS',{font:'bold 36px sans-serif',fill:'#a00'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
 
     // wait for player to start the shift
@@ -804,6 +827,22 @@ export let Assets, Scene, Customers, config;
     }
     drawDialogBubble(c.sprite.x, c.sprite.y, bubbleColor);
 
+    dialogPriceLabel
+      .setStyle({fontSize:'14px',align:'right'})
+      .setText('Total\nCost')
+      .setOrigin(1,0.5)
+      .setPosition(dialogPriceBox.width/2 - 6, -20);
+    dialogPriceValue
+      .setStyle({fontSize:'32px'})
+      .setText(`$${totalCost.toFixed(2)}`)
+      .setColor('#000')
+      .setOrigin(1,0.5)
+      .setPosition(dialogPriceBox.width/2 - 6, 10)
+      .setScale(1)
+      .setAlpha(1);
+
+    if(typeof fitPriceBox === 'function') fitPriceBox();
+
     const priceTargetXDefault = dialogBg.x + dialogBg.width/2 - 40;
     const priceTargetY = dialogBg.y - dialogBg.height;
     const ticketW = (typeof dialogPriceBox!=='undefined' && dialogPriceBox)? dialogPriceBox.width : 120;
@@ -830,19 +869,6 @@ export let Assets, Scene, Customers, config;
       dialogPriceBox.fillAlpha=1;
     }
     dialogPriceContainer.alpha = 1;
-    dialogPriceLabel
-      .setStyle({fontSize:'14px',align:'right'})
-      .setText('Total\nCost')
-      .setOrigin(1,0.5)
-      .setPosition(dialogPriceBox.width/2 - 6, -20);
-    dialogPriceValue
-      .setStyle({fontSize:'32px'})
-      .setText(`$${totalCost.toFixed(2)}`)
-      .setColor('#000')
-      .setOrigin(1,0.5)
-      .setPosition(dialogPriceBox.width/2 - 6, 10)
-      .setScale(1)
-      .setAlpha(1);
 
     this.tweens.add({
       targets:[dialogBg, dialogText, dialogCoins],
@@ -858,7 +884,24 @@ export let Assets, Scene, Customers, config;
             y:priceTargetY,
             scale:1,
             duration:dur(300),
-            ease:'Sine.easeOut'
+
+            ease:'Sine.easeOut',
+            onComplete:()=>{
+              if(typeof fadeInButtons==='function'){
+                fadeInButtons.call(this, canAfford);
+              }else{
+                if(canAfford){
+                  btnSell.setVisible(true);
+                  if(btnSell.input) btnSell.input.enabled = true;
+                }else{
+                  btnSell.setVisible(false);
+                  if(btnSell.input) btnSell.input.enabled = false;
+                }
+                btnGive.setVisible(true);
+                if(btnGive.input) btnGive.input.enabled = true;
+              }
+            }
+
           });
         };
         if(this.time && this.time.delayedCall){
@@ -869,6 +912,7 @@ export let Assets, Scene, Customers, config;
       }
     });
 
+    btnRef.setVisible(true);
     tipText.setVisible(false);
     btnSell.setVisible(canAfford);
     if (btnSell.input) btnSell.input.enabled = canAfford;
@@ -994,20 +1038,32 @@ export let Assets, Scene, Customers, config;
     if(type==='sell'){
       const ticket=dialogPriceContainer;
       const t=dialogPriceValue;
+
     const ticketW = (typeof dialogPriceBox!=='undefined' && dialogPriceBox)? dialogPriceBox.width : 120;
+
       const destX=moneyText.x+moneyText.width-15;
       const destY=moneyText.y+10;
       t.setVisible(true);
       t.setDepth(paidStamp.depth+1);
       t.setText(receipt(totalCost));
-      const stampX=ticket.x + t.x * ticket.scaleX;
+      const stampX=ticket.x;
       const stampY=ticket.y + t.y * ticket.scaleY;
+      const boxW = (typeof dialogPriceBox !== 'undefined' && dialogPriceBox) ? dialogPriceBox.width : 120;
+      const boxH = (typeof dialogPriceBox !== 'undefined' && dialogPriceBox) ? dialogPriceBox.height : 80;
+      const ox = Phaser.Math.Between(-boxW * 0.2, boxW * 0.2);
+      const oy = Phaser.Math.Between(-boxH * 0.1, boxH * 0.1);
+      const scaleS = Phaser.Math.FloatBetween
+        ? Phaser.Math.FloatBetween(1.8, 2.2)
+        : Phaser.Math.Between(18, 22) / 10;
       paidStamp
         .setText('PAID 💵')
-        .setScale(1.5)
-        .setPosition(stampX, stampY)
+        .setScale(scaleS)
+        .setPosition(stampX + ox, stampY + oy)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
+      if(paidStamp.setAlpha) paidStamp.setAlpha(0);
+      if(paidStamp.setMask && ticketMask) paidStamp.setMask(ticketMask);
+      this.tweens.add({targets:paidStamp,alpha:0.6,duration:dur(200)});
 
 
       const flashPrice=()=>{
@@ -1021,14 +1077,17 @@ export let Assets, Scene, Customers, config;
       let moneyIcons=null;
       if(tip>0){
         this.time.delayedCall(delay,()=>{
-          const tipX = paidStamp.x - ticketW*0.25;
-          const tipY = paidStamp.y - ticketW*0.25;
+          const boxW = (typeof dialogPriceBox !== 'undefined' && dialogPriceBox.width)
+            ? dialogPriceBox.width : 120;
+          const tipX = paidStamp.x - boxW*0.25;
+          const tipY = paidStamp.y - boxW*0.25;
           tipText
             .setText('TIP 🪙')
             .setScale(1.6)
             .setPosition(tipX, tipY)
             .setVisible(true);
           t.setText(receipt(totalCost + tip));
+          if(typeof fitPriceBox === 'function') fitPriceBox();
           flashPrice();
         },[],this);
         delay+=dur(300);
@@ -1038,6 +1097,7 @@ export let Assets, Scene, Customers, config;
       delay+=dur(1000);
       this.time.delayedCall(delay,()=>{
         paidStamp.setVisible(false);
+        if(paidStamp.clearMask) paidStamp.clearMask(true);
         tipText.setVisible(false);
         const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
             clearDialog();
@@ -1066,16 +1126,27 @@ export let Assets, Scene, Customers, config;
       const destY=moneyText.y+10;
       t.setVisible(true)
         .setDepth(lossStamp.depth+1);
-      const stampX=ticket.x + t.x * ticket.scaleX;
+      const stampX=ticket.x;
       const stampY=ticket.y + t.y * ticket.scaleY;
+      const boxW = (typeof dialogPriceBox !== 'undefined' && dialogPriceBox) ? dialogPriceBox.width : 120;
+      const boxH = (typeof dialogPriceBox !== 'undefined' && dialogPriceBox) ? dialogPriceBox.height : 80;
+      const ox = Phaser.Math.Between(-boxW * 0.2, boxW * 0.2);
+      const oy = Phaser.Math.Between(-boxH * 0.1, boxH * 0.1);
+      const scaleL = Phaser.Math.FloatBetween
+        ? Phaser.Math.FloatBetween(1.8, 2.2)
+        : Phaser.Math.Between(18, 22) / 10;
       lossStamp
         .setText('LOSS')
-        .setScale(1.5)
-        .setPosition(stampX - 20, stampY)
+        .setScale(scaleL)
+        .setPosition(stampX + ox, stampY + oy)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
+      if(lossStamp.setAlpha) lossStamp.setAlpha(0);
+      if(lossStamp.setMask && ticketMask) lossStamp.setMask(ticketMask);
+      this.tweens.add({targets:lossStamp,alpha:0.6,duration:dur(200)});
       this.time.delayedCall(dur(1000),()=>{
         lossStamp.setVisible(false);
+        if(lossStamp.clearMask) lossStamp.clearMask(true);
         dialogBg.setVisible(false);
         dialogText.setVisible(false);
         if(this.tweens){
@@ -1518,7 +1589,9 @@ export let Assets, Scene, Customers, config;
     reportLine4.setVisible(false);
     tipText.setVisible(false);
     paidStamp.setVisible(false);
+    if(paidStamp.clearMask) paidStamp.clearMask(true);
     lossStamp.setVisible(false);
+    if(lossStamp.clearMask) lossStamp.clearMask(true);
     money=10.00; love=10;
     moneyText.setText('🪙 '+receipt(money));
     heartBroken=false;

@@ -4,10 +4,10 @@ import { MENU, SPAWN_DELAY, SPAWN_VARIANCE, QUEUE_SPACING, ORDER_X, ORDER_Y, QUE
 import { baseConfig } from "./scene.js";
 export let Assets, Scene, Customers, config;
 (() => {
-  debugLog('main.js loaded');
+  if (typeof debugLog === 'function') debugLog('main.js loaded');
   let initCalled = false;
   function init(){
-    debugLog('init() executing');
+    if (typeof debugLog === 'function') debugLog('init() executing');
     initCalled = true;
     new Phaser.Game(config);
   }
@@ -473,10 +473,12 @@ export let Assets, Scene, Customers, config;
     girl.setPosition(560,260).setVisible(false);
     const intro=scene.tweens.createTimeline({callbackScope:scene,
       onComplete:()=>{
+
         if (typeof debugLog === 'function') {
           debugLog('intro finished');
           debugLog('playIntro finished');
         }
+
         spawnCustomer.call(scene);
         scheduleNextSpawn(scene);
       }});

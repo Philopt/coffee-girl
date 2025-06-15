@@ -52,7 +52,7 @@
   const WANDER_BOTTOM=580; // near bottom of the screen
   // base number of customers that can linger nearby
   const BASE_WAITERS=3;
-  const WALK_OFF_BASE=1000;
+  const WALK_OFF_BASE=800;
   const MAX_M=100, MAX_L=100;
 
   // dimensions for the phone graphic shown on the start screen
@@ -240,7 +240,7 @@
       const targetY = idx===0 ? ORDER_Y : QUEUE_Y - QUEUE_OFFSET*(idx-1);
       const dist=Phaser.Math.Distance.Between(c.sprite.x,c.sprite.y,targetX,targetY);
       c.sprite.setDepth(5);
-      c.walkTween=scene.tweens.add({targets:c.sprite,x:targetX,y:targetY,scale:scaleForY(targetY),duration:dur(800+dist*3),ease:'Sine.easeIn',callbackScope:scene,
+      c.walkTween=scene.tweens.add({targets:c.sprite,x:targetX,y:targetY,scale:scaleForY(targetY),duration:dur(600+dist*2),ease:'Sine.easeIn',callbackScope:scene,
         onComplete:()=>{c.walkTween=null; if(idx===0) showDialog.call(scene);} });
     }
   }
@@ -624,7 +624,7 @@
     c.sprite=this.add.sprite(startX,startY,k).setScale(distScale).setDepth(4);
     const amp=Phaser.Math.Between(10,25);
     const freq=Phaser.Math.Between(2,4);
-    c.walkTween=this.tweens.add({targets:c.sprite,x:targetX,duration:dur(8000),onUpdate:(tw,t)=>{
+    c.walkTween=this.tweens.add({targets:c.sprite,x:targetX,duration:dur(6000),onUpdate:(tw,t)=>{
         const p=tw.progress;
         t.y=startY+Math.sin(p*Math.PI*freq)*amp;
       },onComplete:()=>{

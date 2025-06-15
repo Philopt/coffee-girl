@@ -28,7 +28,7 @@ function testBlinkButton() {
     return { x, y, width: w, height: h };
   }
   RectStub.Contains = () => true;
-  const context = { Phaser: { Geom: { Rectangle: RectStub } } };
+  const context = { Phaser: { Geom: { Rectangle: RectStub } }, debugLog() {} };
   vm.createContext(context);
   context.blinkBtn = null;
   vm.runInContext('const dur=v=>v;\n' + match + '\nblinkBtn=blinkButton;', context);
@@ -120,7 +120,7 @@ function testHandleActionSell() {
     dialogPriceValue: { setVisible() { return this; }, setDepth() { return this; }, setText() { return this; }, setPosition() { return this; }, setScale() { return this; }, setAlpha() { return this; }, setColor() { return this; }, x:0, y:0 },
     dialogPriceContainer: { x:0, y:0, scaleX:1, scaleY:1, setVisible() { return this; }, setPosition(x,y){ this.x=x; this.y=y; return this; }, setScale(s){ this.scaleX=s; this.scaleY=s; return this; } },
     paidStamp: { setText() { return this; }, setScale() { return this; }, setPosition() { return this; }, setAngle() { return this; }, setVisible() { return this; } },
-    tipText: { setText() { return this; }, setScale() { return this; }, setPosition() { return this; }, setVisible() { return this; } },
+    tipText: { setText() { return this; }, setScale() { return this; }, setPosition() { return this; }, setAngle() { return this; }, setVisible() { return this; } },
     dialogBg: { setVisible() { return this; } },
     dialogText: { setVisible() { return this; } },
     supers: {},
@@ -155,7 +155,7 @@ function testShowStartScreen() {
     return { x, y, width: w, height: h };
   }
   RectStub.Contains = () => true;
-  const context = { Phaser: { Geom: { Rectangle: RectStub } } };
+  const context = { Phaser: { Geom: { Rectangle: RectStub } }, debugLog() {} };
   vm.createContext(context);
   context.fn = null;
   vm.runInContext('let startOverlay,startButton,startMsgTimers=[],startMsgBubbles=[];const playIntro=()=>{};\n' + match[0] + '\nfn=showStartScreen;', context);
@@ -205,7 +205,7 @@ function testStartButtonPlaysIntro() {
     return { x, y, width: w, height: h };
   }
   RectStub.Contains = () => true;
-  const context = { Phaser: { Geom: { Rectangle: RectStub } }, spawnCustomer: () => {}, scheduleNextSpawn: () => {} };
+  const context = { Phaser: { Geom: { Rectangle: RectStub } }, spawnCustomer: () => {}, scheduleNextSpawn: () => {}, debugLog() {} };
   vm.createContext(context);
   context.fnStart = null;
   context.fnIntro = null;
@@ -288,6 +288,7 @@ function testShowDialogButtons() {
     setAlpha() { return this; },
     setColor() { return this; },
     setScale() { return this; },
+    setAngle() { return this; },
     clear() { return this; },
     lineStyle() { return this; },
     fillStyle() { return this; },

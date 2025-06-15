@@ -936,8 +936,6 @@ export let Assets, Scene, Customers, config;
     const finish=()=>{
       const exit=()=>{
         current.sprite.destroy();
-        queue.shift();
-        moveQueueForward.call(this);
         if(money<=0){
           showFalconAttack.call(this,()=>{
             showEnd.call(this,'Game Over\nYou lost all the money.\nLady Falcon reclaims the coffee truck.');
@@ -959,6 +957,10 @@ export let Assets, Scene, Customers, config;
 
       const sprite=current.sprite;
       sprite.setDepth(5);
+
+      // Shift queue forward as soon as customer starts to walk away
+      queue.shift();
+      moveQueueForward.call(this);
 
       if(type==='refuse'){
         const tl=this.tweens.createTimeline({callbackScope:this,onComplete:exit});
@@ -983,12 +985,14 @@ export let Assets, Scene, Customers, config;
         tl.play();
       }else{
         const dir = Phaser.Math.Between(0,1)?1:-1;
-        const targetX = dir===1?520:-40;
+        const startX=sprite.x;
         const startY=sprite.y;
+        const targetY=700;
+        const distanceX=Phaser.Math.Between(80,160)*dir;
         const amp=Phaser.Math.Between(10,25);
         const freq=Phaser.Math.Between(2,4);
-        this.tweens.add({targets:sprite,x:targetX,duration:dur(7000),callbackScope:this,
-          onUpdate:(tw,t)=>{const p=tw.progress; t.y=startY+Math.sin(p*Math.PI*freq)*amp;},
+        this.tweens.add({targets:sprite,y:targetY,duration:dur(6000),callbackScope:this,
+          onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+p*distanceX+Math.sin(p*Math.PI*freq)*amp;},
           onComplete:exit});
       }
     };

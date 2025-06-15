@@ -680,8 +680,21 @@ export let Assets, Scene, Customers, config;
       dialogBg.lineTo(bx1, by+1);
       dialogBg.moveTo(tipX, tipY);
       dialogBg.lineTo(bx2, by+1);
-      dialogBg.strokePath();
+    dialogBg.strokePath();
+  }
+  }
+
+  function resetPriceBox(){
+    if(!dialogPriceBox) return;
+    if(dialogPriceBox.setFillStyle){
+      dialogPriceBox.setFillStyle(0xffeeb5,1);
+    } else if(dialogPriceBox.fillStyle){
+      dialogPriceBox.fillStyle(0xffeeb5,1);
     }
+    if(dialogPriceBox.setStrokeStyle){
+      dialogPriceBox.setStrokeStyle(2,0x000000);
+    }
+    dialogPriceBox.fillAlpha = 1;
   }
 
   function showDialog(){
@@ -781,17 +794,7 @@ export let Assets, Scene, Customers, config;
       .setPosition(girlX, girlY)
       .setScale(0.2)
       .setVisible(false);
-      if(dialogPriceBox){
-        if(dialogPriceBox.setFillStyle){
-          dialogPriceBox.setFillStyle(0xffeeb5,1);
-        }else if(dialogPriceBox.fillStyle){
-          dialogPriceBox.fillStyle(0xffeeb5,1);
-      }
-      if(dialogPriceBox.setStrokeStyle){
-        dialogPriceBox.setStrokeStyle(2,0x000000);
-      }
-      dialogPriceBox.fillAlpha=1;
-    }
+    resetPriceBox();
     dialogPriceContainer.alpha = 1;
     dialogPriceLabel
       .setStyle({fontSize:'14px',align:'center'})
@@ -859,30 +862,13 @@ export let Assets, Scene, Customers, config;
       dialogCoins.setVisible(false);
       dialogPriceContainer.setVisible(false);
       dialogPriceValue.setColor('#000');
-
-        if(dialogPriceBox){
-        if(dialogPriceBox.setFillStyle){
-          dialogPriceBox.setFillStyle(0xffeeb5,1);
-        }else if(dialogPriceBox.fillStyle){
-          dialogPriceBox.fillStyle(0xffeeb5,1);
-          }
-        }
-
     }else{
       dialogBg.setVisible(true);
       dialogText.setVisible(false);
       dialogCoins.setVisible(false);
       dialogPriceContainer.setVisible(true);
     }
-      if(dialogPriceBox){
-        if(dialogPriceBox.setFillStyle){
-          dialogPriceBox.setFillStyle(0xffeeb5,1);
-        }else if(dialogPriceBox.fillStyle){
-          dialogPriceBox.fillStyle(0xffeeb5,1);
-      }
-      dialogPriceBox.setStrokeStyle(2,0x000000);
-      dialogPriceBox.fillAlpha = 1;
-    }
+    resetPriceBox();
     btnSell.setVisible(false);
     if (btnSell.input) btnSell.input.enabled = false;
     btnGive.setVisible(false);

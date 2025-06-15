@@ -3,7 +3,9 @@ import { dur, scaleForY, articleFor, flashMoney, START_PHONE_W, START_PHONE_H, B
 import { MENU, SPAWN_DELAY, SPAWN_VARIANCE, QUEUE_SPACING, ORDER_X, ORDER_Y, QUEUE_X, QUEUE_OFFSET, QUEUE_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel, maxWanderers as customersMaxWanderers, queueLimit as customersQueueLimit } from "./customers.js";
 import { baseConfig } from "./scene.js";
 export let Assets, Scene, Customers, config;
-(() => {
+export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;
+export const GameState = {};
+export function setupGame(){
   if (typeof debugLog === 'function') debugLog('main.js loaded');
   let initCalled = false;
   function init(){
@@ -211,6 +213,19 @@ export let Assets, Scene, Customers, config;
   let phoneContainer=null;
   let startMsgTimers=[];
   let startMsgBubbles=[];
+
+  Object.defineProperties(GameState, {
+    money: { get: () => money, set: v => { money = v; } },
+    love: { get: () => love, set: v => { love = v; } },
+    queue: { get: () => queue, set: v => { queue = v; } },
+    activeCustomer: { get: () => activeCustomer, set: v => { activeCustomer = v; } },
+    wanderers: { get: () => wanderers, set: v => { wanderers = v; } },
+    spawnTimer: { get: () => spawnTimer, set: v => { spawnTimer = v; } },
+    falconActive: { get: () => falconActive, set: v => { falconActive = v; } },
+    gameOver: { get: () => gameOver, set: v => { gameOver = v; } },
+    loveLevel: { get: () => loveLevel, set: v => { loveLevel = v; } },
+    servedCount: { get: () => servedCount, set: v => { servedCount = v; } }
+  });
 
   function maxWanderers(){
     return customersMaxWanderers(love);
@@ -1539,4 +1554,17 @@ export let Assets, Scene, Customers, config;
       }
     }, 3000);
   }
-})();
+  showStartScreenFn = showStartScreen;
+  handleActionFn = handleAction;
+  spawnCustomerFn = spawnCustomer;
+  scheduleNextSpawnFn = scheduleNextSpawn;
+  showDialogFn = showDialog;
+  animateLoveChangeFn = animateLoveChange;
+  blinkButtonFn = blinkButton;
+}
+
+if (typeof window !== 'undefined') {
+  setupGame();
+}
+
+export { showStartScreenFn as showStartScreen, handleActionFn as handleAction, spawnCustomerFn as spawnCustomer, scheduleNextSpawnFn as scheduleNextSpawn, showDialogFn as showDialog, animateLoveChangeFn as animateLoveChange, blinkButtonFn as blinkButton };

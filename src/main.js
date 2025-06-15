@@ -58,7 +58,6 @@
   // dimensions for the phone graphic shown on the start screen
   const START_PHONE_W = 260;
   const START_PHONE_H = 500;
-  const TRUCK_START_X = 620;
 
   // dimensions/positioning for the action buttons
   const BUTTON_WIDTH = 140;
@@ -160,7 +159,7 @@
         if (btn.setInteractive) {
           const w = btn.width !== undefined ? btn.width : (btn.displayWidth || 0);
           const h = btn.height !== undefined ? btn.height : (btn.displayHeight || 0);
-          const area = btn.myHitArea || new Phaser.Geom.Rectangle(0, 0, w, h);
+          const area = new Phaser.Geom.Rectangle(-w/2, -h/2, w, h);
           btn.myHitArea = area;
           btn.setInteractive({
             hitArea: area,
@@ -343,19 +342,7 @@
     scene = scene || this;
     if (typeof debugLog === 'function') debugLog('showStartScreen called');
     if (typeof startMsgTimers === 'undefined') startMsgTimers = [];
-    if (typeof document !== 'undefined') {
-      startOverlay = document.getElementById('start-overlay');
-      startButton = document.getElementById('start-button');
-      phoneContainer = document.getElementById('start-messages');
-    }
-    if (!startOverlay || !startButton || !phoneContainer) return;
-    startOverlay.classList.remove('hidden');
-    phoneContainer.innerHTML='';
-    if (typeof moneyText !== 'undefined' && typeof loveText !== 'undefined' && typeof queueLevelText !== 'undefined') {
-      if (moneyText) moneyText.setVisible(false);
-      if (loveText) loveText.setVisible(false);
-      if (queueLevelText) queueLevelText.setVisible(false);
-    }
+    if (typeof startMsgBubbles === 'undefined') startMsgBubbles = [];
     startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.5)
       .setDepth(14);
 
@@ -375,60 +362,93 @@
     homeG.fillStyle(0xf0f0f0,1);
     homeG.fillRoundedRect(-phoneW/2+12,phoneH/2-homeH-12,phoneW-24,homeH,20);
 
-    const btnLabel = scene.add.text(0,0,'Clock In',{ font:'32px sans-serif',fill:'#fff'})
-      .setOrigin(0.5,0.5);
+    const btnLabel = scene.add.text(0,0,'Clock In',{
+        font:'32px sans-serif',fill:'#fff'})
+      .setOrigin(0.5);
     const bw = btnLabel.width + 60;
     const bh = btnLabel.height + 20;
     const btnBg = scene.add.graphics();
     btnBg.fillStyle(0x007bff,1);
-    btnBg.fillRoundedRect(0,0,bw,bh,15);
-    btnLabel.setPosition(bw/2, bh/2);
+    btnBg.fillRoundedRect(-bw/2,-bh/2,bw,bh,15);
     const offsetY = phoneH/2 - homeH/2 - 12;
-    startButton = scene.add.container(-bw/2, offsetY - bh/2, [btnBg, btnLabel])
+    startButton = scene.add.container(0,offsetY,[btnBg,btnLabel])
       .setSize(bw,bh);
-    startButton.myHitArea = new Phaser.Geom.Rectangle(0, 0, bw, bh);
+    startButton.myHitArea = new Phaser.Geom.Rectangle(-bw/2, -bh/2, bw, bh);
     startButton.setInteractive({
         hitArea: startButton.myHitArea,
         hitAreaCallback: Phaser.Geom.Rectangle.Contains,
         useHandCursor: true
     });
 
+    // position the phone closer to the center of the screen
+    const containerY = 320;
+    phoneContainer = scene.add.container(240,containerY,[caseG,blackG,whiteG,homeG,startButton])
+      .setDepth(15)
+      .setInteractive();
 
-    const addStartMessage=text=>{
-      const div=document.createElement('div');
-      div.textContent=text;
-      phoneContainer.appendChild(div);
-    };
-
+    // remove any prior timers or bubbles if restartGame triggered this screen
     startMsgTimers.forEach(t=>t.remove(false));
     startMsgTimers=[];
-    if(scene.time && scene.time.delayedCall){
-      const msgOptions=[
-        ['u coming in? 🤔', 'where u at??', 'mornin ☀️'],
-        ['better not still be in bed 😜', 'yo coffee girl ☕', 'stop ghostin me'],
-        ['late night? 🥱💃', 'phone dead again? 🔋', 'omg wait till u hear about this guy 😏'],
-        ['u good?', 'hope everythin\'s chill', '…sry 😬']
-      ];
-      let delay=0;
-      for(const opts of msgOptions){
-        delay += Phaser.Math.Between(5000,15000);
-        const msg = Phaser.Utils.Array.GetRandom(opts);
-        startMsgTimers.push(scene.time.delayedCall(delay,()=>addStartMessage(msg),[],scene));
-      }
-    }
+    startMsgBubbles.forEach(b=>b.destroy());
+    startMsgBubbles=[];
+    let startMsgY = -phoneH/2 + 20;
 
-    startButton.onclick=()=>{
-      if (typeof debugLog === 'function') debugLog('start button clicked');
-      startMsgTimers.forEach(t=>t.remove(false));
-      startMsgTimers=[];
-      startOverlay.classList.add('hidden');
-      if (typeof moneyText !== 'undefined' && typeof loveText !== 'undefined' && typeof queueLevelText !== 'undefined') {
-        if (moneyText) moneyText.setVisible(true);
-        if (loveText) loveText.setVisible(true);
-        if (queueLevelText) queueLevelText.setVisible(true);
-      }
-      playIntro.call(scene);
+    const addStartMessage=(text)=>{
+      if(!phoneContainer) return;
+      const pad = 10;
+      const wrapWidth = phoneW - 60;
+      const txt = scene.add.text(0,0,text,{font:'20px sans-serif',fill:'#fff',wordWrap:{width:wrapWidth}})
+        .setOrigin(0,0.5);
+      const bw = txt.width + pad*2;
+      const bh = txt.height + pad*2;
+      const bg = scene.add.graphics();
+      bg.fillStyle(0x8bd48b,1);
+      bg.fillRoundedRect(-bw/2,-bh/2,bw,bh,10);
+      txt.setPosition(-bw/2 + pad, 0);
+      const xPos = -phoneW/2 + bw/2 + 20;
+      const yPos = startMsgY + bh/2;
+      const bubble = scene.add.container(xPos,yPos,[bg,txt]).setDepth(16).setAlpha(0);
+      phoneContainer.add(bubble);
+      startMsgBubbles.push(bubble);
+      startMsgY += bh + 10;
+      scene.tweens.add({targets:bubble,alpha:1,duration:300,ease:'Cubic.easeOut'});
     };
+
+      if(scene.time && scene.time.delayedCall){
+        const msgOptions=[
+          ['u coming in? 🤔', 'where u at??', 'mornin ☀️'],
+          ['better not still be in bed 😜', 'yo coffee girl ☕', 'stop ghostin me'],
+          ['late night? 🥱💃', 'phone dead again? 🔋', 'omg wait till u hear about this guy 😏'],
+          ['u good?', 'hope everythin\'s chill', '…sry 😬']
+        ];
+        let delay=0;
+        for(const opts of msgOptions){
+          delay += Phaser.Math.Between(5000,15000);
+          const msg = Phaser.Utils.Array.GetRandom(opts);
+          startMsgTimers.push(scene.time.delayedCall(delay,()=>addStartMessage(msg),[],scene));
+        }
+      }
+
+    startButton.on('pointerdown',()=>{
+
+        // Log click registration to help debug input issues
+        if (typeof debugLog === 'function') debugLog('start button clicked');
+
+        // cancel any pending start messages
+        startMsgTimers.forEach(t=>t.remove(false));
+        startMsgTimers=[];
+        startMsgBubbles=[];
+
+        const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
+          if(startButton) startButton.destroy();
+          phoneContainer.destroy(); phoneContainer=null;
+        }});
+        tl.add({targets:phoneContainer,y:-320,duration:600,ease:'Sine.easeIn'});
+        tl.add({targets:startOverlay,alpha:0,duration:600,onComplete:()=>{ if(startOverlay){startOverlay.destroy(); startOverlay=null;} }});
+        tl.play();
+        // playIntro will kick off the intro tween sequence
+        playIntro.call(scene);
+      });
   }
 
   function playIntro(scene){
@@ -439,9 +459,8 @@
     if (typeof debugLog === 'function') debugLog('playIntro starting');
     scene = scene || this;
     if(!truck || !girl) return;
-    const startX = (typeof TRUCK_START_X !== 'undefined') ? TRUCK_START_X : 560;
-    truck.setPosition(startX,245);
-    girl.setPosition(startX,260).setVisible(false);
+    truck.setPosition(560,245);
+    girl.setPosition(560,260).setVisible(false);
     const intro=scene.tweens.createTimeline({callbackScope:scene,
       onComplete:()=>{
         if (typeof debugLog === 'function') debugLog('intro finished');
@@ -449,7 +468,7 @@
         spawnCustomer.call(scene);
         scheduleNextSpawn(scene);
       }});
-    intro.add({targets:[truck,girl],x:240,duration:dur(600),delay:500});
+    intro.add({targets:[truck,girl],x:240,duration:dur(600)});
     intro.add({targets:girl,y:292,duration:dur(300),onStart:()=>girl.setVisible(true)});
     intro.play();
   }
@@ -504,10 +523,9 @@
       .setOrigin(0.5).setDepth(1);
     updateLevelDisplay();
     // truck & girl
-    const startX = (typeof TRUCK_START_X !== 'undefined') ? TRUCK_START_X : 560;
-    truck=this.add.image(startX,245,'truck').setScale(0.924).setDepth(2);
+    truck=this.add.image(560,245,'truck').setScale(0.924).setDepth(2);
 
-    girl=this.add.image(startX,260,'girl').setScale(0.5).setDepth(3).setVisible(false);
+    girl=this.add.image(560,260,'girl').setScale(0.5).setDepth(3).setVisible(false);
 
     // create lady falcon animation
     this.anims.create({
@@ -548,26 +566,26 @@
       // Graphics objects do not support setShadow. Draw a simple shadow
       // manually by rendering a darker rect slightly offset behind the button.
       g.fillStyle(0x000000,0.3);
-      g.fillRoundedRect(2,2,width,height,radius);
+      g.fillRoundedRect(-width/2+2,-height/2+2,width,height,radius);
 
       g.fillStyle(color,1);
-      g.fillRoundedRect(0,0,width,height,radius);
-      let t=this.add.text(10,height/2,label,{font:'20px sans-serif',fill:'#fff'})
+      g.fillRoundedRect(-width/2,-height/2,width,height,radius);
+      let t=this.add.text(-width/2+10,0,label,{font:'20px sans-serif',fill:'#fff'})
         .setOrigin(0,0.5);
-      let icon=this.add.text(width-10,height/2,iconChar,{font:`${iconSize}px sans-serif`,fill:'#fff'})
+      let icon=this.add.text(width/2-10,0,iconChar,{font:`${iconSize}px sans-serif`,fill:'#fff'})
         .setOrigin(1,0.5);
       let children=[g,t,icon];
       if(label==='REFUSE'){
         t.setFontSize(18);
-        icon.setX(width-4);
+        icon.setX(width/2-4);
         children=[g,icon,t];
       }
       // position the button slightly lower so it peeks out of the dialog box
-      const c=this.add.container(x-width/2,BUTTON_Y-height/2,children)
+      const c=this.add.container(x,BUTTON_Y,children)
         .setSize(width,height)
         .setDepth(12)
         .setVisible(false);
-      c.myHitArea = new Phaser.Geom.Rectangle(0,0,width,height);
+      c.myHitArea = new Phaser.Geom.Rectangle(-width/2,-height/2,width,height);
       // Explicitly specify the hit area so the pointer box aligns with the
       // visible button.
       c.setInteractive({
@@ -595,7 +613,7 @@
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
     reportLine4=this.add.text(0,0,'',{font:'14px sans-serif',fill:'#fff'})
       .setVisible(false).setDepth(11);
-    tipText=this.add.text(0,0,'',{font:'20px sans-serif',fill:'#0a0'})
+    tipText=this.add.text(0,0,'',{font:'24px sans-serif',fill:'#0a0'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
     paidStamp=this.add.text(0,0,'PAID',{font:'24px sans-serif',fill:'#0a0'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
@@ -654,9 +672,8 @@
     dialogBg.clear();
     dialogBg.fillStyle(0xffffff,1);
     dialogBg.lineStyle(2,0x000,1);
-    const radius=24; // more rounded corners
-    dialogBg.fillRoundedRect(-w/2,-h/2,w,h,radius);
-    dialogBg.strokeRoundedRect(-w/2,-h/2,w,h,radius);
+    dialogBg.fillRoundedRect(-w/2,-h/2,w,h,16);
+    dialogBg.strokeRoundedRect(-w/2,-h/2,w,h,16);
     if(targetX!==undefined && targetY!==undefined){
       const tx = targetX - dialogBg.x;
       const ty = targetY - dialogBg.y;
@@ -666,11 +683,7 @@
       const tipX = tx * 0.5;
       const tipY = by + (ty - by) * 0.5;
       dialogBg.fillTriangle(bx1, by, bx2, by, tipX, tipY);
-      dialogBg.beginPath();
-      dialogBg.moveTo(bx1, by);
-      dialogBg.lineTo(tipX, tipY);
-      dialogBg.lineTo(bx2, by);
-      dialogBg.strokePath();
+      dialogBg.strokeTriangle(bx1, by, bx2, by, tipX, tipY);
     }
   }
 
@@ -694,14 +707,30 @@
       });
       return;
     }
-    const padding=20, spacing=10;
+    dialogBg.setVisible(true);
+    drawDialogBubble(c.sprite.x, c.sprite.y);
+    dialogPriceBox
+      .setPosition(dialogBg.x + dialogBg.width/2 - 60, dialogBg.y - dialogBg.height)
+      .setVisible(true);
     const itemStr=c.orders.map(o=>{
       return o.qty>1 ? `${o.qty} ${o.req}` : o.req;
     }).join(' and ');
     const wantLine=(c.orders.length===1 && c.orders[0].qty===1)
       ? `I want ${articleFor(c.orders[0].req)} ${c.orders[0].req}`
       : `I want ${itemStr}`;
-    dialogText.setText(wantLine);
+    if(activeBubble){
+      activeBubble.destroy();
+      activeBubble=null;
+    }
+    const bubble=this.add.text(c.sprite.x,c.sprite.y-50,'💬',{font:'32px sans-serif',fill:'#000'})
+      .setOrigin(0.5).setDepth(11);
+    activeBubble=bubble;
+    this.tweens.add({targets:bubble,y:c.sprite.y-70,alpha:0,duration:dur(600),onComplete:()=>{bubble.destroy(); activeBubble=null;}});
+    dialogText
+      .setOrigin(0,0.5)
+      .setPosition(dialogBg.x-dialogBg.width/2+40,440)
+      .setText(wantLine)
+      .setVisible(true);
     const totalCost=c.orders.reduce((s,o)=>s+o.price*o.qty,0);
     const canAfford = c.orders[0].coins >= totalCost;
     let coinLine;
@@ -713,45 +742,21 @@
     } else {
       coinLine = `...but I only have $${c.orders[0].coins}`;
     }
-    dialogCoins.setText(coinLine);
-    const contentW=Math.max(dialogText.width, dialogCoins.width);
-    dialogBg.width=contentW+padding*2;
-    dialogBg.height=dialogText.height+dialogCoins.height+spacing+padding*2;
-    dialogBg.setVisible(true);
-    drawDialogBubble(c.sprite.x, c.sprite.y);
-    dialogPriceBox
-      .setPosition(dialogBg.x + dialogBg.width/2 - 60, dialogBg.y - dialogBg.height)
-      .setVisible(true);
-    if(activeBubble){
-      activeBubble.destroy();
-      activeBubble=null;
-    }
-    const bubble=this.add.text(c.sprite.x,c.sprite.y-50,'💬',{font:'32px sans-serif',fill:'#000'})
-      .setOrigin(0.5).setDepth(11);
-    activeBubble=bubble;
-    this.tweens.add({targets:bubble,y:c.sprite.y-70,alpha:0,duration:dur(600),onComplete:()=>{bubble.destroy(); activeBubble=null;}});
-    dialogText
-      .setOrigin(0,0.5)
-      .setPosition(dialogBg.x-dialogBg.width/2+padding,
-                   dialogBg.y-dialogBg.height/2+padding+dialogText.height/2)
-      .setText(wantLine)
-      .setVisible(true);
     dialogCoins
       .setOrigin(0,0.5)
-      .setPosition(dialogBg.x-dialogBg.width/2+padding,
-                   dialogText.y+dialogText.height/2+spacing+dialogCoins.height/2)
+      .setPosition(dialogBg.x-dialogBg.width/2+40,470)
       .setStyle({fontSize:'20px'})
       .setText(coinLine)
       .setVisible(true);
     dialogPriceLabel
-      .setOrigin(1,0.5)
-      .setPosition(dialogPriceBox.x + dialogPriceBox.width/2 - 4, dialogPriceBox.y - 20)
+      .setOrigin(0.5,0.5)
+      .setPosition(dialogPriceBox.x, dialogPriceBox.y - 20)
       .setStyle({fontSize:'14px'})
       .setText('Total\nCost')
       .setVisible(true);
     dialogPriceValue
-      .setOrigin(1,0.5)
-      .setPosition(dialogPriceBox.x + dialogPriceBox.width/2 - 4, dialogPriceBox.y + 14)
+      .setOrigin(0.5,0.5)
+      .setPosition(dialogPriceBox.x, dialogPriceBox.y + 10)
       .setStyle({fontSize:'32px'})
       .setText(`$${totalCost.toFixed(2)}`)
       .setColor('#000')
@@ -861,18 +866,12 @@
       t.setVisible(true);
       t.setDepth(paidStamp.depth+1);
       t.setText(receipt(totalCost));
-      const boxX = (typeof dialogPriceBox !== 'undefined' && dialogPriceBox.x) || t.x;
-      const boxY = (typeof dialogPriceBox !== 'undefined' && dialogPriceBox.y) || t.y;
       paidStamp
         .setText('PAID')
         .setScale(1.5)
+        .setPosition(t.x - 20, t.y)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
-      if(tip>0){
-        paidStamp.setPosition(boxX - 20, boxY);
-      }else{
-        paidStamp.setPosition(boxX, boxY);
-      }
 
       const flashPrice=()=>{
         const oy=t.y;
@@ -885,9 +884,9 @@
       if(tip>0){
         this.time.delayedCall(delay,()=>{
           tipText
-            .setText('+ TIP')
-            .setScale(1.2)
-            .setPosition(boxX + 20, boxY)
+            .setText('TIP')
+            .setScale(1.6)
+            .setPosition(paidStamp.x, paidStamp.y-40)
             .setVisible(true);
           t.setText(receipt(totalCost + tip));
           flashPrice();
@@ -920,8 +919,7 @@
       lossStamp
         .setText('LOSS')
         .setScale(1.5)
-        .setPosition((typeof dialogPriceBox !== 'undefined' && dialogPriceBox.x) || t.x,
-                    (typeof dialogPriceBox !== 'undefined' && dialogPriceBox.y) || t.y)
+        .setPosition(t.x - 20, t.y)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
       this.time.delayedCall(dur(1000),()=>{

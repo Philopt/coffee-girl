@@ -55,8 +55,8 @@ function testBlinkButton() {
   assert.strictEqual(btn.input.enabled, true, 'button not re-enabled');
   assert.ok(setArgs && setArgs.rect && setArgs.cb, 'setInteractive should be called with shape');
   assert.strictEqual(setArgs.useHand, true, 'useHandCursor should be true');
-  assert.strictEqual(setArgs.rect.x, 0, 'hitbox x not aligned');
-  assert.strictEqual(setArgs.rect.y, 0, 'hitbox y not aligned');
+  assert.strictEqual(setArgs.rect.x, -btn.width / 2, 'hitbox x not centered');
+  assert.strictEqual(setArgs.rect.y, -btn.height / 2, 'hitbox y not centered');
   console.log('blinkButton interactivity test passed');
 }
 
@@ -173,7 +173,6 @@ function testShowStartScreen() {
         const obj = {
           setOrigin() { return obj; },
           setDepth() { return obj; },
-          setPosition() { return obj; },
           width: 100,
           height: 40
         };
@@ -227,7 +226,7 @@ function testStartButtonPlaysIntro() {
   const scene = {
     add: {
       rectangle() { return { setDepth() { return this; }, destroy() { this.destroyed = true; } }; },
-      text() { return { setOrigin() { return this; }, setDepth() { return this; }, setPosition() { return this; }, width: 100, height: 40 }; },
+      text() { return { setOrigin() { return this; }, setDepth() { return this; }, width: 100, height: 40 }; },
       graphics() { return { fillStyle() { return this; }, fillRoundedRect() { return this; } }; },
       container() {
         const obj = {
@@ -272,19 +271,7 @@ function testStartButtonPlaysIntro() {
   assert.ok(called, 'playIntro not called');
   assert.strictEqual(truck.x, 240, 'truck x not moved');
   console.log('start button triggers playIntro test passed');
-  const code = fs.readFileSync(path.join(__dirname, "..", "src", "main.js"), "utf8");
-  assert(code.includes("start-overlay"), "start overlay element missing");
-  assert(code.includes("start-button"), "start button element missing");
-  console.log("showStartScreen DOM references test passed");
 }
-
-function testStartButtonPlaysIntro() {
-  const code = fs.readFileSync(path.join(__dirname, "..", "src", "main.js"), "utf8");
-  assert(/startButton\.onclick/.test(code), "start button click handler missing");
-  assert(/playIntro\.call\(scene\)/.test(code), "playIntro not invoked from handler");
-  console.log("start button triggers playIntro test passed");
-}
-
 
 function testShowDialogButtons() {
   const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');

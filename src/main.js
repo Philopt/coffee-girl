@@ -554,7 +554,6 @@ export function setupGame(){
         } else {
           truck.y = 245;
         }
-        spawnCustomer.call(scene);
         scheduleNextSpawn(scene);
       }});
     intro.add({targets:truck,x:240,scale:0.924,duration:dur(1200)});
@@ -730,12 +729,14 @@ export function setupGame(){
 
     // wait for player to start the shift
     showStartScreen.call(this);
+    spawnCustomer.call(this,{wanderOnly:true});
 
     // ensure customer sprites always match their vertical scale
     this.events.on('update', enforceCustomerScaling);
   }
 
-  function spawnCustomer(){
+  function spawnCustomer(opts={}){
+    const wanderOnly = opts.wanderOnly || false;
     if(gameOver) return;
     const createOrder=()=>{
       const coins=Phaser.Math.Between(0,20);
@@ -772,8 +773,10 @@ export function setupGame(){
         c.sprite.destroy();
       }});
     wanderers.push(c);
-    lureNextWanderer(this);
-    scheduleNextSpawn(this);
+    if(!wanderOnly){
+      lureNextWanderer(this);
+      scheduleNextSpawn(this);
+    }
 
   }
 

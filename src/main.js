@@ -41,6 +41,14 @@ export let Assets, Scene, Customers, config;
     return `$${d}${cents}`;
   }
 
+  function emojiFor(name){
+    const n=name.toLowerCase();
+    if(n.includes('tea')) return '🍵';
+    if(n.includes('chocolate')) return '🍫';
+    if(n.includes('latte')||n.includes('mocha')||n.includes('espresso')) return '☕';
+    return '☕';
+  }
+
 
 
   function flashBorder(rect, scene, color=0x00ff00){
@@ -195,7 +203,7 @@ export let Assets, Scene, Customers, config;
   let moneyText, loveText, queueLevelText;
   let dialogBg, dialogText, dialogCoins,
       dialogPriceLabel, dialogPriceValue, dialogPriceBox,
-      dialogPriceContainer,
+      dialogDrinkEmoji, dialogPriceContainer,
       btnSell, btnGive, btnRef;
   let reportLine1, reportLine2, reportLine3, tipText;
   let paidStamp, lossStamp;
@@ -542,8 +550,9 @@ export let Assets, Scene, Customers, config;
       .setOrigin(0.5);
     dialogPriceValue=this.add.text(0,15,'',{font:'32px sans-serif',fill:'#000'})
       .setOrigin(0.5);
+    dialogDrinkEmoji=this.add.text(-30,-20,'',{font:'24px sans-serif'}).setOrigin(0.5).setTint(0x555555);
 
-    dialogPriceContainer=this.add.container(0,0,[dialogPriceBox, dialogPriceLabel, dialogPriceValue])
+    dialogPriceContainer=this.add.container(0,0,[dialogPriceBox, dialogDrinkEmoji, dialogPriceLabel, dialogPriceValue])
       .setDepth(11)
       .setVisible(false);
 
@@ -815,18 +824,24 @@ export let Assets, Scene, Customers, config;
     resetPriceBox();
     dialogPriceContainer.alpha = 1;
     dialogPriceLabel
-      .setStyle({fontSize:'14px',align:'center'})
-      .setText('Total\nCost')
-      .setOrigin(0.5)
-      .setPosition(0, -15);
+      .setStyle({fontSize:'14px'})
+      .setText('Total Cost')
+      .setOrigin(1,0.5)
+      .setPosition(dialogPriceBox.width/2-5, -18);
     dialogPriceValue
       .setStyle({fontSize:'32px'})
       .setText(`$${totalCost.toFixed(2)}`)
       .setColor('#000')
-      .setOrigin(0.5)
-      .setPosition(0, 15)
+      .setOrigin(1,0.5)
+      .setPosition(dialogPriceBox.width/2-5, 16)
       .setScale(1)
       .setAlpha(1);
+    dialogDrinkEmoji
+      .setText(emojiFor(c.orders[0].req))
+      .setPosition(-dialogPriceBox.width/2+20,-dialogPriceBox.height/2+20)
+      .setScale(1)
+      .setTint(0x555555)
+      .setVisible(true);
 
     this.tweens.add({
       targets:[dialogBg, dialogText, dialogCoins],
@@ -938,6 +953,10 @@ export let Assets, Scene, Customers, config;
 
     const finish=()=>{
       const exit=()=>{
+        if(dialogDrinkEmoji && dialogDrinkEmoji.followEvent){
+          dialogDrinkEmoji.followEvent.remove(false);
+          dialogDrinkEmoji.setVisible(false);
+        }
         current.sprite.destroy();
         if(money<=0){
           showFalconAttack.call(this,()=>{
@@ -1068,6 +1087,21 @@ export let Assets, Scene, Customers, config;
             if(this.tweens){
 
               this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});
+            }
+            if(dialogDrinkEmoji){
+              const gx = ticket.x + dialogDrinkEmoji.x * ticket.scaleX;
+              const gy = ticket.y + dialogDrinkEmoji.y * ticket.scaleY;
+              dialogPriceContainer.remove(dialogDrinkEmoji);
+              dialogDrinkEmoji.setPosition(gx, gy);
+              dialogDrinkEmoji.clearTint();
+              const sp = this.add.text(gx, gy, '✨',{font:'18px sans-serif',fill:'#fff'})
+                .setOrigin(0.5).setDepth(dialogDrinkEmoji.depth+1);
+              this.tweens.add({targets:sp,scale:1.5,alpha:0,duration:dur(300),onComplete:()=>sp.destroy()});
+              this.tweens.add({targets:dialogDrinkEmoji,x:customer.x,y:customer.y-20,scale:0.4,duration:dur(400),onComplete:()=>{
+                    dialogDrinkEmoji.followEvent=this.time.addEvent({delay:dur(50),loop:true,callback:()=>{
+                        if(customer.active){ dialogDrinkEmoji.setPosition(customer.x,customer.y-20); } else { dialogDrinkEmoji.setVisible(false); dialogDrinkEmoji.followEvent.remove(false); }
+                    }});
+              }});
             }
           }});
         tl.play();

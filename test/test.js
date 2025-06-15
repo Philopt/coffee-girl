@@ -5,8 +5,8 @@ const fs = require('fs');
 const vm = require('vm');
 const assert = require('assert');
 
-const BUTTON_WIDTH = 160;
-const BUTTON_HEIGHT = 60;
+const BUTTON_WIDTH = 140;
+const BUTTON_HEIGHT = 80;
 
 function testBlinkButton() {
   const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');

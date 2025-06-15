@@ -851,7 +851,6 @@ export let Assets, Scene, Customers, config;
       }
     });
 
-    btnRef.setVisible(true);
     tipText.setVisible(false);
   }
 

@@ -801,10 +801,10 @@ export let Assets, Scene, Customers, config;
       girl.x + girl.displayWidth/2 : dialogBg.x;
     const minX = girlRight + ticketOffset;
     const priceTargetX = Math.max(priceTargetXDefault, minX);
-    const girlX = minX;
-    const girlY = (typeof girl !== 'undefined' && girl) ? girl.y - 20 : dialogBg.y;
+    const startX = (typeof girl !== 'undefined' && girl) ? girl.x : dialogBg.x;
+    const startY = (typeof girl !== 'undefined' && girl) ? girl.y : dialogBg.y;
     dialogPriceContainer
-      .setPosition(girlX, girlY)
+      .setPosition(startX, startY)
       .setScale(0.2)
       .setVisible(false);
       if(dialogPriceBox){

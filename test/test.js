@@ -266,12 +266,20 @@ function testShowDialogButtons() {
     setAlpha() { return this; },
     setColor() { return this; },
     setScale() { return this; },
+    clear() { return this; },
+    lineStyle() { return this; },
+    fillStyle() { return this; },
+    fillRoundedRect() { return this; },
+    strokeRoundedRect() { return this; },
+    fillTriangle() { return this; },
+    strokeTriangle() { return this; },
     destroy() { this.destroyed = true; },
   });
   const context = {
-    dialogBg: makeObj(),
+    dialogBg: Object.assign(makeObj(), { width: 460, height: 120, x: 240, y: 460 }),
     dialogText: makeObj(),
     dialogCoins: makeObj(),
+    dialogPriceBox: makeObj(),
     dialogPriceLabel: makeObj(),
     dialogPriceValue: makeObj(),
     btnSell: makeObj(),
@@ -286,9 +294,10 @@ function testShowDialogButtons() {
     FRIEND_OFFSET: 40,
     queue: [],
     activeCustomer: null,
+    drawDialogBubble: () => {},
   };
   const scene = {
-    add: { text() { return makeObj(); }, rectangle() { return makeObj(); } },
+    add: { text() { return makeObj(); }, rectangle() { return makeObj(); }, graphics() { return makeObj(); } },
     tweens: { add(cfg) { if (cfg.onComplete) cfg.onComplete(); return {}; } },
   };
   vm.createContext(context);

@@ -170,7 +170,8 @@
 
 
   let moneyText, loveText, queueLevelText;
-  let dialogBg, dialogText, dialogCoins, dialogPriceLabel, dialogPriceValue,
+  let dialogBg, dialogText, dialogCoins,
+      dialogPriceLabel, dialogPriceValue, dialogPriceBox,
       btnSell, btnGive, btnRef;
   let reportLine1, reportLine2, reportLine3, reportLine4, tipText;
   let paidStamp, lossStamp;
@@ -509,11 +510,24 @@
     });
 
     // dialog
-    dialogBg=this.add.rectangle(240,460,460,120,0xffffff).setStrokeStyle(2,0x000).setVisible(false).setDepth(10);
+    dialogBg=this.add.graphics()
+      .setVisible(false)
+      .setDepth(10);
+    dialogBg.x=240;
+    dialogBg.y=460;
+    dialogBg.width=460;
+    dialogBg.height=120;
+
+    dialogPriceBox=this.add.rectangle(0,0,110,68,0xffffff)
+      .setStrokeStyle(2,0x000)
+      .setOrigin(0.5)
+      .setVisible(false)
+      .setDepth(10);
+
     dialogText=this.add.text(240,440,'',{font:'20px sans-serif',fill:'#000',align:'center',wordWrap:{width:420}})
-                     .setOrigin(0.5).setVisible(false).setDepth(11);
+                     .setOrigin(0,0.5).setVisible(false).setDepth(11);
     dialogCoins=this.add.text(240,470,'',{font:'20px sans-serif',fill:'#000'})
-      .setOrigin(0.5).setVisible(false).setDepth(11);
+      .setOrigin(0,0.5).setVisible(false).setDepth(11);
     dialogPriceLabel=this.add.text(240,456,'',{font:'14px sans-serif',fill:'#000',align:'center'})
       .setOrigin(0.5).setVisible(false).setDepth(11);
     dialogPriceValue=this.add.text(240,480,'',{font:'32px sans-serif',fill:'#000'})
@@ -625,6 +639,22 @@
     spawnCount++;
   }
 
+  function drawDialogBubble(targetX, targetY){
+    if(!dialogBg) return;
+    const w=dialogBg.width, h=dialogBg.height;
+    dialogBg.clear();
+    dialogBg.fillStyle(0xffffff,1);
+    dialogBg.lineStyle(2,0x000,1);
+    dialogBg.fillRoundedRect(-w/2,-h/2,w,h,16);
+    dialogBg.strokeRoundedRect(-w/2,-h/2,w,h,16);
+    if(targetX!==undefined && targetY!==undefined){
+      const tx=targetX-dialogBg.x;
+      const ty=targetY-dialogBg.y;
+      dialogBg.fillTriangle(-w/2, -10, -w/2, 10, tx, ty);
+      dialogBg.strokeTriangle(-w/2, -10, -w/2, 10, tx, ty);
+    }
+  }
+
   function showDialog(){
     if(!dialogBg || !dialogText || !dialogCoins || !dialogPriceLabel ||
        !dialogPriceValue || !btnSell || !btnGive || !btnRef){
@@ -646,6 +676,10 @@
       return;
     }
     dialogBg.setVisible(true);
+    drawDialogBubble(c.sprite.x, c.sprite.y);
+    dialogPriceBox
+      .setPosition(dialogBg.x + dialogBg.width/2 - 60, dialogBg.y)
+      .setVisible(true);
     const itemStr=c.orders.map(o=>{
       return o.qty>1 ? `${o.qty} ${o.req}` : o.req;
     }).join(' and ');
@@ -683,14 +717,14 @@
       .setText(coinLine)
       .setVisible(true);
     dialogPriceLabel
-      .setOrigin(1,0.5)
-      .setPosition(dialogBg.x+dialogBg.width/2-60,440)
+      .setOrigin(0.5,0.5)
+      .setPosition(dialogPriceBox.x,440)
       .setStyle({fontSize:'14px'})
       .setText('Total\nCost')
       .setVisible(true);
     dialogPriceValue
-      .setOrigin(1,0.5)
-      .setPosition(dialogBg.x+dialogBg.width/2-60,470)
+      .setOrigin(0.5,0.5)
+      .setPosition(dialogPriceBox.x,470)
       .setStyle({fontSize:'32px'})
       .setText(`$${totalCost.toFixed(2)}`)
       .setColor('#000')
@@ -711,12 +745,14 @@
       dialogBg.setVisible(false);
       dialogText.setVisible(false);
       dialogCoins.setVisible(false);
+      dialogPriceBox.setVisible(false);
       dialogPriceLabel.setVisible(false);
       dialogPriceValue.setVisible(false).setColor('#000');
     }else{
       dialogBg.setVisible(true);
       dialogText.setVisible(false);
       dialogCoins.setVisible(false);
+      dialogPriceBox.setVisible(true);
       dialogPriceLabel.setVisible(true);
       dialogPriceValue.setVisible(true);
     }

@@ -607,10 +607,26 @@ export let Assets, Scene, Customers, config;
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
     tipText=this.add.text(0,0,'',{font:'28px sans-serif',fill:'#0a0'})
       .setOrigin(0.5).setDepth(12).setVisible(false);
-    paidStamp=this.add.text(0,0,'PAID',{font:'40px sans-serif',fill:'#0a0'})
-      .setOrigin(0.5).setDepth(12).setVisible(false);
-    lossStamp=this.add.text(0,0,'LOSS',{font:'40px sans-serif',fill:'#a00'})
-      .setOrigin(0.5).setDepth(12).setVisible(false);
+    paidStamp=this.add.text(0,0,'PAID',{
+        font:'40px sans-serif',
+        fill:'#0a0',
+        stroke:'#0a0',
+        strokeThickness:1
+      })
+      .setOrigin(0.5)
+      .setDepth(12)
+      .setVisible(false)
+      .setAlpha(0.5);
+    lossStamp=this.add.text(0,0,'LOSS',{
+        font:'40px sans-serif',
+        fill:'#a00',
+        stroke:'#a00',
+        strokeThickness:1
+      })
+      .setOrigin(0.5)
+      .setDepth(12)
+      .setVisible(false)
+      .setAlpha(0.5);
 
     // wait for player to start the shift
     showStartScreen.call(this);
@@ -990,7 +1006,7 @@ export let Assets, Scene, Customers, config;
         .setPosition(stampX, stampY)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
-      t.setPosition(t.x, -10);
+      t.setPosition(t.x, 15);
 
       const flashPrice=()=>{
         const oy=t.y;
@@ -1006,7 +1022,7 @@ export let Assets, Scene, Customers, config;
           const tipY = ticket.y - ticketH * 0.25;
           const oldLeft = t.x - t.displayWidth/2;
           tipText
-            .setText(`+${receipt(tip)} TIP`)
+            .setText('+TIP')
             .setScale(1.4)
             .setPosition(tipX, tipY)
             .setAngle(Phaser.Math.Between(-15,15))
@@ -1058,7 +1074,7 @@ export let Assets, Scene, Customers, config;
         .setPosition(stampX, stampY)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
-      t.setPosition(t.x, -10);
+      t.setPosition(t.x, 15);
       this.time.delayedCall(dur(1000),()=>{
         lossStamp.setVisible(false);
         dialogBg.setVisible(false);

@@ -82,6 +82,10 @@ Then run the automated check. `npm test` relies on `node_modules/.bin/http-serve
 npm test
 ```
 
+The test runner first verifies `src/main.js` parses without syntax errors by
+executing `npm run lint:syntax` as part of the `pretest` script before running
+ESLint.
+
 ## License
 
 This project is released under the MIT License.

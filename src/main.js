@@ -980,7 +980,9 @@ export let Assets, Scene, Customers, config;
       const destY=moneyText.y+10;
       t.setVisible(true);
       t.setDepth(paidStamp.depth+1);
+      const baseLeft = t.x - t.displayWidth/2;
       t.setText(receipt(totalCost));
+      t.setPosition(baseLeft + t.displayWidth/2, t.y);
       const stampX=ticket.x + t.x * ticket.scaleX;
       const stampY=ticket.y + t.y * ticket.scaleY;
       paidStamp
@@ -996,7 +998,6 @@ export let Assets, Scene, Customers, config;
         this.tweens.add({targets:t,y:oy-30,duration:dur(100),yoyo:true});
       };
       flashPrice();
-      flashMoney(t,this);
 
       let delay=dur(300);
       if(tip>0){
@@ -1004,13 +1005,15 @@ export let Assets, Scene, Customers, config;
           const ticketH = dialogPriceBox.height;
           const tipX = ticket.x - ticketW * 0.3;
           const tipY = ticket.y - ticketH * 0.25;
+          const oldLeft = t.x - t.displayWidth/2;
           tipText
-            .setText('TIP')
-            .setScale(1.2)
+            .setText(`+${receipt(tip)} TIP`)
+            .setScale(1.4)
             .setPosition(tipX, tipY)
             .setAngle(Phaser.Math.Between(-15,15))
             .setVisible(true);
           t.setText(receipt(totalCost + tip));
+          t.setPosition(oldLeft + t.displayWidth/2, t.y);
           flashPrice();
         },[],this);
         delay+=dur(300);
@@ -1072,7 +1075,6 @@ export let Assets, Scene, Customers, config;
             animateStatChange(moneyText, this, mD);
             done();
         }});
-        flashMoney(t,this,'#f00');
         if (typeof dialogPriceBox !== 'undefined' && dialogPriceBox) {
           flashBorder(dialogPriceBox,this,0xff0000);
           flashFill(dialogPriceBox,this,0xff0000);

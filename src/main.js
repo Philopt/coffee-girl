@@ -1179,6 +1179,8 @@ export let Assets, Scene, Customers, config;
   function showFalconAttack(cb){
     if (falconActive) return;
     const scene=this;
+    scene.tweens.killAll();
+    scene.time.removeAllEvents();
     clearDialog();
     if(activeBubble){ activeBubble.destroy(); activeBubble=null; }
     falconActive = true;
@@ -1275,6 +1277,8 @@ export let Assets, Scene, Customers, config;
 
   function showCustomerRevolt(cb){
     const scene=this;
+    scene.tweens.killAll();
+    scene.time.removeAllEvents();
     clearDialog();
     if(activeBubble){ activeBubble.destroy(); activeBubble=null; }
     if (spawnTimer) { spawnTimer.remove(false); spawnTimer = null; }

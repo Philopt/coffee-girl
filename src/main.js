@@ -317,8 +317,40 @@ export function setupGame(){
   }
 
   function enforceCustomerScaling(){
-    queue.forEach(c=>{ if(c.sprite) c.sprite.setScale(scaleForY(c.sprite.y)); });
-    wanderers.forEach(c=>{ if(c.sprite) c.sprite.setScale(scaleForY(c.sprite.y)); });
+    const scaleDog = d => { if(d) d.setScale(scaleForY(d.y)*0.5); };
+    queue.forEach(c=>{
+      if(c.sprite) c.sprite.setScale(scaleForY(c.sprite.y));
+      if(c.dog) scaleDog(c.dog);
+    });
+    wanderers.forEach(c=>{
+      if(c.sprite) c.sprite.setScale(scaleForY(c.sprite.y));
+      if(c.dog) scaleDog(c.dog);
+    });
+  }
+
+  function updateDog(owner){
+    const dog = owner && owner.dog;
+    if(!dog || !owner.sprite) return;
+    const ms = owner.sprite;
+    const dogDist = Phaser.Math.Distance.Between(dog.x,dog.y,ms.x,ms.y);
+    const radius = 40;
+    const near = 50;
+    let targetX = ms.x, targetY = ms.y;
+    if(dogDist <= radius){
+      const others=[...queue,...wanderers].filter(c=>c!==owner&&c.sprite);
+      for(const o of others){
+        const d=Phaser.Math.Distance.Between(dog.x,dog.y,o.sprite.x,o.sprite.y);
+        if(d<near){ targetX=o.sprite.x; targetY=o.sprite.y; break; }
+      }
+      if(targetX===ms.x && targetY===ms.y){
+        const ang=Phaser.Math.FloatBetween(0,Math.PI*2);
+        const dist=Phaser.Math.Between(10,radius);
+        targetX=ms.x+Math.cos(ang)*dist;
+        targetY=ms.y+Math.sin(ang)*dist;
+      }
+    }
+    this.tweens.add({targets:dog,x:targetX,y:targetY,duration:dur(300),
+      onUpdate:(tw,t)=>{t.setScale(scaleForY(t.y)*0.5);} });
   }
 
   function updateLevelDisplay(){
@@ -761,6 +793,20 @@ export function setupGame(){
     c.orders.push(order);
     c.atOrder=false;
     c.sprite=this.add.sprite(startX,startY,k).setScale(distScale).setDepth(4);
+
+    // occasionally spawn a dog to accompany the wanderer
+    if(Phaser.Math.Between(0,4)===0){
+      const dog=this.add.sprite(startX,startY,k)
+        .setScale(distScale*0.5)
+        .setDepth(3)
+        .setAngle(-90);
+      c.dog=dog;
+      dog.followEvent=this.time.addEvent({
+        delay:dur(Phaser.Math.Between(800,1200)),
+        loop:true,
+        callback:()=>{updateDog.call(this,c);}
+      });
+    }
     const amp=Phaser.Math.Between(10,25);
     const freq=Phaser.Math.Between(2,4);
     c.walkTween=this.tweens.add({targets:c.sprite,x:targetX,duration:dur(6000),onUpdate:(tw,t)=>{
@@ -770,6 +816,10 @@ export function setupGame(){
       },onComplete:()=>{
         const idx=wanderers.indexOf(c);
         if(idx>=0) wanderers.splice(idx,1);
+        if(c.dog){
+          if(c.dog.followEvent) c.dog.followEvent.remove(false);
+          c.dog.destroy();
+        }
         c.sprite.destroy();
       }});
     wanderers.push(c);
@@ -1064,6 +1114,10 @@ export function setupGame(){
         if(dialogDrinkEmoji && dialogDrinkEmoji.followEvent){
           dialogDrinkEmoji.followEvent.remove(false);
           dialogDrinkEmoji.setVisible(false);
+        }
+        if(current.dog){
+          if(current.dog.followEvent) current.dog.followEvent.remove(false);
+          current.dog.destroy();
         }
         current.sprite.destroy();
         if(money<=0){
@@ -1404,7 +1458,13 @@ export function setupGame(){
         tl.add({targets:c.sprite,
                 x:targetX,
                 duration:dur(WALK_OFF_BASE/1.5),
-                onComplete:()=>c.sprite.destroy()});
+                onComplete:()=>{
+                  if(c.dog){
+                    if(c.dog.followEvent) c.dog.followEvent.remove(false);
+                    c.dog.destroy();
+                  }
+                  c.sprite.destroy();
+                }});
         tl.play();
       });
       queue.length=0; wanderers.length=0;
@@ -1487,6 +1547,11 @@ export function setupGame(){
     const gather=(arr)=>{
       arr.forEach(c=>{
         if(c.walkTween){ c.walkTween.stop(); c.walkTween=null; }
+        if(c.dog){
+          if(c.dog.followEvent) c.dog.followEvent.remove(false);
+          c.dog.destroy();
+          c.dog=null;
+        }
         if(c.sprite){
           c.sprite.setDepth(20); // keep attackers above the girl
           if(c.sprite.y < gatherStartY){
@@ -1638,12 +1703,16 @@ export function setupGame(){
     loveText.setText('❤️ '+love);
     updateLevelDisplay();
     if(activeCustomer){
+      if(activeCustomer.dog){
+        if(activeCustomer.dog.followEvent) activeCustomer.dog.followEvent.remove(false);
+        activeCustomer.dog.destroy();
+      }
       activeCustomer.sprite.destroy();
     }
     activeCustomer=null;
-    Phaser.Actions.Call(queue,c=>{ c.sprite.destroy(); });
+    Phaser.Actions.Call(queue,c=>{ if(c.dog){ if(c.dog.followEvent) c.dog.followEvent.remove(false); c.dog.destroy(); } c.sprite.destroy(); });
     queue=[];
-    Phaser.Actions.Call(wanderers,c=>{ c.sprite.destroy(); });
+    Phaser.Actions.Call(wanderers,c=>{ if(c.dog){ if(c.dog.followEvent) c.dog.followEvent.remove(false); c.dog.destroy(); } c.sprite.destroy(); });
     wanderers=[];
     servedCount=0;
     sideCAlpha=0;

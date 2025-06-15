@@ -19,8 +19,6 @@ module.exports = [
     },
     globals: {
       Phaser: 'readonly',
-      phoneDamage: 'writable',
-      flickerEvent: 'writable',
     },
     rules: {
       'no-unused-vars': 'warn',

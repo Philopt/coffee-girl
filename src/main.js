@@ -60,6 +60,52 @@ export let Assets, Scene, Customers, config;
     },[],scene);
   }
 
+  function flashFill(rect, scene, color=0x00ff00){
+    if(!rect || !rect.setFillStyle) return;
+    const original=rect.fillColor||0xffffff;
+    let on=false;
+    const flashes=4;
+    scene.time.addEvent({
+      repeat:flashes,
+      delay:dur(60),
+      callback:()=>{
+        rect.setFillStyle(on?color:original,1);
+        on=!on;
+      }
+    });
+    scene.time.delayedCall(dur(60)*(flashes+1)+dur(10),()=>{
+      rect.setFillStyle(original,1);
+    },[],scene);
+  }
+
+  function scatterMoney(scene, container, dollars, tip){
+    const count=Math.min(10, Math.floor(dollars));
+    for(let i=0;i<count;i++){
+      const bill=scene.add.text(container.x, container.y,'💵',
+        {font:'22px sans-serif',fill:'#0f0'})
+        .setOrigin(0.5)
+        .setDepth(container.depth+2);
+      const dx=Phaser.Math.Between(-container.width/2+10, container.width/2-10);
+      const dy=Phaser.Math.Between(-container.height/2+10, container.height/2-10);
+      scene.tweens.add({targets:bill,x:container.x+dx,y:container.y+dy,
+        angle:Phaser.Math.Between(-180,180),duration:dur(400),alpha:0,
+        onComplete:()=>bill.destroy()});
+    }
+    if(tip>0){
+      for(let i=0;i<2;i++){
+        const coin=scene.add.text(container.x, container.y,'🪙',
+          {font:'16px sans-serif',fill:'#ff0'})
+          .setOrigin(0.5)
+          .setDepth(container.depth+2);
+        const dx=Phaser.Math.Between(-container.width/2+10, container.width/2-10);
+        const dy=Phaser.Math.Between(-container.height/2+10, container.height/2-10);
+        scene.tweens.add({targets:coin,x:container.x+dx,y:container.y+dy,
+          angle:Phaser.Math.Between(-180,180),duration:dur(400),alpha:0,
+          onComplete:()=>coin.destroy()});
+      }
+    }
+  }
+
   function animateStatChange(obj, scene, delta, isLove=false){
     if(delta===0) return;
     const up = delta>0;
@@ -112,6 +158,7 @@ export let Assets, Scene, Customers, config;
       }
     });
   }
+
 
 
   let moneyText, loveText, queueLevelText;
@@ -600,12 +647,12 @@ export let Assets, Scene, Customers, config;
       const by = -h / 2;
       const tipX = tx * 0.5;
       const tipY = by + (ty - by) * 0.5;
-      dialogBg.fillTriangle(bx1, by, bx2, by, tipX, tipY);
+      dialogBg.fillTriangle(bx1, by+1, bx2, by+1, tipX, tipY);
       dialogBg.beginPath();
       dialogBg.moveTo(tipX, tipY);
-      dialogBg.lineTo(bx1, by);
+      dialogBg.lineTo(bx1, by+1);
       dialogBg.moveTo(tipX, tipY);
-      dialogBg.lineTo(bx2, by);
+      dialogBg.lineTo(bx2, by+1);
       dialogBg.strokePath();
     }
   }
@@ -615,6 +662,7 @@ export let Assets, Scene, Customers, config;
        !dialogPriceValue || !btnSell || !btnGive || !btnRef){
       return;
     }
+    if(dialogPriceBox) dialogPriceBox.fillAlpha = 1;
     activeCustomer=queue[0]||null;
     if(!activeCustomer) return;
     const c=activeCustomer;
@@ -647,7 +695,8 @@ export let Assets, Scene, Customers, config;
     this.tweens.add({targets:bubble,y:c.sprite.y-70,alpha:0,duration:dur(600),onComplete:()=>{bubble.destroy(); activeBubble=null;}});
 
     dialogText
-      .setOrigin(0,0)
+      .setOrigin(0.5)
+      .setStyle({fontSize:'24px'})
       .setText(wantLine)
       .setVisible(true);
 
@@ -663,8 +712,8 @@ export let Assets, Scene, Customers, config;
       coinLine = `...but I only have $${c.orders[0].coins}`;
     }
     dialogCoins
-      .setOrigin(0,0)
-      .setStyle({fontSize:'20px'})
+      .setOrigin(0.5)
+      .setStyle({fontSize:'24px'})
       .setText(coinLine)
       .setVisible(true);
 
@@ -673,8 +722,9 @@ export let Assets, Scene, Customers, config;
     dialogBg.height=dialogText.height+dialogCoins.height+60;
 
     const bubbleTop=dialogBg.y - dialogBg.height/2;
-    dialogText.setPosition(dialogBg.x - dialogBg.width/2 + 40, bubbleTop + 30);
-    dialogCoins.setPosition(dialogBg.x - dialogBg.width/2 + 40, bubbleTop + 30 + dialogText.height + 10);
+    const textY=bubbleTop+30+dialogText.height/2;
+    dialogText.setPosition(dialogBg.x, textY);
+    dialogCoins.setPosition(dialogBg.x, textY + dialogText.height/2 + 10 + dialogCoins.height/2);
 
     dialogBg.setScale(0).setVisible(true);
     dialogText.setScale(0);
@@ -767,8 +817,22 @@ export let Assets, Scene, Customers, config;
   }
 
   function handleAction(type){
-    clearDialog(type!=='refuse');
     const current=activeCustomer;
+    if(current){
+      const objs=[];
+      if(typeof dialogBg!=='undefined') objs.push(dialogBg);
+      if(typeof dialogText!=='undefined') objs.push(dialogText);
+      if(typeof dialogCoins!=='undefined') objs.push(dialogCoins);
+      if(this.tweens && objs.length){
+        this.tweens.add({targets:objs, y:current.sprite.y, scale:0, duration:dur(200), onComplete:()=>{
+          clearDialog.call(this, type!=='refuse');
+        }});
+      } else {
+        clearDialog.call(this, type!=='refuse');
+      }
+    } else {
+      clearDialog(type!=='refuse');
+    }
     if(!current) return;
     const orderCount=current.orders.length;
     const totalCost=current.orders.reduce((s,o)=>s+o.price*o.qty,0);
@@ -891,6 +955,8 @@ export let Assets, Scene, Customers, config;
         tl.add({targets:ticket,x:destX,y:destY,scale:0,duration:dur(400),
           onStart:()=>{
             flashBorder(dialogPriceBox,this,0x00ff00);
+            flashFill(dialogPriceBox,this,0x00ff00);
+            scatterMoney(this, ticket, totalCost, tip);
             if(this.tweens){
               this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});
             }
@@ -929,6 +995,7 @@ export let Assets, Scene, Customers, config;
         }});
         flashMoney(t,this,'#f00');
         flashBorder(dialogPriceBox,this,0xff0000);
+        flashFill(dialogPriceBox,this,0xff0000);
         tl.add({targets:ticket,x:destX,y:destY,scale:0,duration:dur(400),
           onStart:()=>{
             if(this.tweens){

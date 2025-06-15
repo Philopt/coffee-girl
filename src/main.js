@@ -384,29 +384,33 @@
     startMsgTimers=[];
     startMsgBubbles.forEach(b=>b.destroy());
     startMsgBubbles=[];
+    let startMsgY = -phoneH/2 + 20;
 
     const addStartMessage=(text)=>{
       if(!phoneContainer) return;
-      const txt=scene.add.text(0,0,text,{font:'20px sans-serif',fill:'#000',wordWrap:{width:phoneW-40}})
-        .setOrigin(0.5);
-      const pad=10;
-      const bw=txt.width+pad*2;
-      const bh=txt.height+pad*2;
-      const bg=scene.add.graphics();
+      const pad = 10;
+      const wrapWidth = phoneW - 60;
+      const txt = scene.add.text(0,0,text,{font:'20px sans-serif',fill:'#fff',wordWrap:{width:wrapWidth}})
+        .setOrigin(0,0.5);
+      const bw = txt.width + pad*2;
+      const bh = txt.height + pad*2;
+      const bg = scene.add.graphics();
       bg.fillStyle(0x8bd48b,1);
       bg.fillRoundedRect(-bw/2,-bh/2,bw,bh,10);
-      const yEnd=-phoneH/2+bh/2+20+(startMsgBubbles.length)*(bh+10);
-      const bubble=scene.add.container(0,yEnd,[bg,txt]).setDepth(16).setAlpha(0);
+      const xPos = -phoneW/2 + bw/2 + 20;
+      const yPos = startMsgY + bh/2;
+      const bubble = scene.add.container(xPos,yPos,[bg,txt]).setDepth(16).setAlpha(0);
       phoneContainer.add(bubble);
       startMsgBubbles.push(bubble);
+      startMsgY += bh + 10;
       scene.tweens.add({targets:bubble,alpha:1,duration:300,ease:'Cubic.easeOut'});
     };
 
     if(scene.time && scene.time.delayedCall){
-      startMsgTimers.push(scene.time.delayedCall(5000,()=>addStartMessage('hey, you coming in?'),[],scene));
-      startMsgTimers.push(scene.time.delayedCall(10000,()=>addStartMessage('you better not still be in bed...'),[],scene));
-      startMsgTimers.push(scene.time.delayedCall(15000,()=>addStartMessage('I guess you had a late night.'),[],scene));
-      startMsgTimers.push(scene.time.delayedCall(22000,()=>addStartMessage('... I hope you\'re okay 😟'),[],scene));
+      startMsgTimers.push(scene.time.delayedCall(5000,()=>addStartMessage('hey, you coming in? 😊'),[],scene));
+      startMsgTimers.push(scene.time.delayedCall(10000,()=>addStartMessage('you better not still be in bed... 😜'),[],scene));
+      startMsgTimers.push(scene.time.delayedCall(15000,()=>addStartMessage('I guess you had a late night. 😴'),[],scene));
+      startMsgTimers.push(scene.time.delayedCall(22000,()=>addStartMessage('... I hope you\'re okay 😟❤️'),[],scene));
     }
 
     startButton.on('pointerdown',()=>{

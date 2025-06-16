@@ -1630,19 +1630,32 @@ export function setupGame(){
       }
       this.tweens.add({targets:h,x:targetX,y:baseY,duration:dur(400),ease:'Cubic.easeOut'});
     }
+    const destX = () => loveText.x + loveText.width + 6;
+    const destY = () => loveText.y + loveText.height;
+
     const popOne=(idx)=>{
       if(idx>=hearts.length){
-        animateStatChange(loveText, this, delta, true);
         if(cb) cb();
         return;
       }
       const h=hearts[idx];
       const tl=this.tweens.createTimeline({callbackScope:this});
-      tl.add({targets:h,x:loveText.x,y:loveText.y,scaleX:0,scaleY:1.2,duration:dur(125)});
+      tl.add({
+        targets:h,
+        x:destX(),
+        y:destY(),
+        scaleX:0,
+        scaleY:1.2,
+        duration:dur(125),
+        onComplete:()=>{
+          love += delta>0?1:-1;
+          loveText.setText('❤️ '+love);
+          updateLevelDisplay();
+          h.setText(String(love));
+          animateStatChange(loveText, this, delta>0?1:-1, true);
+        }
+      });
       tl.add({targets:h,scaleX:1,alpha:0,duration:dur(125),onComplete:()=>{
-            love+=delta>0?1:-1;
-            loveText.setText('❤️ '+love);
-            updateLevelDisplay();
             h.destroy();
             popOne(idx+1);
         }});

@@ -8,6 +8,12 @@ export const GameState = {};
 const DOG_MIN_Y = ORDER_Y + 20;
 const DOG_SPEED = 120; // base movement speed for the dog
 const DOG_FAST_DISTANCE = 160; // accelerate when farther than this from owner
+const DOG_TYPES = [
+  {type:'standard', emoji:'🐶'},
+  {type:'poodle', emoji:'🐩'},
+  {type:'guide', emoji:'🦮'},
+  {type:'service', emoji:'🐕‍🦺'}
+];
 const CUSTOMER_SPEED = 560 / 6; // pixels per second for wanderers
 export function setupGame(){
   if (typeof debugLog === 'function') debugLog('main.js loaded');
@@ -359,9 +365,18 @@ export function setupGame(){
     if(!dog || !owner.sprite) return;
     const ms = owner.sprite;
     const dogDist = Phaser.Math.Distance.Between(dog.x,dog.y,ms.x,ms.y);
-    const radius = 80;
-    const near = 60;
+    let radius = 80;
+    let near = 60;
     let targetX = ms.x, targetY = ms.y;
+    const type = dog.dogType || 'standard';
+    if(type==='service'){
+      radius = 50;
+      near = 30;
+    }
+    if(type==='guide'){
+      const dir=owner.dir||1;
+      targetX = ms.x + dir*40;
+    }
 
     const others=[...queue,...wanderers].filter(c=>c!==owner&&c.sprite);
     // Stop any existing movement tweens so new motions start from the dog's
@@ -371,7 +386,7 @@ export function setupGame(){
       dog.currentTween.stop();
       dog.currentTween=null;
     }
-    if(!dog.excited){
+    if(type!=='service' && !dog.excited){
       const seen=others.find(o=>Phaser.Math.Distance.Between(dog.x,dog.y,o.sprite.x,o.sprite.y)<80);
       if(seen){
         dog.excited=true;
@@ -920,10 +935,12 @@ export function setupGame(){
       const side=Phaser.Math.Between(0,1)?1:-1;
       const offsetX=side*Phaser.Math.Between(20,30);
       const offsetY=Phaser.Math.Between(10,20);
-      const dog=this.add.text(startX+offsetX,startY+offsetY,'🐶',{font:'32px sans-serif'})
+      const dogType=Phaser.Utils.Array.GetRandom(DOG_TYPES);
+      const dog=this.add.text(startX+offsetX,startY+offsetY,dogType.emoji,{font:'32px sans-serif'})
         .setOrigin(0.5)
         .setScale(distScale*0.5)
         .setDepth(3);
+      dog.dogType=dogType.type;
       c.dog=dog;
 
       dog.followEvent=this.time.addEvent({

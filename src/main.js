@@ -1364,8 +1364,9 @@ export function setupGame(){
       dialogCoins.setVisible(false);
       dialogPriceContainer.setVisible(true);
     }
-    dialogDrinkEmoji.attachedTo = null;
-    if (dialogDrinkEmoji.parentContainer !== dialogPriceContainer) {
+    const flinging = this.tweens && this.tweens.isTweening && this.tweens.isTweening(dialogDrinkEmoji);
+    if (!flinging && !dialogDrinkEmoji.attachedTo &&
+        dialogDrinkEmoji.parentContainer !== dialogPriceContainer) {
       dialogPriceContainer.add(dialogDrinkEmoji);
     }
     // Keep the drink emoji visible when the price ticket remains on screen

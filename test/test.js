@@ -83,6 +83,7 @@ function testSpawnCustomer() {
   const context = {
     Phaser: { Math: { Between: min => min }, Utils: { Array: { GetRandom: a => a[0] } } },
     wanderers: [],
+    queue: [],
     gameOver: false,
     maxWanderers: () => 5,
     scheduleNextSpawn: () => {},
@@ -119,6 +120,44 @@ function testSpawnCustomer() {
   spawnCustomer.call(scene);
   assert.strictEqual(context.wanderers.length, 1, 'customer not added to wanderers');
   console.log('spawnCustomer adds wanderer test passed');
+}
+
+function testSpawnCustomerQueuesWhenEmpty() {
+  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+  const match = /function spawnCustomer\([^)]*\)[\s\S]*?\n\s*\}\n(?=\s*function)/.exec(code);
+  if (!match) throw new Error('spawnCustomer not found');
+  const context = {
+    Phaser: { Math: { Between: min => min }, Utils: { Array: { GetRandom: a => a[0] } } },
+    wanderers: [],
+    queue: [],
+    gameOver: false,
+    maxWanderers: () => 5,
+    scheduleNextSpawn: () => {},
+    sendDogOffscreen: () => {},
+    keys: ['c1'],
+    MENU: [{ name: 'Coffee', price: 5 }],
+    WANDER_TOP: 0,
+    WANDER_BOTTOM: 10,
+    scaleForY: () => 1,
+    dur: v => v,
+    fn: null
+  };
+  context.lureNextWanderer = function(){ context.queue.push(context.wanderers.shift()); };
+  vm.createContext(context);
+  vm.runInContext(match[0] + '\nfn=spawnCustomer;', context);
+  const spawnCustomer = context.fn;
+  const scene = {
+    add: {
+      sprite() {
+        return { setScale() { return this; }, setDepth() { return this; }, setAngle() { return this; }, destroy() {} };
+      }
+    },
+    tweens: { add(cfg) { if (cfg.onComplete) cfg.onComplete(); return { progress: 0 }; } },
+    time: { addEvent() { return { remove() {} }; }, delayedCall() { return { remove() {} }; } }
+  };
+  spawnCustomer.call(scene);
+  assert.strictEqual(context.queue.length, 1, 'customer not queued when empty');
+  console.log('spawnCustomer enqueues when queue empty test passed');
 }
 
 function testHandleActionSell() {
@@ -615,6 +654,7 @@ async function run() {
   console.log('Game loaded without errors');
   try {
     testSpawnCustomer();
+    testSpawnCustomerQueuesWhenEmpty();
     testHandleActionSell();
     testShowStartScreen();
     testStartButtonPlaysIntro();

@@ -16,6 +16,7 @@ const DOG_TYPES = [
 ];
 const CUSTOMER_SPEED = 560 / 6; // pixels per second for wanderers
 const LURE_SPEED = CUSTOMER_SPEED * 0.6; // slower approach when lured
+const DRINK_HOLD_OFFSET = { x: 0, y: 22 }; // offset for held drink emoji
 export function setupGame(){
   if (typeof debugLog === 'function') debugLog('main.js loaded');
   let initCalled = false;
@@ -376,6 +377,19 @@ export function setupGame(){
       if(c.sprite){ c.sprite.setScale(scaleForY(c.sprite.y)); setDepth(c.sprite,5); }
       if(c.dog) scaleDog(c.dog);
     });
+  }
+
+  function updateDrinkEmojiPosition(){
+    if(dialogDrinkEmoji && dialogDrinkEmoji.attachedTo){
+      const cust = dialogDrinkEmoji.attachedTo;
+      if(cust.active){
+        dialogDrinkEmoji.setPosition(cust.x + DRINK_HOLD_OFFSET.x,
+                                    cust.y + DRINK_HOLD_OFFSET.y);
+      }else{
+        dialogDrinkEmoji.setVisible(false);
+        dialogDrinkEmoji.attachedTo = null;
+      }
+    }
   }
 
   function updateDog(owner){
@@ -914,8 +928,11 @@ export function setupGame(){
     // wait for player to start the shift
     showStartScreen.call(this);
 
-    // ensure customer sprites always match their vertical scale
-    this.events.on('update', enforceCustomerScaling);
+    // ensure customer sprites match vertical scale and keep drink emoji attached
+    this.events.on('update', () => {
+      enforceCustomerScaling();
+      updateDrinkEmojiPosition();
+    });
   }
 
   function spawnCustomer(){
@@ -1148,6 +1165,10 @@ export function setupGame(){
       .setPosition(girlX, girlY)
       .setScale(0.2)
       .setVisible(false);
+    if (dialogDrinkEmoji.parentContainer !== dialogPriceContainer) {
+      dialogPriceContainer.add(dialogDrinkEmoji);
+    }
+    dialogDrinkEmoji.attachedTo = null;
     resetPriceBox();
     dialogPriceContainer.alpha = 1;
     dialogPriceLabel
@@ -1228,6 +1249,11 @@ export function setupGame(){
       dialogCoins.setVisible(false);
       dialogPriceContainer.setVisible(true);
     }
+    dialogDrinkEmoji.attachedTo = null;
+    if (dialogDrinkEmoji.parentContainer !== dialogPriceContainer) {
+      dialogPriceContainer.add(dialogDrinkEmoji);
+    }
+    dialogDrinkEmoji.setVisible(false);
     resetPriceBox();
     btnSell.setVisible(false);
     if (btnSell.input) btnSell.input.enabled = false;
@@ -1295,8 +1321,8 @@ export function setupGame(){
 
     const finish=()=>{
       const exit=()=>{
-        if(dialogDrinkEmoji && dialogDrinkEmoji.followEvent){
-          dialogDrinkEmoji.followEvent.remove(false);
+        if(dialogDrinkEmoji && dialogDrinkEmoji.attachedTo === current.sprite){
+          dialogDrinkEmoji.attachedTo = null;
           dialogDrinkEmoji.setVisible(false);
         }
         if(current.dog){
@@ -1454,11 +1480,14 @@ export function setupGame(){
               const sp = this.add.text(gx, gy, '✨',{font:'18px sans-serif',fill:'#fff'})
                 .setOrigin(0.5).setDepth(dialogDrinkEmoji.depth+1);
               this.tweens.add({targets:sp,scale:1.5,alpha:0,duration:dur(300),onComplete:()=>sp.destroy()});
-              this.tweens.add({targets:dialogDrinkEmoji,x:customer.x,y:customer.y-20,scale:0.4,duration:dur(400),onComplete:()=>{
-                    dialogDrinkEmoji.followEvent=this.time.addEvent({delay:dur(50),loop:true,callback:()=>{
-                        if(customer.active){ dialogDrinkEmoji.setPosition(customer.x,customer.y-20); } else { dialogDrinkEmoji.setVisible(false); dialogDrinkEmoji.followEvent.remove(false); }
-                    }});
-              }});
+              this.tweens.add({
+                targets: dialogDrinkEmoji,
+                x: customer.x + DRINK_HOLD_OFFSET.x,
+                y: customer.y + DRINK_HOLD_OFFSET.y,
+                scale: 0.3,
+                duration: dur(400),
+                onComplete: () => { dialogDrinkEmoji.attachedTo = customer; }
+              });
             }
           }});
         tl.play();
@@ -1886,6 +1915,7 @@ export function setupGame(){
     }
     falconActive = false;
     clearDialog();
+    dialogDrinkEmoji.attachedTo = null;
     if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
     if(sideCText){ sideCText.destroy(); sideCText=null; }
     reportLine1.setVisible(false);

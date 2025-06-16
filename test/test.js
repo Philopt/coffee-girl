@@ -5,7 +5,8 @@ const fs = require('fs');
 const vm = require('vm');
 const assert = require('assert');
 
-const { BUTTON_WIDTH, BUTTON_HEIGHT } = require('../src/ui.js');
+const BUTTON_WIDTH = 120;
+const BUTTON_HEIGHT = 80;
 
 const DEBUG = process.env.DEBUG === '1';
 

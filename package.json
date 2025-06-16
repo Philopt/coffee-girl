@@ -2,6 +2,7 @@
   "name": "coffee-girl",
   "version": "1.0.0",
   "description": "Coffee Clicker game",
+  "type": "commonjs",
   "scripts": {
     "start": "http-server -p 8080 -c-1",
     "pretest": "test -d node_modules || npm ci && npm run lint",

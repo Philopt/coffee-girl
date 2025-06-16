@@ -297,7 +297,7 @@ function testStartButtonPlaysIntro() {
   let pointerCb = null;
   const scene = {
     add: {
-      rectangle() { return { setDepth() { return this; }, destroy() { this.destroyed = true; } }; },
+      rectangle() { return { setDepth() { return this; }, setStrokeStyle() { return this; }, destroy() { this.destroyed = true; } }; },
       text() { return { setOrigin() { return this; }, setDepth() { return this; }, width: 100, height: 40 }; },
       graphics() { return { fillStyle() { return this; }, fillRoundedRect() { return this; } }; },
       zone() { return { setOrigin() { return this; }, setInteractive() { return this; }, on(event, cb) { if (event === 'pointerdown') pointerCb = cb; return this; } }; },
@@ -558,6 +558,84 @@ function testScheduleNextSpawn() {
   console.log('scheduleNextSpawn behavior test passed');
 }
 
+function testShowEndRestart() {
+  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+  const findFunc = name => {
+    const start = code.indexOf(`function ${name}`);
+    if (start === -1) throw new Error(name + ' not found');
+    let depth = 0;
+    let end = -1;
+    for (let i = start; i < code.length; i++) {
+      const ch = code[i];
+      if (ch === '{') depth++;
+      else if (ch === '}') {
+        depth--;
+        if (depth === 0) { end = i + 1; break; }
+      }
+    }
+    if (end === -1) throw new Error(name + ' not closed');
+    return code.slice(start, end);
+  };
+  const showEndSrc = findFunc('showEnd');
+  const restartSrc = findFunc('restartGame');
+  const context = {
+    gameOver: false,
+    endOverlay: null,
+    spawnTimer: { removed: false, remove() { this.removed = true; } },
+    falconActive: false,
+    sideCText: null,
+    reportLine1: { setVisible() { return this; } },
+    reportLine2: { setVisible() { return this; } },
+    reportLine3: { setVisible() { return this; } },
+    tipText: { setVisible() { return this; } },
+    paidStamp: { setVisible() { return this; } },
+    lossStamp: { setVisible() { return this; } },
+    money: 10,
+    love: 10,
+    moneyText: { setText() { return this; } },
+    loveText: { setText() { return this; } },
+    updateLevelDisplay() {},
+    receipt: v => v,
+    clearDialog() {},
+    activeCustomer: null,
+    queue: [],
+    wanderers: [],
+    servedCount: 0,
+    sideCAlpha: 0,
+    sideCFadeTween: null,
+    showStartScreen() { context.started = true; },
+    Phaser: { Actions: { Call(arr, cb) { arr.forEach(cb); } } },
+    fnEnd: null
+  };
+  vm.createContext(context);
+  vm.runInContext(`${showEndSrc}\nfnEnd=showEnd;\n${restartSrc}`, context);
+  const showEnd = context.fnEnd;
+
+  let pointerCb = null;
+  const scene = {
+    add: {
+      rectangle() { return { setDepth() { return this; }, setStrokeStyle() { return this; }, destroy() { this.destroyed = true; } }; },
+      text() { return { setOrigin() { return this; }, setDepth() { return this; }, width: BUTTON_WIDTH, height: BUTTON_HEIGHT, destroy() { this.destroyed = true; } }; },
+      zone(x, y, w, h) { return { setOrigin() { return this; }, setInteractive() { return this; }, on(event, cb) { if (event === 'pointerdown') pointerCb = cb; return this; }, width: w, height: h }; },
+      image() { return { setScale() { return this; }, setDepth() { return this; }, destroy() {} }; }
+    },
+    tweens: { killAll() {} },
+    time: { removeAllEvents() {} }
+  };
+
+  showEnd.call(scene, 'Game Over\nOut of coffee!');
+  assert.strictEqual(context.gameOver, true, 'gameOver should be true');
+  assert.ok(pointerCb, 'pointerdown handler not set');
+
+  // simulate clicking Try Again
+  pointerCb();
+
+  assert.strictEqual(context.gameOver, false, 'gameOver not reset');
+  assert.strictEqual(context.endOverlay, null, 'endOverlay not cleared');
+  assert.ok(context.started, 'showStartScreen not called');
+  console.log('showEnd and restartGame test passed');
+}
+
 async function testIntroSequence() {
   const puppeteer = require('puppeteer');
   const { PNG } = require('pngjs');
@@ -683,6 +761,7 @@ async function run() {
     testShowDialogButtons();
     testAnimateLoveChange();
     testScheduleNextSpawn();
+    testShowEndRestart();
     await testIntroSequence();
     await testFirstOrderDialog();
   } finally {

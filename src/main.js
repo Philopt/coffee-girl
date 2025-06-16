@@ -1634,6 +1634,9 @@ export function setupGame(){
 
     function panicCustomers(){
       const fleeing=[...queue, ...wanderers];
+      if(activeCustomer && !fleeing.includes(activeCustomer)){
+        fleeing.push(activeCustomer);
+      }
       fleeing.forEach(c=>{
         if(c.walkTween){ c.walkTween.stop(); c.walkTween=null; }
         const dir=c.sprite.x<ORDER_X? -1:1;
@@ -1755,6 +1758,9 @@ export function setupGame(){
     };
     gather(queue);
     gather(wanderers);
+    if(activeCustomer){
+      gather([activeCustomer]);
+    }
 
 
 

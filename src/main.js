@@ -1786,8 +1786,11 @@ export function setupGame(){
                 }});
         tl.play();
       });
-      queue.length=0; wanderers.length=0;
+      queue.length=0; wanderers.length=0; activeCustomer=null;
     }
+
+    // send everyone scattering immediately in case a new spawn sneaks in
+    panicCustomers();
 
     const falcon=scene.add.sprite(-40,-40,'lady_falcon',0)
       .setScale(1.4,1.68)

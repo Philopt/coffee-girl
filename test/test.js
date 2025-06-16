@@ -97,7 +97,8 @@ function testSpawnCustomer() {
     WANDER_BOTTOM: 10,
     scaleForY: () => 1,
     dur: v => v,
-    fn: null
+    fn: null,
+    floatingEmojis: []
   };
   vm.createContext(context);
   vm.runInContext(match[0] + '\nfn=spawnCustomer;', context);
@@ -143,7 +144,8 @@ function testSpawnCustomerQueuesWhenEmpty() {
     WANDER_BOTTOM: 10,
     scaleForY: () => 1,
     dur: v => v,
-    fn: null
+    fn: null,
+    floatingEmojis: []
   };
   context.lureNextWanderer = function(){ context.queue.push(context.wanderers.shift()); };
   vm.createContext(context);
@@ -382,7 +384,12 @@ function testShowDialogButtons() {
     dialogPriceBox: makeObj(),
     dialogPriceLabel: makeObj(),
     dialogPriceValue: makeObj(),
-    dialogPriceContainer: { x:0, y:0, scaleX:1, scaleY:1, setVisible() { return this; }, setPosition(x,y){ this.x=x; this.y=y; return this; }, setScale(s){ this.scaleX=s; this.scaleY=s; return this; } },
+    dialogPriceContainer: { x:0, y:0, scaleX:1, scaleY:1,
+      setVisible() { return this; },
+      setPosition(x, y) { this.x = x; this.y = y; return this; },
+      setScale(s) { this.scaleX = s; this.scaleY = s; return this; },
+      add() { return this; }
+    },
     dialogDrinkEmoji: { x:0, y:0, followEvent:null, setText(){ return this; }, setVisible(){ return this; }, setPosition(x,y){ this.x=x; this.y=y; return this; }, clearTint(){ return this; }, setTint(){ return this; }, setScale(){ return this; } },
     btnSell: makeObj(),
     btnGive: makeObj(),
@@ -466,7 +473,8 @@ function testAnimateLoveChange() {
     calcLoveLevel(v) { if (v >= 100) return 4; if (v >= 50) return 3; if (v >= 20) return 2; return 1; },
     updateLevelDisplay: null,
     dur: v => v,
-    fn: null
+    fn: null,
+    floatingEmojis: []
   };
   vm.createContext(context);
   vm.runInContext(
@@ -606,6 +614,11 @@ function testShowEndRestart() {
     sideCAlpha: 0,
     sideCFadeTween: null,
     showStartScreen() { context.started = true; },
+    cleanupFloatingEmojis() {},
+    hideOverlayTexts() {},
+    dialogDrinkEmoji: {},
+    truck: { setPosition() { return this; } },
+    girl: { setPosition() { return this; }, setVisible() { return this; } },
     Phaser: { Actions: { Call(arr, cb) { arr.forEach(cb); } } },
     fnEnd: null
   };
@@ -622,7 +635,8 @@ function testShowEndRestart() {
       image() { return { setScale() { return this; }, setDepth() { return this; }, destroy() {} }; }
     },
     tweens: { killAll() {} },
-    time: { removeAllEvents() {} }
+    time: { removeAllEvents() {} },
+    scale: { width: 480 }
   };
 
   showEnd.call(scene, 'Game Over\nOut of coffee!');

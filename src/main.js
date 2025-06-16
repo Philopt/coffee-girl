@@ -1231,10 +1231,10 @@ export function setupGame(){
       girl.x + girl.displayWidth/2 : dialogBg.x;
     const minX = girlRight + ticketOffset;
     const priceTargetX = Math.max(priceTargetXDefault, minX);
-    const girlX = minX;
-    const girlY = (typeof girl !== 'undefined' && girl) ? girl.y - 20 : dialogBg.y;
+    const startX = (typeof girl !== 'undefined' && girl) ? girl.x : dialogBg.x;
+    const startY = (typeof girl !== 'undefined' && girl) ? girl.y - 20 : dialogBg.y;
     dialogPriceContainer
-      .setPosition(girlX, girlY)
+      .setPosition(startX, startY)
       .setScale(0.2)
       .setVisible(false);
     if (dialogDrinkEmoji.parentContainer !== dialogPriceContainer) {
@@ -1651,16 +1651,18 @@ export function setupGame(){
       },[],this);
     } else if(type!=='refuse'){
       const showTip=tip>0;
+      const startRX = (typeof girl !== 'undefined' && girl) ? girl.x : customer.x;
+      const startRY = (typeof girl !== 'undefined' && girl) ? girl.y : customer.y;
       reportLine1.setStyle({fill:'#fff'})
         .setText(`$${totalCost.toFixed(2)}`)
-        .setPosition(customer.x, customer.y)
+        .setPosition(startRX, startRY)
         .setScale(1)
         .setVisible(true);
       if(showTip){
         reportLine2.setText(`${receipt(tip)} ${tipPct}% TIP`)
           .setStyle({fontSize:'16px',fill:'#fff'})
           .setScale(1)
-          .setPosition(customer.x,customer.y+24).setVisible(true);
+          .setPosition(startRX,startRY+24).setVisible(true);
       }else{
         reportLine2.setVisible(false);
       }

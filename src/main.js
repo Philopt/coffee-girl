@@ -137,6 +137,13 @@ export function setupGame(){
     },[],scene);
   }
 
+  function cleanupFloatingEmojis(){
+    floatingEmojis.forEach(e=>{
+      if(e && e.destroy) e.destroy();
+    });
+    floatingEmojis.length=0;
+  }
+
   function blinkButton(btn, onComplete, inputObj){
     // Temporarily disable input while the button blinks. The optional
     // inputObj parameter allows specifying a separate interactive
@@ -203,6 +210,7 @@ export function setupGame(){
   let phoneContainer=null;
   let startMsgTimers=[];
   let startMsgBubbles=[];
+  let floatingEmojis=[]; // hearts or anger symbols currently animating
 
   Object.defineProperties(GameState, {
     money: { get: () => money, set: v => { money = v; } },
@@ -1646,6 +1654,7 @@ export function setupGame(){
       const h=this.add.text(customer.x,customer.y,emoji,{font:'24px sans-serif',fill:'#fff'})
         .setOrigin(0.5).setDepth(11);
       hearts.push(h);
+      floatingEmojis.push(h);
       const targetX=baseX+i*20;
       // sparkle or anger flash
       if(delta>0){
@@ -1685,6 +1694,8 @@ export function setupGame(){
         }
       });
       tl.add({targets:h,scaleX:1,alpha:0,duration:dur(125),onComplete:()=>{
+            const i=floatingEmojis.indexOf(h);
+            if(i!==-1) floatingEmojis.splice(i,1);
             h.destroy();
             popOne(idx+1);
         }});
@@ -1698,6 +1709,7 @@ export function setupGame(){
     const scene=this;
     scene.tweens.killAll();
     scene.time.removeAllEvents();
+    cleanupFloatingEmojis();
     clearDialog();
     falconActive = true;
     gameOver = true;
@@ -1805,6 +1817,7 @@ export function setupGame(){
     const scene=this;
     scene.tweens.killAll();
     scene.time.removeAllEvents();
+    cleanupFloatingEmojis();
     clearDialog();
     if (spawnTimer) { spawnTimer.remove(false); spawnTimer = null; }
     const attackers=[];
@@ -1908,6 +1921,7 @@ export function setupGame(){
     const scene=this;
     scene.tweens.killAll();
     scene.time.removeAllEvents();
+    cleanupFloatingEmojis();
     if (spawnTimer) { spawnTimer.remove(false); spawnTimer=null; }
     clearDialog();
     if(endOverlay){ endOverlay.destroy(); }
@@ -1951,6 +1965,7 @@ export function setupGame(){
     const scene=this;
     scene.tweens.killAll();
     scene.time.removeAllEvents();
+    cleanupFloatingEmojis();
     if (spawnTimer) {
       spawnTimer.remove(false);
       spawnTimer = null;

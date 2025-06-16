@@ -1674,7 +1674,6 @@ export function setupGame(){
           love += delta>0?1:-1;
           loveText.setText('❤️ '+love);
           updateLevelDisplay();
-          h.setText(String(love));
           animateStatChange(loveText, this, delta>0?1:-1, true);
         }
       });

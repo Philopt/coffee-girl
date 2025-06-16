@@ -1,7 +1,7 @@
-import { debugLog, DEBUG } from './debug.js';
-import { dur, scaleForY, articleFor, flashMoney, START_PHONE_W, START_PHONE_H, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_Y, DIALOG_Y } from "./ui.js";
-import { MENU, SPAWN_DELAY, SPAWN_VARIANCE, QUEUE_SPACING, ORDER_X, ORDER_Y, QUEUE_X, QUEUE_OFFSET, QUEUE_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel, maxWanderers as customersMaxWanderers, queueLimit as customersQueueLimit } from "./customers.js";
-import { baseConfig } from "./scene.js";
+import { debugLog, DEBUG } from './debug.mjs';
+import { dur, scaleForY, articleFor, flashMoney, START_PHONE_W, START_PHONE_H, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_Y, DIALOG_Y } from "./ui.mjs";
+import { MENU, SPAWN_DELAY, SPAWN_VARIANCE, QUEUE_SPACING, ORDER_X, ORDER_Y, QUEUE_X, QUEUE_OFFSET, QUEUE_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel, maxWanderers as customersMaxWanderers, queueLimit as customersQueueLimit } from "./customers.mjs";
+import { baseConfig } from "./scene.mjs";
 export let Assets, Scene, Customers, config;
 export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;
 export const GameState = {};
@@ -24,7 +24,7 @@ const DART_MAX_SPEED = CUSTOMER_SPEED * 3;
 // Raise it slightly so it appears near their hands instead of their feet
 const DRINK_HOLD_OFFSET = { x: 0, y: -20 };
 export function setupGame(){
-  if (typeof debugLog === 'function') debugLog('main.js loaded');
+  if (typeof debugLog === 'function') debugLog('main.mjs loaded');
   let initCalled = false;
   function init(){
     if (typeof debugLog === 'function') debugLog('init() executing');

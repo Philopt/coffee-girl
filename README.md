@@ -19,8 +19,8 @@ This project requires **Node.js 20 or newer**.
 
    Click **Clock In** when it appears to begin the game.
 
-   The game now loads `src/main.js` as an ES module using
-   `<script type="module" src="src/main.js"></script>` in `index.html`. If the page
+   The game now loads `src/main.mjs` as an ES module using
+   `<script type="module" src="src/main.mjs"></script>` in `index.html`. If the page
    stays blank, open the browser console and look for messages about missing
    assets.
 

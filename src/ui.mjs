@@ -1,4 +1,4 @@
-import { ORDER_Y, WANDER_BOTTOM } from './customers.js';
+import { ORDER_Y, WANDER_BOTTOM } from './customers.mjs';
 
 export const START_PHONE_W = 260;
 export const START_PHONE_H = 500;

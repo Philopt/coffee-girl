@@ -31,7 +31,7 @@ process.on('SIGTERM', () => {
 });
 
 function testBlinkButton() {
-  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.mjs'), 'utf8');
   const start = code.indexOf('function blinkButton');
   if (start === -1) throw new Error('blinkButton not found');
   let depth = 0;
@@ -78,7 +78,7 @@ function testBlinkButton() {
 }
 
 function testSpawnCustomer() {
-  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.mjs'), 'utf8');
   const match = /function spawnCustomer\([^)]*\)[\s\S]*?\n\s*\}\n(?=\s*function)/.exec(code);
   if (!match) throw new Error('spawnCustomer not found');
   const context = {
@@ -125,7 +125,7 @@ function testSpawnCustomer() {
 }
 
 function testSpawnCustomerQueuesWhenEmpty() {
-  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.mjs'), 'utf8');
   const match = /function spawnCustomer\([^)]*\)[\s\S]*?\n\s*\}\n(?=\s*function)/.exec(code);
   if (!match) throw new Error('spawnCustomer not found');
   const context = {
@@ -164,7 +164,7 @@ function testSpawnCustomerQueuesWhenEmpty() {
 }
 
 function testHandleActionSell() {
-  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.mjs'), 'utf8');
   const recMatch = /function receipt\([^)]*\)[\s\S]*?\n\s*\}/.exec(code);
   const actMatch = /function handleAction\(type\)[\s\S]*?\n\s*\}\n(?=\s*function animateLoveChange)/.exec(code);
   if (!actMatch || !recMatch) throw new Error('handleAction or receipt not found');
@@ -225,7 +225,7 @@ function testHandleActionSell() {
 }
 
 function testShowStartScreen() {
-  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.mjs'), 'utf8');
   const match = /function showStartScreen\(scene\)[\s\S]*?\n\s*\}\);\n\s*\}/.exec(code);
   if (!match) throw new Error('showStartScreen not found');
   function RectStub(x, y, w, h) {
@@ -274,7 +274,7 @@ function testShowStartScreen() {
 }
 
 function testStartButtonPlaysIntro() {
-  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.mjs'), 'utf8');
   const startMatch = /function showStartScreen\(scene\)[\s\S]*?\n\s*\}\);\n\s*\}/.exec(code);
   const introMatch = /function playIntro\(scene\)[\s\S]*?intro\.play\(\);\n\s*\}/.exec(code);
   if (!startMatch || !introMatch) throw new Error('showStartScreen or playIntro not found');
@@ -350,7 +350,7 @@ function testStartButtonPlaysIntro() {
 }
 
 function testShowDialogButtons() {
-  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.mjs'), 'utf8');
   const match = /function showDialog\(\)[\s\S]*?tipText\.setVisible\(false\);[\s\S]*?\n\s*\}/.exec(code);
   if (!match) throw new Error('showDialog not found');
   const makeObj = () => ({
@@ -443,7 +443,7 @@ function testShowDialogButtons() {
 }
 
 function testAnimateLoveChange() {
-  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.mjs'), 'utf8');
   const match = /function animateLoveChange\([^)]*\)[\s\S]*?\n\s*\}\n(?=\s*function)/.exec(code);
   if (!match) throw new Error('animateLoveChange not found');
   const context = {
@@ -495,7 +495,7 @@ function testAnimateLoveChange() {
 }
 
 function testScheduleNextSpawn() {
-  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.mjs'), 'utf8');
   const start = code.indexOf('function scheduleNextSpawn');
   if (start === -1) throw new Error('scheduleNextSpawn not found');
   let depth = 0;
@@ -561,7 +561,7 @@ function testScheduleNextSpawn() {
 }
 
 function testShowEndRestart() {
-  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.mjs'), 'utf8');
   const findFunc = name => {
     const start = code.indexOf(`function ${name}`);
     if (start === -1) throw new Error(name + ' not found');
@@ -718,11 +718,11 @@ async function testFirstOrderDialog() {
     return m ? Number(m[1]) : null;
   }
 
-  const uiPath = path.join(__dirname, '..', 'src', 'ui.js');
+  const uiPath = path.join(__dirname, '..', 'src', 'ui.mjs');
   let orderX = extractConst(uiPath, 'ORDER_X');
   const dialogY = extractConst(uiPath, 'DIALOG_Y');
   if (orderX === null) {
-    orderX = extractConst(path.join(__dirname, '..', 'src', 'customers.js'), 'ORDER_X');
+    orderX = extractConst(path.join(__dirname, '..', 'src', 'customers.mjs'), 'ORDER_X');
   }
 
   const pixelX = Math.round(rect.x + (orderX + 8) * (rect.w / 480));

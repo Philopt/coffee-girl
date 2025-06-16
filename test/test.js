@@ -31,10 +31,76 @@ process.on('SIGTERM', () => {
   killServer().then(() => process.exit(1));
 });
 
+function loadGameState(context) {
+  const statePath = path.join(__dirname, '..', 'src', 'state.js');
+  const code = fs.readFileSync(statePath, 'utf8');
+  const m = /export const GameState = (\{[\s\S]*?\});/.exec(code);
+  if (m) {
+    const defaults = Function(`return ${m[1]}`)();
+    for (const [k, v] of Object.entries(defaults)) {
+      if (!(k in context)) context[k] = v;
+    }
+  }
+  context.GameState = context;
+}
+
+function readModule(...names) {
+  for (const n of names) {
+    const file = path.join(__dirname, '..', 'src', n);
+    if (fs.existsSync(file)) {
+      return fs.readFileSync(file, 'utf8');
+    }
+  }
+  throw new Error('module not found: ' + names.join(', '));
+}
+
+function readAndMatch(names, regex) {
+  for (const n of names) {
+    const file = path.join(__dirname, '..', 'src', n);
+    if (fs.existsSync(file)) {
+      const code = fs.readFileSync(file, 'utf8');
+      const m = regex.exec(code);
+      if (m) return m;
+    }
+  }
+  return null;
+}
+
+function extractFunction(names, funcName) {
+  for (const n of names) {
+    const file = path.join(__dirname, '..', 'src', n);
+    if (fs.existsSync(file)) {
+      const code = fs.readFileSync(file, 'utf8');
+      let start = code.indexOf(`function ${funcName}`);
+      if (start === -1) start = code.indexOf(`export function ${funcName}`);
+      if (start === -1) continue;
+      let depth = 0;
+      for (let i = start; i < code.length; i++) {
+        const ch = code[i];
+        if (ch === '{') depth++;
+        else if (ch === '}') {
+          depth--;
+          if (depth === 0) return code.slice(start, i + 1);
+        }
+      }
+    }
+  }
+  return null;
+}
+
 function testBlinkButton() {
-  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
-  const start = code.indexOf('function blinkButton');
-  if (start === -1) throw new Error('blinkButton not found');
+  let code = readModule('ui.js', 'main.js');
+  let start = code.indexOf('function blinkButton');
+  if (start === -1) {
+    start = code.indexOf('export function blinkButton');
+    if (start === -1) {
+      const fallback = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+      start = fallback.indexOf('function blinkButton');
+      if (start === -1) start = fallback.indexOf('export function blinkButton');
+      if (start === -1) throw new Error('blinkButton not found');
+      code = fallback;
+    }
+  }
   let depth = 0;
   let end = -1;
   for (let i = start; i < code.length; i++) {
@@ -46,7 +112,7 @@ function testBlinkButton() {
     }
   }
   if (end === -1) throw new Error('blinkButton not closed');
-  const match = code.slice(start, end);
+  const funcSrc = code.slice(start, end);
   function RectStub(x, y, w, h) {
     return { x, y, width: w, height: h };
   }
@@ -54,7 +120,7 @@ function testBlinkButton() {
   const context = { Phaser: { Geom: { Rectangle: RectStub } }, debugLog() {} };
   vm.createContext(context);
   context.blinkBtn = null;
-  vm.runInContext('const dur=v=>v;\n' + match + '\nblinkBtn=blinkButton;', context);
+  vm.runInContext('const dur=v=>v;\n' + funcSrc + '\nblinkBtn=blinkButton;', context);
   const blinkButton = context.blinkBtn;
   let disableCalled = false;
   let setArgs = null;
@@ -79,8 +145,7 @@ function testBlinkButton() {
 }
 
 function testSpawnCustomer() {
-  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
-  const match = /function spawnCustomer\([^)]*\)[\s\S]*?\n\s*\}\n(?=\s*function)/.exec(code);
+  const match = readAndMatch(['customers.js', 'main.js'], /(?:export\s+)?function spawnCustomer\([^)]*\)[\s\S]*?\n\s*\}\n(?=\s*(?:export\s+)?function)/);
   if (!match) throw new Error('spawnCustomer not found');
   const context = {
     Phaser: { Math: { Between: (min, max) => (min === 0 && max === 4 ? 1 : min) }, Utils: { Array: { GetRandom: a => a[0] } } },
@@ -101,8 +166,8 @@ function testSpawnCustomer() {
     fn: null,
     floatingEmojis: []
   };
+  loadGameState(context);
   vm.createContext(context);
-  context.GameState = context;
   vm.runInContext(match[0] + '\nfn=spawnCustomer;', context);
   const spawnCustomer = context.fn;
   const scene = {
@@ -128,8 +193,7 @@ function testSpawnCustomer() {
 }
 
 function testSpawnCustomerQueuesWhenEmpty() {
-  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
-  const match = /function spawnCustomer\([^)]*\)[\s\S]*?\n\s*\}\n(?=\s*function)/.exec(code);
+  const match = readAndMatch(['customers.js', 'main.js'], /(?:export\s+)?function spawnCustomer\([^)]*\)[\s\S]*?\n\s*\}\n(?=\s*(?:export\s+)?function)/);
   if (!match) throw new Error('spawnCustomer not found');
   const context = {
     Phaser: { Math: { Between: (min, max) => (min === 0 && max === 4 ? 1 : min) }, Utils: { Array: { GetRandom: a => a[0] } } },
@@ -150,8 +214,8 @@ function testSpawnCustomerQueuesWhenEmpty() {
     floatingEmojis: []
   };
   context.lureNextWanderer = function(){ context.queue.push(context.wanderers.shift()); };
+  loadGameState(context);
   vm.createContext(context);
-  context.GameState = context;
   vm.runInContext(match[0] + '\nfn=spawnCustomer;', context);
   const spawnCustomer = context.fn;
   const scene = {
@@ -169,9 +233,8 @@ function testSpawnCustomerQueuesWhenEmpty() {
 }
 
 function testHandleActionSell() {
-  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
-  const recMatch = /function receipt\([^)]*\)[\s\S]*?\n\s*\}/.exec(code);
-  const actMatch = /function handleAction\(type\)[\s\S]*?\n\s*\}\n(?=\s*function animateLoveChange)/.exec(code);
+  const recMatch = readAndMatch(['customers.js', 'main.js'], /(?:export\s+)?function receipt\([^)]*\)[\s\S]*?\n\s*\}/);
+  const actMatch = readAndMatch(['customers.js', 'main.js'], /(?:export\s+)?function handleAction\(type\)[\s\S]*?\n\s*\}\n(?=\s*function)/);
   if (!actMatch || !recMatch) throw new Error('handleAction or receipt not found');
   const context = {
     money: 20,
@@ -208,8 +271,8 @@ function testHandleActionSell() {
     supers: {},
     fn: null
   };
+  loadGameState(context);
   vm.createContext(context);
-  context.GameState = context;
   context.animateLoveChange = function(delta, c, cb) { context.love += delta; if (cb) cb(); };
   vm.runInContext('const dur=v=>v;\n' + recMatch[0] + '\n' + actMatch[0] + '\nfn=handleAction;', context);
   const handleAction = context.fn;
@@ -231,16 +294,15 @@ function testHandleActionSell() {
 }
 
 function testShowStartScreen() {
-  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
-  const match = /function showStartScreen\(scene\)[\s\S]*?\n\s*\}\);\n\s*\}/.exec(code);
+  const match = readAndMatch(['ui.js', 'main.js'], /(?:export\s+)?function showStartScreen\(scene\)[\s\S]*?\n\s*\}\);\n\s*\}/);
   if (!match) throw new Error('showStartScreen not found');
   function RectStub(x, y, w, h) {
     return { x, y, width: w, height: h };
   }
   RectStub.Contains = () => true;
   const context = { Phaser: { Geom: { Rectangle: RectStub } }, debugLog() {} };
+  loadGameState(context);
   vm.createContext(context);
-  context.GameState = context;
   context.fn = null;
   vm.runInContext('let startOverlay,startButton,startMsgTimers=[],startMsgBubbles=[];const playIntro=()=>{};\n' + match[0] + '\nfn=showStartScreen;', context);
   const showStartScreen = context.fn;
@@ -281,15 +343,15 @@ function testShowStartScreen() {
 }
 
 function testStartButtonPlaysIntro() {
-  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
-  const startMatch = /function showStartScreen\(scene\)[\s\S]*?\n\s*\}\);\n\s*\}/.exec(code);
-  const introMatch = /function playIntro\(scene\)[\s\S]*?intro\.play\(\);\n\s*\}/.exec(code);
+  const startMatch = readAndMatch(['ui.js', 'main.js'], /(?:export\s+)?function showStartScreen\(scene\)[\s\S]*?\n\s*\}\);\n\s*\}/);
+  const introMatch = readAndMatch(['ui.js', 'main.js'], /(?:export\s+)?function playIntro\(scene\)[\s\S]*?intro\.play\(\);\n\s*\}/);
   if (!startMatch || !introMatch) throw new Error('showStartScreen or playIntro not found');
   function RectStub(x, y, w, h) {
     return { x, y, width: w, height: h };
   }
   RectStub.Contains = () => true;
   const context = { Phaser: { Geom: { Rectangle: RectStub } }, spawnCustomer: () => {}, scheduleNextSpawn: () => {}, debugLog() {} };
+  loadGameState(context);
   vm.createContext(context);
   context.fnStart = null;
   context.fnIntro = null;
@@ -357,8 +419,7 @@ function testStartButtonPlaysIntro() {
 }
 
 function testShowDialogButtons() {
-  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
-  const match = /function showDialog\(\)[\s\S]*?tipText\.setVisible\(false\);[\s\S]*?\n\s*\}/.exec(code);
+  const match = readAndMatch(['ui.js', 'main.js'], /(?:export\s+)?function showDialog\(\)[\s\S]*?tipText\.setVisible\(false\);[\s\S]*?\n\s*\}/);
   if (!match) throw new Error('showDialog not found');
   const makeObj = () => ({
     visible: false,
@@ -430,8 +491,8 @@ function testShowDialogButtons() {
     add: { text() { return makeObj(); }, rectangle() { return makeObj(); }, graphics() { return makeObj(); } },
     tweens: { add(cfg) { if (cfg.onComplete) cfg.onComplete(); return {}; } },
   };
+  loadGameState(context);
   vm.createContext(context);
-  context.GameState = context;
   context.fn = null;
   vm.runInContext('const dur=v=>v;\n' + match[0] + '\nfn=showDialog;', context);
   const showDialog = context.fn;
@@ -459,9 +520,26 @@ function testShowDialogButtons() {
 }
 
 function testAnimateLoveChange() {
-  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
-  const match = /function animateLoveChange\([^)]*\)[\s\S]*?\n\s*\}\n(?=\s*function)/.exec(code);
-  if (!match) throw new Error('animateLoveChange not found');
+  let code = readModule('ui.js', 'main.js');
+  let start = code.indexOf('function animateLoveChange');
+  if (start === -1) start = code.indexOf('export function animateLoveChange');
+  if (start === -1) {
+    code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+    start = code.indexOf('function animateLoveChange');
+    if (start === -1) start = code.indexOf('export function animateLoveChange');
+    if (start === -1) throw new Error('animateLoveChange not found');
+  }
+  let depth = 0, end = -1;
+  for (let i = start; i < code.length; i++) {
+    const ch = code[i];
+    if (ch === '{') depth++;
+    else if (ch === '}') {
+      depth--;
+      if (depth === 0) { end = i + 1; break; }
+    }
+  }
+  if (end === -1) throw new Error('animateLoveChange not closed');
+  const funcSrc = code.slice(start, end);
   const context = {
     love: 19,
     loveLevel: 1,
@@ -485,12 +563,13 @@ function testAnimateLoveChange() {
     fn: null,
     floatingEmojis: []
   };
+  loadGameState(context);
   vm.createContext(context);
   vm.runInContext(
     'updateLevelDisplay = function(){ const lvl = calcLoveLevel(love); queueLevelText.setText("Lv. " + lvl); queueLevelText.setVisible(lvl >= 2); loveLevel = lvl; };',
     context
   );
-  vm.runInContext(match[0] + '\nfn=animateLoveChange;', context);
+  vm.runInContext(funcSrc + '\nfn=animateLoveChange;', context);
   const animateLoveChange = context.fn;
   const scene = {
     add: { text() { return { setOrigin() { return this; }, setDepth() { return this; }, destroy() {} }; } },
@@ -512,21 +591,12 @@ function testAnimateLoveChange() {
 }
 
 function testScheduleNextSpawn() {
-  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
-  const start = code.indexOf('function scheduleNextSpawn');
-  if (start === -1) throw new Error('scheduleNextSpawn not found');
-  let depth = 0;
-  let end = -1;
-  for (let i = start; i < code.length; i++) {
-    const ch = code[i];
-    if (ch === '{') depth++;
-    else if (ch === '}') {
-      depth--;
-      if (depth === 0) { end = i + 1; break; }
-    }
-  }
-  if (end === -1) throw new Error('scheduleNextSpawn not closed');
-  const match = code.slice(start, end);
+  const match = readAndMatch(
+    ['customers.js', 'main.js'],
+    /(?:export\s+)?function scheduleNextSpawn\([^)]*\)[\s\S]*?\n\s*\}\n(?=\s*(?:export\s+)?function)/
+  );
+  if (!match) throw new Error('scheduleNextSpawn not found');
+  const code = match[0];
   const context = {
     falconActive: false,
     spawnTimer: null,
@@ -539,9 +609,9 @@ function testScheduleNextSpawn() {
     Phaser: { Math: { Between: () => 0 } },
     fn: null
   };
+  loadGameState(context);
   vm.createContext(context);
-  context.GameState = context;
-  vm.runInContext(match + '\nfn=scheduleNextSpawn;', context);
+  vm.runInContext(code + '\nfn=scheduleNextSpawn;', context);
   const scheduleNextSpawn = context.fn;
   const scene = {
     time: {
@@ -579,25 +649,9 @@ function testScheduleNextSpawn() {
 }
 
 function testShowEndRestart() {
-  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
-  const findFunc = name => {
-    const start = code.indexOf(`function ${name}`);
-    if (start === -1) throw new Error(name + ' not found');
-    let depth = 0;
-    let end = -1;
-    for (let i = start; i < code.length; i++) {
-      const ch = code[i];
-      if (ch === '{') depth++;
-      else if (ch === '}') {
-        depth--;
-        if (depth === 0) { end = i + 1; break; }
-      }
-    }
-    if (end === -1) throw new Error(name + ' not closed');
-    return code.slice(start, end);
-  };
-  const showEndSrc = findFunc('showEnd');
-  const restartSrc = findFunc('restartGame');
+  const showEndSrc = extractFunction(['ui.js', 'main.js'], 'showEnd');
+  const restartSrc = extractFunction(['ui.js', 'main.js'], 'restartGame');
+  if (!showEndSrc || !restartSrc) throw new Error('showEnd or restartGame not found');
   const context = {
     gameOver: false,
     endOverlay: null,
@@ -632,8 +686,8 @@ function testShowEndRestart() {
     Phaser: { Actions: { Call(arr, cb) { arr.forEach(cb); } } },
     fnEnd: null
   };
+  loadGameState(context);
   vm.createContext(context);
-  context.GameState = context;
   vm.runInContext(`${showEndSrc}\nfnEnd=showEnd;\n${restartSrc}`, context);
   const showEnd = context.fnEnd;
 

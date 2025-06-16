@@ -264,7 +264,12 @@ export function setupGame(){
       c.walkTween = curvedApproach(scene, c.sprite, dir, targetX, targetY, () => {
         if (idx===0 && typeof debugLog === 'function') debugLog('customer reached order position');
         c.walkTween = null;
-        if(idx===0) showDialog.call(scene);
+        if(idx===0){
+          if (typeof debugLog === 'function') {
+            debugLog('curvedApproach complete: calling showDialog');
+          }
+          showDialog.call(scene);
+        }
       });
       if(typeof checkQueueSpacing==='function') checkQueueSpacing(scene);
     }
@@ -281,6 +286,9 @@ export function setupGame(){
         cust.walkTween = curvedApproach(scene, cust.sprite, dir, tx, ty, () => {
           if(idx===0){
             if (typeof debugLog === 'function') debugLog('customer reached order position');
+            if (typeof debugLog === 'function') {
+              debugLog('curvedApproach complete: calling showDialog');
+            }
             showDialog.call(scene);
           }
         });

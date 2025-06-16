@@ -1898,7 +1898,9 @@ export function setupGame(){
                 }});
         tl.play();
       });
-      queue.length=0; wanderers.length=0; activeCustomer=null;
+      // keep references so restartGame can properly clean up any remaining
+      // sprites even if the tweens are interrupted
+      // queue.length=0; wanderers.length=0; activeCustomer=null;
     }
 
     // send everyone scattering immediately in case a new spawn sneaks in
@@ -2139,6 +2141,12 @@ export function setupGame(){
     tipText.setVisible(false);
     paidStamp.setVisible(false);
     lossStamp.setVisible(false);
+    // reset truck and girl to their initial off-screen positions
+    if (truck && girl) {
+      const startX = scene.scale.width + 100;
+      truck.setPosition(startX, 245);
+      girl.setPosition(startX, 260).setVisible(false);
+    }
     money=10.00; love=10;
     moneyText.setText('🪙 '+receipt(money));
     loveText.setText('❤️ '+love);

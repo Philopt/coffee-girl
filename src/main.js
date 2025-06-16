@@ -1275,7 +1275,12 @@ export function setupGame(){
     if (dialogDrinkEmoji.parentContainer !== dialogPriceContainer) {
       dialogPriceContainer.add(dialogDrinkEmoji);
     }
-    dialogDrinkEmoji.setVisible(false);
+    // Keep the drink emoji visible when the price ticket remains on screen
+    if(!keepPrice){
+      dialogDrinkEmoji.setVisible(false);
+    }else{
+      dialogDrinkEmoji.setVisible(true);
+    }
     resetPriceBox();
     btnSell.setVisible(false);
     if (btnSell.input) btnSell.input.enabled = false;

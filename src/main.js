@@ -20,7 +20,9 @@ const LURE_SPEED = CUSTOMER_SPEED * 0.6; // slower approach when lured
 const DART_MIN_DURATION = 300;
 // Maximum speed (pixels per second) when dashing to the table
 const DART_MAX_SPEED = CUSTOMER_SPEED * 3;
-const DRINK_HOLD_OFFSET = { x: 0, y: 22 }; // offset for held drink emoji
+// Offset for the drink emoji when the customer holds it
+// Raise it slightly so it appears near their hands instead of their feet
+const DRINK_HOLD_OFFSET = { x: 0, y: -20 };
 export function setupGame(){
   if (typeof debugLog === 'function') debugLog('main.js loaded');
   let initCalled = false;
@@ -896,7 +898,10 @@ export function setupGame(){
       .setOrigin(0.5);
     dialogPriceValue=this.add.text(0,15,'',{font:'32px sans-serif',fill:'#000'})
       .setOrigin(0.5);
-    dialogDrinkEmoji=this.add.text(-30,-20,'',{font:'24px sans-serif'}).setOrigin(0.5).setTint(0x555555);
+    // Use a light gray tint so the emoji is desaturated but still visible
+    dialogDrinkEmoji=this.add.text(-30,-20,'',{font:'24px sans-serif'})
+      .setOrigin(0.5)
+      .setTint(0xbfbfbf);
 
     dialogPriceContainer=this.add.container(0,0,[dialogPriceBox, dialogDrinkEmoji, dialogPriceLabel, dialogPriceValue])
       .setDepth(11)
@@ -1339,6 +1344,16 @@ export function setupGame(){
 
   function handleAction(type){
     const current=activeCustomer;
+    if ((type==='sell' || type==='give') && dialogDrinkEmoji && dialogPriceContainer && dialogPriceContainer.visible) {
+      const gx = dialogPriceContainer.x + dialogDrinkEmoji.x * dialogPriceContainer.scaleX;
+      const gy = dialogPriceContainer.y + dialogDrinkEmoji.y * dialogPriceContainer.scaleY;
+      dialogDrinkEmoji.clearTint();
+      this.tweens.add({ targets: dialogDrinkEmoji, scale: 1.3, duration: dur(150), yoyo: true });
+      const sp = this.add.text(gx, gy, '✨', { font: '18px sans-serif', fill: '#fff' })
+        .setOrigin(0.5)
+        .setDepth(dialogDrinkEmoji.depth + 1);
+      this.tweens.add({ targets: sp, scale: 1.5, alpha: 0, duration: dur(300), onComplete: () => sp.destroy() });
+    }
     if(current){
       const bubbleObjs=[];
       if(typeof dialogBg!=='undefined') bubbleObjs.push(dialogBg);

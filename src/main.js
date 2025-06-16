@@ -334,22 +334,24 @@ export function setupGame(){
           cust.walkTween.remove();
           cust.walkTween=null;
         }
-        const tween = scene.tweens.add({
-          targets: cust.sprite,
-          x: tx,
-          y: ty,
-          scale: scaleForY(ty),
-          duration: dur(200),
-          onComplete: () => {
-            if(idx===0){
+        const dir = cust.dir || (cust.sprite.x < tx ? 1 : -1);
+        const tween = curvedApproach(
+          scene,
+          cust.sprite,
+          dir,
+          tx,
+          ty,
+          () => {
+            if (idx === 0) {
               if (typeof debugLog === 'function') {
                 debugLog('checkQueueSpacing complete: calling showDialog');
               }
               showDialog.call(scene);
             }
-          }
-        });
-        if(idx===0){
+          },
+          idx === 0 ? CUSTOMER_SPEED : LURE_SPEED
+        );
+        if (idx === 0) {
           cust.walkTween = tween;
         }
       }

@@ -2,9 +2,9 @@ import { debugLog, DEBUG } from './debug.js';
 import { dur, scaleForY, articleFor, flashMoney, START_PHONE_W, START_PHONE_H, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_Y, DIALOG_Y } from "./ui.js";
 import { MENU, SPAWN_DELAY, SPAWN_VARIANCE, QUEUE_SPACING, ORDER_X, ORDER_Y, QUEUE_X, QUEUE_OFFSET, QUEUE_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel, maxWanderers as customersMaxWanderers, queueLimit as customersQueueLimit } from "./customers.js";
 import { baseConfig } from "./scene.js";
+import { GameState, floatingEmojis } from "./state.js";
 export let Assets, Scene, Customers, config;
 export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;
-export const GameState = {};
 const DOG_MIN_Y = ORDER_Y + 20;
 const DOG_SPEED = 120; // base movement speed for the dog
 const DOG_FAST_DISTANCE = 160; // accelerate when farther than this from owner
@@ -34,11 +34,7 @@ export function setupGame(){
   // full drink menu with prices
 
 
-  let money=10.00, love=10, gameOver=false;
-  let queue=[], activeCustomer=null, wanderers=[];
-  let spawnTimer = null;
-  let falconActive = false;
-  let loveLevel=1;
+  // state is managed in GameState
 
   const keys=[];
   const requiredAssets=['bg','truck','girl','lady_falcon','falcon_end','revolt_end'];
@@ -125,7 +121,7 @@ export function setupGame(){
       callback:()=>{
         obj.setColor(on?color:'#fff');
         if(isLove && !up){
-          obj.setText((on?'💔':'❤️')+' '+love);
+          obj.setText((on?'💔':'❤️')+' '+GameState.love);
         }
         on=!on;
       }
@@ -133,7 +129,7 @@ export function setupGame(){
     scene.time.delayedCall(dur(flashDelay)*(flashes+1)+dur(10),()=>{
       obj.setColor('#fff');
       if(isLove && !up){
-        obj.setText('❤️ '+love);
+        obj.setText('❤️ '+GameState.love);
         // removed wobble animation for the love counter
       }
     },[],scene);
@@ -212,7 +208,6 @@ export function setupGame(){
   let paidStamp, lossStamp;
   let truck, girl;
   let sideCText;
-  let servedCount=0;
   let sideCAlpha=0;
   let sideCFadeTween=null;
   let endOverlay=null;
@@ -221,53 +216,40 @@ export function setupGame(){
   let phoneContainer=null;
   let startMsgTimers=[];
   let startMsgBubbles=[];
-  let floatingEmojis=[]; // hearts or anger symbols currently animating
-
-  Object.defineProperties(GameState, {
-    money: { get: () => money, set: v => { money = v; } },
-    love: { get: () => love, set: v => { love = v; } },
-    queue: { get: () => queue, set: v => { queue = v; } },
-    activeCustomer: { get: () => activeCustomer, set: v => { activeCustomer = v; } },
-    wanderers: { get: () => wanderers, set: v => { wanderers = v; } },
-    spawnTimer: { get: () => spawnTimer, set: v => { spawnTimer = v; } },
-    falconActive: { get: () => falconActive, set: v => { falconActive = v; } },
-    gameOver: { get: () => gameOver, set: v => { gameOver = v; } },
-    loveLevel: { get: () => loveLevel, set: v => { loveLevel = v; } },
-    servedCount: { get: () => servedCount, set: v => { servedCount = v; } }
-  });
+  // hearts or anger symbols currently animating
 
   function maxWanderers(){
-    return customersMaxWanderers(love);
+    return customersMaxWanderers(GameState.love);
   }
 
   function queueLimit(){
-    return customersQueueLimit(love);
+    return customersQueueLimit(GameState.love);
   }
 
 
   function lureNextWanderer(scene){
     if (typeof debugLog === 'function') {
-      debugLog('lureNextWanderer', queue.length, wanderers.length, activeCustomer);
+      debugLog('lureNextWanderer', GameState.queue.length, GameState.wanderers.length, GameState.activeCustomer);
     }
-    if(wanderers.length && queue.length < queueLimit()){
-      if(queue.some(c=>c.walkTween)) return;
+    if(GameState.wanderers.length && GameState.queue.length < queueLimit()){
+      if(GameState.queue.some(c=>c.walkTween)) return;
       let closestIdx=0;
       let minDist=Number.MAX_VALUE;
-      for(let i=0;i<wanderers.length;i++){
-        const d=Math.abs(wanderers[i].sprite.x-ORDER_X);
+      for(let i=0;i<GameState.wanderers.length;i++){
+        const d=Math.abs(GameState.wanderers[i].sprite.x-ORDER_X);
         if(d<minDist){ closestIdx=i; minDist=d; }
       }
-      const c=wanderers.splice(closestIdx,1)[0];
+      const c=GameState.wanderers.splice(closestIdx,1)[0];
       if(c.walkTween){
         c.walkTween.stop();
         c.walkTween.remove();
         c.walkTween=null;
       }
-      const idx=queue.length;
+      const idx=GameState.queue.length;
       c.atOrder=false;
-      queue.push(c);
+      GameState.queue.push(c);
       if (typeof debugLog === 'function') debugLog('customer lured to queue');
-      activeCustomer=queue[0];
+      GameState.activeCustomer=GameState.queue[0];
       const targetX = idx===0 ? ORDER_X : QUEUE_X - QUEUE_SPACING*(idx-1);
       const targetY = idx===0 ? ORDER_Y : QUEUE_Y - QUEUE_OFFSET*(idx-1);
       const bottomY = c.sprite.y + c.sprite.displayHeight * (1 - c.sprite.originY);
@@ -289,11 +271,11 @@ export function setupGame(){
 
   function moveQueueForward(){
     if (typeof debugLog === 'function') {
-      debugLog('moveQueueForward', queue.length, wanderers.length, activeCustomer);
+      debugLog('moveQueueForward', GameState.queue.length, GameState.wanderers.length, GameState.activeCustomer);
     }
     const scene=this;
     let willShow=false;
-    queue.forEach((cust, idx)=>{
+    GameState.queue.forEach((cust, idx)=>{
       const tx = idx===0 ? ORDER_X : QUEUE_X - QUEUE_SPACING*(idx-1);
       const ty = idx===0 ? ORDER_Y : QUEUE_Y - QUEUE_OFFSET*(idx-1);
       if(cust.sprite.y!==ty || cust.sprite.x!==tx){
@@ -310,21 +292,21 @@ export function setupGame(){
         if(idx===0) willShow=true;
       }
     });
-    activeCustomer=queue[0]||null;
-    if(activeCustomer){
-      if(!willShow && activeCustomer.sprite.y===ORDER_Y && activeCustomer.sprite.x===ORDER_X){
+    GameState.activeCustomer=GameState.queue[0]||null;
+    if(GameState.activeCustomer){
+      if(!willShow && GameState.activeCustomer.sprite.y===ORDER_Y && GameState.activeCustomer.sprite.x===ORDER_X){
         if (typeof debugLog === 'function') debugLog('customer reached order position');
         showDialog.call(scene);
       }
     }
-    if(queue.length < queueLimit()){
+    if(GameState.queue.length < queueLimit()){
       lureNextWanderer(scene);
     }
     if(typeof checkQueueSpacing==='function') checkQueueSpacing(scene);
   }
 
   function checkQueueSpacing(scene){
-    queue.forEach((cust, idx)=>{
+    GameState.queue.forEach((cust, idx)=>{
       const tx = idx===0 ? ORDER_X : QUEUE_X - QUEUE_SPACING*(idx-1);
       const ty = idx===0 ? ORDER_Y : QUEUE_Y - QUEUE_OFFSET*(idx-1);
       const dist = Phaser.Math.Distance.Between(cust.sprite.x,cust.sprite.y,tx,ty);
@@ -402,11 +384,11 @@ export function setupGame(){
       d.setScale(s*dir, s);
       setDepth(d,3);
     };
-    queue.forEach(c=>{
+    GameState.queue.forEach(c=>{
       if(c.sprite){ c.sprite.setScale(scaleForY(c.sprite.y)); setDepth(c.sprite,5); }
       if(c.dog) scaleDog(c.dog);
     });
-    wanderers.forEach(c=>{
+    GameState.wanderers.forEach(c=>{
       if(c.sprite){ c.sprite.setScale(scaleForY(c.sprite.y)); setDepth(c.sprite,5); }
       if(c.dog) scaleDog(c.dog);
     });
@@ -468,7 +450,7 @@ export function setupGame(){
       targetX = ms.x + dir*40;
     }
 
-    const others=[...queue,...wanderers].filter(c=>c!==owner&&c.sprite);
+    const others=[...GameState.queue,...GameState.wanderers].filter(c=>c!==owner&&c.sprite);
     // Stop any existing movement tweens so new motions start from the dog's
     // current position. This prevents teleport-like jumps when multiple tweens
     // overlap.
@@ -573,11 +555,11 @@ export function setupGame(){
   }
 
   function updateLevelDisplay(){
-    const newLevel=calcLoveLevel(love);
+    const newLevel=calcLoveLevel(GameState.love);
     if(queueLevelText){
       queueLevelText.setText('Lv. '+newLevel);
       queueLevelText.setVisible(newLevel>=2);
-      if(newLevel!==loveLevel && newLevel>=2){
+      if(newLevel!==GameState.loveLevel && newLevel>=2){
         const sp=queueLevelText.scene.add.text(queueLevelText.x,queueLevelText.y,'✨',
             {font:'18px sans-serif',fill:'#000'})
           .setOrigin(0.5).setDepth(queueLevelText.depth+1);
@@ -585,18 +567,18 @@ export function setupGame(){
             duration:dur(600),onComplete:()=>sp.destroy()});
       }
     }
-    loveLevel=newLevel;
+    GameState.loveLevel=newLevel;
     if(queueLevelText && queueLevelText.scene){
       lureNextWanderer(queueLevelText.scene);
     }
   }
 
   function scheduleNextSpawn(scene){
-    if(falconActive) return;
-    if (spawnTimer) {
-      spawnTimer.remove(false);
+    if(GameState.falconActive) return;
+    if (GameState.spawnTimer) {
+      GameState.spawnTimer.remove(false);
     }
-    const needed = queueLimit() - (queue.length + wanderers.length);
+    const needed = queueLimit() - (GameState.queue.length + GameState.wanderers.length);
     let delay;
     if(needed > 0){
       delay = 500;
@@ -605,7 +587,7 @@ export function setupGame(){
     }
     // use real-time delay to ensure customers never spawn too quickly,
     // regardless of game speed adjustments
-    spawnTimer = scene.time.delayedCall(delay, spawnCustomer, [], scene);
+    GameState.spawnTimer = scene.time.delayedCall(delay, spawnCustomer, [], scene);
   }
 
   function showSideC(){
@@ -620,9 +602,9 @@ export function setupGame(){
   }
 
   function updateSideC(){
-    if(servedCount<6) return;
+    if(GameState.servedCount<6) return;
     showSideC.call(this);
-    const target=Math.min(1,(servedCount-5)*0.1);
+    const target=Math.min(1,(GameState.servedCount-5)*0.1);
     if(target<=sideCAlpha) return;
     if(sideCFadeTween){ sideCFadeTween.stop(); }
     let duration=2000;
@@ -903,11 +885,11 @@ export function setupGame(){
     bg.setDisplaySize(this.scale.width,this.scale.height);
 
     // HUD
-    moneyText=this.add.text(20,20,'🪙 '+receipt(money),{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
-    loveText=this.add.text(20,50,'❤️ '+love,{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
+    moneyText=this.add.text(20,20,'🪙 '+receipt(GameState.money),{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
+    loveText=this.add.text(20,50,'❤️ '+GameState.love,{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
     // Display level indicator on the left side of the order table so it doesn't
     // overlap the price ticket.
-    queueLevelText=this.add.text(156,316,'Lv. '+loveLevel,{font:'16px sans-serif',fill:'#000'})
+    queueLevelText=this.add.text(156,316,'Lv. '+GameState.loveLevel,{font:'16px sans-serif',fill:'#000'})
       .setOrigin(0.5).setDepth(1);
     updateLevelDisplay();
     // truck & girl
@@ -1046,9 +1028,9 @@ export function setupGame(){
 
   function spawnCustomer(){
     if (typeof debugLog === 'function') {
-      debugLog('spawnCustomer', queue.length, wanderers.length, activeCustomer);
+      debugLog('spawnCustomer', GameState.queue.length, GameState.wanderers.length, GameState.activeCustomer);
     }
-    if(gameOver) return;
+    if(GameState.gameOver) return;
     const createOrder=()=>{
       const coins=Phaser.Math.Between(0,20);
       const item=Phaser.Utils.Array.GetRandom(MENU);
@@ -1060,7 +1042,7 @@ export function setupGame(){
     const k=Phaser.Utils.Array.GetRandom(keys);
     const order=createOrder();
 
-    if(wanderers.length>=maxWanderers()){
+    if(GameState.wanderers.length>=maxWanderers()){
       scheduleNextSpawn(this);
       return;
     }
@@ -1104,8 +1086,8 @@ export function setupGame(){
         t.y=startY+Math.sin(p*Math.PI*freq)*amp;
         t.setScale(scaleForY(t.y));
       },onComplete:()=>{
-        const idx=wanderers.indexOf(c);
-        if(idx>=0) wanderers.splice(idx,1);
+        const idx=GameState.wanderers.indexOf(c);
+        if(idx>=0) GameState.wanderers.splice(idx,1);
         const ex=c.sprite.x, ey=c.sprite.y;
         if(c.dog){
           sendDogOffscreen.call(this,c.dog,ex,ey);
@@ -1114,14 +1096,14 @@ export function setupGame(){
         c.sprite.destroy();
         this.startDialogue && this.startDialogue(c);
       }});
-    wanderers.push(c);
-    if(queue.length===0){
+    GameState.wanderers.push(c);
+    if(GameState.queue.length===0){
       lureNextWanderer(this);
     }
     scheduleNextSpawn(this);
     if(this.time && this.time.delayedCall){
       this.time.delayedCall(1000, ()=>{
-        if(queue.length===0 && wanderers.includes(c)){
+        if(GameState.queue.length===0 && GameState.wanderers.includes(c)){
           lureNextWanderer(this);
         }
       }, [], this);
@@ -1170,7 +1152,7 @@ export function setupGame(){
 
   function showDialog(){
     if (typeof debugLog === 'function') {
-      debugLog('showDialog start', queue.length, wanderers.length, activeCustomer);
+      debugLog('showDialog start', GameState.queue.length, GameState.wanderers.length, GameState.activeCustomer);
     }
     const missingElems = [];
     if (!dialogBg) missingElems.push('dialogBg');
@@ -1196,9 +1178,9 @@ export function setupGame(){
     dialogBg.setAlpha(1);
     dialogText.setAlpha(1);
     dialogCoins.setAlpha(1);
-    activeCustomer=queue[0]||null;
-    if(!activeCustomer) return;
-    const c=activeCustomer;
+    GameState.activeCustomer=GameState.queue[0]||null;
+    if(!GameState.activeCustomer) return;
+    const c=GameState.activeCustomer;
     if(!c.atOrder && (c.sprite.y!==ORDER_Y || c.sprite.x!==ORDER_X)){
       c.atOrder=true;
       const dist = Phaser.Math.Distance.Between(c.sprite.x, c.sprite.y, ORDER_X, ORDER_Y);
@@ -1387,7 +1369,7 @@ export function setupGame(){
   }
 
   function handleAction(type){
-    const current=activeCustomer;
+    const current=GameState.activeCustomer;
     if ((type==='sell' || type==='give') && dialogDrinkEmoji && dialogPriceContainer && dialogPriceContainer.visible) {
       const gx = dialogPriceContainer.x + dialogDrinkEmoji.x * dialogPriceContainer.scaleX;
       const gy = dialogPriceContainer.y + dialogDrinkEmoji.y * dialogPriceContainer.scaleY;
@@ -1472,7 +1454,7 @@ export function setupGame(){
 
     const tipPct=type==='sell'?lD*15:0;
     const customer=current.sprite;
-    activeCustomer=null;
+    GameState.activeCustomer=null;
 
     const finish=()=>{
       const exit=()=>{
@@ -1489,22 +1471,22 @@ export function setupGame(){
           }
         }
         current.sprite.destroy();
-        if(money<=0){
+        if(GameState.money<=0){
           showFalconAttack.call(this,()=>{
             showEnd.call(this,'Game Over\nYou lost all the money.\nLady Falcon reclaims the coffee truck.');
           });
           return;
         }
-        if(love<=0){
+        if(GameState.love<=0){
           showCustomerRevolt.call(this,()=>{
             showEnd.call(this,'Game Over\nThe Customers Revolt!\n(and they stole your truck)');
           });
           return;
         }
-        if(money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
-        if(love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
+        if(GameState.money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
+        if(GameState.love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
         scheduleNextSpawn(this);
-        servedCount++;
+        GameState.servedCount++;
         updateSideC.call(this);
       };
 
@@ -1513,7 +1495,7 @@ export function setupGame(){
       sprite.setDepth(5 + bottomY*0.006);
 
       // Shift queue forward as soon as customer starts to walk away
-      queue.shift();
+      GameState.queue.shift();
       moveQueueForward.call(this);
 
       if(type==='refuse'){
@@ -1613,8 +1595,8 @@ export function setupGame(){
         const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
             clearDialog.call(this);
             ticket.setVisible(false);
-            money=+(money+mD).toFixed(2);
-            moneyText.setText('🪙 '+receipt(money));
+            GameState.money=+(GameState.money+mD).toFixed(2);
+            moneyText.setText('🪙 '+receipt(GameState.money));
             animateStatChange(moneyText, this, mD);
             done();
         }});
@@ -1680,8 +1662,8 @@ export function setupGame(){
         const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
             clearDialog.call(this);
             ticket.setVisible(false);
-            money=+(money+mD).toFixed(2);
-            moneyText.setText('🪙 '+receipt(money));
+            GameState.money=+(GameState.money+mD).toFixed(2);
+            moneyText.setText('🪙 '+receipt(GameState.money));
             animateStatChange(moneyText, this, mD);
             done();
         }});
@@ -1747,8 +1729,8 @@ export function setupGame(){
           reportLine1.setVisible(false).alpha=1;
           reportLine2.setVisible(false).alpha=1;
           reportLine3.setVisible(false).alpha=1;
-          money=+(money+mD).toFixed(2);
-          moneyText.setText('🪙 '+receipt(money));
+          GameState.money=+(GameState.money+mD).toFixed(2);
+          moneyText.setText('🪙 '+receipt(GameState.money));
           animateStatChange(moneyText, this, mD);
           done();
       }});
@@ -1837,8 +1819,8 @@ export function setupGame(){
         scaleY:1.2,
         duration:dur(125),
         onComplete:()=>{
-          love += delta>0?1:-1;
-          loveText.setText('❤️ '+love);
+          GameState.love += delta>0?1:-1;
+          loveText.setText('❤️ '+GameState.love);
           updateLevelDisplay();
           animateStatChange(loveText, this, delta>0?1:-1, true);
         }
@@ -1855,21 +1837,21 @@ export function setupGame(){
   }
 
   function showFalconAttack(cb){
-    if (falconActive) return;
+    if (GameState.falconActive) return;
     const scene=this;
     scene.tweens.killAll();
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
     hideOverlayTexts();
     clearDialog.call(scene);
-    falconActive = true;
-    gameOver = true;
-    if (spawnTimer) { spawnTimer.remove(false); spawnTimer = null; }
+    GameState.falconActive = true;
+    GameState.gameOver = true;
+    if (GameState.spawnTimer) { GameState.spawnTimer.remove(false); GameState.spawnTimer = null; }
 
     function panicCustomers(){
-      const fleeing=[...queue, ...wanderers];
-      if(activeCustomer && !fleeing.includes(activeCustomer)){
-        fleeing.push(activeCustomer);
+      const fleeing=[...GameState.queue, ...GameState.wanderers];
+      if(GameState.activeCustomer && !fleeing.includes(GameState.activeCustomer)){
+        fleeing.push(GameState.activeCustomer);
       }
       fleeing.forEach(c=>{
         if(c.walkTween){ c.walkTween.stop(); c.walkTween=null; }
@@ -1976,7 +1958,7 @@ export function setupGame(){
     cleanupFloatingEmojis();
     hideOverlayTexts();
     clearDialog.call(scene);
-    if (spawnTimer) { spawnTimer.remove(false); spawnTimer = null; }
+    if (GameState.spawnTimer) { GameState.spawnTimer.remove(false); GameState.spawnTimer = null; }
     const attackers=[];
     const gatherStartY = Math.max(WANDER_TOP, girl.y + 60);
     const gather=(arr)=>{
@@ -1997,10 +1979,10 @@ export function setupGame(){
         }
       });
     };
-    gather(queue);
-    gather(wanderers);
-    if(activeCustomer){
-      gather([activeCustomer]);
+    gather(GameState.queue);
+    gather(GameState.wanderers);
+    if(GameState.activeCustomer){
+      gather([GameState.activeCustomer]);
     }
 
 
@@ -2080,7 +2062,7 @@ export function setupGame(){
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
     hideOverlayTexts();
-    if (spawnTimer) { spawnTimer.remove(false); spawnTimer=null; }
+    if (GameState.spawnTimer) { GameState.spawnTimer.remove(false); GameState.spawnTimer=null; }
     clearDialog.call(scene);
     if(endOverlay){ endOverlay.destroy(); }
     endOverlay=this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
@@ -2116,7 +2098,7 @@ export function setupGame(){
         if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
         restartGame.call(this);
       });
-    gameOver=true;
+    GameState.gameOver=true;
   }
 
   function restartGame(){
@@ -2124,11 +2106,11 @@ export function setupGame(){
     scene.tweens.killAll();
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
-    if (spawnTimer) {
-      spawnTimer.remove(false);
-      spawnTimer = null;
+    if (GameState.spawnTimer) {
+      GameState.spawnTimer.remove(false);
+      GameState.spawnTimer = null;
     }
-    falconActive = false;
+    GameState.falconActive = false;
     clearDialog.call(scene);
     dialogDrinkEmoji.attachedTo = null;
     if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
@@ -2145,26 +2127,26 @@ export function setupGame(){
       truck.setPosition(startX, 245);
       girl.setPosition(startX, 260).setVisible(false);
     }
-    money=10.00; love=10;
-    moneyText.setText('🪙 '+receipt(money));
-    loveText.setText('❤️ '+love);
+    GameState.money=10.00; GameState.love=10;
+    moneyText.setText('🪙 '+receipt(GameState.money));
+    loveText.setText('❤️ '+GameState.love);
     updateLevelDisplay();
-    if(activeCustomer){
-      if(activeCustomer.dog){
-        if(activeCustomer.dog.followEvent) activeCustomer.dog.followEvent.remove(false);
-        activeCustomer.dog.destroy();
+    if(GameState.activeCustomer){
+      if(GameState.activeCustomer.dog){
+        if(GameState.activeCustomer.dog.followEvent) GameState.activeCustomer.dog.followEvent.remove(false);
+        GameState.activeCustomer.dog.destroy();
       }
-      activeCustomer.sprite.destroy();
+      GameState.activeCustomer.sprite.destroy();
     }
-    activeCustomer=null;
-    Phaser.Actions.Call(queue,c=>{ if(c.dog){ if(c.dog.followEvent) c.dog.followEvent.remove(false); c.dog.destroy(); } c.sprite.destroy(); });
-    queue=[];
-    Phaser.Actions.Call(wanderers,c=>{ if(c.dog){ if(c.dog.followEvent) c.dog.followEvent.remove(false); c.dog.destroy(); } c.sprite.destroy(); });
-    wanderers=[];
-    servedCount=0;
+    GameState.activeCustomer=null;
+    Phaser.Actions.Call(GameState.queue,c=>{ if(c.dog){ if(c.dog.followEvent) c.dog.followEvent.remove(false); c.dog.destroy(); } c.sprite.destroy(); });
+    GameState.queue=[];
+    Phaser.Actions.Call(GameState.wanderers,c=>{ if(c.dog){ if(c.dog.followEvent) c.dog.followEvent.remove(false); c.dog.destroy(); } c.sprite.destroy(); });
+    GameState.wanderers=[];
+    GameState.servedCount=0;
     sideCAlpha=0;
     sideCFadeTween=null;
-    gameOver=false;
+    GameState.gameOver=false;
     showStartScreen.call(this);
   }
 

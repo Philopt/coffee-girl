@@ -102,6 +102,7 @@ function testSpawnCustomer() {
     floatingEmojis: []
   };
   vm.createContext(context);
+  context.GameState = context;
   vm.runInContext(match[0] + '\nfn=spawnCustomer;', context);
   const spawnCustomer = context.fn;
   const scene = {
@@ -150,6 +151,7 @@ function testSpawnCustomerQueuesWhenEmpty() {
   };
   context.lureNextWanderer = function(){ context.queue.push(context.wanderers.shift()); };
   vm.createContext(context);
+  context.GameState = context;
   vm.runInContext(match[0] + '\nfn=spawnCustomer;', context);
   const spawnCustomer = context.fn;
   const scene = {
@@ -207,6 +209,7 @@ function testHandleActionSell() {
     fn: null
   };
   vm.createContext(context);
+  context.GameState = context;
   context.animateLoveChange = function(delta, c, cb) { context.love += delta; if (cb) cb(); };
   vm.runInContext('const dur=v=>v;\n' + recMatch[0] + '\n' + actMatch[0] + '\nfn=handleAction;', context);
   const handleAction = context.fn;
@@ -237,6 +240,7 @@ function testShowStartScreen() {
   RectStub.Contains = () => true;
   const context = { Phaser: { Geom: { Rectangle: RectStub } }, debugLog() {} };
   vm.createContext(context);
+  context.GameState = context;
   context.fn = null;
   vm.runInContext('let startOverlay,startButton,startMsgTimers=[],startMsgBubbles=[];const playIntro=()=>{};\n' + match[0] + '\nfn=showStartScreen;', context);
   const showStartScreen = context.fn;
@@ -427,6 +431,7 @@ function testShowDialogButtons() {
     tweens: { add(cfg) { if (cfg.onComplete) cfg.onComplete(); return {}; } },
   };
   vm.createContext(context);
+  context.GameState = context;
   context.fn = null;
   vm.runInContext('const dur=v=>v;\n' + match[0] + '\nfn=showDialog;', context);
   const showDialog = context.fn;
@@ -535,6 +540,7 @@ function testScheduleNextSpawn() {
     fn: null
   };
   vm.createContext(context);
+  context.GameState = context;
   vm.runInContext(match + '\nfn=scheduleNextSpawn;', context);
   const scheduleNextSpawn = context.fn;
   const scene = {
@@ -627,6 +633,7 @@ function testShowEndRestart() {
     fnEnd: null
   };
   vm.createContext(context);
+  context.GameState = context;
   vm.runInContext(`${showEndSrc}\nfnEnd=showEnd;\n${restartSrc}`, context);
   const showEnd = context.fnEnd;
 

@@ -423,6 +423,31 @@ export function setupGame(){
     }
   }
 
+  function flingDrink(scene, startX, startY, customer){
+    const destX = customer.x + DRINK_HOLD_OFFSET.x;
+    const destY = customer.y + DRINK_HOLD_OFFSET.y;
+    const midX = (startX + destX) / 2;
+    const midY = startY + 40;
+    scene.tweens.addCounter({
+      from: 0,
+      to: 1,
+      duration: dur(400),
+      onUpdate: tween => {
+        const p = tween.getValue();
+        const nx = Phaser.Math.Interpolation.QuadraticBezier(p, startX, midX, destX);
+        const ny = Phaser.Math.Interpolation.QuadraticBezier(p, startY, midY, destY);
+        const sc = 1.2 + (0.3 - 1.2) * p;
+        dialogDrinkEmoji.setPosition(nx, ny);
+        dialogDrinkEmoji.setScale(sc);
+      },
+      onComplete: () => {
+        dialogDrinkEmoji.setPosition(destX, destY);
+        dialogDrinkEmoji.setScale(0.3);
+        dialogDrinkEmoji.attachedTo = customer;
+      }
+    });
+  }
+
   function updateDog(owner){
     const dog = owner && owner.dog;
     if(!dog || !owner.sprite) return;
@@ -1359,20 +1384,23 @@ export function setupGame(){
       dialogPriceContainer.remove(dialogDrinkEmoji);
       dialogDrinkEmoji.setPosition(gx, gy);
       dialogDrinkEmoji.clearTint();
-      this.tweens.add({ targets: dialogDrinkEmoji, scale: 1.3, duration: dur(150), yoyo: true });
+      const frontDepth = Math.max(current.sprite.depth, girl.depth) + 1;
+      dialogDrinkEmoji.setDepth(frontDepth);
       const sp = this.add.text(gx, gy, '✨', { font: '18px sans-serif', fill: '#fff' })
         .setOrigin(0.5)
         .setDepth(dialogDrinkEmoji.depth + 1);
       this.tweens.add({ targets: sp, scale: 1.5, alpha: 0, duration: dur(300), onComplete: () => sp.destroy() });
       if (current && current.sprite) {
         const cust = current.sprite;
+        const nudgeX = (240 - gx) * 0.1;
+        const startX = gx + nudgeX;
         this.tweens.add({
           targets: dialogDrinkEmoji,
-          x: cust.x + DRINK_HOLD_OFFSET.x,
-          y: cust.y + DRINK_HOLD_OFFSET.y,
-          scale: 0.3,
-          duration: dur(400),
-          onComplete: () => { dialogDrinkEmoji.attachedTo = cust; }
+          x: startX,
+          scale: 1.2,
+          ease: 'Sine.easeOut',
+          duration: dur(150),
+          onComplete: () => { flingDrink(this, startX, gy, cust); }
         });
       }
     }
@@ -1601,13 +1629,15 @@ export function setupGame(){
               const sp = this.add.text(gx, gy, '✨',{font:'18px sans-serif',fill:'#fff'})
                 .setOrigin(0.5).setDepth(dialogDrinkEmoji.depth+1);
               this.tweens.add({targets:sp,scale:1.5,alpha:0,duration:dur(300),onComplete:()=>sp.destroy()});
+              const nudgeX = (240 - gx) * 0.1;
+              const startX = gx + nudgeX;
               this.tweens.add({
                 targets: dialogDrinkEmoji,
-                x: customer.x + DRINK_HOLD_OFFSET.x,
-                y: customer.y + DRINK_HOLD_OFFSET.y,
-                scale: 0.3,
-                duration: dur(250),
-                onComplete: () => { dialogDrinkEmoji.attachedTo = customer; }
+                x: startX,
+                scale: 1.2,
+                ease: 'Sine.easeOut',
+                duration: dur(150),
+                onComplete: () => { flingDrink(this, startX, gy, customer); }
               });
             }
 
@@ -1666,13 +1696,15 @@ export function setupGame(){
               const sp = this.add.text(gx, gy, '✨',{font:'18px sans-serif',fill:'#fff'})
                 .setOrigin(0.5).setDepth(dialogDrinkEmoji.depth+1);
               this.tweens.add({targets:sp,scale:1.5,alpha:0,duration:dur(300),onComplete:()=>sp.destroy()});
+              const nudgeX = (240 - gx) * 0.1;
+              const startX = gx + nudgeX;
               this.tweens.add({
                 targets: dialogDrinkEmoji,
-                x: customer.x + DRINK_HOLD_OFFSET.x,
-                y: customer.y + DRINK_HOLD_OFFSET.y,
-                scale: 0.3,
-                duration: dur(250),
-                onComplete: () => { dialogDrinkEmoji.attachedTo = customer; }
+                x: startX,
+                scale: 1.2,
+                ease: 'Sine.easeOut',
+                duration: dur(150),
+                onComplete: () => { flingDrink(this, startX, gy, customer); }
               });
             }
 

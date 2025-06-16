@@ -603,6 +603,13 @@ export function setupGame(){
   function showStartScreen(scene){
     scene = scene || this;
     if (typeof debugLog === 'function') debugLog('showStartScreen called');
+    // clean up any remnants from a previous start screen
+    if(startButton){ startButton.destroy(); startButton = null; }
+    if(typeof phoneContainer !== 'undefined' && phoneContainer){
+      phoneContainer.destroy();
+      phoneContainer = null;
+    }
+    if(startOverlay){ startOverlay.destroy(); startOverlay = null; }
     // reset any pending timers or bubbles from a previous session
     startMsgTimers.forEach(t => t.remove(false));
     startMsgTimers = [];

@@ -1369,7 +1369,9 @@ export function setupGame(){
             this.tweens.add({targets:ticket, x:520, alpha:0,
                             duration:dur(300), ease:'Cubic.easeIn'});
           }
-          this.tweens.add({targets:bubbleObjs, y:current.sprite.y+80, scale:1.5, alpha:0,
+          // Move each dialog element downward together rather than
+          // converging on a single absolute Y position.
+          this.tweens.add({targets:bubbleObjs, y:'+=80', scale:1.5, alpha:0,
                           duration:dur(300), ease:'Cubic.easeIn', onComplete:()=>{
             if(dialogBg.clearTint) dialogBg.clearTint();
             if(dialogText.setColor) dialogText.setColor('#000');

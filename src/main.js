@@ -1347,12 +1347,25 @@ export function setupGame(){
     if ((type==='sell' || type==='give') && dialogDrinkEmoji && dialogPriceContainer && dialogPriceContainer.visible) {
       const gx = dialogPriceContainer.x + dialogDrinkEmoji.x * dialogPriceContainer.scaleX;
       const gy = dialogPriceContainer.y + dialogDrinkEmoji.y * dialogPriceContainer.scaleY;
+      dialogPriceContainer.remove(dialogDrinkEmoji);
+      dialogDrinkEmoji.setPosition(gx, gy);
       dialogDrinkEmoji.clearTint();
       this.tweens.add({ targets: dialogDrinkEmoji, scale: 1.3, duration: dur(150), yoyo: true });
       const sp = this.add.text(gx, gy, '✨', { font: '18px sans-serif', fill: '#fff' })
         .setOrigin(0.5)
         .setDepth(dialogDrinkEmoji.depth + 1);
       this.tweens.add({ targets: sp, scale: 1.5, alpha: 0, duration: dur(300), onComplete: () => sp.destroy() });
+      if (current && current.sprite) {
+        const cust = current.sprite;
+        this.tweens.add({
+          targets: dialogDrinkEmoji,
+          x: cust.x + DRINK_HOLD_OFFSET.x,
+          y: cust.y + DRINK_HOLD_OFFSET.y,
+          scale: 0.3,
+          duration: dur(400),
+          onComplete: () => { dialogDrinkEmoji.attachedTo = cust; }
+        });
+      }
     }
     if(current){
       const bubbleObjs=[];
@@ -1567,24 +1580,6 @@ export function setupGame(){
 
               this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});
             }
-            if(dialogDrinkEmoji){
-              const gx = ticket.x + dialogDrinkEmoji.x * ticket.scaleX;
-              const gy = ticket.y + dialogDrinkEmoji.y * ticket.scaleY;
-              dialogPriceContainer.remove(dialogDrinkEmoji);
-              dialogDrinkEmoji.setPosition(gx, gy);
-              dialogDrinkEmoji.clearTint();
-              const sp = this.add.text(gx, gy, '✨',{font:'18px sans-serif',fill:'#fff'})
-                .setOrigin(0.5).setDepth(dialogDrinkEmoji.depth+1);
-              this.tweens.add({targets:sp,scale:1.5,alpha:0,duration:dur(300),onComplete:()=>sp.destroy()});
-              this.tweens.add({
-                targets: dialogDrinkEmoji,
-                x: customer.x + DRINK_HOLD_OFFSET.x,
-                y: customer.y + DRINK_HOLD_OFFSET.y,
-                scale: 0.3,
-                duration: dur(400),
-                onComplete: () => { dialogDrinkEmoji.attachedTo = customer; }
-              });
-            }
           }});
         tl.play();
       },[],this);
@@ -1627,24 +1622,6 @@ export function setupGame(){
           onStart:()=>{
             if(this.tweens && typeof dialogPriceBox !== 'undefined' && dialogPriceBox){
               this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});
-            }
-            if(dialogDrinkEmoji){
-              const gx = ticket.x + dialogDrinkEmoji.x * ticket.scaleX;
-              const gy = ticket.y + dialogDrinkEmoji.y * ticket.scaleY;
-              dialogPriceContainer.remove(dialogDrinkEmoji);
-              dialogDrinkEmoji.setPosition(gx, gy);
-              dialogDrinkEmoji.clearTint();
-              const sp = this.add.text(gx, gy, '✨',{font:'18px sans-serif',fill:'#fff'})
-                .setOrigin(0.5).setDepth(dialogDrinkEmoji.depth+1);
-              this.tweens.add({targets:sp,scale:1.5,alpha:0,duration:dur(300),onComplete:()=>sp.destroy()});
-              this.tweens.add({
-                targets: dialogDrinkEmoji,
-                x: customer.x + DRINK_HOLD_OFFSET.x,
-                y: customer.y + DRINK_HOLD_OFFSET.y,
-                scale: 0.3,
-                duration: dur(400),
-                onComplete: () => { dialogDrinkEmoji.attachedTo = customer; }
-              });
             }
           }});
         tl.play();

@@ -1255,20 +1255,20 @@ export function setupGame(){
     dialogPriceLabel
       .setStyle({fontSize:'14px'})
       .setText('Total Cost')
-      .setOrigin(1,0.5)
-      .setPosition(dialogPriceBox.width/2-5, -18);
+      .setOrigin(1,0)
+      .setPosition(dialogPriceBox.width/2-5, -dialogPriceBox.height/2+5);
     dialogPriceValue
       .setStyle({fontSize:'32px'})
       .setText(`$${totalCost.toFixed(2)}`)
       .setColor('#000')
-      .setOrigin(1,0.5)
-      .setPosition(dialogPriceBox.width/2-5, 16)
+      .setOrigin(0.5)
+      .setPosition(0, 15)
       .setScale(1)
       .setAlpha(1);
     dialogDrinkEmoji
       .setText(emojiFor(c.orders[0].req))
-      .setPosition(-dialogPriceBox.width/2+20,-dialogPriceBox.height/2+20)
-      .setScale(1)
+      .setPosition(-dialogPriceBox.width/2+23,-dialogPriceBox.height/2+23)
+      .setScale(1.2)
       .setTint(0x555555)
       .setVisible(true);
 

@@ -1449,7 +1449,7 @@ export function setupGame(){
         clearDialog.call(this, type!=='refuse');
       }
     } else {
-      clearDialog(type!=='refuse');
+      clearDialog.call(this, type!=='refuse');
     }
     if(!current) return;
     const orderCount=current.orders.length;
@@ -1611,7 +1611,7 @@ export function setupGame(){
         paidStamp.setVisible(false);
         tipText.setVisible(false);
         const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
-            clearDialog();
+            clearDialog.call(this);
             ticket.setVisible(false);
             money=+(money+mD).toFixed(2);
             moneyText.setText('🪙 '+receipt(money));
@@ -1678,7 +1678,7 @@ export function setupGame(){
           this.tweens.add({targets:ticket,x:'+=6',duration:dur(60),yoyo:true,repeat:2});
         }
         const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
-            clearDialog();
+            clearDialog.call(this);
             ticket.setVisible(false);
             money=+(money+mD).toFixed(2);
             moneyText.setText('🪙 '+receipt(money));
@@ -1861,7 +1861,7 @@ export function setupGame(){
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
     hideOverlayTexts();
-    clearDialog();
+    clearDialog.call(scene);
     falconActive = true;
     gameOver = true;
     if (spawnTimer) { spawnTimer.remove(false); spawnTimer = null; }
@@ -1975,7 +1975,7 @@ export function setupGame(){
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
     hideOverlayTexts();
-    clearDialog();
+    clearDialog.call(scene);
     if (spawnTimer) { spawnTimer.remove(false); spawnTimer = null; }
     const attackers=[];
     const gatherStartY = Math.max(WANDER_TOP, girl.y + 60);
@@ -2081,7 +2081,7 @@ export function setupGame(){
     cleanupFloatingEmojis();
     hideOverlayTexts();
     if (spawnTimer) { spawnTimer.remove(false); spawnTimer=null; }
-    clearDialog();
+    clearDialog.call(scene);
     if(endOverlay){ endOverlay.destroy(); }
     endOverlay=this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
     let bgY=360;
@@ -2129,7 +2129,7 @@ export function setupGame(){
       spawnTimer = null;
     }
     falconActive = false;
-    clearDialog();
+    clearDialog.call(scene);
     dialogDrinkEmoji.attachedTo = null;
     if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
     if(sideCText){ sideCText.destroy(); sideCText=null; }

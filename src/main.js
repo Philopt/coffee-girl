@@ -1294,8 +1294,9 @@ export function setupGame(){
             clearDialog.call(this, false);
           }});
         } else {
-          const objs = ticket ? bubbleObjs.concat(ticket) : bubbleObjs;
-          this.tweens.add({targets:objs, y:current.sprite.y, scale:0, duration:dur(200), onComplete:()=>{
+          // Only animate the dialog bubble away. Leave the price ticket
+          // visible so it can fly over to the score area.
+          this.tweens.add({targets:bubbleObjs, y:current.sprite.y, scale:0, duration:dur(200), onComplete:()=>{
             clearDialog.call(this, true);
           }});
         }

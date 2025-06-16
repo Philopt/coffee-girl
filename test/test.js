@@ -621,8 +621,23 @@ async function testFirstOrderDialog() {
 
   const before = PNG.sync.read(beforeBuf);
   const after = PNG.sync.read(afterBuf);
-  const pixelX = Math.round(rect.x + 238 * (rect.w / 480));
-  const pixelY = Math.round(rect.y + 447 * (rect.h / 640));
+
+  function extractConst(file, name) {
+    const code = fs.readFileSync(file, 'utf8');
+    const re = new RegExp(`export\\s+(?:const|let|var)\\s+${name}\\s*=\\s*(\\d+)`);
+    const m = re.exec(code);
+    return m ? Number(m[1]) : null;
+  }
+
+  const uiPath = path.join(__dirname, '..', 'src', 'ui.js');
+  let orderX = extractConst(uiPath, 'ORDER_X');
+  const dialogY = extractConst(uiPath, 'DIALOG_Y');
+  if (orderX === null) {
+    orderX = extractConst(path.join(__dirname, '..', 'src', 'customers.js'), 'ORDER_X');
+  }
+
+  const pixelX = Math.round(rect.x + (orderX + 8) * (rect.w / 480));
+  const pixelY = Math.round(rect.y + (dialogY + 17) * (rect.h / 640));
   const idx = (pixelY * before.width + pixelX) * 4;
   const changed = before.data[idx] !== after.data[idx] ||
                   before.data[idx + 1] !== after.data[idx + 1] ||

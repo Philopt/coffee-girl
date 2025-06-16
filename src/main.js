@@ -15,6 +15,7 @@ const DOG_TYPES = [
   {type:'service', emoji:'🐕‍🦺'}
 ];
 const CUSTOMER_SPEED = 560 / 6; // pixels per second for wanderers
+const LURE_SPEED = CUSTOMER_SPEED * 0.6; // slower approach when lured
 export function setupGame(){
   if (typeof debugLog === 'function') debugLog('main.js loaded');
   let initCalled = false;
@@ -256,7 +257,7 @@ export function setupGame(){
           }
           showDialog.call(scene);
         }
-      });
+      }, LURE_SPEED);
       if(typeof checkQueueSpacing==='function') checkQueueSpacing(scene);
     }
   }
@@ -330,7 +331,7 @@ export function setupGame(){
     });
   }
 
-  function curvedApproach(scene, sprite, dir, targetX, targetY, onComplete){
+  function curvedApproach(scene, sprite, dir, targetX, targetY, onComplete, speed=CUSTOMER_SPEED){
     const startX = sprite.x;
     const startY = sprite.y;
     const offset = 40 * dir;
@@ -341,7 +342,7 @@ export function setupGame(){
       new Phaser.Math.Vector2(targetX, targetY)
     );
     const dist = Phaser.Math.Distance.Between(startX, startY, targetX, targetY);
-    const duration = dur((dist / CUSTOMER_SPEED) * 1000);
+    const duration = dur((dist / speed) * 1000);
     const follower = { t: 0, vec: new Phaser.Math.Vector2() };
     return scene.tweens.add({
       targets: follower,
@@ -968,14 +969,11 @@ export function setupGame(){
     }
     const amp=Phaser.Math.Between(10,25);
     const freq=Phaser.Math.Between(2,4);
-    console.log('Sprite at:', c.sprite.x, c.sprite.y);
-    console.log('About to add tween');
-    this.walkTween = this.tweens.add({targets:c.sprite,x:targetX,duration:dur(6000),onUpdate:(tw,t)=>{
+    c.walkTween = this.tweens.add({targets:c.sprite,x:targetX,duration:dur(6000),onUpdate:(tw,t)=>{
         const p=tw.progress;
         t.y=startY+Math.sin(p*Math.PI*freq)*amp;
         t.setScale(scaleForY(t.y));
       },onComplete:()=>{
-        console.log('Tween complete – about to start dialogue');
         const idx=wanderers.indexOf(c);
         if(idx>=0) wanderers.splice(idx,1);
         const ex=c.sprite.x, ey=c.sprite.y;
@@ -986,7 +984,6 @@ export function setupGame(){
         c.sprite.destroy();
         this.startDialogue && this.startDialogue(c);
       }});
-    console.log('Tween added');
     wanderers.push(c);
     if(queue.length===0){
       lureNextWanderer(this);

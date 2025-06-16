@@ -16,6 +16,10 @@ const DOG_TYPES = [
 ];
 const CUSTOMER_SPEED = 560 / 6; // pixels per second for wanderers
 const LURE_SPEED = CUSTOMER_SPEED * 0.6; // slower approach when lured
+// Minimum duration when a customer dashes to the table
+const DART_MIN_DURATION = 300;
+// Maximum speed (pixels per second) when dashing to the table
+const DART_MAX_SPEED = CUSTOMER_SPEED * 3;
 const DRINK_HOLD_OFFSET = { x: 0, y: 22 }; // offset for held drink emoji
 export function setupGame(){
   if (typeof debugLog === 'function') debugLog('main.js loaded');
@@ -1104,12 +1108,14 @@ export function setupGame(){
     const c=activeCustomer;
     if(!c.atOrder && (c.sprite.y!==ORDER_Y || c.sprite.x!==ORDER_X)){
       c.atOrder=true;
+      const dist = Phaser.Math.Distance.Between(c.sprite.x, c.sprite.y, ORDER_X, ORDER_Y);
+      const duration = dur(Math.max(DART_MIN_DURATION, (dist / DART_MAX_SPEED) * 1000));
       this.tweens.add({
         targets: c.sprite,
         x: ORDER_X,
         y: ORDER_Y,
         scale: scaleForY(ORDER_Y),
-        duration: dur(300),
+        duration,
         onComplete: ()=>{ showDialog.call(this); }
       });
       return;

@@ -1063,6 +1063,9 @@ export function setupGame(){
     if(dialogPriceBox) dialogPriceBox.fillAlpha = 1;
     // reset the dialog position in case previous animations moved it
     dialogBg.y = typeof DIALOG_Y === 'number' ? DIALOG_Y : 430;
+    dialogBg.setAlpha(1);
+    dialogText.setAlpha(1);
+    dialogCoins.setAlpha(1);
     activeCustomer=queue[0]||null;
     if(!activeCustomer) return;
     const c=activeCustomer;
@@ -1243,6 +1246,7 @@ export function setupGame(){
       if(typeof dialogBg!=='undefined') objs.push(dialogBg);
       if(typeof dialogText!=='undefined') objs.push(dialogText);
       if(typeof dialogCoins!=='undefined') objs.push(dialogCoins);
+      if(typeof dialogPriceContainer!=='undefined') objs.push(dialogPriceContainer);
       if(this.tweens && objs.length){
         if(type==='refuse'){
           if(dialogBg.setTint) dialogBg.setTint(0xff0000);

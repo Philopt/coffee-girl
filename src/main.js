@@ -1573,6 +1573,8 @@ export function setupGame(){
               dialogPriceContainer.remove(dialogDrinkEmoji);
               dialogDrinkEmoji.setPosition(gx, gy);
               dialogDrinkEmoji.clearTint();
+              const frontDepth = Math.max(customer.depth, girl.depth) + 1;
+              dialogDrinkEmoji.setDepth(frontDepth);
               const sp = this.add.text(gx, gy, '✨',{font:'18px sans-serif',fill:'#fff'})
                 .setOrigin(0.5).setDepth(dialogDrinkEmoji.depth+1);
               this.tweens.add({targets:sp,scale:1.5,alpha:0,duration:dur(300),onComplete:()=>sp.destroy()});
@@ -1581,7 +1583,7 @@ export function setupGame(){
                 x: customer.x + DRINK_HOLD_OFFSET.x,
                 y: customer.y + DRINK_HOLD_OFFSET.y,
                 scale: 0.3,
-                duration: dur(400),
+                duration: dur(250),
                 onComplete: () => { dialogDrinkEmoji.attachedTo = customer; }
               });
             }
@@ -1634,6 +1636,8 @@ export function setupGame(){
               dialogPriceContainer.remove(dialogDrinkEmoji);
               dialogDrinkEmoji.setPosition(gx, gy);
               dialogDrinkEmoji.clearTint();
+              const frontDepth = Math.max(customer.depth, girl.depth) + 1;
+              dialogDrinkEmoji.setDepth(frontDepth);
               const sp = this.add.text(gx, gy, '✨',{font:'18px sans-serif',fill:'#fff'})
                 .setOrigin(0.5).setDepth(dialogDrinkEmoji.depth+1);
               this.tweens.add({targets:sp,scale:1.5,alpha:0,duration:dur(300),onComplete:()=>sp.destroy()});
@@ -1642,7 +1646,7 @@ export function setupGame(){
                 x: customer.x + DRINK_HOLD_OFFSET.x,
                 y: customer.y + DRINK_HOLD_OFFSET.y,
                 scale: 0.3,
-                duration: dur(400),
+                duration: dur(250),
                 onComplete: () => { dialogDrinkEmoji.attachedTo = customer; }
               });
             }

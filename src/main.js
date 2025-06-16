@@ -1115,13 +1115,13 @@ export function setupGame(){
         this.startDialogue && this.startDialogue(c);
       }});
     wanderers.push(c);
-    if(queue.length===0){
+    if(queue.length < queueLimit()){
       lureNextWanderer(this);
     }
     scheduleNextSpawn(this);
     if(this.time && this.time.delayedCall){
       this.time.delayedCall(1000, ()=>{
-        if(queue.length===0 && wanderers.includes(c)){
+        if(queue.length < queueLimit() && wanderers.includes(c)){
           lureNextWanderer(this);
         }
       }, [], this);

@@ -386,9 +386,12 @@ function testShowDialogButtons() {
     dialogPriceValue: makeObj(),
     dialogPriceContainer: { x:0, y:0, scaleX:1, scaleY:1,
       setVisible() { return this; },
-      setPosition(x, y) { this.x = x; this.y = y; return this; },
-      setScale(s) { this.scaleX = s; this.scaleY = s; return this; },
-      add() { return this; }
+
+      setPosition(x,y){ this.x=x; this.y=y; return this; },
+      setScale(s){ this.scaleX=s; this.scaleY=s; return this; },
+      add(){ return this; },
+      remove(){ return this; }
+
     },
     dialogDrinkEmoji: { x:0, y:0, followEvent:null, setText(){ return this; }, setVisible(){ return this; }, setPosition(x,y){ this.x=x; this.y=y; return this; }, clearTint(){ return this; }, setTint(){ return this; }, setScale(){ return this; } },
     btnSell: makeObj(),

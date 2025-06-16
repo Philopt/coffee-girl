@@ -675,8 +675,8 @@ async function run() {
   }
 }
 
-run().catch(err => {
+run().catch(async err => {
   if (DEBUG) console.error(err);
   process.exitCode = 1;
-  killServer();
+  await killServer();
 });

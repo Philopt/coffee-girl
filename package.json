@@ -2,12 +2,12 @@
   "name": "coffee-girl",
   "version": "1.0.0",
   "description": "Coffee Clicker game",
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
     "start": "http-server -p 8080 -c-1",
     "pretest": "test -d node_modules || npm ci && npm run lint",
-    "test": "node test/test.js",
-    "lint": "eslint -c eslint.config.js src/*.js test/*.js",
+    "test": "node test/test.cjs",
+    "lint": "eslint -c eslint.config.cjs src/*.js test/*.cjs",
     "lint:syntax": "sh -c 'for f in src/*.js; do node -c \"$f\"; done'"
   },
   "devDependencies": {

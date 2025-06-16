@@ -687,7 +687,7 @@ export function setupGame(){
     }
 
     // emit smoke puffs as the truck drives in
-    let smokeDelay = 150;
+    let smokeDelay = 100; // start with a short delay for heavy exhaust
     let smokeEvent = { remove: ()=>{} };
     if (scene.time && scene.time.addEvent) {
       smokeEvent = scene.time.addEvent({
@@ -708,10 +708,12 @@ export function setupGame(){
           } else {
             puff.destroy();
           }
-          smokeDelay += 75;
+          smokeDelay += 125; // space out puffs more quickly over time
           smokeEvent.delay = dur(smokeDelay);
         }
       });
+      // end the exhaust a bit before the truck stops
+      scene.time.delayedCall(dur(1300), () => smokeEvent.remove(), [], scene);
     }
 
     const intro=scene.tweens.createTimeline({callbackScope:scene,

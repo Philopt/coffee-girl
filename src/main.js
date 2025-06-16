@@ -36,9 +36,10 @@ export function setupGame(){
 
   let money=10.00, love=10, gameOver=false;
   let queue=[], activeCustomer=null, wanderers=[];
-  let spawnTimer = null;
-  let falconActive = false;
-  let loveLevel=1;
+let spawnTimer = null;
+let falconActive = false;
+  let falconAttackPending = false;
+let loveLevel=1;
 
   const keys=[];
   const requiredAssets=['bg','truck','girl','lady_falcon','falcon_end','revolt_end'];
@@ -231,6 +232,7 @@ export function setupGame(){
     wanderers: { get: () => wanderers, set: v => { wanderers = v; } },
     spawnTimer: { get: () => spawnTimer, set: v => { spawnTimer = v; } },
     falconActive: { get: () => falconActive, set: v => { falconActive = v; } },
+    falconAttackPending: { get: () => falconAttackPending, set: v => { falconAttackPending = v; } },
     gameOver: { get: () => gameOver, set: v => { gameOver = v; } },
     loveLevel: { get: () => loveLevel, set: v => { loveLevel = v; } },
     servedCount: { get: () => servedCount, set: v => { servedCount = v; } }
@@ -1198,6 +1200,13 @@ export function setupGame(){
     dialogCoins.setAlpha(1);
     activeCustomer=queue[0]||null;
     if(!activeCustomer) return;
+    if(typeof falconAttackPending !== 'undefined' && falconAttackPending){
+      falconAttackPending = false;
+      showFalconAttack.call(this,()=>{
+        showEnd.call(this,'Game Over\nYou lost all the money.\nLady Falcon reclaims the coffee truck.');
+      });
+      return;
+    }
     const c=activeCustomer;
     if(!c.atOrder && (c.sprite.y!==ORDER_Y || c.sprite.x!==ORDER_X)){
       c.atOrder=true;
@@ -1281,7 +1290,7 @@ export function setupGame(){
       .setScale(0.2)
       .setVisible(false);
     if (dialogDrinkEmoji.parentContainer !== dialogPriceContainer) {
-      dialogPriceContainer.add(dialogDrinkEmoji);
+      if (dialogPriceContainer.add) dialogPriceContainer.add(dialogDrinkEmoji);
     }
     dialogDrinkEmoji.attachedTo = null;
     resetPriceBox();
@@ -1366,7 +1375,7 @@ export function setupGame(){
     }
     dialogDrinkEmoji.attachedTo = null;
     if (dialogDrinkEmoji.parentContainer !== dialogPriceContainer) {
-      dialogPriceContainer.add(dialogDrinkEmoji);
+      if (dialogPriceContainer.add) dialogPriceContainer.add(dialogDrinkEmoji);
     }
     // Keep the drink emoji visible when the price ticket remains on screen
     if(!keepPrice){
@@ -1489,10 +1498,7 @@ export function setupGame(){
         }
         current.sprite.destroy();
         if(money<=0){
-          showFalconAttack.call(this,()=>{
-            showEnd.call(this,'Game Over\nYou lost all the money.\nLady Falcon reclaims the coffee truck.');
-          });
-          return;
+          falconAttackPending = true;
         }
         if(love<=0){
           showCustomerRevolt.call(this,()=>{
@@ -1800,11 +1806,12 @@ export function setupGame(){
     const baseY=customer.y + 40;
 
     const hearts=[];
+    const emojiArr = typeof floatingEmojis !== 'undefined' ? floatingEmojis : null;
     for(let i=0;i<count;i++){
       const h=this.add.text(customer.x,customer.y,emoji,{font:'24px sans-serif',fill:'#fff'})
         .setOrigin(0.5).setDepth(11);
       hearts.push(h);
-      floatingEmojis.push(h);
+      if(emojiArr) emojiArr.push(h);
       const targetX=baseX+i*20;
       // sparkle or anger flash
       if(delta>0){
@@ -1843,8 +1850,10 @@ export function setupGame(){
         }
       });
       tl.add({targets:h,scaleX:1,alpha:0,duration:dur(125),onComplete:()=>{
-            const i=floatingEmojis.indexOf(h);
-            if(i!==-1) floatingEmojis.splice(i,1);
+            if(emojiArr){
+              const i=emojiArr.indexOf(h);
+              if(i!==-1) emojiArr.splice(i,1);
+            }
             h.destroy();
             popOne(idx+1);
         }});
@@ -1858,8 +1867,8 @@ export function setupGame(){
     const scene=this;
     scene.tweens.killAll();
     scene.time.removeAllEvents();
-    cleanupFloatingEmojis();
-    hideOverlayTexts();
+    if (typeof cleanupFloatingEmojis === 'function') cleanupFloatingEmojis();
+    if (typeof hideOverlayTexts === 'function') hideOverlayTexts();
     clearDialog();
     falconActive = true;
     gameOver = true;
@@ -1970,8 +1979,8 @@ export function setupGame(){
     const scene=this;
     scene.tweens.killAll();
     scene.time.removeAllEvents();
-    cleanupFloatingEmojis();
-    hideOverlayTexts();
+    if (typeof cleanupFloatingEmojis === 'function') cleanupFloatingEmojis();
+    if (typeof hideOverlayTexts === 'function') hideOverlayTexts();
     clearDialog();
     if (spawnTimer) { spawnTimer.remove(false); spawnTimer = null; }
     const attackers=[];
@@ -2075,8 +2084,8 @@ export function setupGame(){
     const scene=this;
     scene.tweens.killAll();
     scene.time.removeAllEvents();
-    cleanupFloatingEmojis();
-    hideOverlayTexts();
+    if (typeof cleanupFloatingEmojis === 'function') cleanupFloatingEmojis();
+    if (typeof hideOverlayTexts === 'function') hideOverlayTexts();
     if (spawnTimer) { spawnTimer.remove(false); spawnTimer=null; }
     clearDialog();
     if(endOverlay){ endOverlay.destroy(); }
@@ -2120,14 +2129,17 @@ export function setupGame(){
     const scene=this;
     scene.tweens.killAll();
     scene.time.removeAllEvents();
-    cleanupFloatingEmojis();
+    if (typeof cleanupFloatingEmojis === 'function') cleanupFloatingEmojis();
     if (spawnTimer) {
       spawnTimer.remove(false);
       spawnTimer = null;
     }
     falconActive = false;
+    falconAttackPending = false;
     clearDialog();
-    dialogDrinkEmoji.attachedTo = null;
+    if (typeof dialogDrinkEmoji !== 'undefined' && dialogDrinkEmoji) {
+      dialogDrinkEmoji.attachedTo = null;
+    }
     if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
     if(sideCText){ sideCText.destroy(); sideCText=null; }
     reportLine1.setVisible(false);

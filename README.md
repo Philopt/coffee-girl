@@ -46,6 +46,13 @@ The game uses [Phaser](https://phaser.io/). It will load `lib/phaser.min.js` by 
    http://localhost:8080/?debug=1
    ```
 
+### Debugging queue issues
+
+When customers seem stuck wandering, enable debug mode with `?debug=1` and
+watch the console. Each time a customer spawns or moves, the game logs the
+current queue length, wanderer count and active customer. If no wanderers join
+the queue, confirm that `lureNextWanderer` runs when the queue is empty.
+
 ## Controls
 
 When you choose to sell or give a drink, the button briefly blinks.

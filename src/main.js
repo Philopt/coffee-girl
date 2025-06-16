@@ -238,6 +238,9 @@ export function setupGame(){
 
 
   function lureNextWanderer(scene){
+    if (typeof debugLog === 'function') {
+      debugLog('lureNextWanderer', queue.length, wanderers.length, activeCustomer);
+    }
     if(wanderers.length && queue.length < queueLimit()){
       if(queue.some(c=>c.walkTween)) return;
       let closestIdx=0;
@@ -276,6 +279,9 @@ export function setupGame(){
   }
 
   function moveQueueForward(){
+    if (typeof debugLog === 'function') {
+      debugLog('moveQueueForward', queue.length, wanderers.length, activeCustomer);
+    }
     const scene=this;
     let willShow=false;
     queue.forEach((cust, idx)=>{
@@ -903,6 +909,9 @@ export function setupGame(){
   }
 
   function spawnCustomer(){
+    if (typeof debugLog === 'function') {
+      debugLog('spawnCustomer', queue.length, wanderers.length, activeCustomer);
+    }
     if(gameOver) return;
     const createOrder=()=>{
       const coins=Phaser.Math.Between(0,20);
@@ -968,6 +977,9 @@ export function setupGame(){
         c.sprite.destroy();
       }});
     wanderers.push(c);
+    if(queue.length===0){
+      lureNextWanderer(this);
+    }
     scheduleNextSpawn(this);
     if(this.time && this.time.delayedCall){
       this.time.delayedCall(1000, ()=>{
@@ -1019,7 +1031,9 @@ export function setupGame(){
   }
 
   function showDialog(){
-    if (typeof debugLog === 'function') debugLog('showDialog start');
+    if (typeof debugLog === 'function') {
+      debugLog('showDialog start', queue.length, wanderers.length, activeCustomer);
+    }
     const missingElems = [];
     if (!dialogBg) missingElems.push('dialogBg');
     if (!dialogText) missingElems.push('dialogText');

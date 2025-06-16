@@ -308,7 +308,24 @@ export function setupGame(){
           cust.walkTween.remove();
           cust.walkTween=null;
         }
-        scene.tweens.add({targets:cust.sprite,x:tx,y:ty,scale:scaleForY(ty),duration:dur(200)});
+        const tween = scene.tweens.add({
+          targets: cust.sprite,
+          x: tx,
+          y: ty,
+          scale: scaleForY(ty),
+          duration: dur(200),
+          onComplete: () => {
+            if(idx===0){
+              if (typeof debugLog === 'function') {
+                debugLog('checkQueueSpacing complete: calling showDialog');
+              }
+              showDialog.call(scene);
+            }
+          }
+        });
+        if(idx===0){
+          cust.walkTween = tween;
+        }
       }
     });
   }

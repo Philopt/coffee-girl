@@ -382,7 +382,7 @@ function testShowDialogButtons() {
     dialogPriceBox: makeObj(),
     dialogPriceLabel: makeObj(),
     dialogPriceValue: makeObj(),
-    dialogPriceContainer: { x:0, y:0, scaleX:1, scaleY:1, setVisible() { return this; }, setPosition(x,y){ this.x=x; this.y=y; return this; }, setScale(s){ this.scaleX=s; this.scaleY=s; return this; } },
+    dialogPriceContainer: { x:0, y:0, scaleX:1, scaleY:1, setVisible() { return this; }, setPosition(x,y){ this.x=x; this.y=y; return this; }, setScale(s){ this.scaleX=s; this.scaleY=s; return this; }, add(){ return this; } },
     dialogDrinkEmoji: { x:0, y:0, followEvent:null, setText(){ return this; }, setVisible(){ return this; }, setPosition(x,y){ this.x=x; this.y=y; return this; }, clearTint(){ return this; }, setTint(){ return this; }, setScale(){ return this; } },
     btnSell: makeObj(),
     btnGive: makeObj(),
@@ -465,6 +465,7 @@ function testAnimateLoveChange() {
     animateStatChange: () => {},
     calcLoveLevel(v) { if (v >= 100) return 4; if (v >= 50) return 3; if (v >= 20) return 2; return 1; },
     updateLevelDisplay: null,
+    floatingEmojis: [],
     dur: v => v,
     fn: null
   };
@@ -560,6 +561,52 @@ function testScheduleNextSpawn() {
   console.log('scheduleNextSpawn behavior test passed');
 }
 
+function testMoveQueueForwardFillsQueue() {
+  const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+  const findFunc = name => {
+    const start = code.indexOf(`function ${name}`);
+    if (start === -1) throw new Error(name + ' not found');
+    let depth = 0;
+    let end = -1;
+    for (let i = start; i < code.length; i++) {
+      const ch = code[i];
+      if (ch === '{') depth++; else if (ch === '}') {
+        depth--; if (depth === 0) { end = i + 1; break; }
+      }
+    }
+    if (end === -1) throw new Error(name + ' not closed');
+    return code.slice(start, end);
+  };
+  const lureSrc = findFunc('lureNextWanderer');
+  const moveSrc = findFunc('moveQueueForward');
+  const makeCust = () => ({ sprite: { x: 0, y: 0, originY: 0, displayHeight: 1, setDepth() {} } });
+  const context = {
+    queue: [],
+    wanderers: [makeCust(), makeCust(), makeCust(), makeCust()],
+    activeCustomer: null,
+    ORDER_X: 0,
+    ORDER_Y: 0,
+    QUEUE_X: 0,
+    QUEUE_Y: 0,
+    QUEUE_SPACING: 1,
+    QUEUE_OFFSET: 1,
+    LURE_SPEED: 1,
+    queueLimit: () => 3,
+    curvedApproach(scene, sprite, dir, tx, ty, cb) { if (cb) cb(); return null; },
+    showDialog() {},
+    checkQueueSpacing() {},
+    debugLog() {},
+    fn: null
+  };
+  vm.createContext(context);
+  vm.runInContext(lureSrc + '\n' + moveSrc + '\nfn=moveQueueForward;', context);
+  const moveQueueForward = context.fn;
+  const scene = { tweens: { add(cfg) { if (cfg.onComplete) cfg.onComplete(); return null; } } };
+  moveQueueForward.call(scene);
+  assert.strictEqual(context.queue.length, 3, 'queue did not fill to limit');
+  console.log('moveQueueForward fills queue test passed');
+}
+
 function testShowEndRestart() {
   const code = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
   const findFunc = name => {
@@ -599,6 +646,9 @@ function testShowEndRestart() {
     updateLevelDisplay() {},
     receipt: v => v,
     clearDialog() {},
+    cleanupFloatingEmojis() {},
+    hideOverlayTexts() {},
+    dialogDrinkEmoji: { attachedTo: null },
     activeCustomer: null,
     queue: [],
     wanderers: [],
@@ -772,6 +822,7 @@ async function run() {
     testShowDialogButtons();
     testAnimateLoveChange();
     testScheduleNextSpawn();
+    testMoveQueueForwardFillsQueue();
     testShowEndRestart();
     await testIntroSequence();
     await testFirstOrderDialog();

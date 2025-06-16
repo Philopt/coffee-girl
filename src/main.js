@@ -317,8 +317,10 @@ export function setupGame(){
         showDialog.call(scene);
       }
     }
-    if(queue.length < queueLimit()){
+    while(queue.length < queueLimit()){
+      const beforeLen = queue.length;
       lureNextWanderer(scene);
+      if(queue.length === beforeLen) break;
     }
     if(typeof checkQueueSpacing==='function') checkQueueSpacing(scene);
   }

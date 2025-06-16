@@ -170,30 +170,7 @@ export function setupGame(){
     });
   }
 
-  const colorRankCache = {};
 
-  function getNthMostCommonColor(scene, key, n=1){
-    if(colorRankCache[key] && colorRankCache[key][n-1] !== undefined){
-      return colorRankCache[key][n-1];
-    }
-    const tex = scene.textures.get(key);
-    if(!tex) return 0xffffff;
-    const src = tex.getSourceImage();
-    const cv = scene.textures.createCanvas('tmp-'+key, src.width, src.height);
-    cv.draw(0,0,src);
-    cv.update();
-    const data = cv.context.getImageData(0,0,src.width,src.height).data;
-    scene.textures.remove('tmp-'+key);
-    const counts = {};
-    for(let i=0;i<data.length;i+=4){
-      if(data[i+3]===0) continue;
-      const rgb=(data[i]<<16)|(data[i+1]<<8)|data[i+2];
-      counts[rgb]=(counts[rgb]||0)+1;
-    }
-    const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(e=>+e[0]);
-    colorRankCache[key] = sorted;
-    return sorted[n-1] !== undefined ? sorted[n-1] : 0xffffff;
-  }
 
 
   let moneyText, loveText, queueLevelText;
@@ -943,16 +920,11 @@ export function setupGame(){
       const side=Phaser.Math.Between(0,1)?1:-1;
       const offsetX=side*Phaser.Math.Between(20,30);
       const offsetY=Phaser.Math.Between(10,20);
-      const dog=this.add.sprite(startX+offsetX,startY+offsetY,k)
+      const dog=this.add.text(startX+offsetX,startY+offsetY,'🐶',{font:'32px sans-serif'})
+        .setOrigin(0.5)
         .setScale(distScale*0.5)
-        .setDepth(3)
-        .setAngle(-90);
+        .setDepth(3);
       c.dog=dog;
-
-      if(typeof getNthMostCommonColor==='function'){
-        const tint=getNthMostCommonColor(this,k,3);
-        dog.setTint(tint);
-      }
 
       dog.followEvent=this.time.addEvent({
         delay:dur(Phaser.Math.Between(800,1200)),

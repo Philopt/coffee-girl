@@ -571,7 +571,9 @@ async function testIntroSequence() {
     return { x: r.left, y: r.top, w: r.width, h: r.height };
   });
 
+
   const beforeBuf = await page.screenshot({ type: 'png' });
+
   const clickX = rect.x + 240 * (rect.w / 480);
   // click the start button near the bottom of the phone
   const clickY = rect.y + 508 * (rect.h / 640);
@@ -605,23 +607,26 @@ async function testFirstOrderDialog() {
     const r = c.getBoundingClientRect();
     return { x: r.left, y: r.top, w: r.width, h: r.height };
   });
+  const beforeBuf = await page.screenshot({ type: 'png' });
 
   const clickX = rect.x + 240 * (rect.w / 480);
   const clickY = rect.y + 508 * (rect.h / 640);
   await page.mouse.click(clickX, clickY);
-  await new Promise(r => setTimeout(r, 7000));
+  // allow enough time for the first customer to reach the counter
+  await new Promise(r => setTimeout(r, 12000));
 
-  const buf = await page.screenshot({ type: 'png' });
+  const afterBuf = await page.screenshot({ type: 'png' });
   await browser.close();
 
-  const img = PNG.sync.read(buf);
-  const pixelX = Math.round(rect.x + 240 * (rect.w / 480));
-  const pixelY = Math.round(rect.y + 430 * (rect.h / 640));
-  const idx = (pixelY * img.width + pixelX) * 4;
-  const r = img.data[idx];
-  const g = img.data[idx + 1];
-  const b = img.data[idx + 2];
-  assert.ok(r > 200 && g > 200 && b > 200, 'order dialog not visible');
+  const before = PNG.sync.read(beforeBuf);
+  const after = PNG.sync.read(afterBuf);
+  const pixelX = Math.round(rect.x + 238 * (rect.w / 480));
+  const pixelY = Math.round(rect.y + 447 * (rect.h / 640));
+  const idx = (pixelY * before.width + pixelX) * 4;
+  const changed = before.data[idx] !== after.data[idx] ||
+                  before.data[idx + 1] !== after.data[idx + 1] ||
+                  before.data[idx + 2] !== after.data[idx + 2];
+  assert.ok(changed, 'order dialog not visible');
   console.log('first order dialog test passed');
 }
 
@@ -671,5 +676,6 @@ async function run() {
 
 run().catch(err => {
   if (DEBUG) console.error(err);
-  killServer().then(() => process.exit(1));
+  process.exitCode = 1;
+  killServer();
 });

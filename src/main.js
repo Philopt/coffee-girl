@@ -951,11 +951,14 @@ export function setupGame(){
     }
     const amp=Phaser.Math.Between(10,25);
     const freq=Phaser.Math.Between(2,4);
-    c.walkTween=this.tweens.add({targets:c.sprite,x:targetX,duration:dur(6000),onUpdate:(tw,t)=>{
+    console.log('Sprite at:', c.sprite.x, c.sprite.y);
+    console.log('About to add tween');
+    this.walkTween = this.tweens.add({targets:c.sprite,x:targetX,duration:dur(6000),onUpdate:(tw,t)=>{
         const p=tw.progress;
         t.y=startY+Math.sin(p*Math.PI*freq)*amp;
         t.setScale(scaleForY(t.y));
       },onComplete:()=>{
+        console.log('Tween complete – about to start dialogue');
         const idx=wanderers.indexOf(c);
         if(idx>=0) wanderers.splice(idx,1);
         const ex=c.sprite.x, ey=c.sprite.y;
@@ -964,7 +967,9 @@ export function setupGame(){
           c.dog=null;
         }
         c.sprite.destroy();
+        this.startDialogue && this.startDialogue(c);
       }});
+    console.log('Tween added');
     wanderers.push(c);
     if(queue.length===0){
       lureNextWanderer(this);

@@ -247,7 +247,8 @@ export function setupGame(){
       activeCustomer=queue[0];
       const targetX = idx===0 ? ORDER_X : QUEUE_X - QUEUE_SPACING*(idx-1);
       const targetY = idx===0 ? ORDER_Y : QUEUE_Y - QUEUE_OFFSET*(idx-1);
-      c.sprite.setDepth(5);
+      const bottomY = c.sprite.y + c.sprite.displayHeight * (1 - c.sprite.originY);
+      c.sprite.setDepth(5 + bottomY*0.006);
       const dir = c.dir || (c.sprite.x < targetX ? 1 : -1);
       c.walkTween = curvedApproach(scene, c.sprite, dir, targetX, targetY, () => {
         if (idx===0 && typeof debugLog === 'function') debugLog('customer reached order position');
@@ -366,7 +367,8 @@ export function setupGame(){
   function enforceCustomerScaling(){
     const setDepth = (sprite, base=5)=>{
       if(!sprite) return;
-      sprite.setDepth(base + sprite.y*0.006);
+      const bottomY = sprite.y + sprite.displayHeight * (1 - sprite.originY);
+      sprite.setDepth(base + bottomY*0.006);
     };
     const scaleDog = d => { if(d){ d.setScale(scaleForY(d.y)*0.5); setDepth(d,3); } };
     queue.forEach(c=>{
@@ -464,7 +466,11 @@ export function setupGame(){
     const speed = dogDist>DOG_FAST_DISTANCE?DOG_SPEED*1.5:DOG_SPEED;
     const duration = dur(Math.max(200,(distance/speed)*1000));
     dog.currentTween=this.tweens.add({targets:dog,x:targetX,y:targetY,duration,
-      onUpdate:(tw,t)=>{t.setScale(scaleForY(t.y)*0.5); t.setDepth(3+t.y*0.006);},
+      onUpdate:(tw,t)=>{
+        t.setScale(scaleForY(t.y)*0.5);
+        const bottomY = t.y + t.displayHeight * (1 - t.originY);
+        t.setDepth(3 + bottomY*0.006);
+      },
       onComplete:()=>{dog.currentTween=null;}});
   }
 
@@ -473,7 +479,11 @@ export function setupGame(){
     if(dog.followEvent) dog.followEvent.remove(false);
     const dist = Phaser.Math.Distance.Between(dog.x, dog.y, x, y);
     this.tweens.add({targets:dog,x,y,duration:dur((dist/DOG_SPEED)*1000),
-      onUpdate:(tw,t)=>{t.setScale(scaleForY(t.y)*0.5);},
+      onUpdate:(tw,t)=>{
+        t.setScale(scaleForY(t.y)*0.5);
+        const bottomY = t.y + t.displayHeight * (1 - t.originY);
+        t.setDepth(3 + bottomY*0.006);
+      },
       onComplete:()=>dog.destroy()});
   }
 
@@ -967,7 +977,9 @@ export function setupGame(){
     const distScale=scaleForY(startY);
     c.orders.push(order);
     c.atOrder=false;
-    c.sprite=this.add.sprite(startX,startY,k).setScale(distScale).setDepth(4);
+    c.sprite=this.add.sprite(startX,startY,k).setScale(distScale);
+    const bottomYStart = startY + c.sprite.displayHeight * (1 - c.sprite.originY);
+    c.sprite.setDepth(5 + bottomYStart*0.006);
 
     // occasionally spawn a dog to accompany the wanderer
     if(Phaser.Math.Between(0,4)===0){
@@ -1364,7 +1376,8 @@ export function setupGame(){
       };
 
       const sprite=current.sprite;
-      sprite.setDepth(5);
+      const bottomY = sprite.y + sprite.displayHeight * (1 - sprite.originY);
+      sprite.setDepth(5 + bottomY*0.006);
 
       // Shift queue forward as soon as customer starts to walk away
       queue.shift();

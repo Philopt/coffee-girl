@@ -82,7 +82,8 @@ function testSpawnCustomer() {
   const match = /function spawnCustomer\([^)]*\)[\s\S]*?\n\s*\}\n(?=\s*function)/.exec(code);
   if (!match) throw new Error('spawnCustomer not found');
   const context = {
-    Phaser: { Math: { Between: min => min }, Utils: { Array: { GetRandom: a => a[0] } } },
+    Phaser: { Math: { Between: (min, max) => (min === 0 && max === 4 ? 1 : min) }, Utils: { Array: { GetRandom: a => a[0] } } },
+    DOG_TYPES: [{ type: 'standard', emoji: '🐶' }],
     wanderers: [],
     queue: [],
     gameOver: false,
@@ -128,7 +129,8 @@ function testSpawnCustomerQueuesWhenEmpty() {
   const match = /function spawnCustomer\([^)]*\)[\s\S]*?\n\s*\}\n(?=\s*function)/.exec(code);
   if (!match) throw new Error('spawnCustomer not found');
   const context = {
-    Phaser: { Math: { Between: min => min }, Utils: { Array: { GetRandom: a => a[0] } } },
+    Phaser: { Math: { Between: (min, max) => (min === 0 && max === 4 ? 1 : min) }, Utils: { Array: { GetRandom: a => a[0] } } },
+    DOG_TYPES: [{ type: 'standard', emoji: '🐶' }],
     wanderers: [],
     queue: [],
     gameOver: false,
@@ -641,7 +643,7 @@ async function testIntroSequence() {
   const { PNG } = require('pngjs');
   const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
   const page = await browser.newPage();
-  await page.goto('http://localhost:8080');
+  await page.goto('http://localhost:8080/?debug=1');
   await new Promise(r => setTimeout(r, 2000));
 
   const rect = await page.evaluate(() => {
@@ -678,7 +680,9 @@ async function testFirstOrderDialog() {
   const { PNG } = require('pngjs');
   const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
   const page = await browser.newPage();
-  await page.goto('http://localhost:8080');
+  const logs = [];
+  page.on('console', msg => logs.push(msg.text()));
+  await page.goto('http://localhost:8080/?debug=1');
   await new Promise(r => setTimeout(r, 2000));
 
   const rect = await page.evaluate(() => {
@@ -693,6 +697,13 @@ async function testFirstOrderDialog() {
   await page.mouse.click(clickX, clickY);
   // allow enough time for the first customer to reach the counter
   await new Promise(r => setTimeout(r, 12000));
+
+  const startIndex = logs.findIndex(l => l.includes('showDialog start'));
+  const endIndex = logs.findIndex(l => l.includes('showDialog end'));
+  const earlyIndex = logs.findIndex(l => l.includes('showDialog early exit'));
+  assert.ok(startIndex !== -1 && endIndex !== -1 && startIndex < endIndex,
+            'showDialog logs missing or out of order');
+  assert.strictEqual(earlyIndex, -1, 'showDialog early exit logged');
 
   const afterBuf = await page.screenshot({ type: 'png' });
   await browser.close();

@@ -146,6 +146,15 @@ export function setupGame(){
     floatingEmojis.length=0;
   }
 
+  function hideOverlayTexts(){
+    if(reportLine1) reportLine1.setVisible(false);
+    if(reportLine2) reportLine2.setVisible(false);
+    if(reportLine3) reportLine3.setVisible(false);
+    if(tipText) tipText.setVisible(false);
+    if(paidStamp) paidStamp.setVisible(false);
+    if(lossStamp) lossStamp.setVisible(false);
+  }
+
   function blinkButton(btn, onComplete, inputObj){
     // Temporarily disable input while the button blinks. The optional
     // inputObj parameter allows specifying a separate interactive
@@ -1809,6 +1818,7 @@ export function setupGame(){
     scene.tweens.killAll();
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
+    hideOverlayTexts();
     clearDialog();
     falconActive = true;
     gameOver = true;
@@ -1920,6 +1930,7 @@ export function setupGame(){
     scene.tweens.killAll();
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
+    hideOverlayTexts();
     clearDialog();
     if (spawnTimer) { spawnTimer.remove(false); spawnTimer = null; }
     const attackers=[];
@@ -2024,6 +2035,7 @@ export function setupGame(){
     scene.tweens.killAll();
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
+    hideOverlayTexts();
     if (spawnTimer) { spawnTimer.remove(false); spawnTimer=null; }
     clearDialog();
     if(endOverlay){ endOverlay.destroy(); }

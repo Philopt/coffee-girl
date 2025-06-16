@@ -5,8 +5,15 @@ const fs = require('fs');
 const vm = require('vm');
 const assert = require('assert');
 
-const BUTTON_WIDTH = 120;
-const BUTTON_HEIGHT = 80;
+function extractConst(file, name) {
+  const code = fs.readFileSync(file, 'utf8');
+  const re = new RegExp(`export\\s+(?:const|let|var)\\s+${name}\\s*=\\s*(\\d+)`);
+  const m = re.exec(code);
+  return m ? Number(m[1]) : null;
+}
+const uiPath = path.join(__dirname, '..', 'src', 'ui.js');
+const BUTTON_WIDTH = extractConst(uiPath, 'BUTTON_WIDTH');
+const BUTTON_HEIGHT = extractConst(uiPath, 'BUTTON_HEIGHT');
 
 const DEBUG = process.env.DEBUG === '1';
 

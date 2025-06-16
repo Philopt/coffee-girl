@@ -1268,17 +1268,21 @@ export function setupGame(){
   function handleAction(type){
     const current=activeCustomer;
     if(current){
-      const objs=[];
-      if(typeof dialogBg!=='undefined') objs.push(dialogBg);
-      if(typeof dialogText!=='undefined') objs.push(dialogText);
-      if(typeof dialogCoins!=='undefined') objs.push(dialogCoins);
-      if(typeof dialogPriceContainer!=='undefined') objs.push(dialogPriceContainer);
-      if(this.tweens && objs.length){
+      const bubbleObjs=[];
+      if(typeof dialogBg!=='undefined') bubbleObjs.push(dialogBg);
+      if(typeof dialogText!=='undefined') bubbleObjs.push(dialogText);
+      if(typeof dialogCoins!=='undefined') bubbleObjs.push(dialogCoins);
+      const ticket = typeof dialogPriceContainer!=='undefined' ? dialogPriceContainer : null;
+      if(this.tweens && (bubbleObjs.length || ticket)){
         if(type==='refuse'){
           if(dialogBg.setTint) dialogBg.setTint(0xff0000);
           if(dialogText.setColor) dialogText.setColor('#f00');
           if(dialogCoins.setColor) dialogCoins.setColor('#f00');
-          this.tweens.add({targets:objs, y:current.sprite.y+80, scale:1.5, alpha:0,
+          if(ticket){
+            this.tweens.add({targets:ticket, x:520, alpha:0,
+                            duration:dur(300), ease:'Cubic.easeIn'});
+          }
+          this.tweens.add({targets:bubbleObjs, y:current.sprite.y+80, scale:1.5, alpha:0,
                           duration:dur(300), ease:'Cubic.easeIn', onComplete:()=>{
             if(dialogBg.clearTint) dialogBg.clearTint();
             if(dialogText.setColor) dialogText.setColor('#000');
@@ -1286,6 +1290,7 @@ export function setupGame(){
             clearDialog.call(this, false);
           }});
         } else {
+          const objs = ticket ? bubbleObjs.concat(ticket) : bubbleObjs;
           this.tweens.add({targets:objs, y:current.sprite.y, scale:0, duration:dur(200), onComplete:()=>{
             clearDialog.call(this, true);
           }});

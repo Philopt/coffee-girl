@@ -7,6 +7,7 @@
     "start": "http-server -p 8080 -c-1",
     "pretest": "test -d node_modules || npm ci && npm run lint",
     "test": "node test/test.js",
+    "test:unit": "SKIP_PUPPETEER=1 node test/test.js",
     "lint": "eslint -c eslint.config.js src/*.js test/*.js",
     "lint:syntax": "sh -c 'for f in src/*.js; do node -c \"$f\"; done'"
   },

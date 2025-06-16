@@ -114,6 +114,18 @@ npm test
 The test runner automatically runs `npm run lint` as part of the `pretest`
 script before executing the tests.
 
+If you only want to run the quick unit tests, set `SKIP_PUPPETEER=1` or use the
+`test:unit` script. This skips the browser-based integration tests driven by
+Puppeteer:
+
+```bash
+SKIP_PUPPETEER=1 npm test
+# or
+npm run test:unit
+```
+
+Use this when running offline or on systems without a working browser.
+
 ## GitHub Actions
 
 This project runs a continuous integration workflow defined in

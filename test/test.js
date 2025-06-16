@@ -9,6 +9,7 @@ const BUTTON_WIDTH = 120;
 const BUTTON_HEIGHT = 80;
 
 const DEBUG = process.env.DEBUG === '1';
+const SKIP_PUPPETEER = process.env.SKIP_PUPPETEER === '1';
 
 let server = null;
 function killServer() {
@@ -753,32 +754,37 @@ async function testFirstOrderDialog() {
 }
 
 async function run() {
-  const serverPath = require.resolve('http-server/bin/http-server');
-  server = spawn(process.execPath, [serverPath, '-p', '8080', '-c-1'], { stdio: 'inherit' });
+  if (!SKIP_PUPPETEER) {
+    const serverPath = require.resolve('http-server/bin/http-server');
+    server = spawn(process.execPath, [serverPath, '-p', '8080', '-c-1'], { stdio: 'inherit' });
 
-  // wait a bit for the server to start
-  await new Promise(r => setTimeout(r, 1000));
+    // wait a bit for the server to start
+    await new Promise(r => setTimeout(r, 1000));
 
-  const errors = [];
+    const errors = [];
 
-  await new Promise((resolve) => {
-    http.get('http://localhost:8080', res => {
-      if (res.statusCode !== 200) errors.push(`Status ${res.statusCode}`);
-      res.resume();
-      res.on('end', resolve);
-    }).on('error', err => {
-      errors.push(err.message);
-      resolve();
+    await new Promise((resolve) => {
+      http.get('http://localhost:8080', res => {
+        if (res.statusCode !== 200) errors.push(`Status ${res.statusCode}`);
+        res.resume();
+        res.on('end', resolve);
+      }).on('error', err => {
+        errors.push(err.message);
+        resolve();
+      });
     });
-  });
 
-  if (errors.length) {
-    if (DEBUG) console.error('Failed:', errors);
-    await killServer();
-    process.exit(1);
+    if (errors.length) {
+      if (DEBUG) console.error('Failed:', errors);
+      await killServer();
+      process.exit(1);
+    }
+
+    console.log('Game loaded without errors');
+  } else {
+    console.log('SKIP_PUPPETEER=1 set, skipping browser-based tests');
   }
 
-  console.log('Game loaded without errors');
   try {
     testSpawnCustomer();
     testSpawnCustomerQueuesWhenEmpty();
@@ -790,8 +796,10 @@ async function run() {
     testAnimateLoveChange();
     testScheduleNextSpawn();
     testShowEndRestart();
-    await testIntroSequence();
-    await testFirstOrderDialog();
+    if (!SKIP_PUPPETEER) {
+      await testIntroSequence();
+      await testFirstOrderDialog();
+    }
   } finally {
     await killServer();
   }

@@ -382,7 +382,13 @@ export function setupGame(){
       const bottomY = sprite.y + sprite.displayHeight * (1 - sprite.originY);
       sprite.setDepth(base + bottomY*0.006);
     };
-    const scaleDog = d => { if(d){ d.setScale(scaleForY(d.y)*0.5); setDepth(d,3); } };
+    const scaleDog = d => {
+      if(!d) return;
+      const s = scaleForY(d.y)*0.5;
+      const dir = d.dir || 1;
+      d.setScale(s*dir, s);
+      setDepth(d,3);
+    };
     queue.forEach(c=>{
       if(c.sprite){ c.sprite.setScale(scaleForY(c.sprite.y)); setDepth(c.sprite,5); }
       if(c.dog) scaleDog(c.dog);
@@ -443,7 +449,16 @@ export function setupGame(){
         tl.add({targets:dog,x:'-=12',duration:dur(120),yoyo:true,repeat:1});
         tl.add({targets:dog,x:'+=24',duration:dur(120),yoyo:true,repeat:1});
         tl.add({targets:dog,x:ms.x,y:ms.y,duration:dur(400)});
-        tl.setCallback('onUpdate',()=>{dog.setScale(scaleForY(dog.y)*0.5);});
+        tl.setCallback('onUpdate',()=>{
+          if(dog.prevX===undefined) dog.prevX=dog.x;
+          const dx=dog.x-dog.prevX;
+          if(Math.abs(dx)>3){
+            dog.dir=dx>0?1:-1;
+          }
+          dog.prevX=dog.x;
+          const s=scaleForY(dog.y)*0.5;
+          dog.setScale(s*(dog.dir||1), s);
+        });
         tl.setCallback('onComplete',()=>{dog.excited=false; dog.currentTween=null;});
         dog.currentTween=tl;
         tl.play();
@@ -477,9 +492,19 @@ export function setupGame(){
     const distance = Phaser.Math.Distance.Between(dog.x,dog.y,targetX,targetY);
     const speed = dogDist>DOG_FAST_DISTANCE?DOG_SPEED*1.5:DOG_SPEED;
     const duration = dur(Math.max(200,(distance/speed)*1000));
+    if(Math.abs(targetX-dog.x) > 3){
+      dog.dir = targetX > dog.x ? 1 : -1;
+    }
     dog.currentTween=this.tweens.add({targets:dog,x:targetX,y:targetY,duration,
       onUpdate:(tw,t)=>{
-        t.setScale(scaleForY(t.y)*0.5);
+        if(t.prevX===undefined) t.prevX=t.x;
+        const dx=t.x - t.prevX;
+        if(Math.abs(dx) > 3){
+          t.dir = dx>0?1:-1;
+        }
+        t.prevX=t.x;
+        const s=scaleForY(t.y)*0.5;
+        t.setScale(s*(t.dir||1), s);
         const bottomY = t.y + t.displayHeight * (1 - t.originY);
         t.setDepth(3 + bottomY*0.006);
       },
@@ -490,9 +515,19 @@ export function setupGame(){
     if(!dog) return;
     if(dog.followEvent) dog.followEvent.remove(false);
     const dist = Phaser.Math.Distance.Between(dog.x, dog.y, x, y);
+    if(Math.abs(x-dog.x) > 3){
+      dog.dir = x>dog.x?1:-1;
+    }
     this.tweens.add({targets:dog,x,y,duration:dur((dist/DOG_SPEED)*1000),
       onUpdate:(tw,t)=>{
-        t.setScale(scaleForY(t.y)*0.5);
+        if(t.prevX===undefined) t.prevX=t.x;
+        const dx=t.x - t.prevX;
+        if(Math.abs(dx)>3){
+          t.dir=dx>0?1:-1;
+        }
+        t.prevX=t.x;
+        const s=scaleForY(t.y)*0.5;
+        t.setScale(s*(t.dir||1), s);
         const bottomY = t.y + t.displayHeight * (1 - t.originY);
         t.setDepth(3 + bottomY*0.006);
       },
@@ -1003,6 +1038,8 @@ export function setupGame(){
         .setOrigin(0.5)
         .setScale(distScale*0.5)
         .setDepth(3);
+      dog.dir=1;
+      dog.prevX=dog.x;
       dog.dogType=dogType.type;
       c.dog=dog;
 

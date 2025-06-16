@@ -803,7 +803,9 @@ export function setupGame(){
     // HUD
     moneyText=this.add.text(20,20,'🪙 '+receipt(money),{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
     loveText=this.add.text(20,50,'❤️ '+love,{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
-    queueLevelText=this.add.text(304,316,'Lv. '+loveLevel,{font:'16px sans-serif',fill:'#000'})
+    // Display level indicator on the left side of the order table so it doesn't
+    // overlap the price ticket.
+    queueLevelText=this.add.text(156,316,'Lv. '+loveLevel,{font:'16px sans-serif',fill:'#000'})
       .setOrigin(0.5).setDepth(1);
     updateLevelDisplay();
     // truck & girl

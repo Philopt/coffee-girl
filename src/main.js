@@ -23,6 +23,14 @@ const DART_MAX_SPEED = CUSTOMER_SPEED * 3;
 // Offset for the drink emoji when the customer holds it
 // Raise it slightly so it appears near their hands instead of their feet
 const DRINK_HOLD_OFFSET = { x: 0, y: -20 };
+const HEART_EMOJIS = {
+  normal: null,
+  broken: '💔',
+  mending: '❤️‍🩹',
+  growing: '💗',
+  sparkling: '💖',
+  arrow: '💘'
+};
 export function setupGame(){
   if (typeof debugLog === 'function') debugLog('main.js loaded');
   let initCalled = false;
@@ -398,13 +406,32 @@ export function setupGame(){
       d.setScale(s*dir, s);
       setDepth(d,3);
     };
+    const updateHeart = c => {
+      if(!c.sprite) return;
+      const state = c.memory && c.memory.state || 'normal';
+      if(state !== 'normal'){
+        if(!c.heartEmoji){
+          c.heartEmoji = c.sprite.scene.add.text(c.sprite.x, c.sprite.y, HEART_EMOJIS[state] || '', {font:'20px sans-serif'})
+            .setOrigin(0.5);
+        }
+        const y = c.sprite.y + c.sprite.displayHeight * 0.25;
+        const scale = scaleForY(c.sprite.y)*0.5;
+        c.heartEmoji.setText(HEART_EMOJIS[state] || '').setPosition(c.sprite.x, y).setScale(scale);
+        c.heartEmoji.setDepth(c.sprite.depth+1);
+      }else if(c.heartEmoji){
+        c.heartEmoji.destroy();
+        c.heartEmoji = null;
+      }
+    };
     GameState.queue.forEach(c=>{
       if(c.sprite){ c.sprite.setScale(scaleForY(c.sprite.y)); setDepth(c.sprite,5); }
       if(c.dog) scaleDog(c.dog);
+      updateHeart(c);
     });
     GameState.wanderers.forEach(c=>{
       if(c.sprite){ c.sprite.setScale(scaleForY(c.sprite.y)); setDepth(c.sprite,5); }
       if(c.dog) scaleDog(c.dog);
+      updateHeart(c);
     });
   }
 
@@ -1028,6 +1055,10 @@ export function setupGame(){
 
     const c={ orders:[] };
     const k=Phaser.Utils.Array.GetRandom(keys);
+    c.spriteKey = k;
+    const memory = GameState.customerMemory[k] || { state: 'normal' };
+    GameState.customerMemory[k] = memory;
+    c.memory = memory;
     const order=createOrder();
 
     if(GameState.wanderers.length>=maxWanderers()){
@@ -1045,6 +1076,10 @@ export function setupGame(){
     c.sprite=this.add.sprite(startX,startY,k).setScale(distScale);
     const bottomYStart = startY + c.sprite.displayHeight * (1 - c.sprite.originY);
     c.sprite.setDepth(5 + bottomYStart*0.006);
+    if(c.memory.state !== 'normal'){
+      c.heartEmoji = this.add.text(0,0,HEART_EMOJIS[c.memory.state]||'',{font:'20px sans-serif'})
+        .setOrigin(0.5);
+    }
 
     // occasionally spawn a dog to accompany the wanderer
     if(Phaser.Math.Between(0,4)===0){
@@ -1081,6 +1116,7 @@ export function setupGame(){
           sendDogOffscreen.call(this,c.dog,ex,ey);
           c.dog=null;
         }
+        if(c.heartEmoji){ c.heartEmoji.destroy(); c.heartEmoji = null; }
         c.sprite.destroy();
 
       }});
@@ -1420,6 +1456,40 @@ export function setupGame(){
       lD=-Phaser.Math.Between(1,3)*orderCount;
     }
 
+    const memory = current.memory || {state:'normal'};
+    const baseL = lD;
+    switch(memory.state){
+      case 'broken':
+        lD = Math.max(baseL - 1, 0);
+        if(type==='sell') memory.state = 'mending';
+        if(type==='give') memory.state = 'normal';
+        break;
+      case 'mending':
+        if(type==='sell') memory.state = 'normal';
+        break;
+      case 'growing':
+        lD = Math.max(baseL,1) + 1;
+        if(type==='give') memory.state = 'sparkling';
+        break;
+      case 'sparkling':
+        lD = Math.max(baseL,2) + 2;
+        if(type==='give') memory.state = 'arrow';
+        break;
+      case 'arrow':
+        lD = baseL + 3;
+        if(type==='give') GameState.heartWin = HEART_EMOJIS.arrow;
+        break;
+      default:
+        if(type==='give') memory.state = 'growing';
+    }
+    if(type==='refuse'){
+      memory.state = 'broken';
+    }
+    if(current.heartEmoji){ current.heartEmoji.destroy(); current.heartEmoji=null; }
+    if(memory.state !== 'normal' && current.sprite){
+      current.heartEmoji = current.sprite.scene.add.text(0,0,HEART_EMOJIS[memory.state]||'',{font:'20px sans-serif'}).setOrigin(0.5);
+    }
+
     const tipPct=type==='sell'?lD*15:0;
     const customer=current.sprite;
     GameState.activeCustomer=null;
@@ -1438,6 +1508,7 @@ export function setupGame(){
             current.dog.destroy();
           }
         }
+        if(current.heartEmoji){ current.heartEmoji.destroy(); current.heartEmoji = null; }
         current.sprite.destroy();
         if(GameState.money<=0){
           showFalconAttack.call(this,()=>{
@@ -1453,6 +1524,11 @@ export function setupGame(){
         }
         if(GameState.money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
         if(GameState.love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
+        if(GameState.heartWin){
+          showEnd.call(this,'And you lived happily ever after.', GameState.heartWin);
+          GameState.heartWin = null;
+          return;
+        }
         scheduleNextSpawn(this);
         GameState.servedCount++;
         updateSideC.call(this);
@@ -1816,6 +1892,7 @@ export function setupGame(){
                     sendDogOffscreen.call(scene,c.dog,ex,ey);
                     c.dog=null;
                   }
+                  if(c.heartEmoji){ c.heartEmoji.destroy(); c.heartEmoji=null; }
                   c.sprite.destroy();
                 }});
         tl.play();
@@ -1998,7 +2075,7 @@ export function setupGame(){
     });
   }
 
-  function showEnd(msg){
+  function showEnd(msg, bigEmoji){
     const scene=this;
     scene.tweens.killAll();
     scene.time.removeAllEvents();
@@ -2018,6 +2095,9 @@ export function setupGame(){
       bgY=480;
     }
     const bg=this.add.rectangle(240,bgY,480,240,0xffffff).setStrokeStyle(2,0x000).setDepth(20);
+    if(bigEmoji){
+      this.add.text(240,bgY-80,bigEmoji,{font:'72px sans-serif'}).setOrigin(0.5).setDepth(21);
+    }
     const lines=msg.split('\n');
     let offset=bgY-40;
     let titleText=null;
@@ -2078,13 +2158,16 @@ export function setupGame(){
         if(GameState.activeCustomer.dog.followEvent) GameState.activeCustomer.dog.followEvent.remove(false);
         GameState.activeCustomer.dog.destroy();
       }
+      if(GameState.activeCustomer.heartEmoji){ GameState.activeCustomer.heartEmoji.destroy(); GameState.activeCustomer.heartEmoji=null; }
       GameState.activeCustomer.sprite.destroy();
     }
     GameState.activeCustomer=null;
-    Phaser.Actions.Call(GameState.queue,c=>{ if(c.dog){ if(c.dog.followEvent) c.dog.followEvent.remove(false); c.dog.destroy(); } c.sprite.destroy(); });
+    Phaser.Actions.Call(GameState.queue,c=>{ if(c.dog){ if(c.dog.followEvent) c.dog.followEvent.remove(false); c.dog.destroy(); } if(c.heartEmoji){ c.heartEmoji.destroy(); c.heartEmoji=null; } c.sprite.destroy(); });
     GameState.queue=[];
-    Phaser.Actions.Call(GameState.wanderers,c=>{ if(c.dog){ if(c.dog.followEvent) c.dog.followEvent.remove(false); c.dog.destroy(); } c.sprite.destroy(); });
+    Phaser.Actions.Call(GameState.wanderers,c=>{ if(c.dog){ if(c.dog.followEvent) c.dog.followEvent.remove(false); c.dog.destroy(); } if(c.heartEmoji){ c.heartEmoji.destroy(); c.heartEmoji=null; } c.sprite.destroy(); });
     GameState.wanderers=[];
+    Object.keys(GameState.customerMemory).forEach(k=>{ delete GameState.customerMemory[k]; });
+    GameState.heartWin = null;
     GameState.servedCount=0;
     sideCAlpha=0;
     sideCFadeTween=null;

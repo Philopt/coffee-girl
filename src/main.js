@@ -2268,13 +2268,13 @@ export function setupGame(){
             dTl.add({targets:dog,x:dx,y:dy,duration:dur(Phaser.Math.Between(200,350)),ease:'Sine.easeInOut'});
           }
           dTl.add({targets:dog,x:targetX,y:dog.y,duration:dur(WALK_OFF_BASE/1.5),onComplete:()=>dog.destroy()});
-          dTl.setCallback('onUpdate',(tw,t)=>{
-            if(t.prevX===undefined) t.prevX=t.x;
-            const dx=t.x-t.prevX;
-            if(Math.abs(dx)>3){ t.dir=dx>0?1:-1; }
-            t.prevX=t.x;
-            const s=scaleForY(t.y)*0.5;
-            t.setScale(s*(t.dir||1), s);
+          dTl.setCallback('onUpdate',()=>{
+            if(dog.prevX===undefined) dog.prevX=dog.x;
+            const dx=dog.x-dog.prevX;
+            if(Math.abs(dx)>3){ dog.dir=dx>0?1:-1; }
+            dog.prevX=dog.x;
+            const s=scaleForY(dog.y)*0.5;
+            dog.setScale(s*(dog.dir||1), s);
           });
           dTl.play();
           c.dog=null;

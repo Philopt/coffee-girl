@@ -1192,6 +1192,7 @@ export function setupGame(){
 
   }
 
+
   function spawnCustomer(){
     if (typeof debugLog === 'function') {
       debugLog('spawnCustomer', GameState.queue.length, GameState.wanderers.length, GameState.activeCustomer);

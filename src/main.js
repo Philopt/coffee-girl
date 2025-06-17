@@ -1116,7 +1116,19 @@ export function setupGame(){
     };
 
     const c={ orders:[] };
-    const k=Phaser.Utils.Array.GetRandom(keys);
+    const used=new Set();
+    if(GameState.activeCustomer&&GameState.activeCustomer.spriteKey){
+      used.add(GameState.activeCustomer.spriteKey);
+    }
+    GameState.queue.forEach(cust=>{
+      if(cust.spriteKey) used.add(cust.spriteKey);
+    });
+    GameState.wanderers.forEach(cust=>{
+      if(cust.spriteKey) used.add(cust.spriteKey);
+    });
+    let available=keys.filter(k=>!used.has(k));
+    if(available.length===0) available=keys.slice();
+    const k=Phaser.Utils.Array.GetRandom(available);
     c.spriteKey = k;
     const memory = GameState.customerMemory[k] || { state: CustomerState.NORMAL };
     GameState.customerMemory[k] = memory;

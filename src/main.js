@@ -995,8 +995,8 @@ export function setupGame(){
 
     btnSell=createButton(80,'SELL','💵',32,0x006400,()=>handleAction.call(this,'sell'));
     // The "Give" button should stand out from the sell/refuse buttons. Use a
-    // bright pink fill color so the intent is clearer.
-    btnGive=createButton(240,'GIVE','💝',28,0xff69b4,()=>handleAction.call(this,'give'));
+    // softer pastel pink so it is noticeable without being overwhelming.
+    btnGive=createButton(240,'GIVE','💝',28,0xffb6c1,()=>handleAction.call(this,'give'));
     btnRef=createButton(400,'REFUSE','✋',32,0x800000,()=>handleAction.call(this,'refuse'));
 
 

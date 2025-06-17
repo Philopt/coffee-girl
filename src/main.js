@@ -413,8 +413,8 @@ export function setupGame(){
       d.setScale(s*dir, s);
       setDepth(d,3);
     };
-    const updateHeart = c => {
-      if(!c.sprite) return;
+      const updateHeart = c => {
+        if(!c.sprite || !c.sprite.scene) return;
       const state = c.memory && c.memory.state || 'normal';
       if(state !== 'normal'){
         if(!c.heartEmoji){

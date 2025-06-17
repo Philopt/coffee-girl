@@ -2229,6 +2229,7 @@ export function setupGame(){
       });
 
       fleeing.forEach(c=>{
+        if(c.heartEmoji){ c.heartEmoji.destroy(); c.heartEmoji=null; }
         if(c.walkTween){ c.walkTween.stop(); c.walkTween=null; }
         const dir=c.sprite.x<ORDER_X? -1:1;
         const targetX=dir===1?520:-40;
@@ -2249,7 +2250,6 @@ export function setupGame(){
                     sendDogOffscreen.call(scene,c.dog,ex,ey);
                     c.dog=null;
                   }
-                  if(c.heartEmoji){ c.heartEmoji.destroy(); c.heartEmoji=null; }
                   c.sprite.destroy();
                 }});
         tl.play();

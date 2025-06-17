@@ -3,6 +3,7 @@ import { dur, scaleForY, articleFor, flashMoney, START_PHONE_W, START_PHONE_H, B
 import { MENU, SPAWN_DELAY, SPAWN_VARIANCE, QUEUE_SPACING, ORDER_X, ORDER_Y, QUEUE_X, QUEUE_OFFSET, QUEUE_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel, maxWanderers as customersMaxWanderers, queueLimit as customersQueueLimit } from "./customers.js";
 import { baseConfig } from "./scene.js";
 import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from "./state.js";
+import { CustomerState } from './constants.js';
 export let Assets, Scene, Customers, config;
 export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;
 const DOG_MIN_Y = ORDER_Y + 20;
@@ -24,12 +25,12 @@ const DART_MAX_SPEED = CUSTOMER_SPEED * 3;
 // Raise it slightly so it appears near their hands instead of their feet
 const DRINK_HOLD_OFFSET = { x: 0, y: -20 };
 const HEART_EMOJIS = {
-  normal: null,
-  broken: '💔',
-  mending: '❤️‍🩹',
-  growing: '💗',
-  sparkling: '💖',
-  arrow: '💘'
+  [CustomerState.NORMAL]: null,
+  [CustomerState.BROKEN]: '💔',
+  [CustomerState.MENDING]: '❤️‍🩹',
+  [CustomerState.GROWING]: '💗',
+  [CustomerState.SPARKLING]: '💖',
+  [CustomerState.ARROW]: '💘'
 };
 export function setupGame(){
   if (typeof debugLog === 'function') debugLog('main.js loaded');
@@ -445,8 +446,8 @@ export function setupGame(){
     };
       const updateHeart = c => {
         if(!c.sprite || !c.sprite.scene) return;
-      const state = c.memory && c.memory.state || 'normal';
-      if(state !== 'normal'){
+      const state = c.memory && c.memory.state || CustomerState.NORMAL;
+      if(state !== CustomerState.NORMAL){
         if(!c.heartEmoji){
           c.heartEmoji = c.sprite.scene.add.text(c.sprite.x, c.sprite.y, HEART_EMOJIS[state] || '', {font:'28px sans-serif'})
             .setOrigin(0.5)
@@ -1117,7 +1118,7 @@ export function setupGame(){
     const c={ orders:[] };
     const k=Phaser.Utils.Array.GetRandom(keys);
     c.spriteKey = k;
-    const memory = GameState.customerMemory[k] || { state: 'normal' };
+    const memory = GameState.customerMemory[k] || { state: CustomerState.NORMAL };
     GameState.customerMemory[k] = memory;
     c.memory = memory;
     const order=createOrder();
@@ -1137,7 +1138,7 @@ export function setupGame(){
     c.sprite=this.add.sprite(startX,startY,k).setScale(distScale);
     const bottomYStart = startY + c.sprite.displayHeight * (1 - c.sprite.originY);
     c.sprite.setDepth(5 + bottomYStart*0.006);
-    if(c.memory.state !== 'normal'){
+    if(c.memory.state !== CustomerState.NORMAL){
       c.heartEmoji = this.add.text(0,0,HEART_EMOJIS[c.memory.state]||'',{font:'28px sans-serif'})
         .setOrigin(0.5)
         .setShadow(0, 0, '#000', 4);
@@ -1576,37 +1577,37 @@ export function setupGame(){
       lD=-Phaser.Math.Between(1,3)*orderCount;
     }
 
-    const memory = current.memory || {state:'normal'};
+    const memory = current.memory || {state: CustomerState.NORMAL};
     const baseL = lD;
     switch(memory.state){
-      case 'broken':
+      case CustomerState.BROKEN:
         lD = Math.max(baseL - 1, 0);
-        if(type==='sell') memory.state = 'mending';
-        if(type==='give') memory.state = 'normal';
+        if(type==='sell') memory.state = CustomerState.MENDING;
+        if(type==='give') memory.state = CustomerState.NORMAL;
         break;
-      case 'mending':
-        if(type==='sell') memory.state = 'normal';
+      case CustomerState.MENDING:
+        if(type==='sell') memory.state = CustomerState.NORMAL;
         break;
-      case 'growing':
+      case CustomerState.GROWING:
         lD = Math.max(baseL,1) + 1;
-        if(type==='give') memory.state = 'sparkling';
+        if(type==='give') memory.state = CustomerState.SPARKLING;
         break;
-      case 'sparkling':
+      case CustomerState.SPARKLING:
         lD = Math.max(baseL,2) + 2;
-        if(type==='give') memory.state = 'arrow';
+        if(type==='give') memory.state = CustomerState.ARROW;
         break;
-      case 'arrow':
+      case CustomerState.ARROW:
         lD = baseL + 3;
-        if(type==='give') GameState.heartWin = HEART_EMOJIS.arrow;
+        if(type==='give') GameState.heartWin = HEART_EMOJIS[CustomerState.ARROW];
         break;
       default:
-        if(type==='give') memory.state = 'growing';
+        if(type==='give') memory.state = CustomerState.GROWING;
     }
     if(type==='refuse'){
-      memory.state = 'broken';
+      memory.state = CustomerState.BROKEN;
     }
     if(current.heartEmoji){ current.heartEmoji.destroy(); current.heartEmoji=null; }
-    if(memory.state !== 'normal' && current.sprite){
+    if(memory.state !== CustomerState.NORMAL && current.sprite){
       current.heartEmoji = current.sprite.scene.add.text(0,0,HEART_EMOJIS[memory.state]||'',{font:'28px sans-serif'})
         .setOrigin(0.5)
         .setShadow(0, 0, '#000', 4);

@@ -34,10 +34,21 @@ export const QUEUE_OFFSET = 8;
 export const QUEUE_Y = ORDER_Y + 5;
 export const WANDER_TOP = ORDER_Y + 50;
 export const WANDER_BOTTOM = 580;
-export const BASE_WAITERS = 3;
+// Number of wanderers that can roam around at love level 1.
+// Increasing this to 5 lets more customers appear when testing
+// the expanded queue capacity.
+export const BASE_WAITERS = 5;
 export const WALK_OFF_BASE = 800;
 export const MAX_M = 100;
 export const MAX_L = 100;
+
+// Base queue capacity when the game starts. Previously the queue limit
+// depended solely on the player's love level, which meant only two
+// customers could line up at the beginning (love level 1). For testing
+// purposes we want a larger starting capacity so we can more easily
+// observe queue behaviour. Setting this to 5 allows up to five people to
+// queue right away.
+export const MIN_QUEUE_LIMIT = 5;
 
 export function calcLoveLevel(v) {
   if (v >= 100) return 4;
@@ -51,6 +62,7 @@ export function maxWanderers(love) {
 }
 
 export function queueLimit(love) {
-  // allow one person waiting even at level 1
-  return calcLoveLevel(love) + 1;
+  // allow one person waiting even at level 1 and ensure a minimum
+  // queue size for easier debugging during early gameplay
+  return Math.max(MIN_QUEUE_LIMIT, calcLoveLevel(love) + 1);
 }

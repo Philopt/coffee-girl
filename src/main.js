@@ -1065,6 +1065,7 @@ export function setupGame(){
     // truck & girl
     const startX=this.scale.width+100;
     truck=this.add.image(startX,245,'truck').setScale(0.462).setDepth(2);
+    GameState.truck = truck;
 
     girl=this.add.image(startX,245,'girl').setScale(0.5).setDepth(3).setVisible(false);
 

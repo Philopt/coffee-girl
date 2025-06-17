@@ -150,4 +150,11 @@ function checkThreats(scene, bird){
       return;
     }
   }
+  const truck = scene.gameState && scene.gameState.truck;
+  if(truck && scene.tweens && scene.tweens.isTweening && scene.tweens.isTweening(truck)){
+    if(Phaser.Math.Distance.Between(bird.sprite.x, bird.sprite.y, truck.x, truck.y) < 80){
+      flee(scene, bird, new Phaser.Math.Vector2(bird.sprite.x - truck.x, bird.sprite.y - truck.y));
+      return;
+    }
+  }
 }

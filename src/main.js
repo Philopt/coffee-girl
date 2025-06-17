@@ -4,6 +4,7 @@ import { MENU, SPAWN_DELAY, SPAWN_VARIANCE, QUEUE_SPACING, ORDER_X, ORDER_Y, QUE
 import { baseConfig } from "./scene.js";
 import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from "./state.js";
 import { CustomerState } from './constants.js';
+import { scheduleSparrowSpawn } from './sparrow.js';
 export let Assets, Scene, Customers, config;
 export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;
 const DOG_MIN_Y = ORDER_Y + 20;
@@ -24,6 +25,7 @@ const DART_MAX_SPEED = CUSTOMER_SPEED * 3;
 // Offset for the drink emoji when the customer holds it
 // Raise it slightly so it appears near their hands instead of their feet
 const DRINK_HOLD_OFFSET = { x: 0, y: -20 };
+const EDGE_TURN_BUFFER = 40;
 const HEART_EMOJIS = {
   [CustomerState.NORMAL]: null,
   [CustomerState.BROKEN]: '💔',
@@ -46,7 +48,7 @@ export function setupGame(){
   // state is managed in GameState
 
   const keys=[];
-  const requiredAssets=['bg','truck','girl','lady_falcon','falcon_end','revolt_end'];
+  const requiredAssets=['bg','truck','girl','lady_falcon','falcon_end','revolt_end','sparrow'];
   const genzSprites=[
     'new_kid_0_0','new_kid_0_1','new_kid_0_2','new_kid_0_4','new_kid_0_5',
     'new_kid_1_0','new_kid_1_1','new_kid_1_2','new_kid_1_3','new_kid_1_4','new_kid_1_5',
@@ -169,6 +171,16 @@ export function setupGame(){
         c.heartEmoji = null;
       }
     });
+  }
+
+  function cleanupSparrows(){
+    if(Array.isArray(GameState.sparrows)){
+      GameState.sparrows.slice().forEach(b=>{
+        if(b.threatCheck) b.threatCheck.remove(false);
+        if(b.destroy) b.destroy();
+      });
+      GameState.sparrows.length = 0;
+    }
   }
 
   function hideOverlayTexts(){
@@ -687,9 +699,6 @@ export function setupGame(){
     }
   }
 
-
-  const EDGE_TURN_BUFFER = 40;
-
   function loopsForState(state){
     switch(state){
       case 'growing': return 1;
@@ -991,6 +1000,7 @@ export function setupGame(){
     loader.spritesheet('lady_falcon','assets/lady_falcon.png',{frameWidth:64,frameHeight:64});
     loader.image('falcon_end','assets/ladyfalconend.png');
     loader.image('revolt_end','assets/revolt.png');
+    loader.spritesheet('sparrow','assets/sparrow.png',{frameWidth:16,frameHeight:16});
     for(const k of genzSprites){
       keys.push(k);
       requiredAssets.push(k);
@@ -1001,6 +1011,7 @@ export function setupGame(){
   function create(){
     this.assets = Assets;
     this.customers = Customers;
+    this.gameState = GameState;
     const missing=requiredAssets.filter(key=>!this.textures.exists(key));
     if(missing.length){
       const msg='Missing assets: '+missing.join(', ');
@@ -1036,6 +1047,24 @@ export function setupGame(){
     this.anims.create({
       key:'falcon_fly',
       frames:this.anims.generateFrameNumbers('lady_falcon',{start:0,end:1}),
+      frameRate:6,
+      repeat:-1
+    });
+    this.anims.create({
+      key:'sparrow_fly',
+      frames:this.anims.generateFrameNumbers('sparrow',{start:0,end:2}),
+      frameRate:8,
+      repeat:-1
+    });
+    this.anims.create({
+      key:'sparrow_ground',
+      frames:this.anims.generateFrameNumbers('sparrow',{start:3,end:5}),
+      frameRate:4,
+      repeat:-1
+    });
+    this.anims.create({
+      key:'sparrow_peck',
+      frames:this.anims.generateFrameNumbers('sparrow',{start:6,end:8}),
       frameRate:6,
       repeat:-1
     });
@@ -1152,6 +1181,7 @@ export function setupGame(){
 
     // wait for player to start the shift
     showStartScreen.call(this);
+    scheduleSparrowSpawn(this);
 
     // ensure customer sprites match vertical scale and keep drink emoji attached
     this.events.on('update', () => {
@@ -1160,62 +1190,6 @@ export function setupGame(){
     });
 
 
-  }
-
-  const EDGE_TURN_BUFFER = 40;
-
-  function loopsForState(state){
-    switch(state){
-      case 'growing': return 1;
-      case 'sparkling':
-      case 'arrow':
-        return 2;
-      default: return 0;
-    }
-  }
-
-  function removeWanderer(scene, c){
-    const idx = GameState.wanderers.indexOf(c);
-    if(idx >= 0) GameState.wanderers.splice(idx,1);
-    const ex = c.sprite.x, ey = c.sprite.y;
-    if(c.dog){
-      sendDogOffscreen.call(scene,c.dog,ex,ey);
-      c.dog = null;
-    }
-    if(c.heartEmoji){ c.heartEmoji.destroy(); c.heartEmoji = null; }
-    c.sprite.destroy();
-  }
-
-  function handleWanderComplete(scene, c){
-    if(c.loopsRemaining > 0){
-      c.loopsRemaining--;
-      c.dir *= -1;
-      const inside = c.dir === 1 ? 480-EDGE_TURN_BUFFER : EDGE_TURN_BUFFER;
-      const exitX = c.dir === 1 ? 520 : -40;
-      const target = c.loopsRemaining > 0 ? inside : exitX;
-      startWander(scene,c,target,c.loopsRemaining===0);
-    }else{
-      removeWanderer(scene,c);
-    }
-
-  }
-
-  function startWander(scene, c, targetX, exitAfter){
-    if(c.walkTween){ c.walkTween.stop(); c.walkTween.remove(); c.walkTween=null; }
-    const startX=c.sprite.x;
-    const startY=c.sprite.y;
-    const amp = Phaser.Math.Between(15,30);
-    const freq = Phaser.Math.FloatBetween ? Phaser.Math.FloatBetween(1.5,4.5) : Phaser.Math.Between(15,45)/10;
-    const walkDuration = Phaser.Math.Between(5000,7000);
-    c.walkData={startX,startY,targetX,amp,freq,duration:walkDuration,exitAfter};
-    c.walkTween = scene.tweens.add({targets:c.sprite,x:targetX,duration:dur(walkDuration),
-      onUpdate:(tw,t)=>{
-        const p=tw.progress;
-        t.y=startY+Math.sin(p*Math.PI*freq)*amp;
-        t.setScale(scaleForY(t.y));
-      },
-      onComplete:()=>{ exitAfter ? removeWanderer(scene,c) : handleWanderComplete(scene,c); }
-    });
   }
 
   function spawnCustomer(){
@@ -2167,6 +2141,7 @@ export function setupGame(){
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
     cleanupHeartEmojis();
+    cleanupSparrows();
     hideOverlayTexts();
     clearDialog.call(scene);
     GameState.falconActive = true;
@@ -2482,6 +2457,7 @@ export function setupGame(){
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
     cleanupHeartEmojis();
+    cleanupSparrows();
     if (GameState.spawnTimer) {
       GameState.spawnTimer.remove(false);
       GameState.spawnTimer = null;
@@ -2520,6 +2496,7 @@ export function setupGame(){
     GameState.queue=[];
     Phaser.Actions.Call(GameState.wanderers,c=>{ if(c.dog){ if(c.dog.followEvent) c.dog.followEvent.remove(false); c.dog.destroy(); } if(c.heartEmoji){ c.heartEmoji.destroy(); c.heartEmoji=null; } c.sprite.destroy(); });
     GameState.wanderers=[];
+    GameState.sparrows=[];
     Object.keys(GameState.customerMemory).forEach(k=>{ delete GameState.customerMemory[k]; });
     GameState.heartWin = null;
     GameState.servedCount=0;
@@ -2527,6 +2504,7 @@ export function setupGame(){
     sideCFadeTween=null;
     GameState.gameOver=false;
     showStartScreen.call(this);
+    scheduleSparrowSpawn(this);
   }
 
    Assets = { keys, requiredAssets, preload };

@@ -4,6 +4,7 @@ export const GameState = {
   queue: [],
   activeCustomer: null,
   wanderers: [],
+  sparrows: [],
   spawnTimer: null,
   falconActive: false,
   gameOver: false,

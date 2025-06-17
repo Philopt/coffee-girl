@@ -778,7 +778,7 @@ export function setupGame(){
     const width = (scene.scale && scene.scale.width) ? scene.scale.width : 480;
     const offscreenX = width + 100;
     truck.setPosition(offscreenX,245).setScale(0.462);
-    girl.setPosition(offscreenX,260).setVisible(false);
+    girl.setPosition(offscreenX,245).setVisible(false);
     // engine vibration while the truck is driving
     const vibrateAmp = { value: 2 * (truck.scaleX / 0.924) };
     const vibrateTween = (scene.tweens && scene.tweens.addCounter) ? scene.tweens.addCounter({
@@ -837,14 +837,14 @@ export function setupGame(){
 
     const intro=scene.tweens.createTimeline({callbackScope:scene});
     const hopOut=()=>{
-      const startX=truck.x;
-      const startY=260;
-      const endX=200;
-      const endY=292;
-      const curve=new Phaser.Curves.QuadraticBezier(
-        new Phaser.Math.Vector2(startX,startY),
-        new Phaser.Math.Vector2(startX-20,startY-60),
-        new Phaser.Math.Vector2(endX,endY)
+      const startX = truck.x + truck.displayWidth / 2 - 20; // back of truck
+      const startY = truck.y - 10; // slightly above center
+      const endX = truck.x - 40; // in front of truck
+      const endY = 292;
+      const curve = new Phaser.Curves.QuadraticBezier(
+        new Phaser.Math.Vector2(startX, startY),
+        new Phaser.Math.Vector2(startX - 60, startY - 60),
+        new Phaser.Math.Vector2(endX, endY)
       );
       const follower={t:0,vec:new Phaser.Math.Vector2()};
       scene.tweens.add({
@@ -936,7 +936,7 @@ export function setupGame(){
     const startX=this.scale.width+100;
     truck=this.add.image(startX,245,'truck').setScale(0.462).setDepth(2);
 
-    girl=this.add.image(startX,260,'girl').setScale(0.5).setDepth(3).setVisible(false);
+    girl=this.add.image(startX,245,'girl').setScale(0.5).setDepth(3).setVisible(false);
 
     // create lady falcon animation
     this.anims.create({
@@ -2277,7 +2277,7 @@ export function setupGame(){
     if (truck && girl) {
       const startX = scene.scale.width + 100;
       truck.setPosition(startX, 245);
-      girl.setPosition(startX, 260).setVisible(false);
+      girl.setPosition(startX, 245).setVisible(false);
     }
     GameState.money=10.00; GameState.love=10;
     moneyText.setText('🪙 '+receipt(GameState.money));

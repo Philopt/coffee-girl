@@ -12,3 +12,12 @@ export const GameState = {
 };
 
 export const floatingEmojis = [];
+
+export function addFloatingEmoji(emoji) {
+  if (emoji) floatingEmojis.push(emoji);
+}
+
+export function removeFloatingEmoji(emoji) {
+  const idx = floatingEmojis.indexOf(emoji);
+  if (idx !== -1) floatingEmojis.splice(idx, 1);
+}

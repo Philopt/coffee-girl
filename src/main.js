@@ -4,7 +4,7 @@ import { MENU, SPAWN_DELAY, SPAWN_VARIANCE, QUEUE_SPACING, ORDER_X, ORDER_Y, QUE
 import { baseConfig } from "./scene.js";
 import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from "./state.js";
 import { CustomerState } from './constants.js';
-import { scheduleSparrowSpawn } from './sparrow.js';
+import { scheduleSparrowSpawn, updateSparrows } from './sparrow.js';
 export let Assets, Scene, Customers, config;
 export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;
 const DOG_MIN_Y = ORDER_Y + 20;
@@ -1209,9 +1209,10 @@ export function setupGame(){
     scheduleSparrowSpawn(this);
 
     // ensure customer sprites match vertical scale and keep drink emoji attached
-    this.events.on('update', () => {
+    this.events.on('update', (_, dt) => {
       enforceCustomerScaling();
       updateDrinkEmojiPosition();
+      updateSparrows(this, dt);
     });
 
 

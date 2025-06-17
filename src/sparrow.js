@@ -1,76 +1,153 @@
+import { BirdState } from './constants.js';
+
 export function spawnSparrow(scene){
   const startX = Phaser.Math.Between(-20, 520);
   const startY = Phaser.Math.Between(120, 180);
-  const bird = scene.add.sprite(startX, startY, 'sparrow', 0)
+  const sprite = scene.add.sprite(startX, startY, 'sparrow', 0)
     .setDepth(4)
     .setScale(0.5);
-  bird.state = 'fly';
-  bird.threatCheck = scene.time.addEvent({
-    delay: 300,
-    loop: true,
-    callback: () => checkThreats(scene, bird)
-  });
-  const targetX = Phaser.Math.Between(200, 280);
-  const targetY = Phaser.Math.Between(260, 300);
-  bird.anims.play('sparrow_fly');
-  scene.tweens.add({
-    targets: bird,
-    x: targetX,
-    y: targetY,
-    duration: 1000,
-    onComplete: () => land(scene, bird)
-  });
+  const bird = {
+    sprite,
+    state: BirdState.FLY,
+    velocity: new Phaser.Math.Vector2(),
+    target: new Phaser.Math.Vector2(),
+    timer: 0,
+    scared: false,
+    threatTimer: 0,
+  };
+  bird.target.set(Phaser.Math.Between(200,280), Phaser.Math.Between(260,300));
+  bird.velocity.set(bird.target.x - startX, bird.target.y - startY).normalize().scale(60);
+  sprite.anims.play('sparrow_fly');
   scene.gameState.sparrows.push(bird);
 }
 
-function land(scene, bird){
-  bird.state = 'ground';
-  bird.anims.play('sparrow_ground');
-  bird.wait = scene.time.delayedCall(Phaser.Math.Between(2000, 4000), () => {
-    bird.anims.play('sparrow_peck');
-    bird.state = 'peck';
-  }, [], scene);
-}
-
-function flyAway(scene, bird){
-  if(bird.wait) bird.wait.remove(false);
-  bird.state = 'fly';
-  bird.anims.play('sparrow_fly');
-  const exitX = bird.x < 240 ? -40 : 520;
-  scene.tweens.add({
-    targets: bird,
-    x: exitX,
-    y: bird.y - 80,
-    duration: 600,
-    onComplete: () => {
-      if(bird.threatCheck) bird.threatCheck.remove(false);
-      const idx = scene.gameState.sparrows.indexOf(bird);
-      if(idx !== -1) scene.gameState.sparrows.splice(idx,1);
-      bird.destroy();
-    }
-  });
-}
-
-function checkThreats(scene, bird){
-  if(bird.state === 'fly') return;
-  const actors = [scene.gameState.activeCustomer, ...scene.gameState.queue, ...scene.gameState.wanderers];
-  for(const c of actors){
-    if(!c || !c.sprite) continue;
-    if(Phaser.Math.Distance.Between(bird.x, bird.y, c.sprite.x, c.sprite.y) < 50){
-      flyAway(scene, bird);
-      return;
-    }
-    if(c.dog && Phaser.Math.Distance.Between(bird.x, bird.y, c.dog.x, c.dog.y) < 60){
-      flyAway(scene, bird);
-      return;
-    }
-  }
-}
-
 export function scheduleSparrowSpawn(scene){
-  const delay = Phaser.Math.Between(5000, 10000);
+  const delay = Phaser.Math.Between(5000,10000);
   scene.time.delayedCall(delay, () => {
     spawnSparrow(scene);
     scheduleSparrowSpawn(scene);
   }, [], scene);
+}
+
+export function updateSparrows(scene, delta){
+  const dt = delta/1000;
+  const birds = scene.gameState.sparrows;
+  if(!Array.isArray(birds)) return;
+  for(const bird of birds){
+    bird.threatTimer -= dt;
+    if(bird.threatTimer <= 0){
+      checkThreats(scene, bird);
+      bird.threatTimer = 0.3;
+    }
+    switch(bird.state){
+      case BirdState.FLY:
+        flyUpdate(bird, dt);
+        if(bird.timer > 2.5){
+          bird.state = BirdState.LAND;
+          bird.timer = 0;
+        }
+        break;
+      case BirdState.LAND:
+        landUpdate(bird, dt);
+        break;
+      case BirdState.IDLE_GROUND:
+        idleUpdate(bird, dt);
+        break;
+      case BirdState.WANDER_GROUND:
+        wanderUpdate(bird, dt);
+        break;
+      case BirdState.FLEE:
+        fleeUpdate(bird, dt);
+        if(bird.timer > 2){
+          bird.state = BirdState.LAND;
+          bird.timer = 0;
+        }
+        break;
+      case BirdState.PERCH:
+        // stay still
+        break;
+      case BirdState.ALERT:
+        bird.timer -= dt;
+        if(bird.timer <= 0){
+          bird.state = BirdState.FLY;
+          bird.timer = 0;
+        }
+        break;
+    }
+  }
+}
+
+function flyUpdate(bird, dt){
+  bird.timer += dt;
+  bird.sprite.x += bird.velocity.x * dt;
+  bird.sprite.y += bird.velocity.y * dt;
+}
+
+function fleeUpdate(bird, dt){
+  bird.timer += dt;
+  bird.sprite.x += bird.velocity.x * dt * 1.5;
+  bird.sprite.y += bird.velocity.y * dt * 1.5;
+}
+
+function landUpdate(bird, dt){
+  const dx = bird.target.x - bird.sprite.x;
+  const dy = bird.target.y - bird.sprite.y;
+  bird.sprite.x += dx * 4 * dt;
+  bird.sprite.y += dy * 4 * dt;
+  if(Math.abs(dx) + Math.abs(dy) < 1){
+    bird.sprite.x = bird.target.x;
+    bird.sprite.y = bird.target.y;
+    bird.sprite.anims.play('sparrow_ground');
+    bird.state = BirdState.IDLE_GROUND;
+    bird.timer = Phaser.Math.FloatBetween(1,3);
+  }
+}
+
+function idleUpdate(bird, dt){
+  bird.timer -= dt;
+  if(bird.timer <= 0){
+    if(Math.random() < 0.3){
+      bird.state = BirdState.WANDER_GROUND;
+      bird.target.set(bird.sprite.x + Phaser.Math.Between(-30,30), bird.sprite.y);
+      bird.timer = Phaser.Math.FloatBetween(1,2);
+    }else{
+      bird.timer = Phaser.Math.FloatBetween(1,3);
+      if(Math.random() < 0.5) bird.sprite.anims.play('sparrow_peck', true);
+    }
+  }
+}
+
+function wanderUpdate(bird, dt){
+  const angle = Phaser.Math.Angle.Between(bird.sprite.x, bird.sprite.y, bird.target.x, bird.target.y);
+  const step = 20 * dt;
+  bird.sprite.x += Math.cos(angle)*step;
+  bird.sprite.y += Math.sin(angle)*step;
+  bird.timer -= dt;
+  if(Phaser.Math.Distance.Between(bird.sprite.x, bird.sprite.y, bird.target.x, bird.target.y) < 2 || bird.timer <= 0){
+    bird.state = BirdState.IDLE_GROUND;
+    bird.timer = Phaser.Math.FloatBetween(1,3);
+  }
+}
+
+function flee(scene, bird, vec){
+  bird.velocity.copy(vec.normalize().scale(60));
+  bird.sprite.anims.play('sparrow_fly');
+  bird.state = BirdState.FLEE;
+  bird.timer = 0;
+}
+
+function checkThreats(scene, bird){
+  if(bird.state === BirdState.FLY || bird.state === BirdState.FLEE) return;
+  const actors = [scene.gameState.activeCustomer, ...scene.gameState.queue, ...scene.gameState.wanderers];
+  for(const c of actors){
+    if(!c || !c.sprite) continue;
+    if(Phaser.Math.Distance.Between(bird.sprite.x, bird.sprite.y, c.sprite.x, c.sprite.y) < 50){
+      flee(scene, bird, new Phaser.Math.Vector2(bird.sprite.x - c.sprite.x, bird.sprite.y - c.sprite.y));
+      return;
+    }
+    if(c.dog && Phaser.Math.Distance.Between(bird.sprite.x, bird.sprite.y, c.dog.x, c.dog.y) < 60){
+      flee(scene, bird, new Phaser.Math.Vector2(bird.sprite.x - c.dog.x, bird.sprite.y - c.dog.y));
+      return;
+    }
+  }
 }

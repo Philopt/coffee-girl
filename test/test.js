@@ -648,6 +648,50 @@ function testScheduleNextSpawn() {
   console.log('scheduleNextSpawn behavior test passed');
 }
 
+function testLureNextWandererQueueLimit() {
+  const code = extractFunction(['main.js'], 'lureNextWanderer');
+  if (!code) throw new Error('lureNextWanderer not found');
+  const context = {
+    love: 50,
+    queue: [],
+    wanderers: [],
+    activeCustomer: null,
+    queueLimit: () => 4,
+    ORDER_X: 230,
+    ORDER_Y: 310,
+    QUEUE_X: 230 - 36 - 10,
+    QUEUE_Y: 315,
+    QUEUE_SPACING: 36,
+    QUEUE_OFFSET: 8,
+    LURE_SPEED: 1,
+    showDialog() {},
+    checkQueueSpacing() {},
+    curvedApproach(scene, sprite, dir, x, y, cb) {
+      sprite.x = x;
+      sprite.y = y;
+      const tw = {};
+      if (cb) cb();
+      return tw;
+    },
+    debugLog() {},
+    fn: null
+  };
+  loadGameState(context);
+  vm.createContext(context);
+  for (let i = 0; i < 4; i++) {
+    context.wanderers.push({ sprite: { x: 0, y: 0, displayHeight: 10, originY: 0, setDepth() {}, setScale() {} } });
+  }
+  vm.runInContext(code + '\nfn=lureNextWanderer;', context);
+  const lureNextWanderer = context.fn;
+  const scene = {};
+  for (let i = 0; i < context.queueLimit(); i++) {
+    lureNextWanderer(scene);
+    context.queue[i].walkTween = null;
+  }
+  assert.strictEqual(context.queue.length, context.queueLimit(), 'queue did not fill to limit');
+  console.log('lureNextWanderer queue limit test passed');
+}
+
 function testShowEndRestart() {
   const showEndSrc = extractFunction(['ui.js', 'main.js'], 'showEnd');
   const restartSrc = extractFunction(['ui.js', 'main.js'], 'restartGame');
@@ -856,6 +900,7 @@ async function run() {
     testShowDialogButtons();
     testAnimateLoveChange();
     testScheduleNextSpawn();
+    testLureNextWandererQueueLimit();
     testShowEndRestart();
     if (!SKIP_PUPPETEER) {
       await testIntroSequence();

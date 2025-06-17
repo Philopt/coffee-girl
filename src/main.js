@@ -231,6 +231,7 @@ export function setupGame(){
     if (typeof debugLog === 'function') {
       debugLog('lureNextWanderer', GameState.queue.length, GameState.wanderers.length, GameState.activeCustomer);
     }
+
     if(GameState.wanderers.length && GameState.queue.length < queueLimit()){
       if(GameState.queue.some(c=>c.walkTween)){
         if (typeof debugLog === 'function') {
@@ -238,6 +239,7 @@ export function setupGame(){
         }
         return;
       }
+
       let closestIdx=0;
       let minDist=Number.MAX_VALUE;
       for(let i=0;i<GameState.wanderers.length;i++){

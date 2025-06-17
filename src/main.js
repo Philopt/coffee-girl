@@ -3,6 +3,7 @@ import { dur, scaleForY, articleFor, flashMoney, START_PHONE_W, START_PHONE_H, B
 import { MENU, SPAWN_DELAY, SPAWN_VARIANCE, QUEUE_SPACING, ORDER_X, ORDER_Y, QUEUE_X, QUEUE_OFFSET, QUEUE_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel, maxWanderers as customersMaxWanderers, queueLimit as customersQueueLimit } from "./customers.js";
 import { baseConfig } from "./scene.js";
 import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from "./state.js";
+import { CustomerState } from './constants.js';
 export let Assets, Scene, Customers, config;
 export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;
 const DOG_MIN_Y = ORDER_Y + 20;
@@ -24,12 +25,12 @@ const DART_MAX_SPEED = CUSTOMER_SPEED * 3;
 // Raise it slightly so it appears near their hands instead of their feet
 const DRINK_HOLD_OFFSET = { x: 0, y: -20 };
 const HEART_EMOJIS = {
-  normal: null,
-  broken: '💔',
-  mending: '❤️‍🩹',
-  growing: '💗',
-  sparkling: '💖',
-  arrow: '💘'
+  [CustomerState.NORMAL]: null,
+  [CustomerState.BROKEN]: '💔',
+  [CustomerState.MENDING]: '❤️‍🩹',
+  [CustomerState.GROWING]: '💗',
+  [CustomerState.SPARKLING]: '💖',
+  [CustomerState.ARROW]: '💘'
 };
 export function setupGame(){
   if (typeof debugLog === 'function') debugLog('main.js loaded');
@@ -446,8 +447,8 @@ export function setupGame(){
     };
       const updateHeart = c => {
         if(!c.sprite || !c.sprite.scene) return;
-      const state = c.memory && c.memory.state || 'normal';
-      if(state !== 'normal'){
+      const state = c.memory && c.memory.state || CustomerState.NORMAL;
+      if(state !== CustomerState.NORMAL){
         if(!c.heartEmoji){
           c.heartEmoji = c.sprite.scene.add.text(c.sprite.x, c.sprite.y, HEART_EMOJIS[state] || '', {font:'28px sans-serif'})
             .setOrigin(0.5)
@@ -1170,10 +1171,23 @@ export function setupGame(){
     };
 
     const c={ orders:[] };
-    const k=Phaser.Utils.Array.GetRandom(keys);
+    const used=new Set();
+    if(GameState.activeCustomer&&GameState.activeCustomer.spriteKey){
+      used.add(GameState.activeCustomer.spriteKey);
+    }
+    GameState.queue.forEach(cust=>{
+      if(cust.spriteKey) used.add(cust.spriteKey);
+    });
+    GameState.wanderers.forEach(cust=>{
+      if(cust.spriteKey) used.add(cust.spriteKey);
+    });
+    let available=keys.filter(k=>!used.has(k));
+    if(available.length===0) available=keys.slice();
+    const k=Phaser.Utils.Array.GetRandom(available);
     c.spriteKey = k;
-    if(!GameState.customerMemory) GameState.customerMemory = {};
-    const memory = GameState.customerMemory[k] || { state: 'normal' };
+
+    const memory = GameState.customerMemory[k] || { state: CustomerState.NORMAL };
+
     GameState.customerMemory[k] = memory;
     c.memory = memory;
     const order=createOrder();
@@ -1216,7 +1230,7 @@ export function setupGame(){
     c.sprite=this.add.sprite(startX,startY,k).setScale(distScale);
     const bottomYStart = startY + c.sprite.displayHeight * (1 - c.sprite.originY);
     c.sprite.setDepth(5 + bottomYStart*0.006);
-    if(c.memory.state !== 'normal'){
+    if(c.memory.state !== CustomerState.NORMAL){
       c.heartEmoji = this.add.text(0,0,HEART_EMOJIS[c.memory.state]||'',{font:'28px sans-serif'})
         .setOrigin(0.5)
         .setShadow(0, 0, '#000', 4);
@@ -1628,37 +1642,37 @@ export function setupGame(){
       lD=-Phaser.Math.Between(1,3)*orderCount;
     }
 
-    const memory = current.memory || {state:'normal'};
+    const memory = current.memory || {state: CustomerState.NORMAL};
     const baseL = lD;
     switch(memory.state){
-      case 'broken':
+      case CustomerState.BROKEN:
         lD = Math.max(baseL - 1, 0);
-        if(type==='sell') memory.state = 'mending';
-        if(type==='give') memory.state = 'normal';
+        if(type==='sell') memory.state = CustomerState.MENDING;
+        if(type==='give') memory.state = CustomerState.NORMAL;
         break;
-      case 'mending':
-        if(type==='sell') memory.state = 'normal';
+      case CustomerState.MENDING:
+        if(type==='sell') memory.state = CustomerState.NORMAL;
         break;
-      case 'growing':
+      case CustomerState.GROWING:
         lD = Math.max(baseL,1) + 1;
-        if(type==='give') memory.state = 'sparkling';
+        if(type==='give') memory.state = CustomerState.SPARKLING;
         break;
-      case 'sparkling':
+      case CustomerState.SPARKLING:
         lD = Math.max(baseL,2) + 2;
-        if(type==='give') memory.state = 'arrow';
+        if(type==='give') memory.state = CustomerState.ARROW;
         break;
-      case 'arrow':
+      case CustomerState.ARROW:
         lD = baseL + 3;
-        if(type==='give') GameState.heartWin = HEART_EMOJIS.arrow;
+        if(type==='give') GameState.heartWin = HEART_EMOJIS[CustomerState.ARROW];
         break;
       default:
-        if(type==='give') memory.state = 'growing';
+        if(type==='give') memory.state = CustomerState.GROWING;
     }
     if(type==='refuse'){
-      memory.state = 'broken';
+      memory.state = CustomerState.BROKEN;
     }
     if(current.heartEmoji){ current.heartEmoji.destroy(); current.heartEmoji=null; }
-    if(memory.state !== 'normal' && current.sprite){
+    if(memory.state !== CustomerState.NORMAL && current.sprite){
       current.heartEmoji = current.sprite.scene.add.text(0,0,HEART_EMOJIS[memory.state]||'',{font:'28px sans-serif'})
         .setOrigin(0.5)
         .setShadow(0, 0, '#000', 4);
@@ -2100,7 +2114,7 @@ export function setupGame(){
         const dir=c.sprite.x<ORDER_X? -1:1;
         const targetX=dir===1?520:-40;
         const tl=scene.tweens.createTimeline();
-        for(let i=0;i<3;i++){
+        for(let i=0;i<5;i++){
           tl.add({targets:c.sprite,
                   x:Phaser.Math.Between(40,440),
                   y:Phaser.Math.Between(WANDER_TOP,WANDER_BOTTOM),
@@ -2120,6 +2134,33 @@ export function setupGame(){
                   c.sprite.destroy();
                 }});
         tl.play();
+
+        if(c.dog){
+          const dog=c.dog;
+          if(dog.followEvent) dog.followEvent.remove(false);
+          const bark=scene.add.text(dog.x,dog.y-20,'BARK!',{font:'16px sans-serif',fill:'#000'})
+            .setOrigin(0.5).setDepth(dog.depth+1);
+          scene.tweens.add({targets:bark,y:'-=20',alpha:0,duration:dur(600),onComplete:()=>bark.destroy()});
+          const dTl=scene.tweens.createTimeline();
+          for(let j=0;j<4;j++){
+            const ang=Phaser.Math.FloatBetween(0,Math.PI*2);
+            const r=Phaser.Math.Between(40,60);
+            const dx=girl.x+Math.cos(ang)*r;
+            const dy=girl.y+Math.sin(ang)*r;
+            dTl.add({targets:dog,x:dx,y:dy,duration:dur(Phaser.Math.Between(200,350)),ease:'Sine.easeInOut'});
+          }
+          dTl.add({targets:dog,x:targetX,y:dog.y,duration:dur(WALK_OFF_BASE/1.5),onComplete:()=>dog.destroy()});
+          dTl.setCallback('onUpdate',(tw,t)=>{
+            if(t.prevX===undefined) t.prevX=t.x;
+            const dx=t.x-t.prevX;
+            if(Math.abs(dx)>3){ t.dir=dx>0?1:-1; }
+            t.prevX=t.x;
+            const s=scaleForY(t.y)*0.5;
+            t.setScale(s*(t.dir||1), s);
+          });
+          dTl.play();
+          c.dog=null;
+        }
       });
       // keep references so restartGame can properly clean up any remaining
       // sprites even if the tweens are interrupted
@@ -2148,7 +2189,7 @@ export function setupGame(){
             falcon.destroy();
             if(cb) cb();
         }});
-        for(let i=0;i<5;i++){
+        for(let i=0;i<4;i++){
           tl.add({targets:falcon,y:targetY+10,duration:dur(80),yoyo:true});
           tl.add({targets:girl,y:girl.y+5,duration:dur(80),yoyo:true,
                    onStart:()=>{ girl.setTint(0xff0000); sprinkleBursts(scene); },

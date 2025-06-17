@@ -44,6 +44,16 @@ function loadGameState(context) {
   context.GameState = context;
 }
 
+function loadCustomerState(context) {
+  const constPath = path.join(__dirname, '..', 'src', 'constants.js');
+  if (!fs.existsSync(constPath)) return;
+  const code = fs.readFileSync(constPath, 'utf8');
+  const m = /export const CustomerState = (\{[\s\S]*?\});/.exec(code);
+  if (m) {
+    context.CustomerState = Function(`return ${m[1]}`)();
+  }
+}
+
 function readModule(...names) {
   for (const n of names) {
     const file = path.join(__dirname, '..', 'src', n);
@@ -168,6 +178,7 @@ function testSpawnCustomer() {
     floatingEmojis: []
   };
   loadGameState(context);
+  loadCustomerState(context);
   vm.createContext(context);
   vm.runInContext(match[0] + '\nfn=spawnCustomer;', context);
   const spawnCustomer = context.fn;
@@ -217,6 +228,7 @@ function testSpawnCustomerQueuesWhenEmpty() {
   };
   context.lureNextWanderer = function(){ context.queue.push(context.wanderers.shift()); };
   loadGameState(context);
+  loadCustomerState(context);
   vm.createContext(context);
   vm.runInContext(match[0] + '\nfn=spawnCustomer;', context);
   const spawnCustomer = context.fn;
@@ -274,6 +286,7 @@ function testHandleActionSell() {
     fn: null
   };
   loadGameState(context);
+  loadCustomerState(context);
   vm.createContext(context);
   context.animateLoveChange = function(delta, c, cb) { context.love += delta; if (cb) cb(); };
   vm.runInContext('const dur=v=>v;\n' + recMatch[0] + '\n' + actMatch[0] + '\nfn=handleAction;', context);
@@ -304,6 +317,7 @@ function testShowStartScreen() {
   RectStub.Contains = () => true;
   const context = { Phaser: { Geom: { Rectangle: RectStub } }, debugLog() {} };
   loadGameState(context);
+  loadCustomerState(context);
   vm.createContext(context);
   context.fn = null;
   vm.runInContext('let startOverlay,startButton,startMsgTimers=[],startMsgBubbles=[];const playIntro=()=>{};\n' + match[0] + '\nfn=showStartScreen;', context);
@@ -354,6 +368,7 @@ function testStartButtonPlaysIntro() {
   RectStub.Contains = () => true;
   const context = { Phaser: { Geom: { Rectangle: RectStub } }, spawnCustomer: () => {}, scheduleNextSpawn: () => {}, debugLog() {} };
   loadGameState(context);
+  loadCustomerState(context);
   vm.createContext(context);
   context.fnStart = null;
   context.fnIntro = null;
@@ -494,6 +509,7 @@ function testShowDialogButtons() {
     tweens: { add(cfg) { if (cfg.onComplete) cfg.onComplete(); return {}; } },
   };
   loadGameState(context);
+  loadCustomerState(context);
   vm.createContext(context);
   context.fn = null;
   vm.runInContext('const dur=v=>v;\n' + match[0] + '\nfn=showDialog;', context);
@@ -566,6 +582,7 @@ function testAnimateLoveChange() {
     floatingEmojis: []
   };
   loadGameState(context);
+  loadCustomerState(context);
   vm.createContext(context);
   vm.runInContext(
     'updateLevelDisplay = function(){ const lvl = calcLoveLevel(love); queueLevelText.setText("Lv. " + lvl); queueLevelText.setVisible(lvl >= 2); loveLevel = lvl; };',
@@ -612,6 +629,7 @@ function testScheduleNextSpawn() {
     fn: null
   };
   loadGameState(context);
+  loadCustomerState(context);
   vm.createContext(context);
   vm.runInContext(code + '\nfn=scheduleNextSpawn;', context);
   const scheduleNextSpawn = context.fn;
@@ -679,6 +697,7 @@ function testLureNextWandererQueueLimit() {
     fn: null
   };
   loadGameState(context);
+  loadCustomerState(context);
   vm.createContext(context);
   for (let i = 0; i < 4; i++) {
     context.wanderers.push({ sprite: { x: 0, y: 0, displayHeight: 10, originY: 0, setDepth() {}, setScale() {} } });
@@ -733,6 +752,7 @@ function testShowEndRestart() {
     fnEnd: null
   };
   loadGameState(context);
+  loadCustomerState(context);
   vm.createContext(context);
   vm.runInContext(`${showEndSrc}\nfnEnd=showEnd;\n${restartSrc}`, context);
   const showEnd = context.fnEnd;

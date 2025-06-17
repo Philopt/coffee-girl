@@ -48,7 +48,7 @@ export function setupGame(){
   // state is managed in GameState
 
   const keys=[];
-  const requiredAssets=['bg','truck','girl','lady_falcon','falcon_end','revolt_end','sparrow'];
+  const requiredAssets=['bg','truck','girl','lady_falcon','falcon_end','revolt_end','sparrow','sparrow2'];
   const genzSprites=[
     'new_kid_0_0','new_kid_0_1','new_kid_0_2','new_kid_0_4','new_kid_0_5',
     'new_kid_1_0','new_kid_1_1','new_kid_1_2','new_kid_1_3','new_kid_1_4','new_kid_1_5',
@@ -802,6 +802,12 @@ export function setupGame(){
     phoneContainer = scene.add.container(240,containerY,[caseG,blackG,whiteG,homeG])
       .setDepth(15);
 
+    const bigBird = scene.add.sprite(0,-phoneH/2 + 60,'sparrow2',0)
+      .setScale(3)
+      .setDepth(16);
+    bigBird.anims.play('sparrow2_fly');
+    phoneContainer.add(bigBird);
+
     startButton = scene.add.container(0,offsetY,[btnBg,btnLabel])
       .setSize(bw,bh)
       .setInteractive({ useHandCursor: true });
@@ -1001,6 +1007,7 @@ export function setupGame(){
     loader.image('falcon_end','assets/ladyfalconend.png');
     loader.image('revolt_end','assets/revolt.png');
     loader.spritesheet('sparrow','assets/sparrow.png',{frameWidth:16,frameHeight:16});
+    loader.spritesheet('sparrow2','assets/sparrow2.png',{frameWidth:20,frameHeight:20});
     for(const k of genzSprites){
       keys.push(k);
       requiredAssets.push(k);
@@ -1065,6 +1072,24 @@ export function setupGame(){
     this.anims.create({
       key:'sparrow_peck',
       frames:this.anims.generateFrameNumbers('sparrow',{start:6,end:8}),
+      frameRate:6,
+      repeat:-1
+    });
+    this.anims.create({
+      key:'sparrow2_fly',
+      frames:this.anims.generateFrameNumbers('sparrow2',{start:0,end:2}),
+      frameRate:8,
+      repeat:-1
+    });
+    this.anims.create({
+      key:'sparrow2_ground',
+      frames:this.anims.generateFrameNumbers('sparrow2',{start:3,end:5}),
+      frameRate:4,
+      repeat:-1
+    });
+    this.anims.create({
+      key:'sparrow2_peck',
+      frames:this.anims.generateFrameNumbers('sparrow2',{start:6,end:8}),
       frameRate:6,
       repeat:-1
     });

@@ -1106,7 +1106,7 @@ export function setupGame(){
           c.dog=null;
         }
         c.sprite.destroy();
-        this.startDialogue && this.startDialogue(c);
+//         this.startDialogue && this.startDialogue(c);
       }});
 
     GameState.wanderers.push(c);

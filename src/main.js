@@ -1007,31 +1007,31 @@ export function setupGame(){
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
     reportLine3=this.add.text(480,loveText.y,'',{font:'16px sans-serif',fill:'#fff'})
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
-    tipText=this.add.text(0,0,'',{font:'28px sans-serif',fill:'#0a0'})
+    tipText=this.add.text(0,0,'',{font:'bold 24px sans-serif',fill:'#0a0',stroke:'#0a0',strokeThickness:2})
       .setOrigin(0.5)
       .setDepth(12)
       .setVisible(false)
-      .setAlpha(0.5);
+      .setAlpha(1);
     paidStamp=this.add.text(0,0,'PAID',{
-        font:'40px sans-serif',
+        font:'bold 32px sans-serif',
         fill:'#0a0',
         stroke:'#0a0',
-        strokeThickness:1
+        strokeThickness:2
       })
       .setOrigin(0.5)
       .setDepth(12)
       .setVisible(false)
-      .setAlpha(0.5);
+      .setAlpha(1);
     lossStamp=this.add.text(0,0,'LOSS',{
-        font:'40px sans-serif',
+        font:'bold 32px sans-serif',
         fill:'#a00',
         stroke:'#a00',
-        strokeThickness:1
+        strokeThickness:2
       })
       .setOrigin(0.5)
       .setDepth(12)
       .setVisible(false)
-      .setAlpha(0.5);
+      .setAlpha(1);
 
     // wait for player to start the shift
     showStartScreen.call(this);
@@ -1605,9 +1605,10 @@ export function setupGame(){
       }
       paidStamp
         .setText('PAID')
-        .setScale(1.5)
-        .setPosition(centerX, stampY)
+        .setScale(1.4 + Phaser.Math.FloatBetween(-0.1, 0.1))
+        .setPosition(centerX + Phaser.Math.Between(-3,3), stampY + Phaser.Math.Between(-3,3))
         .setAngle(Phaser.Math.Between(-10,10))
+        .setSkew(Phaser.Math.FloatBetween(-0.03,0.03), Phaser.Math.FloatBetween(-0.03,0.03))
         .setVisible(true);
       t.setPosition(t.x, 15);
 
@@ -1626,9 +1627,10 @@ export function setupGame(){
           const oldLeft = t.x - t.displayWidth/2;
           tipText
             .setText('TIP')
-            .setScale(1.4)
-            .setPosition(tipX, tipY)
+            .setScale(1.3 + Phaser.Math.FloatBetween(-0.1, 0.1))
+            .setPosition(tipX + Phaser.Math.Between(-3,3), tipY + Phaser.Math.Between(-3,3))
             .setAngle(Phaser.Math.Between(-15,15))
+            .setSkew(Phaser.Math.FloatBetween(-0.03,0.03), Phaser.Math.FloatBetween(-0.03,0.03))
             .setVisible(true);
           t.setText(receipt(totalCost + tip));
           t.setPosition(oldLeft + t.displayWidth/2, t.y);
@@ -1678,9 +1680,10 @@ export function setupGame(){
       const stampY=ticket.y + Phaser.Math.Between(-5,5);
       lossStamp
         .setText('LOSS')
-        .setScale(1.5)
+        .setScale(1.4 + Phaser.Math.FloatBetween(-0.1, 0.1))
         .setPosition(stampX, stampY)
         .setAngle(Phaser.Math.Between(-10,10))
+        .setSkew(Phaser.Math.FloatBetween(-0.03,0.03), Phaser.Math.FloatBetween(-0.03,0.03))
         .setVisible(true);
       t.setPosition(t.x, 15);
       this.time.delayedCall(dur(1000),()=>{

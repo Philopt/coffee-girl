@@ -10,6 +10,7 @@ export const BUTTON_Y = 560;
 // Default vertical position for the order dialog bubble
 export const DIALOG_Y = 430;
 
+// Wraps timing values so any global speed adjustments can be made here
 export const dur = v => v;
 
 export function scaleForY(y) {

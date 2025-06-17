@@ -303,6 +303,7 @@ export function setupGame(){
       if(cust.sprite.y!==ty || cust.sprite.x!==tx){
         const dir = cust.dir || (cust.sprite.x < tx ? 1 : -1);
         cust.walkTween = curvedApproach(scene, cust.sprite, dir, tx, ty, () => {
+          cust.walkTween = null;
           if(idx===0){
             if (typeof debugLog === 'function') debugLog('customer reached order position');
             if (typeof debugLog === 'function') {

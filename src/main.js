@@ -930,10 +930,8 @@ export function setupGame(){
       .setOrigin(0.5);
     dialogPriceValue=this.add.text(0,15,'',{font:'32px sans-serif',fill:'#000'})
       .setOrigin(0.5);
-    // Use a light gray tint so the emoji is desaturated but still visible
     dialogDrinkEmoji=this.add.text(-30,-20,'',{font:'24px sans-serif'})
-      .setOrigin(0.5)
-      .setTint(0xbfbfbf);
+      .setOrigin(0.5);
 
     dialogPriceContainer=this.add.container(0,0,[dialogPriceBox, dialogDrinkEmoji, dialogPriceLabel, dialogPriceValue])
       .setDepth(11)
@@ -1296,7 +1294,6 @@ export function setupGame(){
       .setText(emojiFor(c.orders[0].req))
       .setPosition(-dialogPriceBox.width/2+23,-dialogPriceBox.height/2+23)
       .setScale(1.2)
-      .setTint(0x555555)
       .setVisible(true);
 
     this.tweens.add({
@@ -1382,30 +1379,7 @@ export function setupGame(){
   function handleAction(type){
     const current=GameState.activeCustomer;
     if ((type==='sell' || type==='give') && dialogDrinkEmoji && dialogPriceContainer && dialogPriceContainer.visible) {
-      const gx = dialogPriceContainer.x + dialogDrinkEmoji.x * dialogPriceContainer.scaleX;
-      const gy = dialogPriceContainer.y + dialogDrinkEmoji.y * dialogPriceContainer.scaleY;
-      dialogPriceContainer.remove(dialogDrinkEmoji);
-      dialogDrinkEmoji.setPosition(gx, gy);
       dialogDrinkEmoji.clearTint();
-      const frontDepth = Math.max(current.sprite.depth, girl.depth) + 1;
-      dialogDrinkEmoji.setDepth(frontDepth);
-      const sp = this.add.text(gx, gy, '✨', { font: '18px sans-serif', fill: '#fff' })
-        .setOrigin(0.5)
-        .setDepth(dialogDrinkEmoji.depth + 1);
-      this.tweens.add({ targets: sp, scale: 1.5, alpha: 0, duration: dur(300), onComplete: () => sp.destroy() });
-      if (current && current.sprite) {
-        const cust = current.sprite;
-        const nudgeX = (240 - gx) * 0.1;
-        const startX = gx + nudgeX;
-        this.tweens.add({
-          targets: dialogDrinkEmoji,
-          x: startX,
-          scale: 1.2,
-          ease: 'Sine.easeOut',
-          duration: dur(150),
-          onComplete: () => { flingDrink(this, startX, gy, cust); }
-        });
-      }
     }
     if(current){
       const bubbleObjs=[];
@@ -1622,26 +1596,7 @@ export function setupGame(){
             }
 
             if(dialogDrinkEmoji){
-              const gx = ticket.x + dialogDrinkEmoji.x * ticket.scaleX;
-              const gy = ticket.y + dialogDrinkEmoji.y * ticket.scaleY;
-              dialogPriceContainer.remove(dialogDrinkEmoji);
-              dialogDrinkEmoji.setPosition(gx, gy);
               dialogDrinkEmoji.clearTint();
-              const frontDepth = Math.max(customer.depth, girl.depth) + 1;
-              dialogDrinkEmoji.setDepth(frontDepth);
-              const sp = this.add.text(gx, gy, '✨',{font:'18px sans-serif',fill:'#fff'})
-                .setOrigin(0.5).setDepth(dialogDrinkEmoji.depth+1);
-              this.tweens.add({targets:sp,scale:1.5,alpha:0,duration:dur(300),onComplete:()=>sp.destroy()});
-              const nudgeX = (240 - gx) * 0.1;
-              const startX = gx + nudgeX;
-              this.tweens.add({
-                targets: dialogDrinkEmoji,
-                x: startX,
-                scale: 1.2,
-                ease: 'Sine.easeOut',
-                duration: dur(150),
-                onComplete: () => { flingDrink(this, startX, gy, customer); }
-              });
             }
 
           }});
@@ -1689,26 +1644,7 @@ export function setupGame(){
             }
 
             if(dialogDrinkEmoji){
-              const gx = ticket.x + dialogDrinkEmoji.x * ticket.scaleX;
-              const gy = ticket.y + dialogDrinkEmoji.y * ticket.scaleY;
-              dialogPriceContainer.remove(dialogDrinkEmoji);
-              dialogDrinkEmoji.setPosition(gx, gy);
               dialogDrinkEmoji.clearTint();
-              const frontDepth = Math.max(customer.depth, girl.depth) + 1;
-              dialogDrinkEmoji.setDepth(frontDepth);
-              const sp = this.add.text(gx, gy, '✨',{font:'18px sans-serif',fill:'#fff'})
-                .setOrigin(0.5).setDepth(dialogDrinkEmoji.depth+1);
-              this.tweens.add({targets:sp,scale:1.5,alpha:0,duration:dur(300),onComplete:()=>sp.destroy()});
-              const nudgeX = (240 - gx) * 0.1;
-              const startX = gx + nudgeX;
-              this.tweens.add({
-                targets: dialogDrinkEmoji,
-                x: startX,
-                scale: 1.2,
-                ease: 'Sine.easeOut',
-                duration: dur(150),
-                onComplete: () => { flingDrink(this, startX, gy, customer); }
-              });
             }
 
           }});

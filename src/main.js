@@ -1577,11 +1577,7 @@ export function setupGame(){
     let mD=0, lD=0, tip=0;
     if(type==='sell'){
       lD=Phaser.Math.Between(0,2)*orderCount;
-      tip=+(totalCost*0.15*lD).toFixed(2);
-      const coins=current.orders[0].coins;
-      const maxTip=Math.max(0, coins-totalCost);
-      if(tip>maxTip) tip=+maxTip.toFixed(2);
-      mD=totalCost+tip;
+      mD=totalCost; // tip added later based on mood
     } else if(type==='give'){
       lD=Phaser.Math.Between(2,4)*orderCount;
       mD=-totalCost;
@@ -1625,7 +1621,37 @@ export function setupGame(){
         .setShadow(0, 0, '#000', 4);
     }
 
-    const tipPct=type==='sell'?lD*15:0;
+    if(type==='sell'){
+      let pct=0;
+      switch(memory.state){
+        case CustomerState.BROKEN:
+        case CustomerState.MENDING:
+          pct=0;
+          break;
+        case CustomerState.NORMAL:
+          pct = Phaser.Math.Between(0,1)===0 ? 0.25 : 0;
+          break;
+        case CustomerState.GROWING:
+          pct=0.25;
+          break;
+        case CustomerState.SPARKLING:
+          pct=0.50;
+          break;
+        case CustomerState.ARROW:
+          pct=1.00;
+          break;
+        default:
+          pct=0;
+      }
+
+      const coins=current.orders[0].coins;
+      const maxTip=Math.max(0, coins-totalCost);
+      const desiredTip=totalCost*pct;
+      tip=+Math.min(desiredTip, maxTip).toFixed(2);
+      mD += tip;
+    }
+
+    const tipPct=type==='sell'? (totalCost>0? Math.round((tip/totalCost)*100):0):0;
     const customer=current.sprite;
     GameState.activeCustomer=null;
 

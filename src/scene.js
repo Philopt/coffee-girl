@@ -8,5 +8,8 @@ export const baseConfig = {
     width: 480,
     height: 640
   },
-  pixelArt: true
+  pixelArt: true,
+  contextCreation: {
+    willReadFrequently: true
+  }
 };

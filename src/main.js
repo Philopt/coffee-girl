@@ -1801,6 +1801,23 @@ export function setupGame(){
       if(GameState.activeCustomer && !fleeing.includes(GameState.activeCustomer)){
         fleeing.push(GameState.activeCustomer);
       }
+      // include any stray customer sprites whose tweens were killed
+      const known=new Set(fleeing.map(c=>c.sprite));
+      scene.children.list.forEach(child=>{
+        if(child.texture && keys.includes(child.texture.key) && !known.has(child)){
+          fleeing.push({sprite:child});
+          known.add(child);
+        }
+      });
+      // remove any loose dogs not associated with a customer
+      scene.children.list.forEach(child=>{
+        if(child instanceof Phaser.GameObjects.Text &&
+           DOG_TYPES.some(d=>d.emoji===child.text) &&
+           !fleeing.some(c=>c.dog===child)){
+          child.destroy();
+        }
+      });
+
       fleeing.forEach(c=>{
         if(c.walkTween){ c.walkTween.stop(); c.walkTween=null; }
         const dir=c.sprite.x<ORDER_X? -1:1;

@@ -1067,9 +1067,10 @@ export function setupGame(){
         callback:()=>{updateDog.call(this,c);}
       });
     }
-    const amp=Phaser.Math.Between(10,25);
-    const freq=Phaser.Math.Between(2,4);
-    c.walkTween = this.tweens.add({targets:c.sprite,x:targetX,duration:dur(6000),onUpdate:(tw,t)=>{
+    const amp = Phaser.Math.Between(15, 30);
+    const freq = Phaser.Math.FloatBetween(1.5, 4.5);
+    const walkDuration = Phaser.Math.Between(5000, 7000);
+    c.walkTween = this.tweens.add({targets:c.sprite,x:targetX,duration:dur(walkDuration),onUpdate:(tw,t)=>{
         const p=tw.progress;
         t.y=startY+Math.sin(p*Math.PI*freq)*amp;
         t.setScale(scaleForY(t.y));

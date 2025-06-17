@@ -1817,7 +1817,7 @@ export function setupGame(){
         current.sprite.destroy();
         if(GameState.money<=0){
           showFalconAttack.call(this,()=>{
-            showEnd.call(this,'Game Over\nYou lost all the money.\nLady Falcon reclaims the coffee truck.');
+            showEnd.call(this,'Game Over\nYou lost all the money.\nLady Falcon reclaims the coffee truck.', null, {keepTweens:true});
           });
           return;
         }
@@ -2459,10 +2459,13 @@ export function setupGame(){
     });
   }
 
-  function showEnd(msg, bigEmoji){
+  function showEnd(msg, bigEmoji, opts){
     const scene=this;
-    scene.tweens.killAll();
-    scene.time.removeAllEvents();
+    const keepTweens = opts && opts.keepTweens;
+    if(!keepTweens){
+      scene.tweens.killAll();
+      scene.time.removeAllEvents();
+    }
     cleanupFloatingEmojis();
     cleanupHeartEmojis();
     hideOverlayTexts();

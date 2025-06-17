@@ -231,8 +231,11 @@ export function setupGame(){
     if (typeof debugLog === 'function') {
       debugLog('lureNextWanderer', GameState.queue.length, GameState.wanderers.length, GameState.activeCustomer);
     }
-    if(GameState.wanderers.length && GameState.queue.length < queueLimit()){
-      if(GameState.queue.some(c=>c.walkTween)) return;
+    while(
+      GameState.wanderers.length > 0 &&
+      GameState.queue.length < queueLimit() &&
+      !GameState.queue.some(c => c.walkTween)
+    ){
       let closestIdx=0;
       let minDist=Number.MAX_VALUE;
       for(let i=0;i<GameState.wanderers.length;i++){

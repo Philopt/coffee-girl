@@ -1611,7 +1611,8 @@ export function setupGame(){
       const destX=moneyText.x+moneyText.width-15;
       const destY=moneyText.y+10;
       t.setVisible(true);
-      t.setDepth(paidStamp.depth+1);
+      // start below the stamp so the stamp appears on top first
+      t.setDepth(paidStamp.depth-1);
       const baseLeft = t.x - t.displayWidth/2;
       t.setText(receipt(totalCost));
       t.setPosition(baseLeft + t.displayWidth/2, t.y);
@@ -1628,6 +1629,10 @@ export function setupGame(){
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
       applyRandomSkew(paidStamp);
+      // raise the price above the stamp after the stamp lands
+      this.time.delayedCall(dur(300), () => {
+        t.setDepth(paidStamp.depth + 1);
+      }, [], this);
       t.setPosition(t.x, 15);
 
       const flashPrice=()=>{
@@ -1693,7 +1698,8 @@ export function setupGame(){
       const destX=moneyText.x+moneyText.width-15;
       const destY=moneyText.y+10;
       t.setVisible(true)
-        .setDepth(lossStamp.depth+1);
+        // start below the stamp so the stamp animation appears on top
+        .setDepth(lossStamp.depth-1);
       const stampX=ticket.x + Phaser.Math.Between(-5,5);
       const stampY=ticket.y + Phaser.Math.Between(-5,5);
       lossStamp
@@ -1703,6 +1709,10 @@ export function setupGame(){
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
       applyRandomSkew(lossStamp);
+      // raise the price above the stamp after the stamp lands
+      this.time.delayedCall(dur(300), () => {
+        t.setDepth(lossStamp.depth + 1);
+      }, [], this);
       t.setPosition(t.x, 15);
       this.time.delayedCall(dur(1000),()=>{
         lossStamp.setVisible(false);

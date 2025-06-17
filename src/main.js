@@ -261,12 +261,16 @@ export function setupGame(){
   }
 
 
+  // Move a wanderer from the crowd into the queue.
+  // scene    - Phaser.Scene used for tween creation
+  // specific - optional customer object to lure instead of the nearest one
   function lureNextWanderer(scene, specific){
     if (typeof debugLog === 'function') {
       debugLog('lureNextWanderer', GameState.queue.length, GameState.wanderers.length, GameState.activeCustomer);
     }
 
     if(GameState.wanderers.length && GameState.queue.length < queueLimit()){
+      // Skip if any queued customer is still walking to position
       if(GameState.queue.some(c=>c.walkTween)){
         if (typeof debugLog === 'function') {
           debugLog('lureNextWanderer abort: walkTween active');
@@ -275,6 +279,7 @@ export function setupGame(){
       }
 
       let c;
+      // Pick which wanderer to lure: either the given one or the closest
       if(specific){
         const idx = GameState.wanderers.indexOf(specific);
         if(idx===-1) return;
@@ -288,6 +293,7 @@ export function setupGame(){
         }
         c=GameState.wanderers.splice(closestIdx,1)[0];
       }
+      // Cancel any wandering motion so the dog starts from its current spot
       if(c.walkTween){
         c.walkTween.stop();
         c.walkTween.remove();
@@ -303,6 +309,8 @@ export function setupGame(){
       const bottomY = c.sprite.y + c.sprite.displayHeight * (1 - c.sprite.originY);
       c.sprite.setDepth(5 + bottomY*0.006);
       const dir = c.dir || (c.sprite.x < targetX ? 1 : -1);
+      // Tween the customer into place. When the first reaches ORDER_X/Y,
+      // show the dialog.
       c.walkTween = curvedApproach(scene, c.sprite, dir, targetX, targetY, () => {
         if (idx===0 && typeof debugLog === 'function') debugLog('customer reached order position');
         c.walkTween = null;
@@ -317,6 +325,7 @@ export function setupGame(){
     }
   }
 
+  // Advance every queued customer one slot closer to the counter
   function moveQueueForward(){
     if (typeof debugLog === 'function') {
       debugLog('moveQueueForward', GameState.queue.length, GameState.wanderers.length, GameState.activeCustomer);
@@ -328,6 +337,7 @@ export function setupGame(){
       const ty = idx===0 ? ORDER_Y : QUEUE_Y - QUEUE_OFFSET*(idx-1);
       if(cust.sprite.y!==ty || cust.sprite.x!==tx){
         const dir = cust.dir || (cust.sprite.x < tx ? 1 : -1);
+        // Move the customer toward their new queue position
         cust.walkTween = curvedApproach(scene, cust.sprite, dir, tx, ty, () => {
           cust.walkTween = null;
           if(idx===0){
@@ -477,6 +487,8 @@ export function setupGame(){
   }
 
 
+  // Keep the dog positioned near its owner and react to other customers.
+  // owner - customer object that the dog follows
   function updateDog(owner){
     const dog = owner && owner.dog;
     if(!dog || !owner.sprite) return;
@@ -487,23 +499,26 @@ export function setupGame(){
     let targetX = ms.x, targetY = ms.y;
     const type = dog.dogType || 'standard';
     if(type==='service'){
+      // Service dogs stay very close to their owner
       radius = 50;
       near = 30;
     }
     if(type==='guide'){
+      // Guide dogs walk slightly ahead in the owner's facing direction
       const dir=owner.dir||1;
       targetX = ms.x + dir*40;
     }
 
+    // Other customers that might distract or block the dog
     const others=[...GameState.queue,...GameState.wanderers].filter(c=>c!==owner&&c.sprite);
-    // Stop any existing movement tweens so new motions start from the dog's
-    // current position. This prevents teleport-like jumps when multiple tweens
-    // overlap.
+    // Stop existing tweens so new moves start from the dog's current position
+    // and avoid teleport-like jumps when motions overlap.
     if(dog.currentTween){
       dog.currentTween.stop();
       dog.currentTween=null;
     }
     if(type!=='service' && !dog.excited){
+      // Non-service dogs may run over to greet nearby customers
       const seen=others.find(o=>Phaser.Math.Distance.Between(dog.x,dog.y,o.sprite.x,o.sprite.y)<80);
       if(seen){
         dog.excited=true;
@@ -526,12 +541,14 @@ export function setupGame(){
         });
         tl.setCallback('onComplete',()=>{dog.excited=false; dog.currentTween=null;});
         dog.currentTween=tl;
+        // Play the greeting animation, then return to the owner
         tl.play();
         return;
       }
 
     }
     if(dogDist <= radius){
+      // Avoid bumping into other customers if they're very close
       for(const o of others){
         const d=Phaser.Math.Distance.Between(dog.x,dog.y,o.sprite.x,o.sprite.y);
         if(d<near){
@@ -543,6 +560,7 @@ export function setupGame(){
         }
       }
       if(targetX===ms.x && targetY===ms.y){
+        // Wander around the owner a little so the dog isn't perfectly static
         const side=Phaser.Math.Between(0,1)?1:-1;
         const offsetX=side*Phaser.Math.Between(20,30);
         const offsetY=Phaser.Math.Between(10,20);
@@ -560,6 +578,7 @@ export function setupGame(){
     if(Math.abs(targetX-dog.x) > 3){
       dog.dir = targetX > dog.x ? 1 : -1;
     }
+    // Slide the dog toward its chosen target position
     dog.currentTween=this.tweens.add({targets:dog,x:targetX,y:targetY,duration,
       onUpdate:(tw,t)=>{
         if(t.prevX===undefined) t.prevX=t.x;
@@ -576,6 +595,9 @@ export function setupGame(){
       onComplete:()=>{dog.currentTween=null;}});
   }
 
+  // Tween the dog off screen to the given coordinates and then destroy it.
+  // dog - sprite to move
+  // x,y - destination coordinates
   function sendDogOffscreen(dog, x, y){
     if(!dog) return;
     if(dog.followEvent) dog.followEvent.remove(false);
@@ -583,6 +605,7 @@ export function setupGame(){
     if(Math.abs(x-dog.x) > 3){
       dog.dir = x>dog.x?1:-1;
     }
+    // Move the dog to the exit point and remove the sprite when done
     this.tweens.add({targets:dog,x,y,duration:dur((dist/DOG_SPEED)*1000),
       onUpdate:(tw,t)=>{
         if(t.prevX===undefined) t.prevX=t.x;

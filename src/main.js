@@ -1103,7 +1103,7 @@ export function setupGame(){
       }});
 
     GameState.wanderers.push(c);
-    if(GameState.queue.length===0){
+    if(GameState.queue.length < queueLimit()){
 
       lureNextWanderer(this);
     }
@@ -1111,7 +1111,7 @@ export function setupGame(){
     if(this.time && this.time.delayedCall){
       this.time.delayedCall(1000, ()=>{
 
-        if(GameState.queue.length===0 && GameState.wanderers.includes(c)){
+        if(GameState.queue.length < queueLimit() && GameState.wanderers.includes(c)){
 
           lureNextWanderer(this);
         }

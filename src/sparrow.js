@@ -33,12 +33,20 @@ export function spawnSparrow(scene){
     state: BirdState.FLY,
     velocity: new Phaser.Math.Vector2(),
     target: new Phaser.Math.Vector2(),
+    curve: null,
+    followVec: new Phaser.Math.Vector2(),
     timer: 0,
     scared: false,
     threatTimer: 0,
   };
   bird.target.copy(randomTarget(scene));
-  bird.velocity.set(bird.target.x - startX, bird.target.y - startY).normalize().scale(60);
+  const controlX = Phaser.Math.Between(startX - 60, startX + 60);
+  const controlY = startY - Phaser.Math.Between(30, 80);
+  bird.curve = new Phaser.Curves.QuadraticBezier(
+    new Phaser.Math.Vector2(startX, startY),
+    new Phaser.Math.Vector2(controlX, controlY),
+    new Phaser.Math.Vector2(bird.target.x, bird.target.y)
+  );
   sprite.anims.play('sparrow_fly');
   scene.gameState.sparrows.push(bird);
 }
@@ -106,8 +114,12 @@ export function updateSparrows(scene, delta){
 
 function flyUpdate(bird, dt){
   bird.timer += dt;
-  bird.sprite.x += bird.velocity.x * dt;
-  bird.sprite.y += bird.velocity.y * dt;
+  if(bird.curve){
+    const t = Phaser.Math.Clamp(bird.timer / 2.5, 0, 1);
+    const eased = Phaser.Math.Easing.Sine.Out(t);
+    bird.curve.getPoint(eased, bird.followVec);
+    bird.sprite.setPosition(bird.followVec.x, bird.followVec.y);
+  }
 }
 
 function fleeUpdate(bird, dt){

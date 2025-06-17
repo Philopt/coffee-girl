@@ -421,30 +421,6 @@ export function setupGame(){
     }
   }
 
-  function flingDrink(scene, startX, startY, customer){
-    const destX = customer.x + DRINK_HOLD_OFFSET.x;
-    const destY = customer.y + DRINK_HOLD_OFFSET.y;
-    const midX = (startX + destX) / 2;
-    const midY = startY + 40;
-    scene.tweens.addCounter({
-      from: 0,
-      to: 1,
-      duration: dur(400),
-      onUpdate: tween => {
-        const p = tween.getValue();
-        const nx = Phaser.Math.Interpolation.QuadraticBezier(p, startX, midX, destX);
-        const ny = Phaser.Math.Interpolation.QuadraticBezier(p, startY, midY, destY);
-        const sc = 1.2 + (0.3 - 1.2) * p;
-        dialogDrinkEmoji.setPosition(nx, ny);
-        dialogDrinkEmoji.setScale(sc);
-      },
-      onComplete: () => {
-        dialogDrinkEmoji.setPosition(destX, destY);
-        dialogDrinkEmoji.setScale(0.3);
-        dialogDrinkEmoji.attachedTo = customer;
-      }
-    });
-  }
 
   function updateDog(owner){
     const dog = owner && owner.dog;

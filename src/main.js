@@ -48,7 +48,7 @@ export function setupGame(){
   // state is managed in GameState
 
   const keys=[];
-  const requiredAssets=['bg','truck','girl','lady_falcon','falcon_end','revolt_end','sparrow','sparrow2'];
+  const requiredAssets=['bg','truck','girl','lady_falcon','falcon_end','revolt_end','sparrow','sparrow2','sparrow3'];
   const genzSprites=[
     'new_kid_0_0','new_kid_0_1','new_kid_0_2','new_kid_0_4','new_kid_0_5',
     'new_kid_1_0','new_kid_1_1','new_kid_1_2','new_kid_1_3','new_kid_1_4','new_kid_1_5',
@@ -815,7 +815,15 @@ export function setupGame(){
     bigBird1.anims.play('sparrow2_fly');
     bigBird2.anims.play('sparrow2_ground');
     bigBird3.anims.play('sparrow2_peck');
-    phoneContainer.add([bigBird1,bigBird2,bigBird3]);
+    const bigBird4 = scene.add.sprite(-120,birdY,'sparrow3',0)
+      .setScale(3)
+      .setDepth(16);
+    const bigBird5 = scene.add.sprite(120,birdY,'sparrow3',0)
+      .setScale(3)
+      .setDepth(16);
+    bigBird4.anims.play('sparrow3_fly');
+    bigBird5.anims.play('sparrow3_ground');
+    phoneContainer.add([bigBird4,bigBird1,bigBird2,bigBird3,bigBird5]);
 
     startButton = scene.add.container(0,offsetY,[btnBg,btnLabel])
       .setSize(bw,bh)
@@ -1017,6 +1025,7 @@ export function setupGame(){
     loader.image('revolt_end','assets/revolt.png');
     loader.spritesheet('sparrow','assets/sparrow.png',{frameWidth:16,frameHeight:16});
     loader.spritesheet('sparrow2','assets/sparrow2.png',{frameWidth:20,frameHeight:20});
+    loader.spritesheet('sparrow3','assets/sparrow3.png',{frameWidth:20,frameHeight:20});
     for(const k of genzSprites){
       keys.push(k);
       requiredAssets.push(k);
@@ -1100,6 +1109,18 @@ export function setupGame(){
       key:'sparrow2_peck',
       frames:this.anims.generateFrameNumbers('sparrow2',{start:6,end:8}),
       frameRate:6,
+      repeat:-1
+    });
+    this.anims.create({
+      key:'sparrow3_fly',
+      frames:this.anims.generateFrameNumbers('sparrow3',{start:0,end:1}),
+      frameRate:8,
+      repeat:-1
+    });
+    this.anims.create({
+      key:'sparrow3_ground',
+      frames:this.anims.generateFrameNumbers('sparrow3',{start:2,end:3}),
+      frameRate:4,
       repeat:-1
     });
 

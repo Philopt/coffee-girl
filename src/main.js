@@ -1511,7 +1511,6 @@ export function setupGame(){
     if(type==='sell'){
       const ticket=dialogPriceContainer;
       const t=dialogPriceValue;
-      const ticketW = typeof dialogPriceBox !== 'undefined' && dialogPriceBox ? dialogPriceBox.width : 0;
       const destX=moneyText.x+moneyText.width-15;
       const destY=moneyText.y+10;
       t.setVisible(true);
@@ -1519,12 +1518,16 @@ export function setupGame(){
       const baseLeft = t.x - t.displayWidth/2;
       t.setText(receipt(totalCost));
       t.setPosition(baseLeft + t.displayWidth/2, t.y);
-      const stampX=ticket.x + t.x * ticket.scaleX;
-      const stampY=ticket.y + t.y * ticket.scaleY;
+      const ticketH = dialogPriceBox.height;
+      const centerX = ticket.x;
+      let stampY = ticket.y;
+      if (tip > 0) {
+        stampY -= ticketH * 0.2;
+      }
       paidStamp
         .setText('PAID')
         .setScale(1.5)
-        .setPosition(stampX, stampY)
+        .setPosition(centerX, stampY)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
       t.setPosition(t.x, 15);
@@ -1539,8 +1542,8 @@ export function setupGame(){
       if(tip>0){
         this.time.delayedCall(delay,()=>{
           const ticketH = dialogPriceBox.height;
-          const tipX = ticket.x - ticketW * 0.3;
-          const tipY = ticket.y - ticketH * 0.25;
+          const tipX = ticket.x;
+          const tipY = ticket.y + ticketH * 0.2;
           const oldLeft = t.x - t.displayWidth/2;
           tipText
             .setText('TIP')

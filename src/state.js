@@ -8,10 +8,14 @@ export const GameState = {
   falconActive: false,
   gameOver: false,
   loveLevel: 1,
-  servedCount: 0
+  servedCount: 0,
+  heartWin: null
 };
 
 export const floatingEmojis = [];
+
+export const customerMemory = {};
+GameState.customerMemory = customerMemory;
 
 export function addFloatingEmoji(emoji) {
   if (emoji) floatingEmojis.push(emoji);

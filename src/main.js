@@ -2508,6 +2508,7 @@ export function setupGame(){
         bg.destroy(); txt.destroy(); btn.destroy(); if(titleText) titleText.destroy(); if(img) img.destroy();
         if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
         restartGame.call(this);
+        againZone.destroy();
       });
     GameState.gameOver=true;
   }

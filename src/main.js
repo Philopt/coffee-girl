@@ -2056,7 +2056,7 @@ export function setupGame(){
         const dir=c.sprite.x<ORDER_X? -1:1;
         const targetX=dir===1?520:-40;
         const tl=scene.tweens.createTimeline();
-        for(let i=0;i<3;i++){
+        for(let i=0;i<5;i++){
           tl.add({targets:c.sprite,
                   x:Phaser.Math.Between(40,440),
                   y:Phaser.Math.Between(WANDER_TOP,WANDER_BOTTOM),
@@ -2076,6 +2076,33 @@ export function setupGame(){
                   c.sprite.destroy();
                 }});
         tl.play();
+
+        if(c.dog){
+          const dog=c.dog;
+          if(dog.followEvent) dog.followEvent.remove(false);
+          const bark=scene.add.text(dog.x,dog.y-20,'BARK!',{font:'16px sans-serif',fill:'#000'})
+            .setOrigin(0.5).setDepth(dog.depth+1);
+          scene.tweens.add({targets:bark,y:'-=20',alpha:0,duration:dur(600),onComplete:()=>bark.destroy()});
+          const dTl=scene.tweens.createTimeline();
+          for(let j=0;j<4;j++){
+            const ang=Phaser.Math.FloatBetween(0,Math.PI*2);
+            const r=Phaser.Math.Between(40,60);
+            const dx=girl.x+Math.cos(ang)*r;
+            const dy=girl.y+Math.sin(ang)*r;
+            dTl.add({targets:dog,x:dx,y:dy,duration:dur(Phaser.Math.Between(200,350)),ease:'Sine.easeInOut'});
+          }
+          dTl.add({targets:dog,x:targetX,y:dog.y,duration:dur(WALK_OFF_BASE/1.5),onComplete:()=>dog.destroy()});
+          dTl.setCallback('onUpdate',(tw,t)=>{
+            if(t.prevX===undefined) t.prevX=t.x;
+            const dx=t.x-t.prevX;
+            if(Math.abs(dx)>3){ t.dir=dx>0?1:-1; }
+            t.prevX=t.x;
+            const s=scaleForY(t.y)*0.5;
+            t.setScale(s*(t.dir||1), s);
+          });
+          dTl.play();
+          c.dog=null;
+        }
       });
       // keep references so restartGame can properly clean up any remaining
       // sprites even if the tweens are interrupted
@@ -2104,7 +2131,7 @@ export function setupGame(){
             falcon.destroy();
             if(cb) cb();
         }});
-        for(let i=0;i<5;i++){
+        for(let i=0;i<4;i++){
           tl.add({targets:falcon,y:targetY+10,duration:dur(80),yoyo:true});
           tl.add({targets:girl,y:girl.y+5,duration:dur(80),yoyo:true,
                    onStart:()=>{ girl.setTint(0xff0000); sprinkleBursts(scene); },

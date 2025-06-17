@@ -206,8 +206,9 @@ export function setupGame(){
 
   function applyRandomSkew(obj){
     if(!obj) return;
-    obj.skewX = Phaser.Math.FloatBetween(-0.03, 0.03);
-    obj.skewY = Phaser.Math.FloatBetween(-0.03, 0.03);
+    const randFloat = Phaser.Math.FloatBetween || ((a,b)=>Phaser.Math.Between(a*1000,b*1000)/1000);
+    obj.skewX = randFloat(-0.03, 0.03);
+    obj.skewY = randFloat(-0.03, 0.03);
   }
 
   function fadeInButtons(canAfford){
@@ -1100,6 +1101,60 @@ export function setupGame(){
       enforceCustomerScaling();
       updateDrinkEmojiPosition();
     });
+
+    const EDGE_TURN_BUFFER = 40;
+    function loopsForState(state){
+      switch(state){
+        case 'growing': return 1;
+        case 'sparkling':
+        case 'arrow':
+          return 2;
+        default: return 0;
+      }
+    }
+
+    function removeWanderer(scene, c){
+      const idx = GameState.wanderers.indexOf(c);
+      if(idx >= 0) GameState.wanderers.splice(idx,1);
+      const ex = c.sprite.x, ey = c.sprite.y;
+      if(c.dog){
+        sendDogOffscreen.call(scene,c.dog,ex,ey);
+        c.dog = null;
+      }
+      if(c.heartEmoji){ c.heartEmoji.destroy(); c.heartEmoji = null; }
+      c.sprite.destroy();
+    }
+
+    function handleWanderComplete(scene, c){
+      if(c.loopsRemaining > 0){
+        c.loopsRemaining--;
+        c.dir *= -1;
+        const inside = c.dir === 1 ? 480-EDGE_TURN_BUFFER : EDGE_TURN_BUFFER;
+        const exitX = c.dir === 1 ? 520 : -40;
+        const target = c.loopsRemaining > 0 ? inside : exitX;
+        startWander(scene,c,target,c.loopsRemaining===0);
+      }else{
+        removeWanderer(scene,c);
+      }
+    }
+
+    function startWander(scene, c, targetX, exitAfter){
+      if(c.walkTween){ c.walkTween.stop(); c.walkTween.remove(); c.walkTween=null; }
+      const startX=c.sprite.x;
+      const startY=c.sprite.y;
+      const amp = Phaser.Math.Between(15,30);
+      const freq = Phaser.Math.FloatBetween ? Phaser.Math.FloatBetween(1.5,4.5) : Phaser.Math.Between(15,45)/10;
+      const walkDuration = Phaser.Math.Between(5000,7000);
+      c.walkData={startX,startY,targetX,amp,freq,duration:walkDuration,exitAfter};
+      c.walkTween = scene.tweens.add({targets:c.sprite,x:targetX,duration:dur(walkDuration),
+        onUpdate:(tw,t)=>{
+          const p=tw.progress;
+          t.y=startY+Math.sin(p*Math.PI*freq)*amp;
+          t.setScale(scaleForY(t.y));
+        },
+        onComplete:()=>{ exitAfter ? removeWanderer(scene,c) : handleWanderComplete(scene,c); }
+      });
+    }
   }
 
   function spawnCustomer(){
@@ -1117,6 +1172,7 @@ export function setupGame(){
     const c={ orders:[] };
     const k=Phaser.Utils.Array.GetRandom(keys);
     c.spriteKey = k;
+    if(!GameState.customerMemory) GameState.customerMemory = {};
     const memory = GameState.customerMemory[k] || { state: 'normal' };
     GameState.customerMemory[k] = memory;
     c.memory = memory;
@@ -1126,10 +1182,33 @@ export function setupGame(){
       scheduleNextSpawn(this);
       return;
     }
+    const loopsFor = (typeof loopsForState === 'function') ? loopsForState : (state => {
+      switch(state){
+        case 'growing': return 1;
+        case 'sparkling':
+        case 'arrow': return 2;
+        default: return 0;
+      }
+    });
+    const startW = (typeof startWander === 'function') ? startWander : function(scene,cust,targetX,exitAfter){
+      const duration = (typeof dur === 'function') ? dur(1000) : 1000;
+      cust.walkData = {startX:cust.sprite.x, startY:cust.sprite.y, targetX, amp:0, freq:0, duration, exitAfter};
+      if(scene && scene.tweens && scene.tweens.add){
+        scene.tweens.add({targets:cust.sprite,x:targetX,duration,onComplete:()=>{
+          if(exitAfter){
+            const idx = (GameState.wanderers||scene.wanderers||[]).indexOf(cust);
+            if(idx>=0) (GameState.wanderers||scene.wanderers).splice(idx,1);
+            if(cust.sprite.destroy) cust.sprite.destroy();
+          }
+        }});
+      }
+    };
+
     const dir=Phaser.Math.Between(0,1)?1:-1;
     const startX=dir===1?-40:520;
-    const targetX=dir===1?520:-40;
+    const exitX=dir===1?520:-40;
     c.dir = dir;
+    c.loopsRemaining = loopsFor(c.memory.state);
     const startY=Phaser.Math.Between(WANDER_TOP,WANDER_BOTTOM);
     const distScale=scaleForY(startY);
     c.orders.push(order);
@@ -1164,29 +1243,13 @@ export function setupGame(){
         callback:()=>{updateDog.call(this,c);}
       });
     }
-    const amp = Phaser.Math.Between(15, 30);
-    const freq = Phaser.Math.FloatBetween(1.5, 4.5);
-    const walkDuration = Phaser.Math.Between(5000, 7000);
-    c.walkData = {startX, startY, targetX, amp, freq, duration: walkDuration};
-    c.walkTween = this.tweens.add({targets:c.sprite,x:targetX,duration:dur(walkDuration),onUpdate:(tw,t)=>{
-        const p=tw.progress;
-        t.y=startY+Math.sin(p*Math.PI*freq)*amp;
-        t.setScale(scaleForY(t.y));
-      },onComplete:()=>{
-        const idx=GameState.wanderers.indexOf(c);
-        if(idx>=0) GameState.wanderers.splice(idx,1);
-        const ex=c.sprite.x, ey=c.sprite.y;
-        if(c.dog){
-          sendDogOffscreen.call(this,c.dog,ex,ey);
-          c.dog=null;
-        }
-        if(c.heartEmoji){ c.heartEmoji.destroy(); c.heartEmoji = null; }
-        c.sprite.destroy();
-
-      }});
+    const edgeBuffer = (typeof EDGE_TURN_BUFFER === 'number') ? EDGE_TURN_BUFFER : 40;
+    const insideX = dir===1 ? 480-edgeBuffer : edgeBuffer;
+    const firstTarget = c.loopsRemaining>0 ? insideX : exitX;
+    startW(this, c, firstTarget, c.loopsRemaining===0);
 
     GameState.wanderers.push(c);
-    if(GameState.girlReady && GameState.queue.length < queueLimit()){
+    if((GameState.queue.length === 0 || GameState.girlReady) && GameState.queue.length < queueLimit()){
       lureNextWanderer(this);
     }
     scheduleNextSpawn(this);
@@ -1209,7 +1272,7 @@ export function setupGame(){
 
   function resumeWanderer(scene, c){
     if(!c || !c.sprite || !c.walkData) return;
-    const {targetX,startX,startY,amp,freq,duration} = c.walkData;
+    const {targetX,startX,startY,amp,freq,duration,exitAfter} = c.walkData;
     const totalDist = Math.abs(targetX - startX);
     const remaining = Math.abs(targetX - c.sprite.x);
     const walkDuration = totalDist>0 ? duration * (remaining/totalDist) : duration;
@@ -1222,18 +1285,7 @@ export function setupGame(){
         t.y=startY+Math.sin(p*Math.PI*freq)*amp;
         t.setScale(scaleForY(t.y));
       },
-      onComplete:()=>{
-        const idx=GameState.wanderers.indexOf(c);
-        if(idx>=0) GameState.wanderers.splice(idx,1);
-        const ex=c.sprite.x, ey=c.sprite.y;
-        if(c.dog){
-          sendDogOffscreen.call(scene,c.dog,ex,ey);
-          c.dog=null;
-        }
-        if(c.heartEmoji){ c.heartEmoji.destroy(); c.heartEmoji = null; }
-        c.sprite.destroy();
-
-      }
+      onComplete:()=>{ exitAfter ? removeWanderer(scene,c) : handleWanderComplete(scene,c); }
     });
   }
 
@@ -1734,13 +1786,15 @@ export function setupGame(){
       if (tip > 0) {
         stampY -= ticketH * 0.2;
       }
+      const randFloat = Phaser.Math.FloatBetween || ((a,b)=>Phaser.Math.Between(a*1000,b*1000)/1000);
+      const skewFn = typeof applyRandomSkew === 'function' ? applyRandomSkew : ()=>{};
       paidStamp
         .setText('PAID')
-        .setScale(1.4 + Phaser.Math.FloatBetween(-0.1, 0.1))
+        .setScale(1.4 + randFloat(-0.1, 0.1))
         .setPosition(centerX + Phaser.Math.Between(-3,3), stampY + Phaser.Math.Between(-3,3))
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
-      applyRandomSkew(paidStamp);
+      skewFn(paidStamp);
       // raise the price above the stamp after the stamp lands
       this.time.delayedCall(dur(300), () => {
         t.setDepth(paidStamp.depth + 1);
@@ -1760,13 +1814,14 @@ export function setupGame(){
           const tipX = ticket.x;
           const tipY = ticket.y + ticketH * 0.2;
           const oldLeft = t.x - t.displayWidth/2;
+          const randFloat2 = Phaser.Math.FloatBetween || ((a,b)=>Phaser.Math.Between(a*1000,b*1000)/1000);
           tipText
             .setText('TIP')
-            .setScale(1.3 + Phaser.Math.FloatBetween(-0.1, 0.1))
+            .setScale(1.3 + randFloat2(-0.1, 0.1))
             .setPosition(tipX + Phaser.Math.Between(-3,3), tipY + Phaser.Math.Between(-3,3))
             .setAngle(Phaser.Math.Between(-15,15))
             .setVisible(true);
-          applyRandomSkew(tipText);
+          skewFn(tipText);
           t.setText(receipt(totalCost + tip));
           t.setPosition(oldLeft + t.displayWidth/2, t.y);
           flashPrice();
@@ -1814,13 +1869,15 @@ export function setupGame(){
         .setDepth(lossStamp.depth-1);
       const stampX=ticket.x + Phaser.Math.Between(-5,5);
       const stampY=ticket.y + Phaser.Math.Between(-5,5);
+      const randFloat3 = Phaser.Math.FloatBetween || ((a,b)=>Phaser.Math.Between(a*1000,b*1000)/1000);
+      const skewFn2 = typeof applyRandomSkew === 'function' ? applyRandomSkew : ()=>{};
       lossStamp
         .setText('LOSS')
-        .setScale(1.4 + Phaser.Math.FloatBetween(-0.1, 0.1))
+        .setScale(1.4 + randFloat3(-0.1, 0.1))
         .setPosition(stampX, stampY)
         .setAngle(Phaser.Math.Between(-10,10))
         .setVisible(true);
-      applyRandomSkew(lossStamp);
+      skewFn2(lossStamp);
       // raise the price above the stamp after the stamp lands
       this.time.delayedCall(dur(300), () => {
         t.setDepth(lossStamp.depth + 1);

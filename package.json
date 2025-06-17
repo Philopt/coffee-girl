@@ -17,5 +17,8 @@
     "pngjs": "^7.0.0",
     "puppeteer": "^24.10.1"
   },
+  "engines": {
+    "node": ">=20"
+  },
   "license": "MIT"
 }

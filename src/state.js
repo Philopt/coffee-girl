@@ -10,6 +10,7 @@ export const GameState = {
   loveLevel: 1,
   servedCount: 0,
   heartWin: null
+  , girlReady: false
 };
 
 export const floatingEmojis = [];

@@ -248,7 +248,7 @@ export function setupGame(){
   }
 
 
-  function lureNextWanderer(scene){
+  function lureNextWanderer(scene, specific){
     if (typeof debugLog === 'function') {
       debugLog('lureNextWanderer', GameState.queue.length, GameState.wanderers.length, GameState.activeCustomer);
     }
@@ -261,13 +261,20 @@ export function setupGame(){
         return;
       }
 
-      let closestIdx=0;
-      let minDist=Number.MAX_VALUE;
-      for(let i=0;i<GameState.wanderers.length;i++){
-        const d=Math.abs(GameState.wanderers[i].sprite.x-ORDER_X);
-        if(d<minDist){ closestIdx=i; minDist=d; }
+      let c;
+      if(specific){
+        const idx = GameState.wanderers.indexOf(specific);
+        if(idx===-1) return;
+        c = GameState.wanderers.splice(idx,1)[0];
+      }else{
+        let closestIdx=0;
+        let minDist=Number.MAX_VALUE;
+        for(let i=0;i<GameState.wanderers.length;i++){
+          const d=Math.abs(GameState.wanderers[i].sprite.x-ORDER_X);
+          if(d<minDist){ closestIdx=i; minDist=d; }
+        }
+        c=GameState.wanderers.splice(closestIdx,1)[0];
       }
-      const c=GameState.wanderers.splice(closestIdx,1)[0];
       if(c.walkTween){
         c.walkTween.stop();
         c.walkTween.remove();
@@ -328,8 +335,8 @@ export function setupGame(){
         showDialog.call(scene);
       }
     }
-    if(GameState.queue.length < queueLimit()){
-      lureNextWanderer(scene);
+    if(GameState.girlReady && GameState.queue.length < queueLimit()){
+        lureNextWanderer(scene);
     }
     if(typeof checkQueueSpacing==='function') checkQueueSpacing(scene);
   }
@@ -592,9 +599,9 @@ export function setupGame(){
       }
     }
     GameState.loveLevel=newLevel;
-    if(queueLevelText && queueLevelText.scene){
-      lureNextWanderer(queueLevelText.scene);
-    }
+      if(GameState.girlReady && queueLevelText && queueLevelText.scene){
+        lureNextWanderer(queueLevelText.scene);
+      }
   }
 
   function scheduleNextSpawn(scene){
@@ -764,6 +771,9 @@ export function setupGame(){
     if (typeof debugLog === 'function') debugLog('playIntro starting');
     scene = scene || this;
     if(!truck || !girl) return;
+    GameState.girlReady = false;
+    if(typeof debugLog==='function') debugLog('customers start spawning');
+    scheduleNextSpawn(scene);
     const width = (scene.scale && scene.scale.width) ? scene.scale.width : 480;
     const offscreenX = width + 100;
     truck.setPosition(offscreenX,245).setScale(0.462);
@@ -824,40 +834,54 @@ export function setupGame(){
       scene.time.delayedCall(dur(1300), () => smokeEvent.remove(), [], scene);
     }
 
-    const intro=scene.tweens.createTimeline({callbackScope:scene,
-      onComplete:()=>{
-
-        if (typeof debugLog === 'function') {
-          debugLog('intro finished');
+    const intro=scene.tweens.createTimeline({callbackScope:scene});
+    const hopOut=()=>{
+      const startX=truck.x;
+      const startY=260;
+      const endX=200;
+      const endY=292;
+      const curve=new Phaser.Curves.QuadraticBezier(
+        new Phaser.Math.Vector2(startX,startY),
+        new Phaser.Math.Vector2(startX-20,startY-60),
+        new Phaser.Math.Vector2(endX,endY)
+      );
+      const follower={t:0,vec:new Phaser.Math.Vector2()};
+      scene.tweens.add({
+        targets:follower,
+        t:1,
+        duration:dur(700),
+        ease:'Sine.easeInOut',
+        onStart:()=>girl.setVisible(true),
+        onUpdate:()=>{
+          curve.getPoint(follower.t,follower.vec);
+          girl.setPosition(follower.vec.x,follower.vec.y);
+        },
+        onComplete:()=>{
+          girl.setPosition(endX,endY);
+          if(typeof debugLog==='function') debugLog('intro finished');
+          GameState.girlReady = true;
+          lureNextWanderer(scene);
         }
-
-        smokeEvent.remove();
-        vibrateTween.stop();
-        if (truck.setY) {
-          truck.setY(245);
-        } else {
-          truck.y = 245;
-        }
-        // Start the first wanderers once the intro finishes
-        spawnCustomer.call(scene);
-      }});
-    intro.add({targets:truck,x:240,scale:0.924,duration:dur(1500),ease:'Sine.easeOut'});
-    intro.add({targets:girl,x:240,duration:dur(1200)},0);
+      });
+    };
     intro.add({
-      targets: girl,
-      y: 292,
-      duration: dur(300),
-      onStart: () => girl.setVisible(true),
-      onComplete: () => {
+      targets:truck,
+      x:240,
+      scale:0.924,
+      duration:dur(1500),
+      ease:'Sine.easeOut',
+      onComplete:()=>{
         smokeEvent.remove();
         vibrateTween.stop();
-        if (truck.setY) {
+        if(truck.setY){
           truck.setY(245);
-        } else {
-          truck.y = 245;
+        }else{
+          truck.y=245;
         }
+        pauseWanderersForTruck(scene);
+        hopOut();
       }
-    }, 1200);
+    });
     intro.play();
   }
 
@@ -1105,6 +1129,7 @@ export function setupGame(){
     const amp = Phaser.Math.Between(15, 30);
     const freq = Phaser.Math.FloatBetween(1.5, 4.5);
     const walkDuration = Phaser.Math.Between(5000, 7000);
+    c.walkData = {startX, startY, targetX, amp, freq, duration: walkDuration};
     c.walkTween = this.tweens.add({targets:c.sprite,x:targetX,duration:dur(walkDuration),onUpdate:(tw,t)=>{
         const p=tw.progress;
         t.y=startY+Math.sin(p*Math.PI*freq)*amp;
@@ -1123,21 +1148,77 @@ export function setupGame(){
       }});
 
     GameState.wanderers.push(c);
-    if(GameState.queue.length < queueLimit()){
-
+    if(GameState.girlReady && GameState.queue.length < queueLimit()){
       lureNextWanderer(this);
     }
     scheduleNextSpawn(this);
     if(this.time && this.time.delayedCall){
       this.time.delayedCall(1000, ()=>{
-
-        if(GameState.queue.length < queueLimit() && GameState.wanderers.includes(c)){
-
+        if(GameState.girlReady && GameState.queue.length < queueLimit() && GameState.wanderers.includes(c)){
           lureNextWanderer(this);
+        }else if(!GameState.girlReady){
+          // wait again if intro not done
+          this.time.delayedCall(1000, () => {
+            if(GameState.girlReady && GameState.queue.length < queueLimit() && GameState.wanderers.includes(c)){
+              lureNextWanderer(this);
+            }
+          }, [], this);
         }
       }, [], this);
     }
 
+  }
+
+  function resumeWanderer(scene, c){
+    if(!c || !c.sprite || !c.walkData) return;
+    const {targetX,startX,startY,amp,freq,duration} = c.walkData;
+    const totalDist = Math.abs(targetX - startX);
+    const remaining = Math.abs(targetX - c.sprite.x);
+    const walkDuration = totalDist>0 ? duration * (remaining/totalDist) : duration;
+    c.walkTween = scene.tweens.add({
+      targets:c.sprite,
+      x:targetX,
+      duration:dur(walkDuration),
+      onUpdate:(tw,t)=>{
+        const p=tw.progress;
+        t.y=startY+Math.sin(p*Math.PI*freq)*amp;
+        t.setScale(scaleForY(t.y));
+      },
+      onComplete:()=>{
+        const idx=GameState.wanderers.indexOf(c);
+        if(idx>=0) GameState.wanderers.splice(idx,1);
+        const ex=c.sprite.x, ey=c.sprite.y;
+        if(c.dog){
+          sendDogOffscreen.call(scene,c.dog,ex,ey);
+          c.dog=null;
+        }
+        if(c.heartEmoji){ c.heartEmoji.destroy(); c.heartEmoji = null; }
+        c.sprite.destroy();
+
+      }
+    });
+  }
+
+  function pauseWanderersForTruck(scene){
+    const threshold = 60;
+    GameState.wanderers.slice().forEach(c => {
+      if(!c.sprite) return;
+      if(Math.abs(c.sprite.x - truck.x) < threshold){
+        if(c.walkTween){
+          c.walkTween.stop();
+          c.walkTween.remove();
+          c.walkTween=null;
+        }
+        scene.tweens.add({targets:c.sprite,y:'-=20',duration:dur(150),yoyo:true});
+        scene.time.delayedCall(dur(1000),()=>{
+          if(GameState.girlReady && GameState.queue.length < queueLimit() && GameState.wanderers.includes(c)){
+            lureNextWanderer(scene, c);
+          }else{
+            resumeWanderer(scene, c);
+          }
+        },[],scene);
+      }
+    });
   }
 
   function drawDialogBubble(targetX, targetY, fillColor=0xffffff){

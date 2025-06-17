@@ -1,5 +1,27 @@
 import { BirdState } from './constants.js';
 
+function randomTarget(scene){
+  const { width } = scene.scale;
+  const options = [
+    // ground near the middle
+    new Phaser.Math.Vector2(
+      Phaser.Math.Between(180,300),
+      Phaser.Math.Between(260,300)
+    ),
+    // top of the truck
+    new Phaser.Math.Vector2(
+      Phaser.Math.Between(220,260),
+      220
+    ),
+    // offscreen above
+    new Phaser.Math.Vector2(
+      Phaser.Math.Between(-40,width+40),
+      -40
+    )
+  ];
+  return Phaser.Utils.Array.GetRandom(options);
+}
+
 export function spawnSparrow(scene){
   const startX = Phaser.Math.Between(-20, 520);
   const startY = Phaser.Math.Between(120, 180);
@@ -15,7 +37,7 @@ export function spawnSparrow(scene){
     scared: false,
     threatTimer: 0,
   };
-  bird.target.set(Phaser.Math.Between(200,280), Phaser.Math.Between(260,300));
+  bird.target.copy(randomTarget(scene));
   bird.velocity.set(bird.target.x - startX, bird.target.y - startY).normalize().scale(60);
   sprite.anims.play('sparrow_fly');
   scene.gameState.sparrows.push(bird);
@@ -59,7 +81,12 @@ export function updateSparrows(scene, delta){
       case BirdState.FLEE:
         fleeUpdate(bird, dt);
         if(bird.timer > 2){
-          bird.state = BirdState.LAND;
+          bird.target.copy(randomTarget(scene));
+          bird.velocity.set(
+            bird.target.x - bird.sprite.x,
+            bird.target.y - bird.sprite.y
+          ).normalize().scale(60);
+          bird.state = BirdState.FLY;
           bird.timer = 0;
         }
         break;

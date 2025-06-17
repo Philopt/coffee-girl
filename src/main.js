@@ -1611,6 +1611,16 @@ export function setupGame(){
         .setAngle(Phaser.Math.Between(-10,10))
         .setSkew(Phaser.Math.FloatBetween(-0.03,0.03), Phaser.Math.FloatBetween(-0.03,0.03))
         .setVisible(true);
+      {
+        const rx = Phaser.Math.FloatBetween(-0.03, 0.03);
+        const ry = Phaser.Math.FloatBetween(-0.03, 0.03);
+        if (typeof paidStamp.setSkew === 'function') {
+          paidStamp.setSkew(rx, ry);
+        } else {
+          paidStamp.skewX = rx;
+          paidStamp.skewY = ry;
+        }
+      }
       t.setPosition(t.x, 15);
 
       const flashPrice=()=>{
@@ -1633,6 +1643,16 @@ export function setupGame(){
             .setAngle(Phaser.Math.Between(-15,15))
             .setSkew(Phaser.Math.FloatBetween(-0.03,0.03), Phaser.Math.FloatBetween(-0.03,0.03))
             .setVisible(true);
+          {
+            const rx = Phaser.Math.FloatBetween(-0.03, 0.03);
+            const ry = Phaser.Math.FloatBetween(-0.03, 0.03);
+            if (typeof tipText.setSkew === 'function') {
+              tipText.setSkew(rx, ry);
+            } else {
+              tipText.skewX = rx;
+              tipText.skewY = ry;
+            }
+          }
           t.setText(receipt(totalCost + tip));
           t.setPosition(oldLeft + t.displayWidth/2, t.y);
           flashPrice();
@@ -1686,6 +1706,16 @@ export function setupGame(){
         .setAngle(Phaser.Math.Between(-10,10))
         .setSkew(Phaser.Math.FloatBetween(-0.03,0.03), Phaser.Math.FloatBetween(-0.03,0.03))
         .setVisible(true);
+      {
+        const rx = Phaser.Math.FloatBetween(-0.03, 0.03);
+        const ry = Phaser.Math.FloatBetween(-0.03, 0.03);
+        if (typeof lossStamp.setSkew === 'function') {
+          lossStamp.setSkew(rx, ry);
+        } else {
+          lossStamp.skewX = rx;
+          lossStamp.skewY = ry;
+        }
+      }
       t.setPosition(t.x, 15);
       this.time.delayedCall(dur(1000),()=>{
         lossStamp.setVisible(false);

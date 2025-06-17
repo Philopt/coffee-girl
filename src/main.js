@@ -1106,6 +1106,7 @@ export function setupGame(){
           c.dog=null;
         }
         c.sprite.destroy();
+
       }});
 
     GameState.wanderers.push(c);

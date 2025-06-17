@@ -1,5 +1,8 @@
 import { BirdState } from './constants.js';
 
+const FLOCK_RADIUS = 80;
+const COHESION_STRENGTH = 0.5;
+
 function randomTarget(scene){
   const { width } = scene.scale;
   const options = [
@@ -63,7 +66,7 @@ export function updateSparrows(scene, delta){
     }
     switch(bird.state){
       case BirdState.FLY:
-        flyUpdate(bird, dt);
+        flyUpdate(scene, bird, dt);
         if(bird.timer > 2.5){
           bird.state = BirdState.LAND;
           bird.timer = 0;
@@ -104,8 +107,29 @@ export function updateSparrows(scene, delta){
   }
 }
 
-function flyUpdate(bird, dt){
+function flyUpdate(scene, bird, dt){
   bird.timer += dt;
+
+  const neighbors = scene.gameState.sparrows.filter(
+    b => b !== bird &&
+      Phaser.Math.Distance.Between(
+        b.sprite.x, b.sprite.y,
+        bird.sprite.x, bird.sprite.y
+      ) < FLOCK_RADIUS
+  );
+  if(neighbors.length){
+    let avgX = 0, avgY = 0;
+    for(const n of neighbors){
+      avgX += n.sprite.x;
+      avgY += n.sprite.y;
+    }
+    avgX /= neighbors.length;
+    avgY /= neighbors.length;
+    const vec = new Phaser.Math.Vector2(avgX - bird.sprite.x, avgY - bird.sprite.y);
+    bird.velocity.add(vec.normalize().scale(COHESION_STRENGTH));
+    bird.velocity.normalize().scale(60);
+  }
+
   bird.sprite.x += bird.velocity.x * dt;
   bird.sprite.y += bird.velocity.y * dt;
 }

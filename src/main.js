@@ -1103,14 +1103,18 @@ export function setupGame(){
         c.sprite.destroy();
         this.startDialogue && this.startDialogue(c);
       }});
+
     GameState.wanderers.push(c);
     if(GameState.queue.length===0){
+
       lureNextWanderer(this);
     }
     scheduleNextSpawn(this);
     if(this.time && this.time.delayedCall){
       this.time.delayedCall(1000, ()=>{
+
         if(GameState.queue.length===0 && GameState.wanderers.includes(c)){
+
           lureNextWanderer(this);
         }
       }, [], this);

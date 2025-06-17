@@ -802,11 +802,20 @@ export function setupGame(){
     phoneContainer = scene.add.container(240,containerY,[caseG,blackG,whiteG,homeG])
       .setDepth(15);
 
-    const bigBird = scene.add.sprite(0,-phoneH/2 + 60,'sparrow2',0)
+    const birdY = phoneH/2 - homeH - 60;
+    const bigBird1 = scene.add.sprite(-60,birdY,'sparrow2',0)
       .setScale(3)
       .setDepth(16);
-    bigBird.anims.play('sparrow2_fly');
-    phoneContainer.add(bigBird);
+    const bigBird2 = scene.add.sprite(0,birdY,'sparrow2',0)
+      .setScale(3)
+      .setDepth(16);
+    const bigBird3 = scene.add.sprite(60,birdY,'sparrow2',0)
+      .setScale(3)
+      .setDepth(16);
+    bigBird1.anims.play('sparrow2_fly');
+    bigBird2.anims.play('sparrow2_ground');
+    bigBird3.anims.play('sparrow2_peck');
+    phoneContainer.add([bigBird1,bigBird2,bigBird3]);
 
     startButton = scene.add.container(0,offsetY,[btnBg,btnLabel])
       .setSize(bw,bh)

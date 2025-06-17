@@ -8,10 +8,10 @@ function randomTarget(scene){
       Phaser.Math.Between(180,300),
       Phaser.Math.Between(260,300)
     ),
-    // top of the truck
+    // top of the truck (approx y=217)
     new Phaser.Math.Vector2(
       Phaser.Math.Between(220,260),
-      220
+      217
     ),
     // offscreen above
     new Phaser.Math.Vector2(

@@ -8,8 +8,7 @@
     "pretest": "test -d node_modules || npm ci && npm run lint",
     "test": "node test/test.js",
     "test:unit": "SKIP_PUPPETEER=1 node test/test.js",
-    "lint": "eslint -c eslint.config.js src/*.js test/*.js",
-    "lint:syntax": "sh -c 'for f in src/*.js; do node -c \"$f\"; done'"
+    "lint": "eslint -c eslint.config.js src/*.js test/*.js"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",

@@ -2,7 +2,7 @@ import { debugLog, DEBUG } from './debug.js';
 import { dur, scaleForY, articleFor, flashMoney, START_PHONE_W, START_PHONE_H, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_Y, DIALOG_Y } from "./ui.js";
 import { MENU, SPAWN_DELAY, SPAWN_VARIANCE, QUEUE_SPACING, ORDER_X, ORDER_Y, QUEUE_X, QUEUE_OFFSET, QUEUE_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel, maxWanderers as customersMaxWanderers, queueLimit as customersQueueLimit } from "./customers.js";
 import { baseConfig } from "./scene.js";
-import { GameState, floatingEmojis } from "./state.js";
+import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from "./state.js";
 export let Assets, Scene, Customers, config;
 export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;
 const DOG_MIN_Y = ORDER_Y + 20;
@@ -136,10 +136,17 @@ export function setupGame(){
   }
 
   function cleanupFloatingEmojis(){
-    floatingEmojis.forEach(e=>{
+    floatingEmojis.slice().forEach(e=>{
       if(e && e.destroy) e.destroy();
+      if (typeof removeFloatingEmoji === 'function') {
+        removeFloatingEmoji(e);
+      } else if (GameState && typeof GameState.removeFloatingEmoji === 'function') {
+        GameState.removeFloatingEmoji(e);
+      } else {
+        const i = floatingEmojis.indexOf(e);
+        if(i !== -1) floatingEmojis.splice(i,1);
+      }
     });
-    floatingEmojis.length=0;
   }
 
   function hideOverlayTexts(){
@@ -1734,7 +1741,13 @@ export function setupGame(){
       const h=this.add.text(customer.x,customer.y,emoji,{font:'24px sans-serif',fill:'#fff'})
         .setOrigin(0.5).setDepth(11);
       hearts.push(h);
-      floatingEmojis.push(h);
+      if (typeof addFloatingEmoji === 'function') {
+        addFloatingEmoji(h);
+      } else if (GameState && typeof GameState.addFloatingEmoji === 'function') {
+        GameState.addFloatingEmoji(h);
+      } else if (Array.isArray(floatingEmojis)) {
+        floatingEmojis.push(h);
+      }
       const targetX=baseX+i*20;
       // sparkle or anger flash
       if(delta>0){
@@ -1773,8 +1786,14 @@ export function setupGame(){
         }
       });
       tl.add({targets:h,scaleX:1,alpha:0,duration:dur(125),onComplete:()=>{
-            const i=floatingEmojis.indexOf(h);
-            if(i!==-1) floatingEmojis.splice(i,1);
+            if (typeof removeFloatingEmoji === 'function') {
+              removeFloatingEmoji(h);
+            } else if (GameState && typeof GameState.removeFloatingEmoji === 'function') {
+              GameState.removeFloatingEmoji(h);
+            } else if (Array.isArray(floatingEmojis)) {
+              const i = floatingEmojis.indexOf(h);
+              if (i !== -1) floatingEmojis.splice(i, 1);
+            }
             h.destroy();
             popOne(idx+1);
         }});

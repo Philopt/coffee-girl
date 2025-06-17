@@ -425,12 +425,13 @@ export function setupGame(){
       const state = c.memory && c.memory.state || 'normal';
       if(state !== 'normal'){
         if(!c.heartEmoji){
-          c.heartEmoji = c.sprite.scene.add.text(c.sprite.x, c.sprite.y, HEART_EMOJIS[state] || '', {font:'24px sans-serif'})
-            .setOrigin(0.5);
+          c.heartEmoji = c.sprite.scene.add.text(c.sprite.x, c.sprite.y, HEART_EMOJIS[state] || '', {font:'28px sans-serif'})
+            .setOrigin(0.5)
+            .setShadow(2, 2, '#000', 2);
         }
-        const y = c.sprite.y + c.sprite.displayHeight * 0.25;
-        const scale = scaleForY(c.sprite.y)*0.6;
-        c.heartEmoji.setText(HEART_EMOJIS[state] || '').setPosition(c.sprite.x, y).setScale(scale);
+        const y = c.sprite.y + c.sprite.displayHeight * 0.30;
+        const scale = scaleForY(c.sprite.y)*0.8;
+        c.heartEmoji.setText(HEART_EMOJIS[state] || '').setPosition(c.sprite.x, y).setScale(scale).setShadow(2, 2, '#000', 2);
         c.heartEmoji.setDepth(c.sprite.depth+1);
       }else if(c.heartEmoji){
         c.heartEmoji.destroy();
@@ -1101,8 +1102,9 @@ export function setupGame(){
     const bottomYStart = startY + c.sprite.displayHeight * (1 - c.sprite.originY);
     c.sprite.setDepth(5 + bottomYStart*0.006);
     if(c.memory.state !== 'normal'){
-      c.heartEmoji = this.add.text(0,0,HEART_EMOJIS[c.memory.state]||'',{font:'24px sans-serif'})
-        .setOrigin(0.5);
+      c.heartEmoji = this.add.text(0,0,HEART_EMOJIS[c.memory.state]||'',{font:'28px sans-serif'})
+        .setOrigin(0.5)
+        .setShadow(2, 2, '#000', 2);
     }
 
     // occasionally spawn a dog to accompany the wanderer
@@ -1569,7 +1571,9 @@ export function setupGame(){
     }
     if(current.heartEmoji){ current.heartEmoji.destroy(); current.heartEmoji=null; }
     if(memory.state !== 'normal' && current.sprite){
-      current.heartEmoji = current.sprite.scene.add.text(0,0,HEART_EMOJIS[memory.state]||'',{font:'24px sans-serif'}).setOrigin(0.5);
+      current.heartEmoji = current.sprite.scene.add.text(0,0,HEART_EMOJIS[memory.state]||'',{font:'28px sans-serif'})
+        .setOrigin(0.5)
+        .setShadow(2, 2, '#000', 2);
     }
 
     const tipPct=type==='sell'?lD*15:0;
@@ -1643,9 +1647,9 @@ export function setupGame(){
             t.x = startX + p * distanceX + Math.sin(p * Math.PI * freq) * amp;
             t.setScale(scaleForY(t.y));
             if(current.heartEmoji){
-              const hy = t.y + t.displayHeight * 0.25;
-              const hs = scaleForY(t.y) * 0.6;
-              current.heartEmoji.setPosition(t.x, hy).setScale(hs).setDepth(t.depth+1);
+              const hy = t.y + t.displayHeight * 0.30;
+              const hs = scaleForY(t.y) * 0.8;
+              current.heartEmoji.setPosition(t.x, hy).setScale(hs).setDepth(t.depth+1).setShadow(2, 2, '#000', 2);
             }
           },
           onComplete: exit
@@ -1662,9 +1666,9 @@ export function setupGame(){
         this.tweens.add({targets:sprite,y:targetY,duration:dur(6000),callbackScope:this,
           onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+p*distanceX+Math.sin(p*Math.PI*freq)*amp; t.setScale(scaleForY(t.y));
             if(current.heartEmoji){
-              const hy = t.y + t.displayHeight * 0.25;
-              const hs = scaleForY(t.y) * 0.6;
-              current.heartEmoji.setPosition(t.x, hy).setScale(hs).setDepth(t.depth+1);
+              const hy = t.y + t.displayHeight * 0.30;
+              const hs = scaleForY(t.y) * 0.8;
+              current.heartEmoji.setPosition(t.x, hy).setScale(hs).setDepth(t.depth+1).setShadow(2, 2, '#000', 2);
             }
           },
           onComplete:exit});

@@ -151,3 +151,23 @@ export function sendDogOffscreen(dog, x, y) {
     onComplete: () => dog.destroy()
   });
 }
+
+export function cleanupDogs(scene){
+  const gs = scene.gameState || GameState;
+  if(gs.activeCustomer && gs.activeCustomer.dog){
+    if(gs.activeCustomer.dog.followEvent) gs.activeCustomer.dog.followEvent.remove(false);
+    gs.activeCustomer.dog.destroy();
+    gs.activeCustomer.dog = null;
+  }
+  [gs.queue, gs.wanderers].forEach(arr => {
+    if(Array.isArray(arr)){
+      arr.forEach(c => {
+        if(c.dog){
+          if(c.dog.followEvent) c.dog.followEvent.remove(false);
+          c.dog.destroy();
+          c.dog = null;
+        }
+      });
+    }
+  });
+}

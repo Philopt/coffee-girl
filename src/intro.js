@@ -79,16 +79,12 @@ function showStartScreen(scene){
   bigBird5.anims.play('sparrow3_ground');
   phoneContainer.add([bigBird4,bigBird1,bigBird2,bigBird3,bigBird5]);
 
-  // The button container itself doesn't need its own hit area. Setting
-  // it interactive caused the clickable region to be offset from the
-  // visible graphics on some devices. Rely solely on the centered zone
-  // for input handling instead.
+  // Make the button container itself interactive so the entire graphic
+  // responds to clicks. Phaser's container hit testing has been reliable
+  // across targets, so no separate zone is necessary.
   startButton = scene.add.container(0,offsetY,[btnBg,btnLabel])
-    .setSize(bw,bh);
-
-  const startZone = scene.add.zone(0,0,bw,bh).setOrigin(0.5);
-  startZone.setInteractive({ useHandCursor:true });
-  startButton.add(startZone);
+    .setSize(bw,bh)
+    .setInteractive({ useHandCursor: true });
 
   phoneContainer.add(startButton);
 
@@ -129,7 +125,7 @@ function showStartScreen(scene){
       startMsgTimers.push(scene.time.delayedCall(delay,()=>addStartMessage(msg),[],scene));
     }
   }
-  startZone.on('pointerdown',()=>{
+  startButton.on('pointerdown',()=>{
     if (typeof debugLog === 'function') debugLog('start button clicked');
     startMsgTimers.forEach(t=>t.remove(false));
     startMsgTimers=[];
@@ -150,7 +146,9 @@ function pauseWanderersForTruck(scene){
   const threshold = 60;
   GameState.wanderers.slice().forEach(c => {
     if(!c.sprite) return;
-    if(Math.abs(c.sprite.x - GameState.truck.x) < threshold){
+
+    if(GameState.truck && Math.abs(c.sprite.x - GameState.truck.x) < threshold){
+
       if(c.walkTween){
         c.walkTween.stop();
         c.walkTween.remove();
@@ -169,7 +167,11 @@ function pauseWanderersForTruck(scene){
 }
 
 function playIntro(scene){
-  if(!GameState.truck || !GameState.girl) {
+
+  const truck = GameState.truck;
+  const girl = GameState.girl;
+  if(!truck || !girl) {
+
     if (DEBUG) console.warn('playIntro skipped: missing truck or girl');
     return;
   }

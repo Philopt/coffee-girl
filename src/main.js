@@ -5,17 +5,9 @@ import { baseConfig } from "./scene.js";
 import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from "./state.js";
 import { CustomerState } from './constants.js';
 import { scheduleSparrowSpawn, updateSparrows } from './sparrow.js';
+import { DOG_TYPES, updateDog, sendDogOffscreen, scaleDog } from './entities/dog.js';
 export let Assets, Scene, Customers, config;
 export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;
-const DOG_MIN_Y = ORDER_Y + 20;
-const DOG_SPEED = 120; // base movement speed for the dog
-const DOG_FAST_DISTANCE = 160; // accelerate when farther than this from owner
-const DOG_TYPES = [
-  {type:'standard', emoji:'🐶'},
-  {type:'poodle', emoji:'🐩'},
-  {type:'guide', emoji:'🦮'},
-  {type:'service', emoji:'🐕‍🦺'}
-];
 const CUSTOMER_SPEED = 560 / 6; // pixels per second for wanderers
 const LURE_SPEED = CUSTOMER_SPEED * 0.6; // slower approach when lured
 // Minimum duration when a customer dashes to the table
@@ -456,13 +448,6 @@ export function setupGame(){
       const bottomY = sprite.y + sprite.displayHeight * (1 - sprite.originY);
       sprite.setDepth(base + bottomY*0.006);
     };
-    const scaleDog = d => {
-      if(!d) return;
-      const s = scaleForY(d.y)*0.5;
-      const dir = d.dir || 1;
-      d.setScale(s*dir, s);
-      setDepth(d,3);
-    };
       const updateHeart = c => {
         if(!c.sprite || !c.sprite.scene) return;
       const state = c.memory && c.memory.state || CustomerState.NORMAL;
@@ -507,140 +492,6 @@ export function setupGame(){
   }
 
 
-  // Keep the dog positioned near its owner and react to other customers.
-  // owner - customer object that the dog follows
-  function updateDog(owner){
-    const dog = owner && owner.dog;
-    if(!dog || !owner.sprite) return;
-    const ms = owner.sprite;
-    const dogDist = Phaser.Math.Distance.Between(dog.x,dog.y,ms.x,ms.y);
-    let radius = 80;
-    let near = 60;
-    let targetX = ms.x, targetY = ms.y;
-    const type = dog.dogType || 'standard';
-    if(type==='service'){
-      // Service dogs stay very close to their owner
-      radius = 50;
-      near = 30;
-    }
-    if(type==='guide'){
-      // Guide dogs walk slightly ahead in the owner's facing direction
-      const dir=owner.dir||1;
-      targetX = ms.x + dir*40;
-    }
-
-    // Other customers that might distract or block the dog
-    const others=[...GameState.queue,...GameState.wanderers].filter(c=>c!==owner&&c.sprite);
-    // Stop existing tweens so new moves start from the dog's current position
-    // and avoid teleport-like jumps when motions overlap.
-    if(dog.currentTween){
-      dog.currentTween.stop();
-      dog.currentTween=null;
-    }
-    if(type!=='service' && !dog.excited){
-      // Non-service dogs may run over to greet nearby customers
-      const seen=others.find(o=>Phaser.Math.Distance.Between(dog.x,dog.y,o.sprite.x,o.sprite.y)<80);
-      if(seen){
-        dog.excited=true;
-        const s=seen.sprite;
-        const tl=this.tweens.createTimeline();
-        tl.add({targets:dog,y:'-=15',duration:dur(100),yoyo:true,repeat:1});
-        tl.add({targets:dog,x:s.x,y:s.y,duration:dur(300)});
-        tl.add({targets:dog,x:'-=12',duration:dur(120),yoyo:true,repeat:1});
-        tl.add({targets:dog,x:'+=24',duration:dur(120),yoyo:true,repeat:1});
-        tl.add({targets:dog,x:ms.x,y:ms.y,duration:dur(400)});
-        tl.setCallback('onUpdate',()=>{
-          if(dog.prevX===undefined) dog.prevX=dog.x;
-          const dx=dog.x-dog.prevX;
-          if(Math.abs(dx)>3){
-            dog.dir=dx>0?1:-1;
-          }
-          dog.prevX=dog.x;
-          const s=scaleForY(dog.y)*0.5;
-          dog.setScale(s*(dog.dir||1), s);
-        });
-        tl.setCallback('onComplete',()=>{dog.excited=false; dog.currentTween=null;});
-        dog.currentTween=tl;
-        // Play the greeting animation, then return to the owner
-        tl.play();
-        return;
-      }
-
-    }
-    if(dogDist <= radius){
-      // Avoid bumping into other customers if they're very close
-      for(const o of others){
-        const d=Phaser.Math.Distance.Between(dog.x,dog.y,o.sprite.x,o.sprite.y);
-        if(d<near){
-          const ang=Phaser.Math.Angle.Between(o.sprite.x,o.sprite.y,dog.x,dog.y);
-          targetX=dog.x+Math.cos(ang)*(near-d);
-          targetY=dog.y+Math.sin(ang)*(near-d);
-          dog.restUntil=this.time.now+Phaser.Math.Between(5000,10000);
-          break;
-        }
-      }
-      if(targetX===ms.x && targetY===ms.y){
-        // Wander around the owner a little so the dog isn't perfectly static
-        const side=Phaser.Math.Between(0,1)?1:-1;
-        const offsetX=side*Phaser.Math.Between(20,30);
-        const offsetY=Phaser.Math.Between(10,20);
-        targetX=ms.x+offsetX;
-        targetY=ms.y+offsetY;
-        dog.restUntil=this.time.now+Phaser.Math.Between(5000,10000);
-      }
-    } else {
-      dog.restUntil=0;
-    }
-    if(targetY < DOG_MIN_Y) targetY = DOG_MIN_Y;
-    const distance = Phaser.Math.Distance.Between(dog.x,dog.y,targetX,targetY);
-    const speed = dogDist>DOG_FAST_DISTANCE?DOG_SPEED*1.5:DOG_SPEED;
-    const duration = dur(Math.max(200,(distance/speed)*1000));
-    if(Math.abs(targetX-dog.x) > 3){
-      dog.dir = targetX > dog.x ? 1 : -1;
-    }
-    // Slide the dog toward its chosen target position
-    dog.currentTween=this.tweens.add({targets:dog,x:targetX,y:targetY,duration,
-      onUpdate:(tw,t)=>{
-        if(t.prevX===undefined) t.prevX=t.x;
-        const dx=t.x - t.prevX;
-        if(Math.abs(dx) > 3){
-          t.dir = dx>0?1:-1;
-        }
-        t.prevX=t.x;
-        const s=scaleForY(t.y)*0.5;
-        t.setScale(s*(t.dir||1), s);
-        const bottomY = t.y + t.displayHeight * (1 - t.originY);
-        t.setDepth(3 + bottomY*0.006);
-      },
-      onComplete:()=>{dog.currentTween=null;}});
-  }
-
-  // Tween the dog off screen to the given coordinates and then destroy it.
-  // dog - sprite to move
-  // x,y - destination coordinates
-  function sendDogOffscreen(dog, x, y){
-    if(!dog) return;
-    if(dog.followEvent) dog.followEvent.remove(false);
-    const dist = Phaser.Math.Distance.Between(dog.x, dog.y, x, y);
-    if(Math.abs(x-dog.x) > 3){
-      dog.dir = x>dog.x?1:-1;
-    }
-    // Move the dog to the exit point and remove the sprite when done
-    this.tweens.add({targets:dog,x,y,duration:dur((dist/DOG_SPEED)*1000),
-      onUpdate:(tw,t)=>{
-        if(t.prevX===undefined) t.prevX=t.x;
-        const dx=t.x - t.prevX;
-        if(Math.abs(dx)>3){
-          t.dir=dx>0?1:-1;
-        }
-        t.prevX=t.x;
-        const s=scaleForY(t.y)*0.5;
-        t.setScale(s*(t.dir||1), s);
-        const bottomY = t.y + t.displayHeight * (1 - t.originY);
-        t.setDepth(3 + bottomY*0.006);
-      },
-      onComplete:()=>dog.destroy()});
-  }
 
   function updateLevelDisplay(){
     const newLevel=calcLoveLevel(GameState.love);

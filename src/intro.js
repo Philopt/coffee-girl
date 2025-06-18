@@ -16,6 +16,9 @@ function showStartScreen(scene){
   if (typeof debugLog === 'function') debugLog('showStartScreen called');
   if(startButton){ startButton.destroy(); startButton = null; }
   if(typeof phoneContainer !== 'undefined' && phoneContainer){
+    if(scene.tweens && scene.tweens.killTweensOf){
+      scene.tweens.killTweensOf(phoneContainer);
+    }
     phoneContainer.destroy();
     phoneContainer = null;
   }
@@ -54,7 +57,12 @@ function showStartScreen(scene){
   const offsetY = phoneH/2 - homeH/2 - 12;
   const containerY = 320;
   phoneContainer = scene.add.container(240,containerY,[caseG,blackG,whiteG,homeG])
-    .setDepth(15);
+    .setDepth(15)
+    .setVisible(true)
+    .setAlpha(1);
+  if(!phoneContainer.visible || phoneContainer.alpha === 0){
+    console.warn('phoneContainer not visible after creation');
+  }
 
   const birdY = phoneH/2 - homeH - 60;
   const bigBird1 = scene.add.sprite(-60,birdY,'sparrow2',0)
@@ -84,7 +92,9 @@ function showStartScreen(scene){
   // across targets, so no separate zone is necessary.
   startButton = scene.add.container(0,offsetY,[btnBg,btnLabel])
     .setSize(bw,bh)
-    .setInteractive({ useHandCursor: true });
+    .setInteractive({ useHandCursor: true })
+    .setVisible(true)
+    .setAlpha(1);
 
   phoneContainer.add(startButton);
 

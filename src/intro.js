@@ -56,7 +56,12 @@ function showStartScreen(scene){
   btnBg.fillRoundedRect(-bw/2,-bh/2,bw,bh,15);
   const offsetY = phoneH/2 - homeH/2 - 12;
   const containerY = 320;
-  phoneContainer = scene.add.container(240,containerY,[caseG,blackG,whiteG,homeG])
+  const phoneZone = scene.add
+    .zone(0, 0, phoneW + 20, phoneH + 20)
+    .setOrigin(0.5)
+    .setInteractive({ useHandCursor: true });
+  phoneContainer = scene.add
+    .container(240, containerY, [caseG, blackG, whiteG, homeG, phoneZone])
     .setDepth(15)
     .setVisible(true)
     .setAlpha(1);
@@ -135,21 +140,29 @@ function showStartScreen(scene){
       startMsgTimers.push(scene.time.delayedCall(delay,()=>addStartMessage(msg),[],scene));
     }
   }
-  startButton.on('pointerdown',()=>{
+  const startGame = () => {
     if (typeof debugLog === 'function') debugLog('start button clicked');
-    startMsgTimers.forEach(t=>t.remove(false));
-    startMsgTimers=[];
-    startMsgBubbles=[];
-    const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
-      if(startButton) startButton.destroy();
-      if(startOverlay){startOverlay.destroy(); startOverlay=null;}
-      phoneContainer.destroy(); phoneContainer=null;
-      playIntro.call(scene);
-    }});
-    tl.add({targets:phoneContainer,y:-320,duration:600,ease:'Sine.easeIn'});
-    tl.add({targets:startOverlay,alpha:0,duration:600},0);
+    startMsgTimers.forEach(t => t.remove(false));
+    startMsgTimers = [];
+    startMsgBubbles = [];
+    const tl = scene.tweens.createTimeline({
+      callbackScope: scene,
+      onComplete: () => {
+        if (startButton) startButton.destroy();
+        if (startOverlay) { startOverlay.destroy(); startOverlay = null; }
+        phoneContainer.destroy();
+        phoneContainer = null;
+        playIntro.call(scene);
+      }
+    });
+    tl.add({ targets: phoneContainer, y: -320, duration: 600, ease: 'Sine.easeIn' });
+    tl.add({ targets: startOverlay, alpha: 0, duration: 600 }, 0);
     tl.play();
-  });
+  };
+
+  startButton.on('pointerdown', startGame);
+  // Fallback: allow tapping anywhere on the phone to start
+  phoneZone.on('pointerdown', startGame);
 }
 
 function pauseWanderersForTruck(scene){

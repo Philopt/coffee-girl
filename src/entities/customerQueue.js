@@ -17,7 +17,7 @@ import {
 } from '../customers.js';
 import { GameState } from '../state.js';
 import { CustomerState } from '../constants.js';
-import { showDialog } from '../main.js';
+import { showDialog, Assets } from '../main.js';
 
 const CUSTOMER_SPEED = 560 / 6;
 const LURE_SPEED = CUSTOMER_SPEED * 0.6;
@@ -245,8 +245,9 @@ export function spawnCustomer() {
   GameState.wanderers.forEach(cust => {
     if (cust.spriteKey) used.add(cust.spriteKey);
   });
-  let available = keys.filter(k => !used.has(k));
-  if (available.length === 0) available = keys.slice();
+  const spriteKeys = (this && this.assets && this.assets.keys) || (Assets && Assets.keys) || (typeof keys !== 'undefined' ? keys : []);
+  let available = spriteKeys.filter(k => !used.has(k));
+  if (available.length === 0) available = spriteKeys.slice();
   const k = Phaser.Utils.Array.GetRandom(available);
   c.spriteKey = k;
 

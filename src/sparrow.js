@@ -191,6 +191,16 @@ export function updateSparrows(scene, delta){
   }
 }
 
+export function cleanupSparrows(scene){
+  const birds = scene.gameState.sparrows;
+  if(!Array.isArray(birds)) return;
+  birds.slice().forEach(b => {
+    if(b.threatCheck) b.threatCheck.remove(false);
+    if(b.destroy) b.destroy();
+  });
+  birds.length = 0;
+}
+
 
 function checkThreats(scene, bird){
   if(bird.state === BirdState.FLY || bird.state === BirdState.FLEE) return;

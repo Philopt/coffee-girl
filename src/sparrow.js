@@ -1,6 +1,9 @@
 import { BirdState } from './constants.js';
 import { GameState } from './state.js';
 
+// Limit the number of birds onscreen to avoid performance issues
+export const MAX_SPARROWS = 5;
+
 function randomTarget(scene){
   const { width } = scene.scale;
   const options = [
@@ -170,8 +173,12 @@ export class Sparrow {
 }
 
 export function spawnSparrow(scene){
+  const birds = scene.gameState.sparrows;
+  if (Array.isArray(birds) && birds.length >= MAX_SPARROWS) {
+    return null;
+  }
   const bird = new Sparrow(scene);
-  scene.gameState.sparrows.push(bird);
+  birds.push(bird);
   return bird;
 }
 
@@ -182,7 +189,9 @@ export function scheduleSparrowSpawn(scene){
   }
   const delay = Phaser.Math.Between(5000,10000);
   gs.sparrowSpawnEvent = scene.time.delayedCall(delay, () => {
-    spawnSparrow(scene);
+    if ((gs.sparrows || []).length < MAX_SPARROWS) {
+      spawnSparrow(scene);
+    }
     scheduleSparrowSpawn(scene);
   }, [], scene);
 }

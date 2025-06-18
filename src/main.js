@@ -8,6 +8,8 @@ import { CustomerState } from './constants.js';
 
 import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows } from './sparrow.js';
 import { DOG_TYPES, updateDog, sendDogOffscreen, scaleDog, cleanupDogs } from './entities/dog.js';
+import { startWander, resumeWanderer } from './entities/wanderers.js';
+import { flashBorder, flashFill, blinkButton, applyRandomSkew, emphasizePrice } from './ui/helpers.js';
 
 export let Assets, Scene, Customers, config;
 export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;

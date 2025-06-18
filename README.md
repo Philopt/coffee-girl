@@ -4,9 +4,9 @@ Coffee Clicker is a small browser game built with [Phaser](https://phaser.io/). 
 
 ## Getting Started
 
-This project requires **Node.js 20**. Newer versions (21+) are not yet supported.
-Running `npm install` (or `npm ci`) triggers a preinstall check that verifies
-`node --version` falls within `>=20 <21`. If it doesn't, the install exits with
+This project requires **Node.js 20 or newer**. Running `npm install` (or
+`npm ci`) triggers a preinstall check that verifies `node --version` falls
+within `>=20 <23`. If it doesn't, the install exits with
 an error.
 
 1. From the repository root, start the local development server. If you haven't

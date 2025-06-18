@@ -5,8 +5,8 @@ import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer, c
 import { baseConfig } from "./scene.js";
 import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from "./state.js";
 import { CustomerState } from './constants.js';
-import { scheduleSparrowSpawn } from './sparrow.js';
-import { DOG_TYPES, updateDog, sendDogOffscreen, scaleDog } from './entities/dog.js';
+import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows } from './sparrow.js';
+import { DOG_TYPES, updateDog, sendDogOffscreen, scaleDog, cleanupDogs } from './entities/dog.js';
 export let Assets, Scene, Customers, config;
 export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;
 const CUSTOMER_SPEED = 560 / 6; // pixels per second for wanderers
@@ -167,15 +167,6 @@ export function setupGame(){
     });
   }
 
-  function cleanupSparrows(){
-    if(Array.isArray(GameState.sparrows)){
-      GameState.sparrows.slice().forEach(b=>{
-        if(b.threatCheck) b.threatCheck.remove(false);
-        if(b.destroy) b.destroy();
-      });
-      GameState.sparrows.length = 0;
-    }
-  }
 
   function hideOverlayTexts(){
     if(reportLine1) reportLine1.setVisible(false);
@@ -908,10 +899,7 @@ export function setupGame(){
     this.events.on('update', (_, dt) => {
       enforceCustomerScaling();
       updateDrinkEmojiPosition();
-      const dtSec = dt / 1000;
-      if(Array.isArray(GameState.sparrows)){
-        GameState.sparrows.forEach(b=>b.update(dtSec));
-      }
+      updateSparrows(this, dt);
     });
 
 
@@ -1745,7 +1733,7 @@ export function setupGame(){
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
     cleanupHeartEmojis();
-    cleanupSparrows();
+    cleanupSparrows(scene);
     hideOverlayTexts();
     clearDialog.call(scene);
     GameState.falconActive = true;
@@ -2065,7 +2053,7 @@ export function setupGame(){
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
     cleanupHeartEmojis();
-    cleanupSparrows();
+    cleanupSparrows(scene);
     if (GameState.spawnTimer) {
       GameState.spawnTimer.remove(false);
       GameState.spawnTimer = null;
@@ -2092,19 +2080,13 @@ export function setupGame(){
     loveText.setText('❤️ '+GameState.love);
     updateLevelDisplay();
     if(GameState.activeCustomer){
-      if(GameState.activeCustomer.dog){
-        if(GameState.activeCustomer.dog.followEvent) GameState.activeCustomer.dog.followEvent.remove(false);
-        GameState.activeCustomer.dog.destroy();
-      }
       if(GameState.activeCustomer.heartEmoji){ GameState.activeCustomer.heartEmoji.destroy(); GameState.activeCustomer.heartEmoji=null; }
       GameState.activeCustomer.sprite.destroy();
     }
     GameState.activeCustomer=null;
-    Phaser.Actions.Call(GameState.queue,c=>{ if(c.dog){ if(c.dog.followEvent) c.dog.followEvent.remove(false); c.dog.destroy(); } if(c.heartEmoji){ c.heartEmoji.destroy(); c.heartEmoji=null; } c.sprite.destroy(); });
+    cleanupDogs(scene);
     GameState.queue=[];
-    Phaser.Actions.Call(GameState.wanderers,c=>{ if(c.dog){ if(c.dog.followEvent) c.dog.followEvent.remove(false); c.dog.destroy(); } if(c.heartEmoji){ c.heartEmoji.destroy(); c.heartEmoji=null; } c.sprite.destroy(); });
     GameState.wanderers=[];
-    GameState.sparrows=[];
     Object.keys(GameState.customerMemory).forEach(k=>{ delete GameState.customerMemory[k]; });
     GameState.heartWin = null;
     GameState.servedCount=0;

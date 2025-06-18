@@ -70,7 +70,10 @@ function readAndMatch(names, regex) {
     if (fs.existsSync(file)) {
       const code = fs.readFileSync(file, 'utf8');
       const m = regex.exec(code);
-      if (m) return m;
+      if (m) {
+        m[0] = m[0].replace(/^export\s+/, '');
+        return m;
+      }
     }
   }
   return null;
@@ -155,11 +158,11 @@ function testBlinkButton() {
 }
 
 function testSpawnCustomer() {
-  const match = readAndMatch(
+  const src = extractFunction(
     ['entities/customerQueue.js', 'customers.js', 'main.js'],
-    /(?:export\s+)?function spawnCustomer\([^)]*\)[\s\S]*?\n\s*\}(?=\s*(?:export\s+)?function|$)/
+    'spawnCustomer'
   );
-  if (!match) throw new Error('spawnCustomer not found');
+  if (!src) throw new Error('spawnCustomer not found');
   const context = {
     Phaser: { Math: { Between: (min, max) => (min === 0 && max === 4 ? 1 : min) }, Utils: { Array: { GetRandom: a => a[0] } } },
     DOG_TYPES: [{ type: 'standard', emoji: '🐶' }],
@@ -171,10 +174,15 @@ function testSpawnCustomer() {
     scheduleNextSpawn: () => {},
     lureNextWanderer: () => {},
     sendDogOffscreen: () => {},
+    Assets: { keys: ['c1'] },
     keys: ['c1'],
+    customerMemory: {},
+    CustomerState: { NORMAL: 0 },
     MENU: [{ name: 'Coffee', price: 5 }],
     WANDER_TOP: 0,
     WANDER_BOTTOM: 10,
+    loopsForState: () => 1,
+    EDGE_TURN_BUFFER: 40,
     scaleForY: () => 1,
     dur: v => v,
     fn: null,
@@ -183,7 +191,7 @@ function testSpawnCustomer() {
   loadGameState(context);
   loadCustomerState(context);
   vm.createContext(context);
-  vm.runInContext(match[0] + '\nfn=spawnCustomer;', context);
+  vm.runInContext(src + '\nfn=spawnCustomer;', context);
   const spawnCustomer = context.fn;
   const scene = {
     add: {
@@ -208,11 +216,11 @@ function testSpawnCustomer() {
 }
 
 function testSpawnCustomerQueuesWhenEmpty() {
-  const match = readAndMatch(
+  const src = extractFunction(
     ['entities/customerQueue.js', 'customers.js', 'main.js'],
-    /(?:export\s+)?function spawnCustomer\([^)]*\)[\s\S]*?\n\s*\}(?=\s*(?:export\s+)?function|$)/
+    'spawnCustomer'
   );
-  if (!match) throw new Error('spawnCustomer not found');
+  if (!src) throw new Error('spawnCustomer not found');
   const context = {
     Phaser: { Math: { Between: (min, max) => (min === 0 && max === 4 ? 1 : min) }, Utils: { Array: { GetRandom: a => a[0] } } },
     DOG_TYPES: [{ type: 'standard', emoji: '🐶' }],
@@ -223,10 +231,15 @@ function testSpawnCustomerQueuesWhenEmpty() {
     maxWanderers: () => 5,
     scheduleNextSpawn: () => {},
     sendDogOffscreen: () => {},
+    Assets: { keys: ['c1'] },
     keys: ['c1'],
+    customerMemory: {},
+    CustomerState: { NORMAL: 0 },
     MENU: [{ name: 'Coffee', price: 5 }],
     WANDER_TOP: 0,
     WANDER_BOTTOM: 10,
+    loopsForState: () => 1,
+    EDGE_TURN_BUFFER: 40,
     scaleForY: () => 1,
     dur: v => v,
     fn: null,
@@ -236,7 +249,7 @@ function testSpawnCustomerQueuesWhenEmpty() {
   loadGameState(context);
   loadCustomerState(context);
   vm.createContext(context);
-  vm.runInContext(match[0] + '\nfn=spawnCustomer;', context);
+  vm.runInContext(src + '\nfn=spawnCustomer;', context);
   const spawnCustomer = context.fn;
   const scene = {
     add: {
@@ -265,7 +278,7 @@ function testHandleActionSell() {
     MAX_L: 100,
     WALK_OFF_BASE: 1000,
     servedCount: 0,
-    Phaser: { Math: { Between: () => 1, Clamp: (x, l, h) => Math.max(l, Math.min(h, x)) }, Utils: { Array: { GetRandom: a => a[0] } } },
+    Phaser: { Math: { Between: (min, max) => { if (min === 0 && max === 1) return 0; if (min === 0 && max === 2) return 1; return min; }, Clamp: (x, l, h) => Math.max(l, Math.min(h, x)) }, Utils: { Array: { GetRandom: a => a[0] } } },
     moveQueueForward: () => {},
     showFalconAttack: () => {},
     showCustomerRevolt: () => {},
@@ -274,6 +287,7 @@ function testHandleActionSell() {
     updateSideC: () => {},
     clearDialog: () => {},
     animateStatChange: () => {},
+    emphasizePrice: () => {},
     flashMoney: () => {},
     moneyText: { x: 0, y: 0, width: 50, setText() { return this; } },
     loveText: { setText() { return this; } },
@@ -289,6 +303,7 @@ function testHandleActionSell() {
     dialogBg: { setVisible() { return this; } },
     dialogText: { setVisible() { return this; } },
     supers: {},
+    smallDollar: '$',
     fn: null
   };
   loadGameState(context);
@@ -305,7 +320,7 @@ function testHandleActionSell() {
     time: { delayedCall(d, cb, args, s) { if (cb) cb.apply(s || this, args || []); return {}; } }
   };
   const sprite = { destroy() {}, setDepth() { return this; }, x: 0, y: 0 };
-  const cust = { sprite, orders: [{ coins: 10, req: 'Coffee', price: 5, qty: 1 }], atOrder: true };
+  const cust = { sprite, orders: [{ coins: 5.75, req: 'Coffee', price: 5, qty: 1 }], atOrder: true };
   context.activeCustomer = cust;
   context.queue = [cust];
   handleAction.call(scene, 'sell');
@@ -343,11 +358,14 @@ function testShowStartScreen() {
         return obj;
       },
       graphics() { return { fillStyle() { return this; }, fillRoundedRect() { return this; } }; },
+      sprite() { return { setOrigin() { return this; }, setScale() { return this; }, setDepth() { return this; } }; },
       zone() { return { setOrigin() { return this; }, setInteractive() { return this; }, on() { return this; } }; },
       container() {
         const obj = {
           setSize() { return obj; },
           setDepth() { return obj; },
+          setVisible() { return obj; },
+          setAlpha() { return obj; },
           setInteractive() { obj.interactive = true; return obj; },
           on() { return obj; },
           add() { return obj; }
@@ -394,11 +412,14 @@ function testStartButtonPlaysIntro() {
       rectangle() { return { setDepth() { return this; }, setStrokeStyle() { return this; }, destroy() { this.destroyed = true; } }; },
       text() { return { setOrigin() { return this; }, setDepth() { return this; }, width: 100, height: 40 }; },
       graphics() { return { fillStyle() { return this; }, fillRoundedRect() { return this; } }; },
+      sprite() { return { setOrigin() { return this; }, setScale() { return this; }, setDepth() { return this; }, setVisible() { return this; } }; },
       zone() { return { setOrigin() { return this; }, setInteractive() { return this; }, on(event, cb) { if (event === 'pointerdown') pointerCb = cb; return this; } }; },
       container() {
         const obj = {
           setSize() { return obj; },
           setDepth() { return obj; },
+          setVisible() { return obj; },
+          setAlpha() { return obj; },
           setInteractive() { return obj; },
           on(event, cb) { if (event === 'pointerdown') pointerCb = cb; return obj; },
           add() { return obj; },

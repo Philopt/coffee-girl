@@ -5,7 +5,7 @@ import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer, c
 import { baseConfig } from "./scene.js";
 import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from "./state.js";
 import { CustomerState } from './constants.js';
-import { scheduleSparrowSpawn, updateSparrows } from './sparrow.js';
+import { scheduleSparrowSpawn } from './sparrow.js';
 import { DOG_TYPES, updateDog, sendDogOffscreen, scaleDog } from './entities/dog.js';
 export let Assets, Scene, Customers, config;
 export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;
@@ -908,7 +908,10 @@ export function setupGame(){
     this.events.on('update', (_, dt) => {
       enforceCustomerScaling();
       updateDrinkEmojiPosition();
-      updateSparrows(this, dt);
+      const dtSec = dt / 1000;
+      if(Array.isArray(GameState.sparrows)){
+        GameState.sparrows.forEach(b=>b.update(dtSec));
+      }
     });
 
 

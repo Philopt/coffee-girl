@@ -253,7 +253,7 @@ function testSpawnCustomerQueuesWhenEmpty() {
 }
 
 function testHandleActionSell() {
-  const recMatch = readAndMatch(['customers.js', 'main.js'], /(?:export\s+)?function receipt\([^)]*\)[\s\S]*?\n\s*\}/);
+  const recMatch = readAndMatch(['assets.js', 'customers.js', 'main.js'], /(?:export\s+)?function receipt\([^)]*\)[\s\S]*?\n\s*\}/);
   const actMatch = readAndMatch(['customers.js', 'main.js'], /(?:export\s+)?function handleAction\(type\)[\s\S]*?\n\s*\}\n(?=\s*function)/);
   if (!actMatch || !recMatch) throw new Error('handleAction or receipt not found');
   const context = {
@@ -315,7 +315,7 @@ function testHandleActionSell() {
 }
 
 function testShowStartScreen() {
-  const match = readAndMatch(['ui.js', 'main.js'], /(?:export\s+)?function showStartScreen\(scene\)[\s\S]*?\n\s*\}\);\n\s*\}/);
+  const match = readAndMatch(['intro.js', 'ui.js', 'main.js'], /(?:export\s+)?function showStartScreen\(scene\)[\s\S]*?\n\s*\}\);\n\s*\}/);
   if (!match) throw new Error('showStartScreen not found');
   function RectStub(x, y, w, h) {
     return { x, y, width: w, height: h };
@@ -365,8 +365,8 @@ function testShowStartScreen() {
 }
 
 function testStartButtonPlaysIntro() {
-  const startMatch = readAndMatch(['ui.js', 'main.js'], /(?:export\s+)?function showStartScreen\(scene\)[\s\S]*?\n\s*\}\);\n\s*\}/);
-  const introMatch = readAndMatch(['ui.js', 'main.js'], /(?:export\s+)?function playIntro\(scene\)[\s\S]*?intro\.play\(\);\n\s*\}/);
+  const startMatch = readAndMatch(['intro.js', 'ui.js', 'main.js'], /(?:export\s+)?function showStartScreen\(scene\)[\s\S]*?\n\s*\}\);\n\s*\}/);
+  const introMatch = readAndMatch(['intro.js', 'ui.js', 'main.js'], /(?:export\s+)?function playIntro\(scene\)[\s\S]*?intro\.play\(\);\n\s*\}/);
   if (!startMatch || !introMatch) throw new Error('showStartScreen or playIntro not found');
   function RectStub(x, y, w, h) {
     return { x, y, width: w, height: h };

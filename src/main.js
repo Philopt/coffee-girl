@@ -1,5 +1,5 @@
 import { debugLog, DEBUG } from './debug.js';
-import { dur, scaleForY, articleFor, flashMoney, START_PHONE_W, START_PHONE_H, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_Y, DIALOG_Y } from "./ui.js";
+import { dur, scaleForY, articleFor, flashMoney, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_Y, DIALOG_Y } from "./ui.js";
 import { ORDER_X, ORDER_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel } from "./customers.js";
 import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer, queueLimit } from './entities/customerQueue.js';
 import { baseConfig } from "./scene.js";
@@ -10,6 +10,8 @@ import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows } from './sparrow
 import { DOG_TYPES, updateDog, sendDogOffscreen, scaleDog, cleanupDogs } from './entities/dog.js';
 import { startWander, resumeWanderer } from './entities/wanderers.js';
 import { flashBorder, flashFill, blinkButton, applyRandomSkew, emphasizePrice } from './ui/helpers.js';
+import { keys, requiredAssets, genzSprites, preload as preloadAssets, receipt, emojiFor } from './assets.js';
+import { showStartScreen, playIntro } from './intro.js';
 
 export let Assets, Scene, Customers, config;
 export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;
@@ -42,35 +44,6 @@ export function setupGame(){
 
   // state is managed in GameState
 
-  const keys=[];
-  const requiredAssets=['bg','truck','girl','lady_falcon','falcon_end','revolt_end','sparrow','sparrow2','sparrow3'];
-  const genzSprites=[
-    'new_kid_0_0','new_kid_0_1','new_kid_0_2','new_kid_0_4','new_kid_0_5',
-    'new_kid_1_0','new_kid_1_1','new_kid_1_2','new_kid_1_3','new_kid_1_4','new_kid_1_5',
-    'new_kid_2_0','new_kid_2_1','new_kid_2_2','new_kid_2_3','new_kid_2_4','new_kid_2_5',
-    'new_kid_3_0','new_kid_3_1','new_kid_3_2','new_kid_3_3','new_kid_3_4','new_kid_3_5',
-    'new_kid_4_0','new_kid_4_1','new_kid_4_2','new_kid_4_3','new_kid_4_4','new_kid_4_5'
-  ];
-
-
-  const supers={
-    '0':'\u2070','1':'\u00b9','2':'\u00b2','3':'\u00b3','4':'\u2074',
-    '5':'\u2075','6':'\u2076','7':'\u2077','8':'\u2078','9':'\u2079'
-  };
-  const smallDollar='\uFE69';
-  function receipt(value){
-    const [d,c]=value.toFixed(2).split(".");
-    const cents=c.split("").map(ch=>supers[ch]||ch).join("");
-    return `${smallDollar}${d}${cents}`;
-  }
-
-  function emojiFor(name){
-    const n=name.toLowerCase();
-    if(n.includes('tea')) return '🍵';
-    if(n.includes('chocolate')) return '🍫';
-    if(n.includes('latte')||n.includes('mocha')||n.includes('espresso')) return '☕';
-    return '☕';
-  }
 
 
 
@@ -180,11 +153,6 @@ export function setupGame(){
   let sideCAlpha=0;
   let sideCFadeTween=null;
   let endOverlay=null;
-  let startOverlay=null;
-  let startButton=null;
-  let phoneContainer=null;
-  let startMsgTimers=[];
-  let startMsgBubbles=[];
   // hearts or anger symbols currently animating
 
 
@@ -288,284 +256,9 @@ export function setupGame(){
 
 
 
-  function showStartScreen(scene){
-    scene = scene || this;
-    if (typeof debugLog === 'function') debugLog('showStartScreen called');
-    // clean up any remnants from a previous start screen
-    if(startButton){ startButton.destroy(); startButton = null; }
-    if(typeof phoneContainer !== 'undefined' && phoneContainer){
-      phoneContainer.destroy();
-      phoneContainer = null;
-    }
-    if(startOverlay){ startOverlay.destroy(); startOverlay = null; }
-    // reset any pending timers or bubbles from a previous session
-    startMsgTimers.forEach(t => t.remove(false));
-    startMsgTimers = [];
-    startMsgBubbles.forEach(b => b.destroy());
-    startMsgBubbles = [];
-    // Increase opacity of the start screen overlay for a darker background
-    startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.75)
-      .setDepth(14);
-
-    const phoneW = (typeof START_PHONE_W === 'number') ? START_PHONE_W : 260;
-    const phoneH = (typeof START_PHONE_H === 'number') ? START_PHONE_H : 500;
-    const caseG = scene.add.graphics();
-    caseG.fillStyle(0x5c3b2a,1);
-    caseG.fillRoundedRect(-phoneW/2-10,-phoneH/2-10,phoneW+20,phoneH+20,40);
-    const blackG = scene.add.graphics();
-    blackG.fillStyle(0x000000,1);
-    blackG.fillRoundedRect(-phoneW/2,-phoneH/2,phoneW,phoneH,30);
-    const whiteG = scene.add.graphics();
-    whiteG.fillStyle(0xffffff,1);
-    whiteG.fillRoundedRect(-phoneW/2+6,-phoneH/2+6,phoneW-12,phoneH-12,24);
-    const homeH = 100;
-    const homeG = scene.add.graphics();
-    homeG.fillStyle(0xf0f0f0,1);
-    homeG.fillRoundedRect(-phoneW/2+12,phoneH/2-homeH-12,phoneW-24,homeH,20);
-
-    const btnLabel = scene.add.text(0,0,'Clock In',{
-        font:'32px sans-serif',fill:'#fff'})
-      .setOrigin(0.5);
-    const bw = btnLabel.width + 60;
-    const bh = btnLabel.height + 20;
-    const btnBg = scene.add.graphics();
-    btnBg.fillStyle(0x007bff,1);
-    btnBg.fillRoundedRect(-bw/2,-bh/2,bw,bh,15);
-    const offsetY = phoneH/2 - homeH/2 - 12;
-    // position the phone closer to the center of the screen
-    const containerY = 320;
-    phoneContainer = scene.add.container(240,containerY,[caseG,blackG,whiteG,homeG])
-      .setDepth(15);
-
-    const birdY = phoneH/2 - homeH - 60;
-    const bigBird1 = scene.add.sprite(-60,birdY,'sparrow2',0)
-      .setScale(3)
-      .setDepth(16);
-    const bigBird2 = scene.add.sprite(0,birdY,'sparrow2',0)
-      .setScale(3)
-      .setDepth(16);
-    const bigBird3 = scene.add.sprite(60,birdY,'sparrow2',0)
-      .setScale(3)
-      .setDepth(16);
-    bigBird1.anims.play('sparrow2_fly');
-    bigBird2.anims.play('sparrow2_ground');
-    bigBird3.anims.play('sparrow2_peck');
-    const bigBird4 = scene.add.sprite(-120,birdY,'sparrow3',0)
-      .setScale(3)
-      .setDepth(16);
-    const bigBird5 = scene.add.sprite(120,birdY,'sparrow3',0)
-      .setScale(3)
-      .setDepth(16);
-    bigBird4.anims.play('sparrow3_fly');
-    bigBird5.anims.play('sparrow3_ground');
-    phoneContainer.add([bigBird4,bigBird1,bigBird2,bigBird3,bigBird5]);
-
-    startButton = scene.add.container(0,offsetY,[btnBg,btnLabel])
-      .setSize(bw,bh)
-      .setInteractive({ useHandCursor: true });
-
-    const startZone = scene.add.zone(0,0,bw,bh).setOrigin(0.5);
-    startZone.setInteractive({ useHandCursor:true });
-    startButton.add(startZone);
-
-    phoneContainer.add(startButton);
-
-    // track where to place the first start message
-    let startMsgY = -phoneH/2 + 20;
-
-    const addStartMessage=(text)=>{
-      if(!phoneContainer) return;
-      const pad = 10;
-      const wrapWidth = phoneW - 60;
-      const txt = scene.add.text(0,0,text,{font:'20px sans-serif',fill:'#fff',wordWrap:{width:wrapWidth}})
-        .setOrigin(0,0.5);
-      const bw = txt.width + pad*2;
-      const bh = txt.height + pad*2;
-      const bg = scene.add.graphics();
-      bg.fillStyle(0x8bd48b,1);
-      bg.fillRoundedRect(-bw/2,-bh/2,bw,bh,10);
-      txt.setPosition(-bw/2 + pad, 0);
-      const xPos = -phoneW/2 + bw/2 + 20;
-      const yPos = startMsgY + bh/2;
-      const bubble = scene.add.container(xPos,yPos,[bg,txt]).setDepth(16).setAlpha(0);
-      phoneContainer.add(bubble);
-      startMsgBubbles.push(bubble);
-      startMsgY += bh + 10;
-      scene.tweens.add({targets:bubble,alpha:1,duration:300,ease:'Cubic.easeOut'});
-    };
-
-      if(scene.time && scene.time.delayedCall){
-        const msgOptions=[
-          ['u coming in? 🤔', 'where u at??', 'mornin ☀️'],
-          ['better not still be in bed 😜', 'yo coffee girl ☕', 'stop ghostin me'],
-          ['late night? 🥱💃', 'phone dead again? 🔋', 'omg wait till u hear about this guy 😏'],
-          ['u good?', 'hope everythin\'s chill', '…sry 😬']
-        ];
-        let delay=0;
-        for(const opts of msgOptions){
-          delay += Phaser.Math.Between(5000,15000);
-          const msg = Phaser.Utils.Array.GetRandom(opts);
-          startMsgTimers.push(scene.time.delayedCall(delay,()=>addStartMessage(msg),[],scene));
-        }
-      }
-      startZone.on('pointerdown',()=>{
-        if (typeof debugLog === 'function') debugLog('start button clicked');
-        startMsgTimers.forEach(t=>t.remove(false));
-        startMsgTimers=[];
-        startMsgBubbles=[];
-        const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
-          if(startButton) startButton.destroy();
-          if(startOverlay){startOverlay.destroy(); startOverlay=null;}
-          phoneContainer.destroy(); phoneContainer=null;
-          playIntro.call(scene);
-        }});
-        tl.add({targets:phoneContainer,y:-320,duration:600,ease:'Sine.easeIn'});
-        tl.add({targets:startOverlay,alpha:0,duration:600},0);
-        tl.play();
-      });
-  }
-
-  function playIntro(scene){
-    if(!truck || !girl) {
-      if (DEBUG) console.warn('playIntro skipped: missing truck or girl');
-      return;
-    }
-    if (typeof debugLog === 'function') debugLog('playIntro starting');
-    scene = scene || this;
-    if(!truck || !girl) return;
-    GameState.girlReady = false;
-    if(typeof debugLog==='function') debugLog('customers start spawning');
-    scheduleNextSpawn(scene);
-    const width = (scene.scale && scene.scale.width) ? scene.scale.width : 480;
-    const offscreenX = width + 100;
-    truck.setPosition(offscreenX,245).setScale(0.462);
-    girl.setPosition(offscreenX,245).setVisible(false);
-    // engine vibration while the truck is driving
-    const vibrateAmp = { value: 2 * (truck.scaleX / 0.924) };
-    const vibrateTween = (scene.tweens && scene.tweens.addCounter) ? scene.tweens.addCounter({
-      from: 0,
-      to: Math.PI * 2,
-      duration: dur(100),
-      repeat: -1,
-      onUpdate: t => {
-        const y = 245 + Math.sin(t.getValue()) * vibrateAmp.value;
-        if (truck.setY) {
-          truck.setY(y);
-        } else {
-          truck.y = y;
-        }
-      }
-    }) : { stop: ()=>{} };
-    if (scene.tweens && scene.tweens.add) {
-      scene.tweens.add({
-        targets: vibrateAmp,
-        value: 0,
-        duration: dur(600),
-        delay: dur(900),
-        ease: 'Sine.easeOut'
-      });
-    }
-
-    // emit smoke puffs as the truck drives in
-    let smokeDelay = 100; // start with a short delay for heavy exhaust
-    let smokeEvent = { remove: ()=>{} };
-    if (scene.time && scene.time.addEvent) {
-      smokeEvent = scene.time.addEvent({
-        delay: dur(smokeDelay),
-        loop: true,
-        callback: () => {
-          const puff = scene.add.text(truck.x + 60, truck.y + 20, '💨', { font: '20px sans-serif', fill: '#fff' })
-            .setDepth(1);
-          if (scene.tweens && scene.tweens.add) {
-            scene.tweens.add({
-              targets: puff,
-              x: puff.x + 30,
-              y: puff.y - 10,
-              alpha: 0,
-              duration: dur(800),
-              onComplete: () => puff.destroy()
-            });
-          } else {
-            puff.destroy();
-          }
-          smokeDelay += 125; // space out puffs more quickly over time
-          smokeEvent.delay = dur(smokeDelay);
-        }
-      });
-      // end the exhaust a bit before the truck stops
-      scene.time.delayedCall(dur(1300), () => smokeEvent.remove(), [], scene);
-    }
-
-    const intro=scene.tweens.createTimeline({callbackScope:scene});
-    const hopOut=()=>{
-      const startX = truck.x + truck.displayWidth / 2 - 20; // back of truck
-      const startY = truck.y - 10; // slightly above center
-      const endX = truck.x - 40; // in front of truck
-      const endY = 292;
-      const curve = new Phaser.Curves.QuadraticBezier(
-        new Phaser.Math.Vector2(startX, startY),
-        new Phaser.Math.Vector2(startX - 60, startY - 60),
-        new Phaser.Math.Vector2(endX, endY)
-      );
-      const follower={t:0,vec:new Phaser.Math.Vector2()};
-      scene.tweens.add({
-        targets:follower,
-        t:1,
-        duration:dur(700),
-        ease:'Sine.easeInOut',
-        onStart:()=>girl.setVisible(true),
-        onUpdate:()=>{
-          curve.getPoint(follower.t,follower.vec);
-          girl.setPosition(follower.vec.x,follower.vec.y);
-        },
-        onComplete:()=>{
-          girl.setPosition(endX,endY);
-          if(typeof debugLog==='function') debugLog('intro finished');
-          GameState.girlReady = true;
-          lureNextWanderer(scene);
-        }
-      });
-    };
-    intro.add({
-      targets:truck,
-      x:240,
-      scale:0.924,
-      duration:dur(1500),
-      ease:'Sine.easeOut',
-      onComplete:()=>{
-        smokeEvent.remove();
-        vibrateTween.stop();
-        if(truck.setY){
-          truck.setY(245);
-        }else{
-          truck.y=245;
-        }
-        pauseWanderersForTruck(scene);
-        hopOut();
-      }
-    });
-    intro.play();
-  }
 
   function preload(){
-    const loader=this.load;
-    loader.on('loaderror', file=>{
-      if (DEBUG) console.error('Asset failed to load:', file.key || file.src);
-    });
-    loader.image('bg','assets/bg.png');
-    loader.image('truck','assets/truck.png');
-    loader.image('girl','assets/coffeegirl.png');
-    loader.spritesheet('lady_falcon','assets/lady_falcon.png',{frameWidth:64,frameHeight:64});
-    loader.image('falcon_end','assets/ladyfalconend.png');
-    loader.image('revolt_end','assets/revolt.png');
-    loader.spritesheet('sparrow','assets/sparrow.png',{frameWidth:16,frameHeight:16});
-    loader.spritesheet('sparrow2','assets/sparrow2.png',{frameWidth:20,frameHeight:20});
-    loader.spritesheet('sparrow3','assets/sparrow3.png',{frameWidth:20,frameHeight:20});
-    for(const k of genzSprites){
-      keys.push(k);
-      requiredAssets.push(k);
-      loader.image(k,`assets/genz/${k}.png`);
-    }
+    preloadAssets.call(this);
   }
 
   function create(){
@@ -787,27 +480,6 @@ export function setupGame(){
 
 
 
-  function pauseWanderersForTruck(scene){
-    const threshold = 60;
-    GameState.wanderers.slice().forEach(c => {
-      if(!c.sprite) return;
-      if(Math.abs(c.sprite.x - truck.x) < threshold){
-        if(c.walkTween){
-          c.walkTween.stop();
-          c.walkTween.remove();
-          c.walkTween=null;
-        }
-        scene.tweens.add({targets:c.sprite,y:'-=20',duration:dur(150),yoyo:true});
-        scene.time.delayedCall(dur(1000),()=>{
-          if(GameState.girlReady && GameState.queue.length < queueLimit() && GameState.wanderers.includes(c)){
-            lureNextWanderer(scene, c);
-          }else{
-            resumeWanderer(scene, c);
-          }
-        },[],scene);
-      }
-    });
-  }
 
   function drawDialogBubble(targetX, targetY, fillColor=0xffffff){
     if(!dialogBg) return;

@@ -1,5 +1,5 @@
 import { ORDER_Y } from '../customers.js';
-import { GameState } from '../state.js';
+import GameState from './GameState.js';
 import { dur, scaleForY } from '../ui.js';
 
 export const DOG_MIN_Y = ORDER_Y + 20;

@@ -12,11 +12,15 @@ function randomTarget(scene){
       Phaser.Math.Between(180,300),
       Phaser.Math.Between(260,300)
     ),
-    // top of the truck (approx y=217)
-    new Phaser.Math.Vector2(
-      Phaser.Math.Between(220,260),
-      217
-    ),
+    // top of the truck
+    (() => {
+      const truck = GameState.truck;
+      const y = (truck && truck.getTopCenter) ? truck.getTopCenter().y : 217;
+      return new Phaser.Math.Vector2(
+        Phaser.Math.Between(220,260),
+        y
+      );
+    })(),
     // offscreen above
     new Phaser.Math.Vector2(
       Phaser.Math.Between(-40,width+40),
@@ -29,7 +33,9 @@ function randomTarget(scene){
 export class Sparrow {
   constructor(scene){
     this.scene = scene;
-    const startX = Phaser.Math.Between(-20, 520);
+    const { width } = scene.scale;
+    const fromLeft = Math.random() < 0.5;
+    const startX = fromLeft ? -40 : width + 40;
     const startY = Phaser.Math.Between(120, 180);
     this.sprite = scene.add.sprite(startX, startY, 'sparrow', 0)
       .setDepth(4)
@@ -43,7 +49,13 @@ export class Sparrow {
     this.scared = false;
     this.threatTimer = 0;
 
-    this.target.copy(randomTarget(scene));
+    const truck = GameState.truck;
+    if (truck && truck.getTopCenter) {
+      const tmp = truck.getTopCenter();
+      this.target.set(tmp.x, tmp.y);
+    } else {
+      this.target.copy(randomTarget(scene));
+    }
     const controlX = Phaser.Math.Between(startX - 60, startX + 60);
     const controlY = startY - Phaser.Math.Between(30, 80);
     this.curve = new Phaser.Curves.QuadraticBezier(

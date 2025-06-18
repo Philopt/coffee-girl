@@ -17,19 +17,15 @@ import {
 } from '../customers.js';
 import { GameState } from '../state.js';
 import { CustomerState } from '../constants.js';
+
 import { showDialog, Assets } from '../main.js';
 import { startWander } from './wanderers.js';
 import { updateDog } from './dog.js';
 
+
 const CUSTOMER_SPEED = 560 / 6;
 const LURE_SPEED = CUSTOMER_SPEED * 0.6;
 const EDGE_TURN_BUFFER = 40;
-const DOG_TYPES = [
-  { type: 'standard', emoji: '🐶' },
-  { type: 'poodle', emoji: '🐩' },
-  { type: 'guide', emoji: '🦮' },
-  { type: 'service', emoji: '🐕‍🦺' }
-];
 const HEART_EMOJIS = {
   [CustomerState.NORMAL]: null,
   [CustomerState.BROKEN]: '💔',

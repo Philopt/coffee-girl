@@ -155,7 +155,7 @@ function testBlinkButton() {
 }
 
 function testSpawnCustomer() {
-  const match = readAndMatch(['customers.js', 'main.js'], /(?:export\s+)?function spawnCustomer\([^)]*\)[\s\S]*?\n\s*\}\n(?=\s*(?:export\s+)?function)/);
+  const match = readAndMatch(['entities/customerQueue.js', 'customers.js', 'main.js'], /(?:export\s+)?function spawnCustomer\([^)]*\)[\s\S]*?\n\s*\}\n(?=\s*(?:export\s+)?function)/);
   if (!match) throw new Error('spawnCustomer not found');
   const context = {
     Phaser: { Math: { Between: (min, max) => (min === 0 && max === 4 ? 1 : min) }, Utils: { Array: { GetRandom: a => a[0] } } },
@@ -205,7 +205,7 @@ function testSpawnCustomer() {
 }
 
 function testSpawnCustomerQueuesWhenEmpty() {
-  const match = readAndMatch(['customers.js', 'main.js'], /(?:export\s+)?function spawnCustomer\([^)]*\)[\s\S]*?\n\s*\}\n(?=\s*(?:export\s+)?function)/);
+  const match = readAndMatch(['entities/customerQueue.js', 'customers.js', 'main.js'], /(?:export\s+)?function spawnCustomer\([^)]*\)[\s\S]*?\n\s*\}\n(?=\s*(?:export\s+)?function)/);
   if (!match) throw new Error('spawnCustomer not found');
   const context = {
     Phaser: { Math: { Between: (min, max) => (min === 0 && max === 4 ? 1 : min) }, Utils: { Array: { GetRandom: a => a[0] } } },
@@ -611,7 +611,7 @@ function testAnimateLoveChange() {
 
 function testScheduleNextSpawn() {
   const match = readAndMatch(
-    ['customers.js', 'main.js'],
+    ['entities/customerQueue.js', 'customers.js', 'main.js'],
     /(?:export\s+)?function scheduleNextSpawn\([^)]*\)[\s\S]*?\n\s*\}\n(?=\s*(?:export\s+)?function)/
   );
   if (!match) throw new Error('scheduleNextSpawn not found');
@@ -669,7 +669,7 @@ function testScheduleNextSpawn() {
 }
 
 function testLureNextWandererQueueLimit() {
-  const code = extractFunction(['main.js'], 'lureNextWanderer');
+  const code = extractFunction(['entities/customerQueue.js'], 'lureNextWanderer');
   if (!code) throw new Error('lureNextWanderer not found');
   const context = {
     love: 50,

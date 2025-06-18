@@ -1,5 +1,4 @@
 import { START_PHONE_W, START_PHONE_H } from './ui.js';
-/* global truck, girl */
 import { lureNextWanderer, scheduleNextSpawn, queueLimit } from './entities/customerQueue.js';
 import { resumeWanderer } from './entities/wanderers.js';
 import { GameState } from './state.js';
@@ -151,7 +150,7 @@ function pauseWanderersForTruck(scene){
   const threshold = 60;
   GameState.wanderers.slice().forEach(c => {
     if(!c.sprite) return;
-    if(Math.abs(c.sprite.x - truck.x) < threshold){
+    if(Math.abs(c.sprite.x - GameState.truck.x) < threshold){
       if(c.walkTween){
         c.walkTween.stop();
         c.walkTween.remove();
@@ -170,21 +169,21 @@ function pauseWanderersForTruck(scene){
 }
 
 function playIntro(scene){
-  if(!truck || !girl) {
+  if(!GameState.truck || !GameState.girl) {
     if (DEBUG) console.warn('playIntro skipped: missing truck or girl');
     return;
   }
   if (typeof debugLog === 'function') debugLog('playIntro starting');
   scene = scene || this;
-  if(!truck || !girl) return;
+  if(!GameState.truck || !GameState.girl) return;
   GameState.girlReady = false;
   if(typeof debugLog==='function') debugLog('customers start spawning');
   scheduleNextSpawn(scene);
   const width = (scene.scale && scene.scale.width) ? scene.scale.width : 480;
   const offscreenX = width + 100;
-  truck.setPosition(offscreenX,245).setScale(0.462);
-  girl.setPosition(offscreenX,245).setVisible(false);
-  const vibrateAmp = { value: 2 * (truck.scaleX / 0.924) };
+  GameState.truck.setPosition(offscreenX,245).setScale(0.462);
+  GameState.girl.setPosition(offscreenX,245).setVisible(false);
+  const vibrateAmp = { value: 2 * (GameState.truck.scaleX / 0.924) };
   const vibrateTween = (scene.tweens && scene.tweens.addCounter) ? scene.tweens.addCounter({
     from: 0,
     to: Math.PI * 2,
@@ -192,10 +191,10 @@ function playIntro(scene){
     repeat: -1,
     onUpdate: t => {
       const y = 245 + Math.sin(t.getValue()) * vibrateAmp.value;
-      if (truck.setY) {
-        truck.setY(y);
+      if (GameState.truck.setY) {
+        GameState.truck.setY(y);
       } else {
-        truck.y = y;
+        GameState.truck.y = y;
       }
     }
   }) : { stop: ()=>{} };
@@ -215,7 +214,7 @@ function playIntro(scene){
       delay: dur(smokeDelay),
       loop: true,
       callback: () => {
-        const puff = scene.add.text(truck.x + 60, truck.y + 20, '💨', { font: '20px sans-serif', fill: '#fff' })
+        const puff = scene.add.text(GameState.truck.x + 60, GameState.truck.y + 20, '💨', { font: '20px sans-serif', fill: '#fff' })
           .setDepth(1);
         if (scene.tweens && scene.tweens.add) {
           scene.tweens.add({
@@ -237,9 +236,9 @@ function playIntro(scene){
   }
   const intro=scene.tweens.createTimeline({callbackScope:scene});
   const hopOut=()=>{
-    const startX = truck.x + truck.displayWidth / 2 - 20;
-    const startY = truck.y - 10;
-    const endX = truck.x - 40;
+    const startX = GameState.truck.x + GameState.truck.displayWidth / 2 - 20;
+    const startY = GameState.truck.y - 10;
+    const endX = GameState.truck.x - 40;
     const endY = 292;
     const curve = new Phaser.Curves.QuadraticBezier(
       new Phaser.Math.Vector2(startX, startY),
@@ -252,13 +251,13 @@ function playIntro(scene){
       t:1,
       duration:dur(700),
       ease:'Sine.easeInOut',
-      onStart:()=>girl.setVisible(true),
+      onStart:()=>GameState.girl.setVisible(true),
       onUpdate:()=>{
         curve.getPoint(follower.t,follower.vec);
-        girl.setPosition(follower.vec.x,follower.vec.y);
+        GameState.girl.setPosition(follower.vec.x,follower.vec.y);
       },
       onComplete:()=>{
-        girl.setPosition(endX,endY);
+        GameState.girl.setPosition(endX,endY);
         if(typeof debugLog==='function') debugLog('intro finished');
         GameState.girlReady = true;
         lureNextWanderer(scene);
@@ -266,7 +265,7 @@ function playIntro(scene){
     });
   };
   intro.add({
-    targets:truck,
+    targets:GameState.truck,
     x:240,
     scale:0.924,
     duration:dur(1500),
@@ -274,10 +273,10 @@ function playIntro(scene){
     onComplete:()=>{
       smokeEvent.remove();
       vibrateTween.stop();
-      if(truck.setY){
-        truck.setY(245);
+      if(GameState.truck.setY){
+        GameState.truck.setY(245);
       }else{
-        truck.y=245;
+        GameState.truck.y=245;
       }
       pauseWanderersForTruck(scene);
       hopOut();

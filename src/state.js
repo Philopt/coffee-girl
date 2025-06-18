@@ -12,7 +12,8 @@ export const GameState = {
   servedCount: 0,
   heartWin: null,
   girlReady: false,
-  truck: null
+  truck: null,
+  girl: null
 };
 
 export const floatingEmojis = [];

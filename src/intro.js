@@ -240,7 +240,10 @@ function playIntro(scene){
   const hopOut=()=>{
     const startX = GameState.truck.x + GameState.truck.displayWidth / 2 - 20;
     const startY = GameState.truck.y - 10;
-    const endX = GameState.truck.x + 40;
+    // After hopping out the girl should land closer to the middle of the screen
+    const endX = scene.scale && scene.scale.width
+      ? scene.scale.width / 2
+      : GameState.truck.x + 40;
     const endY = 292;
     const curve = new Phaser.Curves.QuadraticBezier(
       new Phaser.Math.Vector2(startX, startY),

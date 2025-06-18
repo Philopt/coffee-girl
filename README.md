@@ -31,7 +31,8 @@ an error.
 
 - `src/game.js` bootstraps the Phaser scene and re-exports helpers from `src/main.js`.
 - `src/main.js` contains the bulk of the game logic.
-- `src/entities/` holds modules like `GameState.js`, `customerQueue.js` and `dog.js`.
+- `src/state.js` stores the shared game state.
+- `src/entities/` holds modules like `customerQueue.js` and `dog.js`.
 - `assets/` stores images and other static files.
 
 

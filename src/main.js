@@ -3,8 +3,7 @@ import { dur, scaleForY, articleFor, flashMoney, START_PHONE_W, START_PHONE_H, B
 import { MENU, SPAWN_DELAY, SPAWN_VARIANCE, QUEUE_SPACING, ORDER_X, ORDER_Y, QUEUE_X, QUEUE_OFFSET, QUEUE_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel } from "./customers.js";
 import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer, checkQueueSpacing, maxWanderers, queueLimit } from './entities/customerQueue.js';
 import { baseConfig } from "./scene.js";
-import GameState from './entities/GameState.js';
-import { floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from "./state.js";
+import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from "./state.js";
 import { CustomerState } from './constants.js';
 import { scheduleSparrowSpawn } from './sparrow.js';
 import { DOG_TYPES, updateDog, sendDogOffscreen, scaleDog } from './entities/dog.js';

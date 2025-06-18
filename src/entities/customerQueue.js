@@ -15,8 +15,7 @@ import {
   maxWanderers as customersMaxWanderers,
   queueLimit as customersQueueLimit
 } from '../customers.js';
-import GameState from './GameState.js';
-import { GameState as CoreState } from '../state.js';
+import { GameState } from '../state.js';
 import { CustomerState } from '../constants.js';
 import { showDialog, Assets } from '../main.js';
 
@@ -39,11 +38,11 @@ const HEART_EMOJIS = {
 };
 
 export function maxWanderers() {
-  return customersMaxWanderers(CoreState.love);
+  return customersMaxWanderers(GameState.love);
 }
 
 export function queueLimit() {
-  return customersQueueLimit(CoreState.love);
+  return customersQueueLimit(GameState.love);
 }
 
 export function lureNextWanderer(scene, specific) {
@@ -136,7 +135,7 @@ export function moveQueueForward() {
       showDialog.call(scene);
     }
   }
-  if (CoreState.girlReady && GameState.queue.length < queueLimit()) {
+  if (GameState.girlReady && GameState.queue.length < queueLimit()) {
     lureNextWanderer(scene);
   }
   if (typeof checkQueueSpacing === 'function') checkQueueSpacing(scene);
@@ -209,9 +208,9 @@ function curvedApproach(scene, sprite, dir, targetX, targetY, onComplete, speed 
 }
 
 export function scheduleNextSpawn(scene) {
-  if (CoreState.falconActive) return;
-  if (CoreState.spawnTimer) {
-    CoreState.spawnTimer.remove(false);
+  if (GameState.falconActive) return;
+  if (GameState.spawnTimer) {
+    GameState.spawnTimer.remove(false);
   }
   const needed = queueLimit() - (GameState.queue.length + GameState.wanderers.length);
   let delay;
@@ -220,14 +219,14 @@ export function scheduleNextSpawn(scene) {
   } else {
     delay = SPAWN_DELAY + Phaser.Math.Between(0, SPAWN_VARIANCE);
   }
-  CoreState.spawnTimer = scene.time.delayedCall(delay, spawnCustomer, [], scene);
+  GameState.spawnTimer = scene.time.delayedCall(delay, spawnCustomer, [], scene);
 }
 
 export function spawnCustomer() {
   if (typeof debugLog === 'function') {
     debugLog('spawnCustomer', GameState.queue.length, GameState.wanderers.length, GameState.activeCustomer);
   }
-  if (CoreState.gameOver) return;
+  if (GameState.gameOver) return;
   const createOrder = () => {
     const coins = Phaser.Math.Between(0, 20);
     const item = Phaser.Utils.Array.GetRandom(MENU);
@@ -252,9 +251,9 @@ export function spawnCustomer() {
   const k = Phaser.Utils.Array.GetRandom(available);
   c.spriteKey = k;
 
-  const memory = CoreState.customerMemory[k] || { state: CustomerState.NORMAL };
+  const memory = GameState.customerMemory[k] || { state: CustomerState.NORMAL };
 
-  CoreState.customerMemory[k] = memory;
+  GameState.customerMemory[k] = memory;
   c.memory = memory;
   const order = createOrder();
 
@@ -327,17 +326,17 @@ export function spawnCustomer() {
   startW(this, c, firstTarget, c.loopsRemaining === 0);
 
   GameState.wanderers.push(c);
-  if ((GameState.queue.length === 0 || CoreState.girlReady) && GameState.queue.length < queueLimit()) {
+  if ((GameState.queue.length === 0 || GameState.girlReady) && GameState.queue.length < queueLimit()) {
     lureNextWanderer(this);
   }
   scheduleNextSpawn(this);
   if (this.time && this.time.delayedCall) {
     this.time.delayedCall(1000, () => {
-      if (CoreState.girlReady && GameState.queue.length < queueLimit() && GameState.wanderers.includes(c)) {
+      if (GameState.girlReady && GameState.queue.length < queueLimit() && GameState.wanderers.includes(c)) {
         lureNextWanderer(this);
-      } else if (!CoreState.girlReady) {
+      } else if (!GameState.girlReady) {
         this.time.delayedCall(1000, () => {
-          if (CoreState.girlReady && GameState.queue.length < queueLimit() && GameState.wanderers.includes(c)) {
+          if (GameState.girlReady && GameState.queue.length < queueLimit() && GameState.wanderers.includes(c)) {
             lureNextWanderer(this);
           }
         }, [], this);

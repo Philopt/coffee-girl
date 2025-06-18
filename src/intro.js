@@ -90,14 +90,17 @@ function showStartScreen(scene){
   bigBird5.anims.play('sparrow3_ground');
   phoneContainer.add([bigBird4,bigBird1,bigBird2,bigBird3,bigBird5]);
 
-  // Make the button container itself interactive so the entire graphic
-  // responds to clicks. Phaser's container hit testing has been reliable
-  // across targets, so no separate zone is necessary.
-  startButton = scene.add.container(0,offsetY,[btnBg,btnLabel])
-    .setSize(bw,bh)
-    .setInteractive({ useHandCursor: true })
+  // Using setInteractive on the container caused misaligned hit areas on some
+  // mobile browsers. Create a separate zone for input instead so the clickable
+  // region always matches the visible button graphics.
+  startButton = scene.add.container(0, offsetY, [btnBg, btnLabel])
+    .setSize(bw, bh)
     .setVisible(true)
     .setAlpha(1);
+
+  const startZone = scene.add.zone(0, 0, bw, bh).setOrigin(0.5);
+  startZone.setInteractive({ useHandCursor: true });
+  startButton.add(startZone);
 
   phoneContainer.add(startButton);
 
@@ -138,7 +141,7 @@ function showStartScreen(scene){
       startMsgTimers.push(scene.time.delayedCall(delay,()=>addStartMessage(msg),[],scene));
     }
   }
-  startButton.on('pointerdown',()=>{
+  startZone.on('pointerdown',()=>{
     if (typeof debugLog === 'function') debugLog('start button clicked');
     startMsgTimers.forEach(t=>t.remove(false));
     startMsgTimers=[];
@@ -156,7 +159,7 @@ function showStartScreen(scene){
 
   // Fallback: allow tapping anywhere on the phone to start
   phoneContainer.on('pointerdown', () => {
-    if (startButton && startButton.emit) startButton.emit('pointerdown');
+    if (startZone && startZone.emit) startZone.emit('pointerdown');
   });
 }
 

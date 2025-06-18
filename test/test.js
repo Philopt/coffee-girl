@@ -385,8 +385,8 @@ function testStartButtonPlaysIntro() {
 
   const truck = { x: 0, y: 0, setPosition(x, y) { this.x = x; this.y = y; return this; }, setScale() { return this; }, setDepth() { return this; } };
   const girl = { x: 0, y: 0, visible: true, setPosition(x, y) { this.x = x; this.y = y; return this; }, setVisible(v) { this.visible = v; return this; }, setScale() { return this; }, setDepth() { return this; } };
-  context.truck = truck;
-  context.girl = girl;
+  context.GameState.truck = truck;
+  context.GameState.girl = girl;
 
   let pointerCb = null;
   const scene = {

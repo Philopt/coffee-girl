@@ -1,6 +1,11 @@
+const canvas = document.createElement('canvas');
+const context = canvas.getContext('2d', { willReadFrequently: true });
+
 export const baseConfig = {
   type: Phaser.AUTO,
   parent: 'game-container',
+  canvas,
+  context,
   backgroundColor: '#f2e5d7',
   scale: {
     mode: Phaser.Scale.FIT,
@@ -8,8 +13,5 @@ export const baseConfig = {
     width: 480,
     height: 640
   },
-  pixelArt: true,
-  contextCreation: {
-    willReadFrequently: true
-  }
+  pixelArt: true
 };

@@ -1673,7 +1673,7 @@ export function setupGame(){
 }
 
 if (typeof window !== 'undefined') {
-  setupGame();
+  // game.js calls setupGame() when loaded. Avoid running twice.
 }
 
 export { showStartScreenFn as showStartScreen, handleActionFn as handleAction, spawnCustomerFn as spawnCustomer, scheduleNextSpawnFn as scheduleNextSpawn, showDialogFn as showDialog, animateLoveChangeFn as animateLoveChange, blinkButtonFn as blinkButton, startWander };

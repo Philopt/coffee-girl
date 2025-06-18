@@ -240,11 +240,11 @@ function playIntro(scene){
   const hopOut=()=>{
     const startX = GameState.truck.x + GameState.truck.displayWidth / 2 - 20;
     const startY = GameState.truck.y - 10;
-    const endX = GameState.truck.x - 40;
+    const endX = GameState.truck.x + 40;
     const endY = 292;
     const curve = new Phaser.Curves.QuadraticBezier(
       new Phaser.Math.Vector2(startX, startY),
-      new Phaser.Math.Vector2(startX - 60, startY - 60),
+      new Phaser.Math.Vector2(startX + 60, startY - 60),
       new Phaser.Math.Vector2(endX, endY)
     );
     const follower={t:0,vec:new Phaser.Math.Vector2()};
@@ -260,9 +260,18 @@ function playIntro(scene){
       },
       onComplete:()=>{
         GameState.girl.setPosition(endX,endY);
-        if(typeof debugLog==='function') debugLog('intro finished');
-        GameState.girlReady = true;
-        lureNextWanderer(scene);
+        scene.tweens.add({
+          targets:GameState.girl,
+          y:endY-10,
+          duration:dur(200),
+          yoyo:true,
+          ease:'Quad.easeOut',
+          onComplete:()=>{
+            if(typeof debugLog==='function') debugLog('intro finished');
+            GameState.girlReady = true;
+            lureNextWanderer(scene);
+          }
+        });
       }
     });
   };

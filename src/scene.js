@@ -2,7 +2,10 @@ const canvas = document.createElement('canvas');
 const context = canvas.getContext('2d', { willReadFrequently: true });
 
 export const baseConfig = {
-  type: Phaser.AUTO,
+  // Explicitly use the Canvas renderer when providing a custom canvas/context.
+  // Phaser throws "Must set explicit renderType in custom environment" if
+  // `Phaser.AUTO` is used with a predefined canvas or context.
+  type: Phaser.CANVAS,
   parent: 'game-container',
   canvas,
   context,

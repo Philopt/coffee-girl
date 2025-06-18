@@ -34,6 +34,8 @@ an error.
 - `src/state.js` stores the shared game state.
 - `src/entities/` holds modules like `customerQueue.js` and `dog.js`.
 - `assets/` stores images and other static files.
+- `src/entities/wanderers.js` – wanderer movement helpers.
+- `src/ui/helpers.js` – UI animation utilities.
 
 
 

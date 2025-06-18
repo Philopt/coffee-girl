@@ -19,7 +19,7 @@ import { GameState } from '../state.js';
 import { CustomerState } from '../constants.js';
 
 import { showDialog, Assets } from '../main.js';
-import { startWander } from './wanderers.js';
+import { startWander, loopsForState } from './wanderers.js';
 import { updateDog } from './dog.js';
 
 
@@ -259,14 +259,6 @@ export function spawnCustomer() {
     scheduleNextSpawn(this);
     return;
   }
-  const loopsFor = (typeof loopsForState === 'function') ? loopsForState : (state => {
-    switch (state) {
-      case 'growing': return 1;
-      case 'sparkling':
-      case 'arrow': return 2;
-      default: return 0;
-    }
-  });
   const startW = typeof startWander === 'function' ? startWander : function(scene, cust, targetX, exitAfter) {
     const duration = (typeof dur === 'function') ? dur(1000) : 1000;
     cust.walkData = { startX: cust.sprite.x, startY: cust.sprite.y, targetX, amp: 0, freq: 0, duration, exitAfter };
@@ -285,7 +277,7 @@ export function spawnCustomer() {
   const startX = dir === 1 ? -40 : 520;
   const exitX = dir === 1 ? 520 : -40;
   c.dir = dir;
-  c.loopsRemaining = loopsFor(c.memory.state);
+  c.loopsRemaining = loopsForState(c.memory.state);
   const startY = Phaser.Math.Between(WANDER_TOP, WANDER_BOTTOM);
   const distScale = scaleForY(startY);
   c.orders.push(order);

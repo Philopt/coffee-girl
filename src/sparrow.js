@@ -1,4 +1,5 @@
 import { BirdState } from './constants.js';
+import { GameState } from './state.js';
 
 function randomTarget(scene){
   const { width } = scene.scale;
@@ -175,8 +176,12 @@ export function spawnSparrow(scene){
 }
 
 export function scheduleSparrowSpawn(scene){
+  const gs = scene.gameState || GameState;
+  if(gs.sparrowSpawnEvent){
+    gs.sparrowSpawnEvent.remove(false);
+  }
   const delay = Phaser.Math.Between(5000,10000);
-  scene.time.delayedCall(delay, () => {
+  gs.sparrowSpawnEvent = scene.time.delayedCall(delay, () => {
     spawnSparrow(scene);
     scheduleSparrowSpawn(scene);
   }, [], scene);
@@ -199,6 +204,10 @@ export function cleanupSparrows(scene){
     if(b.destroy) b.destroy();
   });
   birds.length = 0;
+  if(scene.gameState.sparrowSpawnEvent){
+    scene.gameState.sparrowSpawnEvent.remove(false);
+    scene.gameState.sparrowSpawnEvent = null;
+  }
 }
 
 

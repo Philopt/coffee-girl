@@ -1,16 +1,17 @@
 import { debugLog, DEBUG } from './debug.js';
 import { dur, scaleForY, articleFor, flashMoney, START_PHONE_W, START_PHONE_H, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_Y, DIALOG_Y } from "./ui.js";
-import { MENU, SPAWN_DELAY, SPAWN_VARIANCE, QUEUE_SPACING, ORDER_X, ORDER_Y, QUEUE_X, QUEUE_OFFSET, QUEUE_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel } from "./customers.js";
-import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer, checkQueueSpacing, maxWanderers, queueLimit } from './entities/customerQueue.js';
+import { ORDER_X, ORDER_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel } from "./customers.js";
+import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer, queueLimit } from './entities/customerQueue.js';
 import { baseConfig } from "./scene.js";
 import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from "./state.js";
 import { CustomerState } from './constants.js';
+import { resumeWanderer } from './entities/wanderers.js';
 import { scheduleSparrowSpawn } from './sparrow.js';
-import { DOG_TYPES, updateDog, sendDogOffscreen, scaleDog } from './entities/dog.js';
+import { DOG_TYPES, sendDogOffscreen, scaleDog } from './entities/dog.js';
+import blinkButton, { flashBorder, flashFill, applyRandomSkew, emphasizePrice } from './ui/helpers.js';
 export let Assets, Scene, Customers, config;
 export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;
 const CUSTOMER_SPEED = 560 / 6; // pixels per second for wanderers
-const LURE_SPEED = CUSTOMER_SPEED * 0.6; // slower approach when lured
 // Minimum duration when a customer dashes to the table
 const DART_MIN_DURATION = 300;
 // Maximum speed (pixels per second) when dashing to the table
@@ -18,7 +19,6 @@ const DART_MAX_SPEED = CUSTOMER_SPEED * 3;
 // Offset for the drink emoji when the customer holds it
 // Raise it slightly so it appears near their hands instead of their feet
 const DRINK_HOLD_OFFSET = { x: 0, y: -20 };
-const EDGE_TURN_BUFFER = 40;
 const HEART_EMOJIS = {
   [CustomerState.NORMAL]: null,
   [CustomerState.BROKEN]: '💔',
@@ -72,41 +72,6 @@ export function setupGame(){
 
 
 
-  function flashBorder(rect, scene, color=0x00ff00){
-    if(!rect || !rect.setStrokeStyle) return;
-    const original=rect.strokeColor||0x000000;
-    let on=false;
-    const flashes=4;
-    scene.time.addEvent({
-      repeat:flashes,
-      delay:dur(60),
-      callback:()=>{
-        rect.setStrokeStyle(2, on?color:original);
-        on=!on;
-      }
-    });
-    scene.time.delayedCall(dur(60)*(flashes+1)+dur(10),()=>{
-      rect.setStrokeStyle(2, original);
-    },[],scene);
-  }
-
-  function flashFill(rect, scene, color=0x00ff00){
-    if(!rect || !rect.setFillStyle) return;
-    const original=rect.fillColor||0xffffff;
-    let on=false;
-    const flashes=4;
-    scene.time.addEvent({
-      repeat:flashes,
-      delay:dur(60),
-      callback:()=>{
-        rect.setFillStyle(on?color:original,1);
-        on=!on;
-      }
-    });
-    scene.time.delayedCall(dur(60)*(flashes+1)+dur(10),()=>{
-      rect.setFillStyle(original,1);
-    },[],scene);
-  }
 
 
   function animateStatChange(obj, scene, delta, isLove=false){
@@ -186,42 +151,6 @@ export function setupGame(){
     if(lossStamp) lossStamp.setVisible(false);
   }
 
-  function blinkButton(btn, onComplete, inputObj){
-    // Temporarily disable input while the button blinks. The optional
-    // inputObj parameter allows specifying a separate interactive
-    // object (e.g. an invisible zone) to disable during the blink
-    // without destroying its hit area.
-
-    const target = inputObj || btn;
-    if (target.input) {
-      target.input.enabled = false;
-    }
-    this.tweens.add({
-      targets: btn,
-      alpha: 0,
-      yoyo: true,
-      duration: dur(80),
-      repeat: 1,
-      onComplete: () => {
-        if (target.input) {
-          target.input.enabled = true;
-        }
-        if (onComplete) onComplete();
-      }
-    });
-  }
-
-  function applyRandomSkew(obj){
-    if(!obj) return;
-    const randFloat = Phaser.Math.FloatBetween || ((a,b)=>Phaser.Math.Between(a*1000,b*1000)/1000);
-    obj.skewX = randFloat(-0.03, 0.03);
-    obj.skewY = randFloat(-0.03, 0.03);
-  }
-
-  function emphasizePrice(text){
-    if(!text || !text.setStyle) return;
-    text.setStyle({fontStyle:'bold', stroke:'#fff', strokeThickness:2});
-  }
 
   function fadeInButtons(canAfford){
     const buttons = [];
@@ -364,58 +293,6 @@ export function setupGame(){
     }
   }
 
-  function loopsForState(state){
-    switch(state){
-      case 'growing': return 1;
-      case 'sparkling':
-      case 'arrow':
-        return 2;
-      default: return 0;
-    }
-  }
-
-  function removeWanderer(scene, c){
-    const idx = GameState.wanderers.indexOf(c);
-    if(idx >= 0) GameState.wanderers.splice(idx,1);
-    const ex = c.sprite.x, ey = c.sprite.y;
-    if(c.dog){
-      sendDogOffscreen.call(scene,c.dog,ex,ey);
-      c.dog = null;
-    }
-    if(c.heartEmoji){ c.heartEmoji.destroy(); c.heartEmoji = null; }
-    c.sprite.destroy();
-  }
-
-  function handleWanderComplete(scene, c){
-    if(c.loopsRemaining > 0){
-      c.loopsRemaining--;
-      c.dir *= -1;
-      const inside = c.dir === 1 ? 480-EDGE_TURN_BUFFER : EDGE_TURN_BUFFER;
-      const exitX = c.dir === 1 ? 520 : -40;
-      const target = c.loopsRemaining > 0 ? inside : exitX;
-      startWander(scene,c,target,c.loopsRemaining===0);
-    }else{
-      removeWanderer(scene,c);
-    }
-  }
-
-  function startWander(scene, c, targetX, exitAfter){
-    if(c.walkTween){ c.walkTween.stop(); c.walkTween.remove(); c.walkTween=null; }
-    const startX=c.sprite.x;
-    const startY=c.sprite.y;
-    const amp = Phaser.Math.Between(15,30);
-    const freq = Phaser.Math.FloatBetween ? Phaser.Math.FloatBetween(1.5,4.5) : Phaser.Math.Between(15,45)/10;
-    const walkDuration = Phaser.Math.Between(5000,7000);
-    c.walkData={startX,startY,targetX,amp,freq,duration:walkDuration,exitAfter};
-    c.walkTween = scene.tweens.add({targets:c.sprite,x:targetX,duration:dur(walkDuration),
-      onUpdate:(tw,t)=>{
-        const p=tw.progress;
-        t.y=startY+Math.sin(p*Math.PI*freq)*amp;
-        t.setScale(scaleForY(t.y));
-      },
-      onComplete:()=>{ exitAfter ? removeWanderer(scene,c) : handleWanderComplete(scene,c); }
-    });
-  }
 
 
   function showStartScreen(scene){
@@ -919,24 +796,6 @@ export function setupGame(){
 
 
 
-  function resumeWanderer(scene, c){
-    if(!c || !c.sprite || !c.walkData) return;
-    const {targetX,startX,startY,amp,freq,duration,exitAfter} = c.walkData;
-    const totalDist = Math.abs(targetX - startX);
-    const remaining = Math.abs(targetX - c.sprite.x);
-    const walkDuration = totalDist>0 ? duration * (remaining/totalDist) : duration;
-    c.walkTween = scene.tweens.add({
-      targets:c.sprite,
-      x:targetX,
-      duration:dur(walkDuration),
-      onUpdate:(tw,t)=>{
-        const p=tw.progress;
-        t.y=startY+Math.sin(p*Math.PI*freq)*amp;
-        t.setScale(scaleForY(t.y));
-      },
-      onComplete:()=>{ exitAfter ? removeWanderer(scene,c) : handleWanderComplete(scene,c); }
-    });
-  }
 
   function pauseWanderersForTruck(scene){
     const threshold = 60;

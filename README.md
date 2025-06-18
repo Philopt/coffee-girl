@@ -62,6 +62,10 @@ The game uses [Phaser](https://phaser.io/). It will load `lib/phaser.min.js` by 
    http://localhost:8080/?debug=1
    ```
 
+7. If you see errors mentioning `lockdown` or `Symbol.dispose`, disable browser
+   extensions that enforce SES or "lockdown" mode. They can prevent the game
+   from running.
+
 ### Debugging queue issues
 
 When customers seem stuck wandering, enable debug mode with `?debug=1` and

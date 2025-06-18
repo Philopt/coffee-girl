@@ -62,6 +62,9 @@ The game uses [Phaser](https://phaser.io/). It will load `lib/phaser.min.js` by 
    http://localhost:8080/?debug=1
    ```
 
+Additional troubleshooting notes are available in
+[docs/logging-findings.md](docs/logging-findings.md).
+
 ### Debugging queue issues
 
 When customers seem stuck wandering, enable debug mode with `?debug=1` and

@@ -1,4 +1,4 @@
-import GameState from './entities/GameState.js';
+import { GameState } from './state.js';
 import * as CustomerQueue from './entities/customerQueue.js';
 import * as Dog from './entities/dog.js';
 import { setupGame, showStartScreen, handleAction, spawnCustomer, scheduleNextSpawn, showDialog, animateLoveChange, blinkButton } from './main.js';

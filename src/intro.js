@@ -56,10 +56,13 @@ function showStartScreen(scene){
   btnBg.fillRoundedRect(-bw/2,-bh/2,bw,bh,15);
   const offsetY = phoneH/2 - homeH/2 - 12;
   const containerY = 320;
-  phoneContainer = scene.add.container(240,containerY,[caseG,blackG,whiteG,homeG])
+  phoneContainer = scene.add
+    .container(240, containerY, [caseG, blackG, whiteG, homeG])
     .setDepth(15)
     .setVisible(true)
-    .setAlpha(1);
+    .setAlpha(1)
+    .setSize(phoneW + 20, phoneH + 20)
+    .setInteractive({ useHandCursor: true });
   if(!phoneContainer.visible || phoneContainer.alpha === 0){
     console.warn('phoneContainer not visible after creation');
   }
@@ -149,6 +152,11 @@ function showStartScreen(scene){
     tl.add({targets:phoneContainer,y:-320,duration:600,ease:'Sine.easeIn'});
     tl.add({targets:startOverlay,alpha:0,duration:600},0);
     tl.play();
+  });
+
+  // Fallback: allow tapping anywhere on the phone to start
+  phoneContainer.on('pointerdown', () => {
+    if (startButton && startButton.emit) startButton.emit('pointerdown');
   });
 }
 

@@ -80,9 +80,12 @@ function showStartScreen(scene){
   bigBird5.anims.play('sparrow3_ground');
   phoneContainer.add([bigBird4,bigBird1,bigBird2,bigBird3,bigBird5]);
 
+  // The button container itself doesn't need its own hit area. Setting
+  // it interactive caused the clickable region to be offset from the
+  // visible graphics on some devices. Rely solely on the centered zone
+  // for input handling instead.
   startButton = scene.add.container(0,offsetY,[btnBg,btnLabel])
-    .setSize(bw,bh)
-    .setInteractive({ useHandCursor: true });
+    .setSize(bw,bh);
 
   const startZone = scene.add.zone(0,0,bw,bh).setOrigin(0.5);
   startZone.setInteractive({ useHandCursor:true });

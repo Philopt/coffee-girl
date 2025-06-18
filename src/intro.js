@@ -67,28 +67,7 @@ function showStartScreen(scene){
     console.warn('phoneContainer not visible after creation');
   }
 
-  const birdY = phoneH/2 - homeH - 60;
-  const bigBird1 = scene.add.sprite(-60,birdY,'sparrow2',0)
-    .setScale(3)
-    .setDepth(16);
-  const bigBird2 = scene.add.sprite(0,birdY,'sparrow2',0)
-    .setScale(3)
-    .setDepth(16);
-  const bigBird3 = scene.add.sprite(60,birdY,'sparrow2',0)
-    .setScale(3)
-    .setDepth(16);
-  bigBird1.anims.play('sparrow2_fly');
-  bigBird2.anims.play('sparrow2_ground');
-  bigBird3.anims.play('sparrow2_peck');
-  const bigBird4 = scene.add.sprite(-120,birdY,'sparrow3',0)
-    .setScale(3)
-    .setDepth(16);
-  const bigBird5 = scene.add.sprite(120,birdY,'sparrow3',0)
-    .setScale(3)
-    .setDepth(16);
-  bigBird4.anims.play('sparrow3_fly');
-  bigBird5.anims.play('sparrow3_ground');
-  phoneContainer.add([bigBird4,bigBird1,bigBird2,bigBird3,bigBird5]);
+  // Removed animated bird sprites so the start button remains clickable
 
   // Using setInteractive on the container caused misaligned hit areas on some
   // mobile browsers. Create a separate zone for input instead so the clickable

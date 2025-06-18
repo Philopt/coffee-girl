@@ -20,7 +20,7 @@ import { CustomerState } from '../constants.js';
 
 import { showDialog, Assets } from '../main.js';
 import { startWander, loopsForState } from './wanderers.js';
-import { updateDog } from './dog.js';
+import { DOG_TYPES, updateDog } from './dog.js';
 
 
 const CUSTOMER_SPEED = 560 / 6;

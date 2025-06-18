@@ -17,7 +17,7 @@ import {
 } from '../customers.js';
 import { GameState } from '../state.js';
 import { CustomerState } from '../constants.js';
-import { showDialog, Assets } from '../main.js';
+import { showDialog, Assets, startWander } from '../main.js';
 
 const CUSTOMER_SPEED = 560 / 6;
 const LURE_SPEED = CUSTOMER_SPEED * 0.6;
@@ -269,7 +269,7 @@ export function spawnCustomer() {
       default: return 0;
     }
   });
-  const startW = (typeof startWander === 'function') ? startWander : function (scene, cust, targetX, exitAfter) {
+  const startW = typeof startWander === 'function' ? startWander : function(scene, cust, targetX, exitAfter) {
     const duration = (typeof dur === 'function') ? dur(1000) : 1000;
     cust.walkData = { startX: cust.sprite.x, startY: cust.sprite.y, targetX, amp: 0, freq: 0, duration, exitAfter };
     if (scene && scene.tweens && scene.tweens.add) {

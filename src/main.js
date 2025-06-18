@@ -296,6 +296,7 @@ export function setupGame(){
     GameState.truck = truck;
 
     girl=this.add.image(startX,245,'girl').setScale(0.5).setDepth(3).setVisible(false);
+    GameState.girl = girl;
 
     // create lady falcon animation
     this.anims.create({

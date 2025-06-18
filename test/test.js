@@ -378,7 +378,7 @@ function testStartButtonPlaysIntro() {
   vm.createContext(context);
   context.fnStart = null;
   context.fnIntro = null;
-  vm.runInContext('var startOverlay,startButton,truck,girl,startMsgTimers=[],startMsgBubbles=[]; const dur=v=>v;\n' +
+  vm.runInContext('var startOverlay,startButton,startMsgTimers=[],startMsgBubbles=[]; const dur=v=>v;\n' +
     introMatch[0] + '\n' + startMatch[0] + '\nfnStart=showStartScreen; fnIntro=playIntro;', context);
   const showStartScreen = context.fnStart;
   const realPlayIntro = context.fnIntro;

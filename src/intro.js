@@ -1,5 +1,4 @@
 import { START_PHONE_W, START_PHONE_H } from './ui.js';
-/* global truck, girl */
 import { lureNextWanderer, scheduleNextSpawn, queueLimit } from './entities/customerQueue.js';
 import { resumeWanderer } from './entities/wanderers.js';
 import { GameState } from './state.js';
@@ -151,7 +150,7 @@ function pauseWanderersForTruck(scene){
   const threshold = 60;
   GameState.wanderers.slice().forEach(c => {
     if(!c.sprite) return;
-    if(Math.abs(c.sprite.x - truck.x) < threshold){
+    if(GameState.truck && Math.abs(c.sprite.x - GameState.truck.x) < threshold){
       if(c.walkTween){
         c.walkTween.stop();
         c.walkTween.remove();
@@ -170,6 +169,8 @@ function pauseWanderersForTruck(scene){
 }
 
 function playIntro(scene){
+  const truck = GameState.truck;
+  const girl = GameState.girl;
   if(!truck || !girl) {
     if (DEBUG) console.warn('playIntro skipped: missing truck or girl');
     return;

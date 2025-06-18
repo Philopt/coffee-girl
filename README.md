@@ -22,10 +22,17 @@ an error.
 
    Click **Clock In** when it appears to begin the game.
 
-   The game now loads `src/main.js` as an ES module using
-   `<script type="module" src="src/main.js"></script>` in `index.html`. If the page
-   stays blank, open the browser console and look for messages about missing
-   assets.
+  The game now loads `src/game.js` as an ES module using
+  `<script type="module" src="src/game.js"></script>` in `index.html`. If the page
+  stays blank, open the browser console and look for messages about missing
+  assets.
+
+## Folder Layout
+
+- `src/game.js` bootstraps the Phaser scene and re-exports helpers from `src/main.js`.
+- `src/main.js` contains the bulk of the game logic.
+- `src/entities/` holds modules like `GameState.js`, `customerQueue.js` and `dog.js`.
+- `assets/` stores images and other static files.
 
 
 

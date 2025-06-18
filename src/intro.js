@@ -56,10 +56,15 @@ function showStartScreen(scene){
   btnBg.fillRoundedRect(-bw/2,-bh/2,bw,bh,15);
   const offsetY = phoneH/2 - homeH/2 - 12;
   const containerY = 320;
-  phoneContainer = scene.add.container(240,containerY,[caseG,blackG,whiteG,homeG])
+  const phoneZone = scene.add
+    .zone(0, 0, phoneW + 20, phoneH + 20)
+    .setOrigin(0.5);
+  phoneContainer = scene.add
+    .container(240, containerY, [caseG, blackG, whiteG, homeG, phoneZone])
     .setDepth(15)
     .setVisible(true)
     .setAlpha(1);
+  phoneZone.setInteractive({ useHandCursor: true });
   if(!phoneContainer.visible || phoneContainer.alpha === 0){
     console.warn('phoneContainer not visible after creation');
   }
@@ -87,9 +92,9 @@ function showStartScreen(scene){
   bigBird5.anims.play('sparrow3_ground');
   phoneContainer.add([bigBird4,bigBird1,bigBird2,bigBird3,bigBird5]);
 
-  // Make the button container itself interactive so the entire graphic
-  // responds to clicks. Phaser's container hit testing has been reliable
-  // across targets, so no separate zone is necessary.
+  // Make the button container interactive so direct clicks trigger the
+  // intro. Some devices miss container events, so a separate phoneZone
+  // also forwards pointerdown events to this button.
   startButton = scene.add.container(0,offsetY,[btnBg,btnLabel])
     .setSize(bw,bh)
     .setInteractive({ useHandCursor: true })
@@ -149,6 +154,11 @@ function showStartScreen(scene){
     tl.add({targets:phoneContainer,y:-320,duration:600,ease:'Sine.easeIn'});
     tl.add({targets:startOverlay,alpha:0,duration:600},0);
     tl.play();
+  });
+
+  // Fallback: allow tapping anywhere on the phone to start
+  phoneZone.on('pointerdown', () => {
+    if (startButton && startButton.emit) startButton.emit('pointerdown');
   });
 }
 

@@ -17,7 +17,9 @@ import {
 } from '../customers.js';
 import { GameState } from '../state.js';
 import { CustomerState } from '../constants.js';
-import { showDialog, Assets, startWander } from '../main.js';
+import { showDialog, Assets } from '../main.js';
+import { startWander } from './wanderers.js';
+import { updateDog } from './dog.js';
 
 const CUSTOMER_SPEED = 560 / 6;
 const LURE_SPEED = CUSTOMER_SPEED * 0.6;

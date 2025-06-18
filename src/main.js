@@ -62,10 +62,11 @@ export function setupGame(){
     '0':'\u2070','1':'\u00b9','2':'\u00b2','3':'\u00b3','4':'\u2074',
     '5':'\u2075','6':'\u2076','7':'\u2077','8':'\u2078','9':'\u2079'
   };
+  const smallDollar='\uFE69';
   function receipt(value){
     const [d,c]=value.toFixed(2).split(".");
     const cents=c.split("").map(ch=>supers[ch]||ch).join("");
-    return `$${d}${cents}`;
+    return `${smallDollar}${d}${cents}`;
   }
 
   function emojiFor(name){
@@ -222,6 +223,11 @@ export function setupGame(){
     const randFloat = Phaser.Math.FloatBetween || ((a,b)=>Phaser.Math.Between(a*1000,b*1000)/1000);
     obj.skewX = randFloat(-0.03, 0.03);
     obj.skewY = randFloat(-0.03, 0.03);
+  }
+
+  function emphasizePrice(text){
+    if(!text || !text.setStyle) return;
+    text.setStyle({fontStyle:'bold', stroke:'#fff', strokeThickness:2});
   }
 
   function fadeInButtons(canAfford){
@@ -1581,7 +1587,7 @@ export function setupGame(){
       .setPosition(dialogPriceBox.width/2-5, -dialogPriceBox.height/2+5);
     dialogPriceValue
       .setStyle({fontSize:'32px'})
-      .setText(`$${totalCost.toFixed(2)}`)
+      .setText(receipt(totalCost))
       .setColor('#000')
       .setOrigin(0.5)
       .setPosition(0, 15)
@@ -1644,7 +1650,7 @@ export function setupGame(){
       dialogText.setVisible(false);
       dialogCoins.setVisible(false);
       dialogPriceContainer.setVisible(false);
-      dialogPriceValue.setColor('#000');
+      dialogPriceValue.setColor('#000').setStyle({fontStyle:'', strokeThickness:0});
     }else{
       dialogBg.setVisible(true);
       dialogText.setVisible(false);
@@ -1912,6 +1918,7 @@ export function setupGame(){
       const baseLeft = t.x - t.displayWidth/2;
       t.setText(receipt(totalCost));
       t.setPosition(baseLeft + t.displayWidth/2, t.y);
+      emphasizePrice(t);
       const ticketH = dialogPriceBox.height;
       const centerX = ticket.x;
       let stampY = ticket.y;
@@ -1956,6 +1963,7 @@ export function setupGame(){
           skewFn(tipText);
           t.setText(receipt(totalCost + tip));
           t.setPosition(oldLeft + t.displayWidth/2, t.y);
+          emphasizePrice(t);
           flashPrice();
         },[],this);
         delay+=dur(300);
@@ -1999,6 +2007,7 @@ export function setupGame(){
       t.setVisible(true)
         // start below the stamp so the stamp animation appears on top
         .setDepth(lossStamp.depth-1);
+      emphasizePrice(t);
       const stampX=ticket.x + Phaser.Math.Between(-5,5);
       const stampY=ticket.y + Phaser.Math.Between(-5,5);
       const randFloat3 = Phaser.Math.FloatBetween || ((a,b)=>Phaser.Math.Between(a*1000,b*1000)/1000);
@@ -2052,7 +2061,7 @@ export function setupGame(){
       const startRX = (typeof girl !== 'undefined' && girl) ? girl.x : customer.x;
       const startRY = (typeof girl !== 'undefined' && girl) ? girl.y : customer.y;
       reportLine1.setStyle({fill:'#fff'})
-        .setText(`$${totalCost.toFixed(2)}`)
+        .setText(receipt(totalCost))
         .setPosition(startRX, startRY)
         .setScale(1)
         .setVisible(true);

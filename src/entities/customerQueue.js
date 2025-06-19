@@ -243,7 +243,9 @@ function curvedApproach(scene, sprite, dir, targetX, targetY, onComplete, speed 
   const startX = sprite.x;
   const startY = sprite.y;
   const dx = Math.abs(targetX - startX);
-  const offset = Math.min(20, dx * 0.5) * dir;
+  // Reduce the curvature of the approach so customers don't appear to dart
+  // sideways when adjusting positions in the queue.
+  const offset = Math.min(10, dx * 0.3) * dir;
   const curve = new Phaser.Curves.CubicBezier(
     new Phaser.Math.Vector2(startX, startY),
     new Phaser.Math.Vector2(startX + offset, startY),
@@ -272,7 +274,8 @@ function curvedApproach(scene, sprite, dir, targetX, targetY, onComplete, speed 
     targets: follower,
     t: 1,
     duration,
-    ease: 'Linear',
+    // Use a gentle easing curve so movements start and stop smoothly
+    ease: 'Sine.easeInOut',
     onUpdate: () => {
       curve.getPoint(follower.t, follower.vec);
       sprite.setPosition(follower.vec.x, follower.vec.y);

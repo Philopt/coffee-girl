@@ -170,15 +170,17 @@ export function setupGame(){
         if(!c.sprite || !c.sprite.scene) return;
       const state = c.memory && c.memory.state || CustomerState.NORMAL;
       if(state !== CustomerState.NORMAL){
-        if(!c.heartEmoji){
+        if(!c.heartEmoji || !c.heartEmoji.scene){
           c.heartEmoji = c.sprite.scene.add.text(c.sprite.x, c.sprite.y, HEART_EMOJIS[state] || '', {font:'28px sans-serif'})
             .setOrigin(0.5)
             .setShadow(0, 0, '#000', 4);
         }
-        const y = c.sprite.y + c.sprite.displayHeight * 0.30;
-        const scale = scaleForY(c.sprite.y)*0.8;
-        c.heartEmoji.setText(HEART_EMOJIS[state] || '').setPosition(c.sprite.x, y).setScale(scale).setShadow(0, 0, '#000', 4);
-        c.heartEmoji.setDepth(c.sprite.depth+1);
+        if(c.heartEmoji && c.heartEmoji.scene){
+          const y = c.sprite.y + c.sprite.displayHeight * 0.30;
+          const scale = scaleForY(c.sprite.y)*0.8;
+          c.heartEmoji.setText(HEART_EMOJIS[state] || '').setPosition(c.sprite.x, y).setScale(scale).setShadow(0, 0, '#000', 4);
+          c.heartEmoji.setDepth(c.sprite.depth+1);
+        }
       }else if(c.heartEmoji){
         c.heartEmoji.destroy();
         c.heartEmoji = null;

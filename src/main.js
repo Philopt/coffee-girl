@@ -9,7 +9,7 @@ import { CustomerState } from './constants.js';
 import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows } from './sparrow.js';
 import { DOG_TYPES, sendDogOffscreen, scaleDog, cleanupDogs } from './entities/dog.js';
 import { startWander } from './entities/wanderers.js';
-import { flashBorder, flashFill, blinkButton, applyRandomSkew, emphasizePrice, blinkPriceBorder } from './ui/helpers.js';
+import { flashBorder, flashFill, blinkButton, applyRandomSkew, emphasizePrice, blinkPriceBorder, setDepthFromBottom } from './ui/helpers.js';
 import { keys, requiredAssets, preload as preloadAssets, receipt, emojiFor } from './assets.js';
 import { showStartScreen, playIntro } from './intro.js';
 
@@ -166,11 +166,6 @@ export function setupGame(){
 
 
   function enforceCustomerScaling(){
-    const setDepth = (sprite, base=5)=>{
-      if(!sprite) return;
-      const bottomY = sprite.y + sprite.displayHeight * (1 - sprite.originY);
-      sprite.setDepth(base + bottomY*0.006);
-    };
       const updateHeart = c => {
         if(!c.sprite || !c.sprite.scene) return;
       const state = c.memory && c.memory.state || CustomerState.NORMAL;
@@ -190,13 +185,13 @@ export function setupGame(){
       }
     };
     GameState.queue.forEach(c=>{
-      if(c.sprite){ c.sprite.setScale(scaleForY(c.sprite.y)); setDepth(c.sprite,5); }
+      if(c.sprite){ c.sprite.setScale(scaleForY(c.sprite.y)); setDepthFromBottom(c.sprite,5); }
       if(c.dog) scaleDog(c.dog);
       if(c.isDog) scaleDog(c.sprite);
       updateHeart(c);
     });
     GameState.wanderers.forEach(c=>{
-      if(c.sprite){ c.sprite.setScale(scaleForY(c.sprite.y)); setDepth(c.sprite,5); }
+      if(c.sprite){ c.sprite.setScale(scaleForY(c.sprite.y)); setDepthFromBottom(c.sprite,5); }
       if(c.dog) scaleDog(c.dog);
       if(c.isDog) scaleDog(c.sprite);
       updateHeart(c);
@@ -964,8 +959,7 @@ export function setupGame(){
       };
 
       const sprite=current.sprite;
-      const bottomY = sprite.y + sprite.displayHeight * (1 - sprite.originY);
-      sprite.setDepth(5 + bottomY*0.006);
+      setDepthFromBottom(sprite,5);
 
       // Remove the current customer from the queue
       GameState.queue.shift();

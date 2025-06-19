@@ -1,6 +1,7 @@
 import { ORDER_X, ORDER_Y } from '../customers.js';
 import { GameState } from '../state.js';
 import { dur, scaleForY } from '../ui.js';
+import { setDepthFromBottom } from '../ui/helpers.js';
 import { scatterSparrows } from '../sparrow.js';
 
 export const DOG_MIN_Y = ORDER_Y + 20;
@@ -21,8 +22,7 @@ export function scaleDog(d) {
   const s = scaleForY(d.y) * factor;
   const dir = d.dir || 1;
   d.setScale(s * dir, s);
-  const bottomY = d.y + d.displayHeight * (1 - d.originY);
-  d.setDepth(3 + bottomY * 0.006);
+  setDepthFromBottom(d, 3);
 }
 
 // Keep the dog positioned near its owner and react to other customers.
@@ -160,8 +160,7 @@ export function updateDog(owner) {
       t.prevX = t.x;
       const s = scaleForY(t.y) * (t.scaleFactor || 0.6);
       t.setScale(s * (t.dir || 1), s);
-      const bottomY = t.y + t.displayHeight * (1 - t.originY);
-      t.setDepth(3 + bottomY * 0.006);
+      setDepthFromBottom(t, 3);
     },
     onComplete: () => {
       dog.currentTween = null;
@@ -194,8 +193,7 @@ export function sendDogOffscreen(dog, x, y) {
       t.prevX = t.x;
       const s = scaleForY(t.y) * (t.scaleFactor || 0.6);
       t.setScale(s * (t.dir || 1), s);
-      const bottomY = t.y + t.displayHeight * (1 - t.originY);
-      t.setDepth(3 + bottomY * 0.006);
+      setDepthFromBottom(t, 3);
     },
     onComplete: () => dog.destroy()
   });

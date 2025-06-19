@@ -93,4 +93,12 @@ export function blinkPriceBorder(text, scene, color="#fff", thickness=2){
   },[],scene);
 }
 
+// Calculate depth based on the bottom edge of a sprite.
+// This keeps layering consistent as objects move up and down.
+export function setDepthFromBottom(sprite, base = 5){
+  if(!sprite || !sprite.setDepth) return;
+  const bottomY = sprite.y + sprite.displayHeight * (1 - sprite.originY);
+  sprite.setDepth(base + bottomY * 0.006);
+}
+
 export { blinkButton as default };

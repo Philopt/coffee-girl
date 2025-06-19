@@ -7,7 +7,7 @@ import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from
 import { CustomerState } from './constants.js';
 
 import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows } from './sparrow.js';
-import { DOG_TYPES, DOG_MIN_Y, sendDogOffscreen, scaleDog, cleanupDogs, updateDog } from './entities/dog.js';
+import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog } from './entities/dog.js';
 import { startWander } from './entities/wanderers.js';
 import { flashBorder, flashFill, blinkButton, applyRandomSkew, emphasizePrice, blinkPriceBorder, setDepthFromBottom } from './ui/helpers.js';
 import { keys, requiredAssets, preload as preloadAssets, receipt, emojiFor } from './assets.js';
@@ -580,8 +580,12 @@ export function setupGame(){
     if(!GameState.activeCustomer) return;
     const c=GameState.activeCustomer;
     if(!c.isDog && c.dog && c.dog.followEvent){
-      c.dog.followEvent.remove(false);
-      c.dog.followEvent=null;
+      const dist = Phaser.Math.Distance.Between(c.dog.x, c.dog.y,
+                                                c.sprite.x, c.sprite.y);
+      if(dist <= DOG_COUNTER_RADIUS * 1.2){
+        c.dog.followEvent.remove(false);
+        c.dog.followEvent=null;
+      }
     }
     if(!c.atOrder && (c.sprite.y!==ORDER_Y || c.sprite.x!==ORDER_X)){
       c.atOrder=true;

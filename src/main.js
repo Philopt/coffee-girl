@@ -790,7 +790,7 @@ export function setupGame(){
       if(typeof dialogCoins!=='undefined') bubbleObjs.push(dialogCoins);
       const ticket = typeof dialogPriceContainer!=='undefined' ? dialogPriceContainer : null;
       if(this.tweens && (bubbleObjs.length || ticket)){
-        if(type==='refuse'){
+        if(type==='refuse' || (type==='give' && current.isDog)){
           if(dialogBg.setTint) dialogBg.setTint(0xff0000);
           if(dialogText.setColor) dialogText.setColor('#f00');
           if(dialogCoins.setColor) dialogCoins.setColor('#f00');
@@ -1169,69 +1169,82 @@ export function setupGame(){
           }});
         tl.play();
       },[],this);
-    } else if(type==='give'){
+        } else if(type==='give'){
       const ticket=dialogPriceContainer;
       const t=dialogPriceValue;
       const destX=moneyText.x+moneyText.width-15;
       const destY=moneyText.y+10;
-      t.setVisible(true)
-        // start below the stamp so the stamp animation appears on top
-        .setDepth(lossStamp.depth-1);
-      emphasizePrice(t);
-      const stampX=ticket.x + Phaser.Math.Between(-5,5);
-      const stampY=ticket.y + Phaser.Math.Between(-5,5);
-      const randFloat3 = Phaser.Math.FloatBetween || ((a,b)=>Phaser.Math.Between(a*1000,b*1000)/1000);
-      const skewFn2 = typeof applyRandomSkew === 'function' ? applyRandomSkew : ()=>{};
-      lossStamp
-        .setText('LOSS')
-        .setScale(1.4 + randFloat3(-0.1, 0.1))
-        .setPosition(stampX, stampY)
-        .setAngle(Phaser.Math.Between(-10,10))
-        .setVisible(true);
-      skewFn2(lossStamp);
-      // raise the price above the stamp after the stamp lands
-      this.time.delayedCall(dur(300), () => {
-        t.setDepth(lossStamp.depth + 1);
-        blinkPriceBorder(t, this, '#f00', 6);
-      }, [], this);
-      t.setPosition(t.x, 15);
-      this.time.delayedCall(dur(1000),()=>{
-        lossStamp.setVisible(false);
-        dialogBg.setVisible(false);
-        dialogText.setVisible(false);
-        if(this.tweens){
-          this.tweens.add({targets:ticket,x:'+=6',duration:dur(60),yoyo:true,repeat:2});
-        }
-        const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
-            clearDialog.call(this);
-            ticket.setVisible(false);
-            GameState.money=+(GameState.money+mD).toFixed(2);
-            moneyText.setText('🪙 '+receipt(GameState.money));
-            animateStatChange(moneyText, this, mD);
-            done();
-        }});
-        if (typeof dialogPriceBox !== 'undefined' && dialogPriceBox) {
-          flashBorder(dialogPriceBox,this,0xff0000);
-          flashFill(dialogPriceBox,this,0xff0000);
-        }
-        tl.add({targets:ticket,x:destX,y:destY,scale:0,duration:dur(400),
-          onStart:()=>{
-            if(!dialogPriceValue.parentContainer){
-              ticket.add(dialogPriceValue);
-              dialogPriceValue.setPosition(0, 15);
-            }
-            if(this.tweens && typeof dialogPriceBox !== 'undefined' && dialogPriceBox){
-              this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});
-            }
-
-            if(dialogDrinkEmoji){
-              dialogDrinkEmoji.clearTint();
-            }
-
+      if(current.isDog){
+        // Pup cup: no stamp, just toss the ticket aside.
+        this.tweens.add({targets:ticket, x:520, alpha:0, duration:dur(300), ease:'Cubic.easeIn'});
+        this.time.delayedCall(dur(300), ()=>{
+          clearDialog.call(this);
+          ticket.setVisible(false);
+          GameState.money=+(GameState.money+mD).toFixed(2);
+          moneyText.setText('🪙 '+receipt(GameState.money));
+          animateStatChange(moneyText, this, mD);
+          done();
+        },[],this);
+      } else {
+        t.setVisible(true)
+          // start below the stamp so the stamp animation appears on top
+          .setDepth(lossStamp.depth-1);
+        emphasizePrice(t);
+        const stampX=ticket.x + Phaser.Math.Between(-5,5);
+        const stampY=ticket.y + Phaser.Math.Between(-5,5);
+        const randFloat3 = Phaser.Math.FloatBetween || ((a,b)=>Phaser.Math.Between(a*1000,b*1000)/1000);
+        const skewFn2 = typeof applyRandomSkew === 'function' ? applyRandomSkew :()=>{};
+        lossStamp
+          .setText('LOSS')
+          .setScale(1.4 + randFloat3(-0.1, 0.1))
+          .setPosition(stampX, stampY)
+          .setAngle(Phaser.Math.Between(-10,10))
+          .setVisible(true);
+        skewFn2(lossStamp);
+        // raise the price above the stamp after the stamp lands
+        this.time.delayedCall(dur(300), () => {
+          t.setDepth(lossStamp.depth + 1);
+          blinkPriceBorder(t, this, '#f00', 6);
+        }, [], this);
+        t.setPosition(t.x, 15);
+        this.time.delayedCall(dur(1000),()=>{
+          lossStamp.setVisible(false);
+          dialogBg.setVisible(false);
+          dialogText.setVisible(false);
+          if(this.tweens){
+            this.tweens.add({targets:ticket,x:'+=6',duration:dur(60),yoyo:true,repeat:2});
+          }
+          const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
+              clearDialog.call(this);
+              ticket.setVisible(false);
+              GameState.money=+(GameState.money+mD).toFixed(2);
+              moneyText.setText('🪙 '+receipt(GameState.money));
+              animateStatChange(moneyText, this, mD);
+              done();
           }});
-        tl.play();
-      },[],this);
-    } else if(type!=='refuse'){
+          if (typeof dialogPriceBox !== 'undefined' && dialogPriceBox) {
+            flashBorder(dialogPriceBox,this,0xff0000);
+            flashFill(dialogPriceBox,this,0xff0000);
+          }
+          tl.add({targets:ticket,x:destX,y:destY,scale:0,duration:dur(400),
+            onStart:()=>{
+              if(!dialogPriceValue.parentContainer){
+                ticket.add(dialogPriceValue);
+                dialogPriceValue.setPosition(0, 15);
+              }
+              if(this.tweens && typeof dialogPriceBox !== 'undefined' && dialogPriceBox){
+                this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});
+              }
+
+              if(dialogDrinkEmoji){
+                dialogDrinkEmoji.clearTint();
+              }
+
+            }});
+          tl.play();
+        },[],this);
+      }
+} else if(type!=='refuse'){
       const showTip=tip>0;
       const startRX = (typeof girl !== 'undefined' && girl) ? girl.x : customer.x;
       const startRY = (typeof girl !== 'undefined' && girl) ? girl.y : customer.y;

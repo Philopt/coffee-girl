@@ -60,7 +60,7 @@ export function lureNextWanderer(scene, specific) {
   });
 
   if (GameState.wanderers.length && GameState.queue.length < queueLimit()) {
-    if (GameState.queue.some((c, i) => i > 0 && c.walkTween)) {
+    if (GameState.queue.some((c, i) => i > 0 && c.walkTween && c.walkTween.isPlaying)) {
       if (typeof debugLog === 'function') {
         debugLog('lureNextWanderer abort: walkTween active');
       }

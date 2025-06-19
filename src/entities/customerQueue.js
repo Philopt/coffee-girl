@@ -347,7 +347,7 @@ export function spawnCustomer() {
     const dogCust = {
       sprite: dog,
       spriteKey: 'dog1',
-      orders: [{ coins: 1, req: 'Pup Cup', price: 1.00, qty: 1 }],
+      orders: [{ coins: 0, req: 'PUP CUP', price: 0.00, qty: 1 }],
       dir: c.dir,
       memory: { state: CustomerState.NORMAL },
       atOrder: false,

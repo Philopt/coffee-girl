@@ -23,6 +23,16 @@ import { startWander, loopsForState } from './wanderers.js';
 import { DOG_TYPES, updateDog, scaleDog } from './dog.js';
 import { setDepthFromBottom } from '../ui/helpers.js';
 
+function sparkleQueueSpot(scene){
+  if(!scene) return;
+  const idx=GameState.queue.length;
+  const x=idx===0?ORDER_X:QUEUE_X-QUEUE_SPACING*(idx-1);
+  const y=idx===0?ORDER_Y:QUEUE_Y-QUEUE_OFFSET*(idx-1);
+  const sp=scene.add.text(x,y,'✨',{font:'18px sans-serif',fill:'#fff'})
+    .setOrigin(0.5).setDepth(20);
+  scene.tweens.add({targets:sp,alpha:0,yoyo:true,repeat:1,duration:dur(300),onComplete:()=>sp.destroy()});
+}
+
 
 // Slow down queue movement to match wander speed change
 const CUSTOMER_SPEED = 560 / 12;
@@ -77,6 +87,7 @@ export function lureNextWanderer(scene, specific) {
   }
 
   if (GameState.wanderers.length && GameState.queue.length < queueLimit()) {
+    sparkleQueueSpot(scene);
     if (GameState.queue.some((c, i) => i > 0 && c.walkTween && c.walkTween.isPlaying)) {
       if (typeof debugLog === 'function') {
         debugLog('lureNextWanderer abort: walkTween active');

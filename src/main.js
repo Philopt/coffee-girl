@@ -256,8 +256,6 @@ export function setupGame(){
   function updateLevelDisplay(){
     const newLength = queueLimit(GameState.love);
     if(queueLevelText){
-      queueLevelText.setText('Queue Length: '+newLength);
-      queueLevelText.setVisible(newLength>=2);
       if(newLength!==GameState.loveLevel && newLength>=2){
         const sp=queueLevelText.scene.add.text(queueLevelText.x,queueLevelText.y,'✨',
             {font:'18px sans-serif',fill:'#000'})
@@ -331,10 +329,9 @@ export function setupGame(){
     // HUD
     moneyText=this.add.text(20,20,'🪙 '+receipt(GameState.money),{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
     loveText=this.add.text(20,50,'❤️ '+GameState.love,{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
-    // Display level indicator on the left side of the order table so it doesn't
-    // overlap the price ticket.
-    queueLevelText=this.add.text(156,316,'Queue Length: '+queueLimit(GameState.love),{font:'16px sans-serif',fill:'#000'})
-      .setOrigin(0.5).setDepth(1);
+    // Indicator for available queue slots
+    queueLevelText=this.add.text(156,316,'',{font:'16px sans-serif',fill:'#000'})
+      .setOrigin(0.5).setDepth(1).setVisible(false);
     updateLevelDisplay();
     // truck & girl
     const startX=this.scale.width+100;

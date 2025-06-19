@@ -574,6 +574,10 @@ export function setupGame(){
     GameState.activeCustomer=GameState.queue[0]||null;
     if(!GameState.activeCustomer) return;
     const c=GameState.activeCustomer;
+    if(!c.isDog && c.dog && c.dog.followEvent){
+      c.dog.followEvent.remove(false);
+      c.dog.followEvent=null;
+    }
     if(!c.atOrder && (c.sprite.y!==ORDER_Y || c.sprite.x!==ORDER_X)){
       c.atOrder=true;
       const dist = Phaser.Math.Distance.Between(c.sprite.x, c.sprite.y, ORDER_X, ORDER_Y);
@@ -678,8 +682,8 @@ export function setupGame(){
       .setOrigin(1,0)
       .setPosition(dialogPriceBox.width/2-5, -dialogPriceBox.height/2+5);
     dialogPriceValue
-      .setStyle({fontSize:'40px'})
-      .setText(c.isDog?'pup cup':receipt(totalCost))
+      .setStyle({fontSize:'32px'})
+      .setText(c.isDog?'PUP CUP':receipt(totalCost))
       .setColor('#000')
       .setOrigin(0.5)
       .setPosition(0, 15)

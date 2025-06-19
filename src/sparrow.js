@@ -19,7 +19,7 @@ function randomTarget(scene){
         const top = truck.getTopCenter();
         const y = top.y + 25 * truck.scaleY;
         const left = truck.x - truck.displayWidth / 2 + 40 * truck.scaleX;
-        const right = truck.x + truck.displayWidth / 2 - 24 * truck.scaleX;
+        const right = truck.x + truck.displayWidth / 2 - 25 * truck.scaleX;
         return new Phaser.Math.Vector2(
           Phaser.Math.Between(left, right),
           y
@@ -63,7 +63,7 @@ export class Sparrow {
       const top = truck.getTopCenter();
       const y = top.y + 25 * truck.scaleY;
       const left = truck.x - truck.displayWidth / 2 + 40 * truck.scaleX;
-      const right = truck.x + truck.displayWidth / 2 - 24 * truck.scaleX;
+      const right = truck.x + truck.displayWidth / 2 - 25 * truck.scaleX;
       const x = Phaser.Math.Between(left, right);
       this.target.set(x, y);
     } else {
@@ -162,7 +162,18 @@ export class Sparrow {
     if(this.timer <= 0){
       if(Math.random() < 0.3){
         this.state = BirdState.WANDER_GROUND;
-        this.target.set(this.sprite.x + Phaser.Math.Between(-30,30), this.sprite.y);
+        let targetX = this.sprite.x + Phaser.Math.Between(-30,30);
+        const truck = GameState.truck;
+        if(truck && truck.getTopCenter){
+          const top = truck.getTopCenter();
+          const roofY = top.y + 25 * truck.scaleY;
+          if(Math.abs(this.sprite.y - roofY) < 3){
+            const left = truck.x - truck.displayWidth / 2 + 40 * truck.scaleX;
+            const right = truck.x + truck.displayWidth / 2 - 25 * truck.scaleX;
+            targetX = Phaser.Math.Clamp(targetX, left, right);
+          }
+        }
+        this.target.set(targetX, this.sprite.y);
         this.timer = Phaser.Math.FloatBetween(1,2);
       }else{
         this.timer = Phaser.Math.FloatBetween(1,3);
@@ -176,6 +187,16 @@ export class Sparrow {
     const step = 20 * dt;
     this.sprite.x += Math.cos(angle)*step;
     this.sprite.y += Math.sin(angle)*step;
+    const truck = GameState.truck;
+    if(truck && truck.getTopCenter){
+      const top = truck.getTopCenter();
+      const roofY = top.y + 25 * truck.scaleY;
+      if(Math.abs(this.sprite.y - roofY) < 5){
+        const left = truck.x - truck.displayWidth / 2 + 40 * truck.scaleX;
+        const right = truck.x + truck.displayWidth / 2 - 25 * truck.scaleX;
+        this.sprite.x = Phaser.Math.Clamp(this.sprite.x, left, right);
+      }
+    }
     this.timer -= dt;
     if(Phaser.Math.Distance.Between(this.sprite.x, this.sprite.y, this.target.x, this.target.y) < 2 || this.timer <= 0){
       this.state = BirdState.IDLE_GROUND;

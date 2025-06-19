@@ -1,8 +1,22 @@
 import { BirdState } from './constants.js';
 import { GameState } from './state.js';
 
-// Limit the number of birds onscreen to avoid performance issues
+// Base maximum number of sparrows at love level 0
 export const MAX_SPARROWS = 5;
+
+// Return the sparrow cap for the given love value (0-100)
+export function maxSparrows(love) {
+  const lv = Phaser.Math.Clamp(love || 0, 0, 100);
+  return Math.round(MAX_SPARROWS + (lv / 100) * 15);
+}
+
+// Compute delay before the next sparrow spawns. Higher love means shorter waits.
+export function sparrowSpawnDelay(love) {
+  const lv = Phaser.Math.Clamp(love || 0, 0, 100) / 100;
+  const min = Phaser.Math.Linear(5000, 1000, lv);
+  const max = Phaser.Math.Linear(10000, 4000, lv);
+  return Phaser.Math.Between(min, max);
+}
 
 function randomTarget(scene){
   const { width } = scene.scale;
@@ -235,8 +249,10 @@ export class Sparrow {
 }
 
 export function spawnSparrow(scene, opts = {}){
-  const birds = scene.gameState.sparrows;
-  if (Array.isArray(birds) && birds.length >= MAX_SPARROWS) {
+  const gs = scene.gameState || GameState;
+  const birds = gs.sparrows;
+  const limit = maxSparrows(gs.love);
+  if (Array.isArray(birds) && birds.length >= limit) {
     return null;
   }
   const bird = new Sparrow(scene);
@@ -259,9 +275,10 @@ export function scheduleSparrowSpawn(scene){
   if(gs.sparrowSpawnEvent){
     gs.sparrowSpawnEvent.remove(false);
   }
-  const delay = Phaser.Math.Between(5000,10000);
+  const delay = sparrowSpawnDelay(gs.love);
   gs.sparrowSpawnEvent = scene.time.delayedCall(delay, () => {
-    if ((gs.sparrows || []).length < MAX_SPARROWS) {
+    const limit = maxSparrows(gs.love);
+    if ((gs.sparrows || []).length < limit) {
       spawnSparrow(scene);
     }
     scheduleSparrowSpawn(scene);

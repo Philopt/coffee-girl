@@ -53,6 +53,17 @@ export function updateDog(owner) {
     if (seen) {
       dog.excited = true;
       const s = seen.sprite;
+      const bark = this.add.sprite(dog.x, dog.y - 20, 'dog1', 3)
+        .setOrigin(0.5)
+        .setDepth(dog.depth + 1)
+        .setScale(dog.scaleX, dog.scaleY);
+      this.tweens.add({
+        targets: bark,
+        y: '-=20',
+        alpha: 0,
+        duration: dur(600),
+        onComplete: () => bark.destroy()
+      });
       const tl = this.tweens.createTimeline();
       tl.add({ targets: dog, y: '-=15', duration: dur(100), yoyo: true, repeat: 1 });
       tl.add({ targets: dog, x: s.x, y: s.y, duration: dur(300) });

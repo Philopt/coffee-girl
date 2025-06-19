@@ -1287,12 +1287,14 @@ export function setupGame(){
           known.add(child);
         }
       });
-      // remove any loose dogs not associated with a customer
+      // send any loose dogs scurrying off screen instead of deleting them
       scene.children.list.forEach(child=>{
         if(child instanceof Phaser.GameObjects.Text &&
            DOG_TYPES.some(d=>d.emoji===child.text) &&
            !fleeing.some(c=>c.dog===child)){
-          child.destroy();
+          const dir=child.x<ORDER_X? -1:1;
+          const targetX=dir===1?520:-40;
+          sendDogOffscreen.call(scene, child, targetX, child.y);
         }
       });
 

@@ -880,6 +880,7 @@ export function setupGame(){
           }
         }
         if(current.heartEmoji){ current.heartEmoji.destroy(); current.heartEmoji = null; }
+        const winSpriteKey = current.sprite.texture ? current.sprite.texture.key : current.spriteKey;
         current.sprite.destroy();
         if(GameState.money<=0){
           showFalconAttack.call(this,()=>{
@@ -896,7 +897,7 @@ export function setupGame(){
         if(GameState.money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
         if(GameState.love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
         if(GameState.heartWin){
-          showEnd.call(this,'And you lived happily ever after.', GameState.heartWin);
+          showTrueLoveVictory.call(this, winSpriteKey);
           GameState.heartWin = null;
           return;
         }
@@ -1528,6 +1529,59 @@ export function setupGame(){
         }
       });
     });
+  }
+
+  function showTrueLoveVictory(spriteKey){
+    const scene = this;
+    scene.tweens.killAll();
+    scene.time.removeAllEvents();
+    cleanupFloatingEmojis();
+    cleanupHeartEmojis();
+    hideOverlayTexts();
+    if (GameState.spawnTimer) {
+      GameState.spawnTimer.remove(false);
+      GameState.spawnTimer = null;
+    }
+    clearDialog.call(scene);
+    if(endOverlay){ endOverlay.destroy(); }
+    endOverlay = this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
+    const lover = this.add.sprite(240,260, spriteKey)
+      .setOrigin(0.5,1)
+      .setScale(1.5)
+      .setDepth(20);
+    const bigGirl = this.add.image(240,320,'girl')
+      .setOrigin(0.5,1)
+      .setScale(1.5)
+      .setDepth(21);
+    for(let i=0;i<12;i++){
+      const hx = Phaser.Math.Between(220,260);
+      const hy = Phaser.Math.Between(200,260);
+      const h = this.add.text(hx,hy,'💖',{font:'24px sans-serif'})
+        .setOrigin(0.5)
+        .setDepth(22);
+      addFloatingEmoji(h);
+      this.tweens.add({targets:h,y:hy-80,alpha:0,duration:dur(Phaser.Math.Between(800,1200)),
+        onComplete:()=>{ removeFloatingEmoji(h); h.destroy(); }});
+    }
+    const txt=this.add.text(240,480,'You found true love\nTHE END',
+      {font:'28px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
+      .setOrigin(0.5)
+      .setDepth(21);
+    const btn=this.add.text(240,560,'Try Again',{font:'20px sans-serif',fill:'#fff',backgroundColor:'#006400',padding:{x:14,y:8}})
+      .setOrigin(0.5)
+      .setDepth(22);
+    const againZone=this.add.zone(240,560,btn.width,btn.height).setOrigin(0.5);
+    againZone.setInteractive({ useHandCursor:true });
+    againZone.on('pointerdown',()=>{
+        lover.destroy();
+        bigGirl.destroy();
+        txt.destroy();
+        btn.destroy();
+        if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
+        restartGame.call(this);
+        againZone.destroy();
+      });
+    GameState.gameOver=true;
   }
 
   function showEnd(msg, bigEmoji, opts){

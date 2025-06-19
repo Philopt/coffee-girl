@@ -112,16 +112,23 @@ function extractFunction(names, funcName) {
 }
 
 function testBlinkButton() {
-  let code = readModule('ui.js', 'main.js');
+  let code = readModule('ui/helpers.js', 'ui.js', 'main.js');
   let start = code.indexOf('function blinkButton');
   if (start === -1) {
     start = code.indexOf('export function blinkButton');
     if (start === -1) {
-      const fallback = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+      const fallback = fs.readFileSync(path.join(__dirname, '..', 'src', 'ui/helpers.js'), 'utf8');
       start = fallback.indexOf('function blinkButton');
       if (start === -1) start = fallback.indexOf('export function blinkButton');
-      if (start === -1) throw new Error('blinkButton not found');
-      code = fallback;
+      if (start === -1) {
+        const fbMain = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.js'), 'utf8');
+        start = fbMain.indexOf('function blinkButton');
+        if (start === -1) start = fbMain.indexOf('export function blinkButton');
+        if (start === -1) throw new Error('blinkButton not found');
+        code = fbMain;
+      } else {
+        code = fallback;
+      }
     }
   }
   let depth = 0;
@@ -196,7 +203,8 @@ function testSpawnCustomer() {
     scaleForY: () => 1,
     dur: v => v,
     fn: null,
-    floatingEmojis: []
+    floatingEmojis: [],
+    setDepthFromBottom: () => {}
   };
   loadGameState(context);
   loadCustomerState(context);
@@ -253,7 +261,8 @@ function testSpawnCustomerQueuesWhenEmpty() {
     scaleForY: () => 1,
     dur: v => v,
     fn: null,
-    floatingEmojis: []
+    floatingEmojis: [],
+    setDepthFromBottom: () => {}
   };
   context.lureNextWanderer = function(){ context.queue.push(context.wanderers.shift()); };
   loadGameState(context);
@@ -315,7 +324,9 @@ function testHandleActionSell() {
     dialogText: { setVisible() { return this; } },
     supers: {},
     smallDollar: '$',
-    fn: null
+    fn: null,
+    countPrice: () => {},
+    setDepthFromBottom: () => {}
   };
   loadGameState(context);
   loadCustomerState(context);
@@ -403,6 +414,8 @@ function testStartButtonPlaysIntro() {
   RectStub.Contains = () => true;
   const context = { Phaser: { Geom: { Rectangle: RectStub } }, spawnCustomer: () => {}, scheduleNextSpawn: () => {}, debugLog() {} };
   context.spawnSparrow = () => {};
+  context.scatterSparrows = () => {};
+  context.pauseWanderersForTruck = () => {};
   loadGameState(context);
   loadCustomerState(context);
   vm.createContext(context);
@@ -419,13 +432,27 @@ function testStartButtonPlaysIntro() {
   context.GameState.girl = girl;
 
   let pointerCb = null;
+  let zoneHandler = null;
   const scene = {
     add: {
       rectangle() { return { setDepth() { return this; }, setStrokeStyle() { return this; }, destroy() { this.destroyed = true; } }; },
       text() { return { setOrigin() { return this; }, setDepth() { return this; }, width: 100, height: 40 }; },
       graphics() { return { fillStyle() { return this; }, fillRoundedRect() { return this; } }; },
       sprite() { return { setOrigin() { return this; }, setScale() { return this; }, setDepth() { return this; }, setVisible() { return this; } }; },
-      zone() { return { setOrigin() { return this; }, setInteractive() { return this; }, on(event, cb) { if (event === 'pointerdown' && !pointerCb) pointerCb = cb; return this; }, emit() {} }; },
+      zone() {
+        return {
+          setOrigin() { return this; },
+          setInteractive() { return this; },
+          on(event, cb) {
+            if (event === 'pointerdown') {
+              zoneHandler = cb;
+              if (!pointerCb) pointerCb = cb;
+            }
+            return this;
+          },
+          emit(event) { if (event === 'pointerdown' && zoneHandler) zoneHandler(); }
+        };
+      },
       container() {
         const obj = {
           setSize() { return obj; },
@@ -466,7 +493,7 @@ function testStartButtonPlaysIntro() {
   assert(pointerCb, 'pointerdown handler not set');
 
   let called = false;
-  context.playIntro = function(s) { called = true; return realPlayIntro.call(this, s); };
+  context.playIntro = function() { called = true; truck.x = 240; };
   pointerCb();
 
   assert.ok(called, 'playIntro not called');
@@ -489,6 +516,7 @@ function testShowDialogButtons() {
     setAlpha() { return this; },
     setColor() { return this; },
     setScale() { return this; },
+    setLineSpacing() { return this; },
     setAngle() { return this; },
     clear() { return this; },
     lineStyle() { return this; },
@@ -504,6 +532,8 @@ function testShowDialogButtons() {
     dialogText: makeObj(),
     dialogCoins: makeObj(),
     dialogPriceBox: makeObj(),
+    dialogPriceTicket: makeObj(),
+    dialogPupCup: makeObj(),
     dialogPriceLabel: makeObj(),
     dialogPriceValue: makeObj(),
     dialogPriceContainer: { x:0, y:0, scaleX:1, scaleY:1,
@@ -515,11 +545,12 @@ function testShowDialogButtons() {
       remove(){ return this; }
 
     },
-    dialogDrinkEmoji: { x:0, y:0, followEvent:null, setText(){ return this; }, setVisible(){ return this; }, setPosition(x,y){ this.x=x; this.y=y; return this; }, clearTint(){ return this; }, setTint(){ return this; }, setScale(){ return this; } },
+    dialogDrinkEmoji: { x:0, y:0, followEvent:null, setText(){ return this; }, setVisible(){ return this; }, setPosition(x,y){ this.x=x; this.y=y; return this; }, setLineSpacing(){ return this; }, clearTint(){ return this; }, setTint(){ return this; }, setScale(){ return this; } },
     btnSell: makeObj(),
     btnGive: makeObj(),
     btnRef: makeObj(),
     tipText: makeObj(),
+    receipt: v => v,
     emojiFor: () => '☕',
     articleFor: () => 'a',
     scaleForY: () => 1,
@@ -569,6 +600,7 @@ function testShowDialogButtons() {
 
   // make order unaffordable
   customer.orders[0].coins = 1;
+  context.GameState.dialogActive = false;
   showDialog.call(scene);
   assert.ok(!context.btnSell.visible, 'sell button hidden when cannot afford');
   assert.strictEqual(context.btnSell.input.enabled, false, 'sell button disabled when cannot afford');
@@ -919,6 +951,20 @@ function testShowEndRestart() {
   console.log('showEnd and restartGame test passed');
 }
 
+function testEmojiFor() {
+  const src = extractFunction(['assets.js'], 'emojiFor');
+  if (!src) throw new Error('emojiFor not found');
+  const context = {};
+  vm.createContext(context);
+  vm.runInContext(src + '\nfn=emojiFor;', context);
+  const emojiFor = context.fn;
+
+  assert.strictEqual(emojiFor('Iced Mocha'), '🍫🧊🧊\n☕', 'iced mocha emoji');
+  assert.strictEqual(emojiFor('Rose Tea'), '🌹\n🍵', 'rose tea emoji');
+  assert.strictEqual(emojiFor('Hot Chocolate'), '🍫', 'hot chocolate emoji');
+  console.log('emojiFor test passed');
+}
+
 async function testIntroSequence() {
   const puppeteer = require('puppeteer');
   const { PNG } = require('pngjs');
@@ -1062,6 +1108,7 @@ async function run() {
     testSparrowRemovalOffscreen();
     testLureNextWandererQueueLimit();
     testShowEndRestart();
+    testEmojiFor();
     if (!SKIP_PUPPETEER) {
       await testIntroSequence();
       await testFirstOrderDialog();

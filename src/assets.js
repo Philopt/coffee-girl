@@ -22,14 +22,28 @@ export function receipt(value){
 }
 
 export function emojiFor(name){
-  const n=name.toLowerCase();
+  const n = name.toLowerCase();
   const iced = n.includes('iced') || n.includes('cold brew');
-  let base='☕';
-  if(n.includes('tea')) base='🍵';
-  else if(n.includes('chocolate')) base='🍫';
-  else if(n.includes('rose')) base='🌹';
-  else if(n.includes('pink')) base='🌸';
-  if(iced) return `🧊\n${base}`;
+  const chocolate = n.includes('chocolate');
+  const rose = n.includes('rose');
+  const pink = n.includes('pink');
+  const tea = n.includes('tea');
+
+  // Base drink emoji: coffee by default, tea cup when mentioned explicitly.
+  let base = '☕';
+  if (tea) base = '🍵';
+  else if (n.includes('hot chocolate')) base = '🍫';
+
+  const extras = [];
+  // Add modifiers below, leaving iced last so it appears on top
+  if (chocolate && base === '☕') extras.push('🍫');
+  if (rose) extras.push('🌹');
+  else if (pink) extras.push('🌸');
+  if (iced) extras.push('🧊🧊');
+
+  if (extras.length) {
+    return `${extras.join('')}\n${base}`;
+  }
   return base;
 }
 

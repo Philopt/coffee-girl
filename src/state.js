@@ -8,6 +8,7 @@ export const GameState = {
   spawnTimer: null,
   lureRetry: null,
   sparrowSpawnEvent: null,
+  dogBarkEvent: null,
   falconActive: false,
   gameOver: false,
   loveLevel: 1,

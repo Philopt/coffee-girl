@@ -163,6 +163,12 @@ export function checkQueueSpacing(scene) {
     const dist = Phaser.Math.Distance.Between(cust.sprite.x, cust.sprite.y, tx, ty);
     if (dist > 2) {
       if (cust.walkTween) {
+        if (cust.walkTween.isPlaying) {
+          // Already moving toward the correct spot. Don't reset the tween,
+          // otherwise lureNextWanderer will keep aborting and the queue will
+          // never fill beyond two customers.
+          return;
+        }
         cust.walkTween.stop();
         cust.walkTween.remove();
         cust.walkTween = null;

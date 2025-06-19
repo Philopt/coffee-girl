@@ -12,6 +12,7 @@ export const GameState = {
   gameOver: false,
   loveLevel: 1,
   servedCount: 0,
+  saleInProgress: false,
   heartWin: null,
   girlReady: false,
   truck: null,

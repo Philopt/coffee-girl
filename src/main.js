@@ -1020,8 +1020,10 @@ export function setupGame(){
       // raise the price above the stamp after the stamp lands
       this.time.delayedCall(dur(300), () => {
         if (dialogPriceValue.parentContainer) {
+          const m = dialogPriceValue.getWorldTransformMatrix();
           dialogPriceContainer.remove(dialogPriceValue);
           this.add.existing(dialogPriceValue);
+          dialogPriceValue.setPosition(m.tx, m.ty);
         }
         t.setDepth(paidStamp.depth + 1);
         blinkPriceBorder(t, this);

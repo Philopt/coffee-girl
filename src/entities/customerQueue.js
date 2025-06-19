@@ -310,6 +310,7 @@ export function spawnCustomer() {
     dog.dir = 1;
     dog.prevX = dog.x;
     dog.dogType = dogType.type;
+    dog.hasBarked = false;
     c.dog = dog;
 
     dog.followEvent = this.time.addEvent({

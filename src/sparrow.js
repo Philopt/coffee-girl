@@ -204,6 +204,22 @@ export class Sparrow {
     }
   }
 
+  flyAway(target){
+    const startX = this.sprite.x;
+    const startY = this.sprite.y;
+    const controlX = startX + Phaser.Math.Between(-60,60);
+    const controlY = startY - Phaser.Math.Between(40,80);
+    this.target.copy(target);
+    this.curve = new Phaser.Curves.QuadraticBezier(
+      new Phaser.Math.Vector2(startX, startY),
+      new Phaser.Math.Vector2(controlX, controlY),
+      new Phaser.Math.Vector2(target.x, target.y)
+    );
+    this.sprite.anims.play('sparrow_fly');
+    this.state = BirdState.FLY;
+    this.timer = 0;
+  }
+
   flee(vec){
     this.velocity.copy(vec.normalize().scale(60));
     this.sprite.anims.play('sparrow_fly');
@@ -273,6 +289,20 @@ export function cleanupSparrows(scene){
     scene.gameState.sparrowSpawnEvent.remove(false);
     scene.gameState.sparrowSpawnEvent = null;
   }
+}
+
+export function scatterSparrows(scene){
+  const birds = scene.gameState.sparrows;
+  if(!Array.isArray(birds)) return;
+  const { width } = scene.scale;
+  birds.forEach(bird => {
+    if(!bird || !bird.sprite) return;
+    const target = new Phaser.Math.Vector2(
+      Phaser.Math.Between(-40, width + 40),
+      -40
+    );
+    bird.flyAway(target);
+  });
 }
 
 

@@ -1,6 +1,7 @@
 import { ORDER_X, ORDER_Y } from '../customers.js';
 import { GameState } from '../state.js';
 import { dur, scaleForY } from '../ui.js';
+import { scatterSparrows } from '../sparrow.js';
 
 export const DOG_MIN_Y = ORDER_Y + 20;
 export const DOG_SPEED = 120; // base movement speed for the dog
@@ -94,6 +95,24 @@ export function updateDog(owner) {
   } else {
     dog.restUntil = 0;
   }
+
+  if(owner === GameState.activeCustomer &&
+     Phaser.Math.Distance.Between(dog.x, dog.y, ORDER_X, ORDER_Y) < 60 &&
+     !dog.hasBarked){
+    dog.hasBarked = true;
+    const bark = this.add.text(dog.x, dog.y - 20, 'BARK!', {
+      font: '16px sans-serif', fill: '#000'
+    }).setOrigin(0.5).setDepth(dog.depth + 1);
+    this.tweens.add({
+      targets: bark,
+      y: '-=20',
+      alpha: 0,
+      duration: dur(600),
+      onComplete: () => bark.destroy()
+    });
+    scatterSparrows(this);
+  }
+
   if (targetY < DOG_MIN_Y) targetY = DOG_MIN_Y;
   const distance = Phaser.Math.Distance.Between(dog.x, dog.y, targetX, targetY);
   const speed = dogDist > DOG_FAST_DISTANCE ? DOG_SPEED * 1.5 : DOG_SPEED;

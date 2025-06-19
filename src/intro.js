@@ -4,7 +4,7 @@ import { resumeWanderer } from './entities/wanderers.js';
 import { GameState } from './state.js';
 import { debugLog, DEBUG } from './debug.js';
 import { dur } from './ui.js';
-import { spawnSparrow } from './sparrow.js';
+import { spawnSparrow, scatterSparrows } from './sparrow.js';
 
 let startOverlay=null;
 let startButton=null;
@@ -189,6 +189,7 @@ function playIntro(scene){
   const offscreenX = width + 100;
   GameState.truck.setPosition(offscreenX,245).setScale(0.462);
   GameState.girl.setPosition(offscreenX,245).setVisible(false);
+  scatterSparrows(scene);
   const vibrateAmp = { value: 2 * (GameState.truck.scaleX / 0.924) };
   const vibrateTween = (scene.tweens && scene.tweens.addCounter) ? scene.tweens.addCounter({
     from: 0,

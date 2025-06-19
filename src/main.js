@@ -429,7 +429,7 @@ export function setupGame(){
 
     dialogPriceLabel=this.add.text(0,-15,'',{font:'14px sans-serif',fill:'#000',align:'center'})
       .setOrigin(0.5);
-    dialogPriceValue=this.add.text(0,15,'',{font:'40px sans-serif',fill:'#000'})
+    dialogPriceValue=this.add.text(-5,20,'',{font:'40px sans-serif',fill:'#000'})
       .setOrigin(0.5);
     dialogDrinkEmoji=this.add.text(-30,-20,'',{font:'24px sans-serif'})
       .setOrigin(0.5);
@@ -771,11 +771,11 @@ export function setupGame(){
         .setText(receipt(totalCost))
         .setColor('#006400')
         .setOrigin(0.5)
-        .setScale(1)
+        .setScale(0.9)
         .setAlpha(1);
       priceValueYOffset = dialogPriceBox.height/2 - 34;
       const orderEmoji = emojiFor(c.orders[0].req);
-      dialogPriceValue.setPosition(0, priceValueYOffset);
+      dialogPriceValue.setPosition(-5, priceValueYOffset + 5);
       dialogDrinkEmoji
         .setText(orderEmoji)
         .setLineSpacing(orderEmoji.includes('\n') ? -8 : 0)
@@ -1331,7 +1331,7 @@ export function setupGame(){
           onStart:()=>{
             if(!dialogPriceValue.parentContainer){
               ticket.add(dialogPriceValue);
-              dialogPriceValue.setPosition(0, priceValueYOffset);
+              dialogPriceValue.setPosition(-5, priceValueYOffset + 5);
             }
             flashBorder(dialogPriceBox,this,0x00ff00);
             flashFill(dialogPriceBox,this,0x00ff00);
@@ -1403,7 +1403,7 @@ export function setupGame(){
             onStart:()=>{
               if(!dialogPriceValue.parentContainer){
                 ticket.add(dialogPriceValue);
-                dialogPriceValue.setPosition(0, priceValueYOffset);
+                  dialogPriceValue.setPosition(-5, priceValueYOffset + 5);
               }
               if(this.tweens && typeof dialogPriceBox !== 'undefined' && dialogPriceBox){
                 this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});

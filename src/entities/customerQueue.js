@@ -288,7 +288,8 @@ export function spawnCustomer() {
   const memory = GameState.customerMemory[k] || { state: CustomerState.NORMAL };
   GameState.customerMemory[k] = memory;
   if (!memory.dogMemory) {
-    memory.dogMemory = { hasDog: false, type: null, state: CustomerState.NORMAL };
+    // Leave hasDog undefined so spawn logic can randomize on first encounter
+    memory.dogMemory = { hasDog: undefined, type: null, state: CustomerState.NORMAL };
   }
   c.memory = memory;
   const order = createOrder();

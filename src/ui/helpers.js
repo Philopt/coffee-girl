@@ -66,4 +66,23 @@ export function emphasizePrice(text){
   text.setStyle({fontStyle:'bold', stroke:'#fff', strokeThickness:2});
 }
 
+export function blinkPriceBorder(text, scene){
+  if(!text || !text.setStroke) return;
+  const originalColor = text.style.stroke || '#fff';
+  const originalThickness = text.style.strokeThickness || 0;
+  let on=false;
+  const flashes=4;
+  scene.time.addEvent({
+    repeat:flashes,
+    delay:scene.dur ? scene.dur(60) : 60,
+    callback:()=>{
+      text.setStroke('#fff', on?2:0);
+      on=!on;
+    }
+  });
+  scene.time.delayedCall((scene.dur?scene.dur(60):60)*(flashes+1)+(scene.dur?scene.dur(10):10),()=>{
+    text.setStroke(originalColor, originalThickness);
+  },[],scene);
+}
+
 export { blinkButton as default };

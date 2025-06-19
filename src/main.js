@@ -726,28 +726,21 @@ export function setupGame(){
         .setVisible(true);
     } else {
       dialogPriceTicket.setVisible(true);
-      dialogPriceBox.setVisible(true);
+      dialogPriceBox.setVisible(false); // hide outline from old ticket
       dialogPriceBox.width = dialogPriceTicket.displayWidth;
       dialogPriceBox.height = dialogPriceTicket.displayHeight;
-      if(dialogPriceBox.setFillStyle) dialogPriceBox.setFillStyle(0xffeeb5,0);
-      if(dialogPriceBox.setStrokeStyle) dialogPriceBox.setStrokeStyle(0,0);
-      dialogPriceLabel
-        .setStyle({fontSize:'14px'})
-        .setText('Total Cost')
-        .setOrigin(0.5)
-        .setPosition(0, dialogPriceBox.height/2 - 40)
-        .setVisible(true);
+      dialogPriceLabel.setVisible(false); // remove "Total Cost" text
       dialogPriceValue
-        .setStyle({fontSize:'32px'})
+        .setStyle({fontSize:'30px'})
         .setText(receipt(totalCost))
         .setColor('#000')
         .setOrigin(0.5)
-        .setPosition(0, dialogPriceBox.height/2 - 20)
+        .setPosition(0, dialogPriceBox.height/2 - 24)
         .setScale(1)
         .setAlpha(1);
       dialogDrinkEmoji
         .setText(emojiFor(c.orders[0].req))
-        .setPosition(0,-dialogPriceBox.height/4)
+        .setPosition(0,-dialogPriceBox.height/4 + 5)
         .setScale(2)
         .setVisible(true);
     }

@@ -767,13 +767,13 @@ export function setupGame(){
       dialogPriceBox.height = dialogPriceTicket.displayHeight;
       dialogPriceLabel.setVisible(false); // remove "Total Cost" text
       dialogPriceValue
-        .setStyle({fontSize:'30px'})
+        .setStyle({fontSize:'42px'})
         .setText(receipt(totalCost))
-        .setColor('#000')
+        .setColor('#006400')
         .setOrigin(0.5)
         .setScale(1)
         .setAlpha(1);
-      priceValueYOffset = dialogPriceBox.height/2 - 24;
+      priceValueYOffset = dialogPriceBox.height/2 - 34;
       const orderEmoji = emojiFor(c.orders[0].req);
       dialogPriceValue.setPosition(0, priceValueYOffset);
       dialogDrinkEmoji
@@ -836,7 +836,7 @@ export function setupGame(){
       dialogText.setVisible(false);
       dialogCoins.setVisible(false);
       dialogPriceContainer.setVisible(false);
-      dialogPriceValue.setColor('#000').setStyle({fontStyle:'', strokeThickness:0});
+      dialogPriceValue.setColor('#006400').setStyle({fontStyle:'', strokeThickness:0});
     }else{
       dialogBg.setVisible(true);
       dialogText.setVisible(false);

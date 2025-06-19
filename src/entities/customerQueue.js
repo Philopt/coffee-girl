@@ -23,7 +23,8 @@ import { startWander, loopsForState } from './wanderers.js';
 import { DOG_TYPES, updateDog } from './dog.js';
 
 
-const CUSTOMER_SPEED = 560 / 6;
+// Slow down queue movement to match wander speed change
+const CUSTOMER_SPEED = 560 / 12;
 const LURE_SPEED = CUSTOMER_SPEED * 0.6;
 const EDGE_TURN_BUFFER = 40;
 const HEART_EMOJIS = {

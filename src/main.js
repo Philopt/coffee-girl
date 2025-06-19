@@ -15,11 +15,12 @@ import { showStartScreen, playIntro } from './intro.js';
 
 export let Assets, Scene, Customers, config;
 export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;
-const CUSTOMER_SPEED = 560 / 6; // pixels per second for wanderers
+// Customers move slower now that the line works better
+const CUSTOMER_SPEED = 560 / 12; // pixels per second for wanderers and queue
 // Minimum duration when a customer dashes to the table
 const DART_MIN_DURATION = 300;
 // Maximum speed (pixels per second) when dashing to the table
-const DART_MAX_SPEED = CUSTOMER_SPEED * 3;
+const DART_MAX_SPEED = (560 / 6) * 3;
 // Offset for the drink emoji when the customer holds it
 // Raise it slightly so it appears near their hands instead of their feet
 const DRINK_HOLD_OFFSET = { x: 0, y: -20 };

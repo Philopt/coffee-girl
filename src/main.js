@@ -331,6 +331,19 @@ export function setupGame(){
     // HUD
     moneyText=this.add.text(20,20,'🪙 '+receipt(GameState.money),{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
     loveText=this.add.text(20,50,'❤️ '+GameState.love,{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
+    moneyText.setInteractive({ useHandCursor:true });
+    loveText.setInteractive({ useHandCursor:true });
+    moneyText.on('pointerdown',()=>{
+      GameState.money = +(GameState.money + 20).toFixed(2);
+      moneyText.setText('🪙 '+receipt(GameState.money));
+      animateStatChange(moneyText, this, 1);
+    });
+    loveText.on('pointerdown',()=>{
+      GameState.love += 10;
+      loveText.setText('❤️ '+GameState.love);
+      updateLevelDisplay();
+      animateStatChange(loveText, this, 1, true);
+    });
     // Indicator for available queue slots
     queueLevelText=this.add.text(156,316,'',{font:'16px sans-serif',fill:'#000'})
       .setOrigin(0.5).setDepth(1).setVisible(false);

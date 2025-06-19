@@ -289,8 +289,23 @@ export function updateSparrows(scene, delta){
   const dt = delta/1000;
   const birds = scene.gameState.sparrows;
   if(!Array.isArray(birds)) return;
-  for(const bird of birds){
+  for(const bird of birds.slice()){
     bird.update(dt);
+    if(!bird.sprite) continue;
+    const y = bird.sprite.y;
+    if(y < -50 || y > scene.scale.height + 50){
+      if(bird.threatCheck && bird.threatCheck.remove){
+        bird.threatCheck.remove(false);
+      }
+      if(bird.timerEvent && bird.timerEvent.remove){
+        bird.timerEvent.remove(false);
+      }
+      if(bird.destroy){
+        bird.destroy();
+      }
+      const idx = birds.indexOf(bird);
+      if(idx !== -1) birds.splice(idx,1);
+    }
   }
 }
 

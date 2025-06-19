@@ -976,6 +976,8 @@ export function setupGame(){
         const dogCust = current.dogCustomer;
         if(dogCust.followEvent){ dogCust.followEvent.remove(false); dogCust.followEvent=null; }
         dogCust.atOrder = false;
+        dogCust.arrived = true;
+        dogCust.arrivalTime = this.time ? this.time.now : Date.now();
         GameState.queue.unshift(dogCust);
         const waitX = ORDER_X + 50;
         this.tweens.add({targets:sprite, x:waitX, duration:dur(300)});

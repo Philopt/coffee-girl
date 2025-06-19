@@ -716,7 +716,8 @@ export function setupGame(){
     const ticketH = c.isDog
       ? dialogPriceBox.height
       : (dialogPriceTicket ? dialogPriceTicket.displayHeight : dialogPriceBox.height);
-    const ticketOffset = ticketW / 2 + 10;
+    // Move price tickets closer to the truck by using a smaller margin
+    const ticketOffset = ticketW / 2 + 4;
 
     const truckRef = (typeof truck !== 'undefined' && truck) ? truck : null;
 

@@ -85,6 +85,7 @@ export function lureNextWanderer(scene, specific) {
       c.walkTween.remove();
       c.walkTween = null;
     }
+    if (c.pauseEvent) { c.pauseEvent.remove(); c.pauseEvent = null; }
     const idx = GameState.queue.length;
     c.atOrder = false;
     GameState.queue.push(c);
@@ -239,7 +240,7 @@ export function spawnCustomer() {
     return { coins, req: item.name, price: item.price, qty };
   };
 
-  const c = { orders: [] };
+  const c = { orders: [], pauseEvent: null };
   const used = new Set();
   if (GameState.activeCustomer && GameState.activeCustomer.spriteKey) {
     used.add(GameState.activeCustomer.spriteKey);

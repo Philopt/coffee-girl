@@ -3,6 +3,7 @@ import { dur, scaleForY } from '../ui.js';
 import { sendDogOffscreen } from './dog.js';
 
 const EDGE_TURN_BUFFER = 40;
+const EDGE_PAUSE_DURATION = 500; // ms pause before turning around at edges
 
 export function loopsForState(state){
   switch(state){
@@ -23,6 +24,7 @@ export function removeWanderer(scene, c){
     c.dog = null;
   }
   if(c.heartEmoji){ c.heartEmoji.destroy(); c.heartEmoji = null; }
+  if(c.pauseEvent){ c.pauseEvent.remove(); c.pauseEvent = null; }
   c.sprite.destroy();
 }
 
@@ -33,7 +35,11 @@ export function handleWanderComplete(scene, c){
     const inside = c.dir === 1 ? 480-EDGE_TURN_BUFFER : EDGE_TURN_BUFFER;
     const exitX = c.dir === 1 ? 520 : -40;
     const target = c.loopsRemaining > 0 ? inside : exitX;
-    startWander(scene,c,target,c.loopsRemaining===0);
+    if(c.pauseEvent){ c.pauseEvent.remove(); }
+    c.pauseEvent = scene.time.delayedCall(dur(EDGE_PAUSE_DURATION), ()=>{
+      c.pauseEvent = null;
+      startWander(scene,c,target,c.loopsRemaining===0);
+    }, [], scene);
   }else{
     removeWanderer(scene,c);
   }
@@ -41,6 +47,7 @@ export function handleWanderComplete(scene, c){
 
 export function startWander(scene, c, targetX, exitAfter){
   if(c.walkTween){ c.walkTween.stop(); c.walkTween.remove(); c.walkTween=null; }
+  if(c.pauseEvent){ c.pauseEvent.remove(); c.pauseEvent=null; }
   const startX=c.sprite.x;
   const startY=c.sprite.y;
   const amp = Phaser.Math.Between(15,30);
@@ -59,6 +66,7 @@ export function startWander(scene, c, targetX, exitAfter){
 
 export function resumeWanderer(scene, c){
   if(!c || !c.sprite || !c.walkData) return;
+  if(c.pauseEvent){ c.pauseEvent.remove(); c.pauseEvent=null; }
   const {targetX,startX,startY,amp,freq,duration,exitAfter} = c.walkData;
   const totalDist = Math.abs(targetX - startX);
   const remaining = Math.abs(targetX - c.sprite.x);

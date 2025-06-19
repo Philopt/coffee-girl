@@ -153,7 +153,7 @@ export function setupGame(){
   let moneyText, loveText, queueLevelText;
   let dialogBg, dialogText, dialogCoins,
       dialogPriceLabel, dialogPriceValue, dialogPriceBox,
-      dialogDrinkEmoji, dialogPriceContainer,
+      dialogDrinkEmoji, dialogPriceContainer, dialogPriceTicket,
       btnSell, btnGive, btnRef;
   let reportLine1, reportLine2, reportLine3, tipText;
   let paidStamp, lossStamp;
@@ -397,6 +397,9 @@ export function setupGame(){
     dialogPriceBox=this.add.rectangle(0,0,120,80,0xffeeb5)
       .setStrokeStyle(2,0x000)
       .setOrigin(0.5);
+    dialogPriceTicket=this.add.image(0,0,'price_ticket')
+      .setOrigin(0.5)
+      .setVisible(false);
 
     dialogPriceLabel=this.add.text(0,-15,'',{font:'14px sans-serif',fill:'#000',align:'center'})
       .setOrigin(0.5);
@@ -405,7 +408,7 @@ export function setupGame(){
     dialogDrinkEmoji=this.add.text(-30,-20,'',{font:'24px sans-serif'})
       .setOrigin(0.5);
 
-    dialogPriceContainer=this.add.container(0,0,[dialogPriceBox, dialogDrinkEmoji, dialogPriceLabel, dialogPriceValue])
+    dialogPriceContainer=this.add.container(0,0,[dialogPriceTicket, dialogPriceBox, dialogDrinkEmoji, dialogPriceLabel, dialogPriceValue])
       .setDepth(11)
       .setVisible(false);
 
@@ -579,7 +582,6 @@ export function setupGame(){
       }
       return;
     }
-    if(dialogPriceBox) dialogPriceBox.fillAlpha = 1;
     // reset the dialog position in case previous animations moved it
     dialogBg.y = typeof DIALOG_Y === 'number' ? DIALOG_Y : 430;
     dialogBg.setAlpha(1);
@@ -678,7 +680,7 @@ export function setupGame(){
 
     const priceTargetXDefault = dialogBg.x + dialogBg.width/2 - 40;
     const priceTargetY = dialogBg.y - dialogBg.height - (c.isDog ? 30 : 0);
-    const ticketW = dialogPriceBox.width;
+    const ticketW = c.isDog ? dialogPriceBox.width : (dialogPriceTicket ? dialogPriceTicket.displayWidth : dialogPriceBox.width);
     const ticketOffset = ticketW/2 + 10;
     const girlRight = (typeof girl !== 'undefined' && girl) ?
       girl.x + girl.displayWidth/2 : dialogBg.x;
@@ -694,26 +696,59 @@ export function setupGame(){
       dialogPriceContainer.add(dialogDrinkEmoji);
     }
     dialogDrinkEmoji.attachedTo = null;
-    resetPriceBox();
     dialogPriceContainer.alpha = 1;
-    dialogPriceLabel
-      .setStyle({fontSize:'14px'})
-      .setText(c.isDog?'Free':'Total Cost')
-      .setOrigin(1,0)
-      .setPosition(dialogPriceBox.width/2-5, -dialogPriceBox.height/2+5);
-    dialogPriceValue
-      .setStyle({fontSize: c.isDog ? '24px' : '32px'})
-      .setText(c.isDog ? 'Pup Cup' : receipt(totalCost))
-      .setColor('#000')
-      .setOrigin(0.5)
-      .setPosition(0, 15)
-      .setScale(1)
-      .setAlpha(1);
-    dialogDrinkEmoji
-      .setText(c.isDog?'🍨':emojiFor(c.orders[0].req))
-      .setPosition(-dialogPriceBox.width/2+23,-dialogPriceBox.height/2+23)
-      .setScale(1.2)
-      .setVisible(true);
+    if(c.isDog){
+      dialogPriceTicket.setVisible(false);
+      dialogPriceBox.setVisible(true);
+      resetPriceBox();
+      dialogPriceBox.width = 120;
+      dialogPriceBox.height = 80;
+      dialogPriceLabel
+        .setStyle({fontSize:'14px'})
+        .setText('Free')
+        .setOrigin(1,0)
+        .setPosition(dialogPriceBox.width/2-5, -dialogPriceBox.height/2+5)
+        .setVisible(true);
+      dialogPriceValue
+        .setStyle({fontSize:'24px'})
+        .setText('Pup Cup')
+        .setColor('#000')
+        .setOrigin(0.5)
+        .setPosition(0, 15)
+        .setScale(1)
+        .setAlpha(1);
+      dialogDrinkEmoji
+        .setText('🍨')
+        .setPosition(-dialogPriceBox.width/2+23,-dialogPriceBox.height/2+23)
+        .setScale(1.2)
+        .setVisible(true);
+    } else {
+      dialogPriceTicket.setVisible(true);
+      dialogPriceBox.setVisible(true);
+      dialogPriceBox.width = dialogPriceTicket.displayWidth;
+      dialogPriceBox.height = dialogPriceTicket.displayHeight;
+      if(dialogPriceBox.setFillStyle) dialogPriceBox.setFillStyle(0xffeeb5,0);
+      if(dialogPriceBox.setStrokeStyle) dialogPriceBox.setStrokeStyle(0,0);
+      dialogPriceLabel
+        .setStyle({fontSize:'14px'})
+        .setText('Total Cost')
+        .setOrigin(0.5)
+        .setPosition(0, dialogPriceBox.height/2 - 40)
+        .setVisible(true);
+      dialogPriceValue
+        .setStyle({fontSize:'32px'})
+        .setText(receipt(totalCost))
+        .setColor('#000')
+        .setOrigin(0.5)
+        .setPosition(0, dialogPriceBox.height/2 - 20)
+        .setScale(1)
+        .setAlpha(1);
+      dialogDrinkEmoji
+        .setText(emojiFor(c.orders[0].req))
+        .setPosition(0,-dialogPriceBox.height/4)
+        .setScale(2)
+        .setVisible(true);
+    }
 
     this.tweens.add({
       targets:[dialogBg, dialogText, dialogCoins],

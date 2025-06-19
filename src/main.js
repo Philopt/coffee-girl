@@ -539,6 +539,10 @@ export function setupGame(){
   }
 
   function showDialog(){
+    if (GameState.saleInProgress) {
+      // Defer showing the next order until the current sale animation finishes
+      return;
+    }
     if (typeof debugLog === 'function') {
       debugLog('showDialog start', GameState.queue.length, GameState.wanderers.length, GameState.activeCustomer);
     }
@@ -776,6 +780,9 @@ export function setupGame(){
 
   function handleAction(type){
     const current=GameState.activeCustomer;
+    if (current) {
+      GameState.saleInProgress = true;
+    }
     if ((type==='sell' || type==='give') && dialogDrinkEmoji && dialogPriceContainer && dialogPriceContainer.visible) {
       dialogDrinkEmoji.clearTint();
     }
@@ -906,6 +913,7 @@ export function setupGame(){
     GameState.activeCustomer=null;
 
     const finish=()=>{
+      GameState.saleInProgress = false;
       const exit=()=>{
         if(dialogDrinkEmoji && dialogDrinkEmoji.attachedTo === current.sprite){
           dialogDrinkEmoji.attachedTo = null;
@@ -1837,6 +1845,7 @@ export function setupGame(){
     Object.keys(GameState.customerMemory).forEach(k=>{ delete GameState.customerMemory[k]; });
     GameState.heartWin = null;
     GameState.servedCount=0;
+    GameState.saleInProgress = false;
     sideCAlpha=0;
     sideCFadeTween=null;
     GameState.gameOver=false;

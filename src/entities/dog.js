@@ -8,10 +8,11 @@ export const DOG_SPEED = 120; // base movement speed for the dog
 export const DOG_FAST_DISTANCE = 160; // accelerate when farther than this from owner
 export const DOG_TYPES = [
   // scale represents relative size compared to a customer sprite
-  { type: 'standard', emoji: '🐶', tint: 0xffbb99, scale: 0.6 },
-  { type: 'poodle',   emoji: '🐩', tint: 0xffc0cb, scale: 0.55 },
-  { type: 'guide',    emoji: '🦮', tint: 0x99ddff, scale: 0.5 },
-  { type: 'service',  emoji: '🐕‍🦺', tint: 0x996633, scale: 0.45 }
+  // all dogs are smaller; the largest is now the old "service" size
+  { type: 'standard', emoji: '🐶', tint: 0xff3333, scale: 0.4 },
+  { type: 'poodle',   emoji: '🐩', tint: 0x33ff99, scale: 0.37 },
+  { type: 'guide',    emoji: '🦮', tint: 0x3366ff, scale: 0.34 },
+  { type: 'service',  emoji: '🐕‍🦺', tint: 0xffff33, scale: 0.31 }
 ];
 
 export function scaleDog(d) {
@@ -44,19 +45,20 @@ export function updateDog(owner) {
   }
 
   const others = [...GameState.queue, ...GameState.wanderers].filter(c => c !== owner && c.sprite);
+  const birds = (GameState.sparrows || []).filter(b => b && b.sprite);
   if (dog.currentTween) {
     dog.currentTween.stop();
     dog.currentTween = null;
   }
   if (type !== 'service' && !dog.excited) {
-    const seen = others.find(o => Phaser.Math.Distance.Between(dog.x, dog.y, o.sprite.x, o.sprite.y) < 80);
+    const seen = birds.find(b => Phaser.Math.Distance.Between(dog.x, dog.y, b.sprite.x, b.sprite.y) < 80);
     if (seen) {
       dog.excited = true;
       const s = seen.sprite;
       const bark = this.add.sprite(dog.x, dog.y - 20, 'dog1', 3)
         .setOrigin(0.5)
         .setDepth(dog.depth + 1)
-        .setScale(dog.scaleX, dog.scaleY);
+        .setScale(Math.abs(dog.scaleX), Math.abs(dog.scaleY));
       this.tweens.add({
         targets: bark,
         y: '-=20',
@@ -84,6 +86,7 @@ export function updateDog(owner) {
       dog.currentTween = tl;
       dog.play && dog.play('dog_walk');
       tl.play();
+      scatterSparrows(this);
       return;
     }
   }
@@ -113,19 +116,22 @@ export function updateDog(owner) {
   if(owner === GameState.activeCustomer &&
      Phaser.Math.Distance.Between(dog.x, dog.y, ORDER_X, ORDER_Y) < 60 &&
      !dog.hasBarked){
-    dog.hasBarked = true;
-    const bark = this.add.sprite(dog.x, dog.y - 20, 'dog1', 3)
-      .setOrigin(0.5)
-      .setDepth(dog.depth + 1)
-      .setScale(dog.scaleX, dog.scaleY);
-    this.tweens.add({
-      targets: bark,
-      y: '-=20',
-      alpha: 0,
-      duration: dur(600),
-      onComplete: () => bark.destroy()
-    });
-    scatterSparrows(this);
+    const nearby = birds.find(b => Phaser.Math.Distance.Between(dog.x, dog.y, b.sprite.x, b.sprite.y) < 80);
+    if(nearby){
+      dog.hasBarked = true;
+      const bark = this.add.sprite(dog.x, dog.y - 20, 'dog1', 3)
+        .setOrigin(0.5)
+        .setDepth(dog.depth + 1)
+        .setScale(Math.abs(dog.scaleX), Math.abs(dog.scaleY));
+      this.tweens.add({
+        targets: bark,
+        y: '-=20',
+        alpha: 0,
+        duration: dur(600),
+        onComplete: () => bark.destroy()
+      });
+      scatterSparrows(this);
+    }
   }
 
   if (targetY < DOG_MIN_Y) targetY = DOG_MIN_Y;

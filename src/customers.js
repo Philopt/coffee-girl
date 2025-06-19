@@ -58,6 +58,9 @@ export function maxWanderers() {
 export function queueLimit(love) {
   // Queue capacity scales directly with the player's heart count: one slot for
   // every ten hearts. However, the queue can never hold more than five people
-  // at a time regardless of love level.
-  return Math.min(5, Math.floor(love / 10));
+  // at a time regardless of love level. If the player still has any hearts
+  // remaining, always allow at least one customer so the game can't soft-lock
+  // when love falls below ten.
+  const limit = Math.min(5, Math.floor((love || 0) / 10));
+  return love > 0 ? Math.max(1, limit) : limit;
 }

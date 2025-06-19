@@ -60,6 +60,20 @@ export function lureNextWanderer(scene, specific) {
     }
   });
 
+  // Defer luring new wanderers while a customer is switching places with
+  // their dog. This prevents the queue from rechecking and pulling the dog
+  // into line accidentally.
+  if (GameState.queue.some(q => q.waitingForDog ||
+      (q.isDog && q.owner && q.owner.waitingForDog))) {
+    if (typeof debugLog === 'function') {
+      debugLog('lureNextWanderer abort: dog switching');
+    }
+    if (scene && scene.time && scene.time.delayedCall) {
+      scene.time.delayedCall(250, () => lureNextWanderer(scene, specific), [], scene);
+    }
+    return;
+  }
+
   if (GameState.wanderers.length && GameState.queue.length < queueLimit()) {
     if (GameState.queue.some((c, i) => i > 0 && c.walkTween && c.walkTween.isPlaying)) {
       if (typeof debugLog === 'function') {
@@ -157,6 +171,13 @@ export function moveQueueForward() {
 }
 
 export function checkQueueSpacing(scene) {
+  // Avoid adjusting the line while a customer is waiting for their dog
+  // to order. This keeps the dog from being pulled into the queue by a
+  // recheck triggered by a new arrival.
+  if (GameState.queue.some(c => c.waitingForDog ||
+      (c.isDog && c.owner && c.owner.waitingForDog))) {
+    return;
+  }
   GameState.queue.forEach((cust, idx) => {
     const tx = idx === 0 ? ORDER_X : QUEUE_X - QUEUE_SPACING * (idx - 1);
     const ty = idx === 0 ? ORDER_Y : QUEUE_Y - QUEUE_OFFSET * (idx - 1);

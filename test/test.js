@@ -708,6 +708,42 @@ function testScheduleNextSpawn() {
   console.log('scheduleNextSpawn behavior test passed');
 }
 
+function testScheduleNextSpawnZeroLimit() {
+  const match = readAndMatch(
+    ['entities/customerQueue.js', 'customers.js', 'main.js'],
+    /(?:export\s+)?function scheduleNextSpawn\([^)]*\)[\s\S]*?\n\s*\}\n(?=\s*(?:export\s+)?function)/
+  );
+  if (!match) throw new Error('scheduleNextSpawn not found');
+  const code = match[0];
+  const context = {
+    falconActive: false,
+    spawnTimer: { removed: false, remove() { this.removed = true; } },
+    queue: [],
+    wanderers: [],
+    queueLimit: () => 0,
+    SPAWN_DELAY: 2000,
+    SPAWN_VARIANCE: 1500,
+    spawnCustomer: () => {},
+    Phaser: { Math: { Between: () => 0 } },
+    fn: null
+  };
+  loadGameState(context);
+  loadCustomerState(context);
+  vm.createContext(context);
+  vm.runInContext(code + '\nfn=scheduleNextSpawn;', context);
+  const scheduleNextSpawn = context.fn;
+  const scene = {
+    time: {
+      delayedCall() { scene.called = true; return { remove() {} }; }
+    }
+  };
+
+  scheduleNextSpawn(scene);
+  assert.strictEqual(context.spawnTimer, null, 'spawnTimer not cleared when limit zero');
+  assert.ok(!scene.called, 'timer scheduled when limit zero');
+  console.log('scheduleNextSpawn zero limit test passed');
+}
+
 function testSparrowRemovalOffscreen() {
   const srcPath = path.join(__dirname, '..', 'src', 'sparrow.js');
   let code = fs.readFileSync(srcPath, 'utf8');
@@ -1024,6 +1060,7 @@ async function run() {
     testShowDialogButtons();
     testAnimateLoveChange();
     testScheduleNextSpawn();
+    testScheduleNextSpawnZeroLimit();
     testSparrowRemovalOffscreen();
     testLureNextWandererQueueLimit();
     testShowEndRestart();

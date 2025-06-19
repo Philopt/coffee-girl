@@ -13,6 +13,9 @@ export const GameState = {
   loveLevel: 1,
   servedCount: 0,
   saleInProgress: false,
+  // True while an order dialog is visible. Used to avoid overlapping dialogs
+  // when the queue shifts during animations.
+  dialogActive: false,
   heartWin: null,
   girlReady: false,
   truck: null,

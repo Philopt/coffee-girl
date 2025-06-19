@@ -293,6 +293,13 @@ function curvedApproach(scene, sprite, dir, targetX, targetY, onComplete, speed 
 
 export function scheduleNextSpawn(scene) {
   if (GameState.falconActive) return;
+  if (queueLimit() <= 0) {
+    if (GameState.spawnTimer) {
+      GameState.spawnTimer.remove(false);
+      GameState.spawnTimer = null;
+    }
+    return;
+  }
   if (GameState.spawnTimer) {
     GameState.spawnTimer.remove(false);
   }

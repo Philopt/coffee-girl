@@ -1304,6 +1304,7 @@ export function setupGame(){
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
     cleanupHeartEmojis(scene);
+    cleanupDogs(scene);
     cleanupSparrows(scene);
     hideOverlayTexts();
     clearDialog.call(scene);

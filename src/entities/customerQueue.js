@@ -20,7 +20,7 @@ import { CustomerState } from '../constants.js';
 
 import { showDialog, Assets } from '../main.js';
 import { startWander, loopsForState } from './wanderers.js';
-import { DOG_TYPES, updateDog } from './dog.js';
+import { DOG_TYPES, updateDog, scaleDog } from './dog.js';
 
 
 // Slow down queue movement to match wander speed change
@@ -313,13 +313,13 @@ export function spawnCustomer() {
     const dogType = Phaser.Utils.Array.GetRandom(DOG_TYPES);
     const dog = this.add.sprite(startX + offsetX, startY + offsetY, 'dog1', 1)
       .setOrigin(0.5)
-      .setScale(distScale * 0.5)
-      .setDepth(3)
       .setTint(dogType.tint || 0xffffff);
+    dog.scaleFactor = dogType.scale || 0.6;
     dog.dir = 1;
     dog.prevX = dog.x;
     dog.dogType = dogType.type;
     dog.hasBarked = false;
+    scaleDog(dog);
     c.dog = dog;
 
     dog.followEvent = this.time.addEvent({

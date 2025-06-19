@@ -539,8 +539,9 @@ export function setupGame(){
   }
 
   function showDialog(){
-    if (GameState.saleInProgress) {
+    if (GameState.saleInProgress || GameState.dialogActive) {
       // Defer showing the next order until the current sale animation finishes
+      // or while another dialog is already visible
       return;
     }
     if (typeof debugLog === 'function') {
@@ -650,6 +651,7 @@ export function setupGame(){
     }
 
     dialogBg.setScale(0).setVisible(true);
+    GameState.dialogActive = true;
     dialogText.setScale(0);
     dialogCoins.setScale(0);
     // use a static bubble color to avoid expensive image analysis
@@ -741,6 +743,7 @@ export function setupGame(){
   }
 
   function clearDialog(keepPrice=false){
+    GameState.dialogActive = false;
     if(!keepPrice){
       dialogBg.setVisible(false);
       dialogText.setVisible(false);
@@ -1117,8 +1120,13 @@ export function setupGame(){
       t.setPosition(baseLeft + t.displayWidth/2, t.y);
       emphasizePrice(t);
       const ticketH = dialogPriceBox.height;
-      const centerX = ticket.x;
+      let centerX = ticket.x;
       let stampY = ticket.y;
+      if (ticket.getWorldTransformMatrix) {
+        const m = ticket.getWorldTransformMatrix();
+        centerX = m.tx;
+        stampY = m.ty;
+      }
       if (tip > 0) {
         stampY -= ticketH * 0.2;
       }

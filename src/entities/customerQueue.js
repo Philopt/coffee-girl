@@ -64,8 +64,10 @@ export function lureNextWanderer(scene, specific) {
       if (typeof debugLog === 'function') {
         debugLog('lureNextWanderer abort: walkTween active');
       }
+
       if (scene && scene.time && scene.time.delayedCall) {
         scene.time.delayedCall(250, () => lureNextWanderer(scene, specific), [], scene);
+
       }
       return;
     }

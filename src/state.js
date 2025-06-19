@@ -6,6 +6,7 @@ export const GameState = {
   wanderers: [],
   sparrows: [],
   spawnTimer: null,
+  lureRetry: null,
   sparrowSpawnEvent: null,
   falconActive: false,
   gameOver: false,

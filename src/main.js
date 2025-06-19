@@ -1268,7 +1268,7 @@ export function setupGame(){
             duration: dur(200),
             ease: 'Back.easeOut'
           });
-          countPrice(t, this, totalCost, totalCost + tip, oldLeft);
+          countPrice(t, this, totalCost, totalCost + tip, oldLeft, t.y);
           blinkPriceBorder(t, this, '#0f0', 6);
           // no scaling or flash animation for price text
         },[],this);
@@ -1340,7 +1340,6 @@ export function setupGame(){
         // raise the price above the stamp after the stamp lands
         this.time.delayedCall(dur(300), () => {
           t.setDepth(lossStamp.depth + 1);
-          blinkPriceBorder(t, this, '#f00', 6);
         }, [], this);
         this.time.delayedCall(dur(1000),()=>{
           lossStamp.setVisible(false);

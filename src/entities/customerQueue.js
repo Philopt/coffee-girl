@@ -21,6 +21,7 @@ import { CustomerState } from '../constants.js';
 import { showDialog, Assets } from '../main.js';
 import { startWander, loopsForState } from './wanderers.js';
 import { DOG_TYPES, updateDog, scaleDog } from './dog.js';
+import { setDepthFromBottom } from '../ui/helpers.js';
 
 
 // Slow down queue movement to match wander speed change
@@ -108,8 +109,7 @@ export function lureNextWanderer(scene, specific) {
     GameState.activeCustomer = GameState.queue[0];
     const targetX = ORDER_X;
     const targetY = ORDER_Y;
-    const bottomY = c.sprite.y + c.sprite.displayHeight * (1 - c.sprite.originY);
-    c.sprite.setDepth(5 + bottomY * 0.006);
+    setDepthFromBottom(c.sprite, 5);
     const dir = c.dir || (c.sprite.x < targetX ? 1 : -1);
     c.walkTween = curvedApproach(scene, c.sprite, dir, targetX, targetY, () => {
       c.walkTween = null;
@@ -321,8 +321,7 @@ export function spawnCustomer() {
   c.orders.push(order);
   c.atOrder = false;
   c.sprite = this.add.sprite(startX, startY, k).setScale(distScale);
-  const bottomYStart = startY + c.sprite.displayHeight * (1 - c.sprite.originY);
-  c.sprite.setDepth(5 + bottomYStart * 0.006);
+  setDepthFromBottom(c.sprite, 5);
   if (c.memory.state !== CustomerState.NORMAL) {
     c.heartEmoji = this.add.text(0, 0, HEART_EMOJIS[c.memory.state] || '', { font: '28px sans-serif' })
       .setOrigin(0.5)

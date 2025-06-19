@@ -25,7 +25,10 @@ import { DOG_TYPES, updateDog } from './dog.js';
 
 // Slow down queue movement to match wander speed change
 const CUSTOMER_SPEED = 560 / 12;
-const LURE_SPEED = CUSTOMER_SPEED * 0.6;
+// Customers should walk to the queue faster than they wander around.
+// Previously LURE_SPEED was slower (0.6x) which made walking up feel sluggish
+// and caused customers to lag behind their wander speed.
+const LURE_SPEED = CUSTOMER_SPEED * 1.5;
 const EDGE_TURN_BUFFER = 40;
 const HEART_EMOJIS = {
   [CustomerState.NORMAL]: null,
@@ -176,9 +179,11 @@ export function checkQueueSpacing(scene) {
         },
         idx === 0 ? CUSTOMER_SPEED : LURE_SPEED
       );
-      if (idx === 0) {
-        cust.walkTween = tween;
-      }
+      // Track the tween so future spacing checks don't interrupt it while
+      // the customer is already moving. Previously only the front customer
+      // stored its tween, which allowed new lures to trigger while others were
+      // still walking, causing jitter and occasional teleporting.
+      cust.walkTween = tween;
     }
   });
 }

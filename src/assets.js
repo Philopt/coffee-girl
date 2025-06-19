@@ -23,10 +23,14 @@ export function receipt(value){
 
 export function emojiFor(name){
   const n=name.toLowerCase();
-  if(n.includes('tea')) return '🍵';
-  if(n.includes('chocolate')) return '🍫';
-  if(n.includes('latte')||n.includes('mocha')||n.includes('espresso')) return '☕';
-  return '☕';
+  const iced = n.includes('iced') || n.includes('cold brew');
+  let base='☕';
+  if(n.includes('tea')) base='🍵';
+  else if(n.includes('chocolate')) base='🍫';
+  else if(n.includes('rose')) base='🌹';
+  else if(n.includes('pink')) base='🌸';
+  if(iced) return `🧊\n${base}`;
+  return base;
 }
 
 export function preload(){

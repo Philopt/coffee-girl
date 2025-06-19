@@ -1,6 +1,6 @@
 import { debugLog, DEBUG } from './debug.js';
 import { dur, scaleForY, articleFor, flashMoney, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_Y, DIALOG_Y } from "./ui.js";
-import { ORDER_X, ORDER_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel } from "./customers.js";
+import { ORDER_X, ORDER_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel, queueLimit } from "./customers.js";
 import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer } from './entities/customerQueue.js';
 import { baseConfig } from "./scene.js";
 import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from "./state.js";
@@ -216,11 +216,11 @@ export function setupGame(){
 
 
   function updateLevelDisplay(){
-    const newLevel=calcLoveLevel(GameState.love);
+    const newLength = queueLimit(GameState.love);
     if(queueLevelText){
-      queueLevelText.setText('Lv. '+newLevel);
-      queueLevelText.setVisible(newLevel>=2);
-      if(newLevel!==GameState.loveLevel && newLevel>=2){
+      queueLevelText.setText('Queue Length: '+newLength);
+      queueLevelText.setVisible(newLength>=2);
+      if(newLength!==GameState.loveLevel && newLength>=2){
         const sp=queueLevelText.scene.add.text(queueLevelText.x,queueLevelText.y,'✨',
             {font:'18px sans-serif',fill:'#000'})
           .setOrigin(0.5).setDepth(queueLevelText.depth+1);
@@ -228,7 +228,7 @@ export function setupGame(){
             duration:dur(600),onComplete:()=>sp.destroy()});
       }
     }
-    GameState.loveLevel=newLevel;
+    GameState.loveLevel=newLength;
       if(GameState.girlReady && queueLevelText && queueLevelText.scene){
         lureNextWanderer(queueLevelText.scene);
       }
@@ -295,7 +295,7 @@ export function setupGame(){
     loveText=this.add.text(20,50,'❤️ '+GameState.love,{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
     // Display level indicator on the left side of the order table so it doesn't
     // overlap the price ticket.
-    queueLevelText=this.add.text(156,316,'Lv. '+GameState.loveLevel,{font:'16px sans-serif',fill:'#000'})
+    queueLevelText=this.add.text(156,316,'Queue Length: '+queueLimit(GameState.love),{font:'16px sans-serif',fill:'#000'})
       .setOrigin(0.5).setDepth(1);
     updateLevelDisplay();
     // truck & girl

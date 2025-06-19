@@ -615,6 +615,7 @@ function testAnimateLoveChange() {
     lureNextWanderer: () => {},
     animateStatChange: () => {},
     calcLoveLevel(v) { if (v >= 100) return 4; if (v >= 50) return 3; if (v >= 20) return 2; return 1; },
+    queueLimit(v) { return Math.floor(v / 10); },
     updateLevelDisplay: null,
     dur: v => v,
     fn: null,
@@ -624,7 +625,7 @@ function testAnimateLoveChange() {
   loadCustomerState(context);
   vm.createContext(context);
   vm.runInContext(
-    'updateLevelDisplay = function(){ const lvl = calcLoveLevel(love); queueLevelText.setText("Lv. " + lvl); queueLevelText.setVisible(lvl >= 2); loveLevel = lvl; };',
+    'updateLevelDisplay = function(){ const len = queueLimit(love); queueLevelText.setText("Queue Length: " + len); queueLevelText.setVisible(len >= 2); loveLevel = len; };',
     context
   );
   vm.runInContext(funcSrc + '\nfn=animateLoveChange;', context);
@@ -638,13 +639,13 @@ function testAnimateLoveChange() {
 
   animateLoveChange.call(scene, 1, cust);
   assert.strictEqual(context.love, 20, 'love not incremented');
-  assert.strictEqual(context.queueLevelText.text, 'Lv. 2', 'queue level up not reflected');
-  assert.strictEqual(context.queueLevelText.visible, true, 'queue level text should be visible');
+  assert.strictEqual(context.queueLevelText.text, 'Queue Length: 2', 'queue length up not reflected');
+  assert.strictEqual(context.queueLevelText.visible, true, 'queue length text should be visible');
 
   animateLoveChange.call(scene, -2, cust);
   assert.strictEqual(context.love, 18, 'love not decremented');
-  assert.strictEqual(context.queueLevelText.text, 'Lv. 1', 'queue level down not reflected');
-  assert.strictEqual(context.queueLevelText.visible, false, 'queue level text should hide');
+  assert.strictEqual(context.queueLevelText.text, 'Queue Length: 1', 'queue length down not reflected');
+  assert.strictEqual(context.queueLevelText.visible, false, 'queue length text should hide');
   console.log('animateLoveChange update test passed');
 }
 

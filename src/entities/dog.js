@@ -9,6 +9,7 @@ export const DOG_SPEED = 120; // base movement speed for the dog
 export const DOG_FAST_DISTANCE = 160; // accelerate when farther than this from owner
 export const DOG_ROAM_RADIUS = 120; // how far a dog can wander from its owner
 export const DOG_COUNTER_RADIUS = 40; // distance to maintain when owner is ordering
+export const DOG_PAUSE_DISTANCE = 30; // distance from owner to pause following
 export const DOG_TYPES = [
   // scale represents relative size compared to a customer sprite
   // all dogs are smaller; the largest is now the old "service" size
@@ -38,6 +39,19 @@ export function updateDog(owner) {
   let targetX = ms.x, targetY = ms.y;
   const type = dog.dogType || 'standard';
   const atCounter = ms.x === ORDER_X && ms.y === ORDER_Y;
+  const ordering = owner === GameState.activeCustomer && atCounter;
+  if (ordering && dogDist <= DOG_PAUSE_DISTANCE) {
+    if (dog.currentTween) {
+      dog.currentTween.stop();
+      dog.currentTween = null;
+    }
+    if (dog.followEvent) {
+      dog.followEvent.remove(false);
+      dog.followEvent = null;
+    }
+    dog.setFrame(1);
+    return;
+  }
   if (atCounter) radius = DOG_COUNTER_RADIUS;
   if (type === 'service') {
     near = 30;

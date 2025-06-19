@@ -1327,12 +1327,14 @@ export function setupGame(){
         tl.add({targets:c.sprite,
                 x:targetX,
                 duration:dur(WALK_OFF_BASE/1.5),
-                onComplete:()=>{
-                  const ex=c.sprite.x, ey=c.sprite.y;
+                onStart:()=>{
                   if(c.dog){
-                    sendDogOffscreen.call(scene,c.dog,ex,ey);
+                    scene.tweens.killTweensOf(c.dog);
+                    sendDogOffscreen.call(scene,c.dog,targetX,c.sprite.y);
                     c.dog=null;
                   }
+                },
+                onComplete:()=>{
                   c.sprite.destroy();
                   remaining--;
                   if(remaining===0 && done) done();
@@ -1353,7 +1355,6 @@ export function setupGame(){
             const dy=girl.y+Math.sin(ang)*r;
             dTl.add({targets:dog,x:dx,y:dy,duration:dur(Phaser.Math.Between(200,350)),ease:'Sine.easeInOut'});
           }
-          dTl.add({targets:dog,x:targetX,y:dog.y,duration:dur(WALK_OFF_BASE/1.5),onComplete:()=>dog.destroy()});
           dTl.setCallback('onUpdate',()=>{
             if(dog.prevX===undefined) dog.prevX=dog.x;
             const dx=dog.x-dog.prevX;
@@ -1363,7 +1364,6 @@ export function setupGame(){
             dog.setScale(s*(dog.dir||1), s);
           });
           dTl.play();
-          c.dog=null;
         }
       });
       // keep references so restartGame can properly clean up any remaining
@@ -1380,6 +1380,8 @@ export function setupGame(){
       if(falcon) falcon.destroy();
       if(cb) cb();
     };
+    let piecesDone=0;
+    const tryEnd=()=>{ if(++piecesDone>=2) endAttack(); };
     panicCustomers();
 
     falcon=scene.add.sprite(-40,-40,'lady_falcon',0)
@@ -1395,9 +1397,9 @@ export function setupGame(){
       duration:dur(900),
       ease:'Cubic.easeIn',
       onComplete:()=>{
-        panicCustomers(endAttack);
+        panicCustomers(tryEnd);
         blinkAngry(scene);
-        const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:endAttack});
+        const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:tryEnd});
         for(let i=0;i<4;i++){
           tl.add({targets:falcon,y:targetY+10,duration:dur(80),yoyo:true});
           tl.add({targets:girl,y:girl.y+5,duration:dur(80),yoyo:true,

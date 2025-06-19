@@ -4,6 +4,7 @@ import { resumeWanderer } from './entities/wanderers.js';
 import { GameState } from './state.js';
 import { debugLog, DEBUG } from './debug.js';
 import { dur } from './ui.js';
+import { spawnSparrow } from './sparrow.js';
 
 let startOverlay=null;
 let startButton=null;
@@ -125,6 +126,9 @@ function showStartScreen(scene){
     startMsgTimers.forEach(t=>t.remove(false));
     startMsgTimers=[];
     startMsgBubbles=[];
+    for(let i=0;i<2;i++){
+      spawnSparrow(scene,{ground:true});
+    }
     const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
       if(startButton) startButton.destroy();
       if(startOverlay){startOverlay.destroy(); startOverlay=null;}

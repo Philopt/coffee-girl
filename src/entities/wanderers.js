@@ -45,7 +45,8 @@ export function startWander(scene, c, targetX, exitAfter){
   const startY=c.sprite.y;
   const amp = Phaser.Math.Between(15,30);
   const freq = Phaser.Math.FloatBetween ? Phaser.Math.FloatBetween(1.5,4.5) : Phaser.Math.Between(15,45)/10;
-  const walkDuration = Phaser.Math.Between(5000,7000);
+  // Slower wander speed now that the line is working
+  const walkDuration = Phaser.Math.Between(10000,14000);
   c.walkData={startX,startY,targetX,amp,freq,duration:walkDuration,exitAfter};
   c.walkTween = scene.tweens.add({targets:c.sprite,x:targetX,duration:dur(walkDuration),
     onUpdate:(tw,t)=>{

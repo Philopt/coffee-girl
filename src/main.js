@@ -79,6 +79,29 @@ export function setupGame(){
     },[],scene);
   }
 
+  function countPrice(text, scene, from, to, baseLeft, baseY=15){
+    if(!text || !scene) return;
+    const duration = dur(400);
+    if(scene.tweens && scene.tweens.addCounter){
+      scene.tweens.addCounter({
+        from,
+        to,
+        duration,
+        onUpdate:tween=>{
+          text.setText(receipt(tween.getValue()));
+          text.setPosition(baseLeft + text.displayWidth/2, baseY);
+        },
+        onComplete:()=>{
+          text.setText(receipt(to));
+          text.setPosition(baseLeft + text.displayWidth/2, baseY);
+        }
+      });
+    } else {
+      text.setText(receipt(to));
+      text.setPosition(baseLeft + text.displayWidth/2, baseY);
+    }
+  }
+
   function cleanupFloatingEmojis(){
     floatingEmojis.slice().forEach(e=>{
       if(e && e.destroy) e.destroy();
@@ -1183,7 +1206,7 @@ export function setupGame(){
       const baseLeft = t.x - t.displayWidth/2;
       t.setText(receipt(totalCost));
       t.setPosition(baseLeft + t.displayWidth/2, t.y);
-      emphasizePrice(t);
+      // Price border will blink; no additional flash needed
       const ticketH = dialogPriceBox.height;
       let centerX = ticket.x;
       let stampY = ticket.y;
@@ -1217,11 +1240,7 @@ export function setupGame(){
       }, [], this);
       t.setPosition(t.x, 15);
 
-      const flashPrice=()=>{
-        const oy=t.y;
-        this.tweens.add({targets:t,y:oy-30,duration:dur(100),yoyo:true});
-      };
-      flashPrice();
+      // Removed flashing movement of the price text
 
       let delay=dur(300);
       if(tip>0){
@@ -1242,12 +1261,9 @@ export function setupGame(){
             duration: dur(200),
             ease: 'Back.easeOut'
           });
-          t.setText(receipt(totalCost + tip));
-          t.setPosition(oldLeft + t.displayWidth/2, t.y);
-          emphasizePrice(t);
+          countPrice(t, this, totalCost, totalCost + tip, oldLeft);
           blinkPriceBorder(t, this, '#0f0', 6);
-          this.tweens.add({targets:t, scale:1.1, duration:dur(120), yoyo:true});
-          flashPrice();
+          // no scaling or flash animation for price text
         },[],this);
         delay+=dur(300);
       } else {

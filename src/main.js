@@ -9,7 +9,9 @@ import { CustomerState } from './constants.js';
 import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows } from './sparrow.js';
 import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog, dogTruckRuckus } from './entities/dog.js';
 import { startWander } from './entities/wanderers.js';
-import { flashBorder, flashFill, blinkButton, applyRandomSkew, blinkPriceBorder, setDepthFromBottom } from './ui/helpers.js';
+
+import { flashBorder, flashFill, blinkButton, applyRandomSkew, emphasizePrice, setDepthFromBottom } from './ui/helpers.js';
+
 import { keys, requiredAssets, preload as preloadAssets, receipt, emojiFor } from './assets.js';
 import { showStartScreen, playIntro } from './intro.js';
 
@@ -429,7 +431,7 @@ export function setupGame(){
 
     dialogPriceLabel=this.add.text(0,-15,'',{font:'14px sans-serif',fill:'#000',align:'center'})
       .setOrigin(0.5);
-    dialogPriceValue=this.add.text(0,15,'',{font:'40px sans-serif',fill:'#000'})
+    dialogPriceValue=this.add.text(-5,20,'',{font:'40px sans-serif',fill:'#000'})
       .setOrigin(0.5);
     dialogDrinkEmoji=this.add.text(-30,-20,'',{font:'24px sans-serif'})
       .setOrigin(0.5);
@@ -771,11 +773,11 @@ export function setupGame(){
         .setText(receipt(totalCost))
         .setColor('#006400')
         .setOrigin(0.5)
-        .setScale(1)
+        .setScale(0.9)
         .setAlpha(1);
       priceValueYOffset = dialogPriceBox.height/2 - 34;
       const orderEmoji = emojiFor(c.orders[0].req);
-      dialogPriceValue.setPosition(0, priceValueYOffset);
+      dialogPriceValue.setPosition(-5, priceValueYOffset + 5);
       dialogDrinkEmoji
         .setText(orderEmoji)
         .setLineSpacing(orderEmoji.includes('\n') ? -8 : 0)
@@ -868,6 +870,36 @@ export function setupGame(){
 
   }
 
+  function flingTicketEmojiToCustomer(target){
+    if(!dialogDrinkEmoji || !dialogPriceContainer || !dialogPriceContainer.visible || !target) return;
+    let worldX = dialogDrinkEmoji.x;
+    let worldY = dialogDrinkEmoji.y;
+    if(dialogDrinkEmoji.getWorldTransformMatrix){
+      const m = dialogDrinkEmoji.getWorldTransformMatrix();
+      worldX = m.tx;
+      worldY = m.ty;
+    }
+    if(dialogDrinkEmoji.parentContainer){
+      dialogPriceContainer.remove(dialogDrinkEmoji);
+      this.add.existing(dialogDrinkEmoji);
+    }
+    dialogDrinkEmoji.setPosition(worldX, worldY);
+    dialogDrinkEmoji.attachedTo = null;
+    this.tweens.add({
+      targets: dialogDrinkEmoji,
+      x: target.x + DRINK_HOLD_OFFSET.x,
+      y: target.y + DRINK_HOLD_OFFSET.y,
+      scale: 0,
+      alpha: 0,
+      duration: dur(300),
+      ease: 'Cubic.easeIn',
+      onComplete: () => {
+        dialogDrinkEmoji.setVisible(false);
+        dialogDrinkEmoji.setScale(2).setAlpha(1);
+      }
+    });
+  }
+
   function handleAction(type){
     const current=GameState.activeCustomer;
     if (current) {
@@ -875,6 +907,7 @@ export function setupGame(){
     }
     if ((type==='sell' || type==='give') && dialogDrinkEmoji && dialogPriceContainer && dialogPriceContainer.visible) {
       dialogDrinkEmoji.clearTint();
+      flingTicketEmojiToCustomer.call(this, current ? current.sprite : null);
     }
     if(current){
       const bubbleObjs=[];
@@ -1253,7 +1286,7 @@ export function setupGame(){
           dialogPriceValue.setPosition(m.tx, m.ty);
         }
         t.setDepth(paidStamp.depth + 1);
-        blinkPriceBorder(t, this, '#0f0', 6);
+        // Removed blinkPriceBorder; no need to flash the price text
       }, [], this);
       // Removed flashing movement of the price text
 
@@ -1277,7 +1310,7 @@ export function setupGame(){
             ease: 'Back.easeOut'
           });
           countPrice(t, this, totalCost, totalCost + tip, oldLeft, t.y);
-          blinkPriceBorder(t, this, '#0f0', 6);
+          // Removed blinkPriceBorder; price text stays static
           // no scaling or flash animation for price text
         },[],this);
         delay+=dur(300);
@@ -1300,7 +1333,7 @@ export function setupGame(){
           onStart:()=>{
             if(!dialogPriceValue.parentContainer){
               ticket.add(dialogPriceValue);
-              dialogPriceValue.setPosition(0, priceValueYOffset);
+              dialogPriceValue.setPosition(-5, priceValueYOffset + 5);
             }
             flashBorder(dialogPriceBox,this,0x00ff00);
             flashFill(dialogPriceBox,this,0x00ff00);
@@ -1372,7 +1405,7 @@ export function setupGame(){
             onStart:()=>{
               if(!dialogPriceValue.parentContainer){
                 ticket.add(dialogPriceValue);
-                dialogPriceValue.setPosition(0, priceValueYOffset);
+                  dialogPriceValue.setPosition(-5, priceValueYOffset + 5);
               }
               if(this.tweens && typeof dialogPriceBox !== 'undefined' && dialogPriceBox){
                 this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});
@@ -1593,8 +1626,8 @@ export function setupGame(){
                 onStart:()=>{
                   if(c.dog){
                     scene.tweens.killTweensOf(c.dog);
-                    sendDogOffscreen.call(scene,c.dog,targetX,c.sprite.y);
-                    c.dog=null;
+                    if(c.dog.followEvent) c.dog.followEvent.remove(false);
+                    // keep the dog on screen to bark at the falcon
                   }
                 },
                 onComplete:()=>{

@@ -78,6 +78,9 @@ When you choose to sell or give a drink, the button briefly blinks.
 After the animation finishes, the button automatically becomes
 clickable again so you can quickly serve the next customer.
 
+The price text used to flash green when a sale completed. That effect
+has been removed so the amount simply updates without flashing.
+
 ## Menu
 
 Customers can now order any of the following drinks:

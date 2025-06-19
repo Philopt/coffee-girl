@@ -110,15 +110,6 @@ export function lureNextWanderer(scene, specific) {
       c.walkTween = null;
       registerArrival(scene, c);
     }, LURE_SPEED);
-    if (c.dogCustomer) {
-      const dogIdx = GameState.queue.length - 1;
-      const dx = ORDER_X;
-      const dy = ORDER_Y;
-      c.dogCustomer.sprite.setDepth(5 + bottomY * 0.006);
-      c.dogCustomer.walkTween = curvedApproach(scene, c.dogCustomer.sprite, dir, dx, dy, () => {
-        c.dogCustomer.walkTween = null;
-      }, LURE_SPEED);
-    }
     if (typeof checkQueueSpacing === 'function') checkQueueSpacing(scene);
   }
 }
@@ -367,7 +358,6 @@ export function spawnCustomer() {
     };
     dog.dogCustomer = dogCust;
     c.dogCustomer = dogCust;
-    GameState.wanderers.push(dogCust);
   }
   const insideX = dir === 1 ? 480 - EDGE_TURN_BUFFER : EDGE_TURN_BUFFER;
   const firstTarget = c.loopsRemaining > 0 ? insideX : exitX;

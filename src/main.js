@@ -423,8 +423,8 @@ export function setupGame(){
 
 
     // helper to create a rounded rectangle button with consistent sizing
-    const createButton=(x,label,iconChar,iconSize,color,handler)=>{
-      const width=BUTTON_WIDTH, height=BUTTON_HEIGHT, radius=8;
+    const createButton=(x,label,iconChar,iconSize,color,handler,width=BUTTON_WIDTH,height=BUTTON_HEIGHT)=>{
+      const radius=8;
       const g=this.add.graphics();
       // Graphics objects do not support setShadow. Draw a simple shadow
       // manually by rendering a darker rect slightly offset behind the button.
@@ -458,11 +458,13 @@ export function setupGame(){
 
     // buttons evenly spaced
 
-    btnSell=createButton(80,'SELL','💵',32,0x006400,()=>handleAction.call(this,'sell'));
+    // Arrange buttons: Refuse on the left, Sell in the middle (largest), Give on the right
+    btnRef=createButton(80,'REFUSE','✋',32,0x800000,()=>handleAction.call(this,'refuse'));
+    // Make the Sell button wider so it stands out
+    btnSell=createButton(240,'SELL','💵',36,0x006400,()=>handleAction.call(this,'sell'), BUTTON_WIDTH*1.3, BUTTON_HEIGHT);
     // The "Give" button should stand out from the sell/refuse buttons. Use a
     // softer pastel pink so it is noticeable without being overwhelming.
-    btnGive=createButton(240,'GIVE','💝',28,0xffb6c1,()=>handleAction.call(this,'give'));
-    btnRef=createButton(400,'REFUSE','✋',32,0x800000,()=>handleAction.call(this,'refuse'));
+    btnGive=createButton(400,'GIVE','💝',28,0xffb6c1,()=>handleAction.call(this,'give'));
 
 
     // sliding report texts

@@ -95,16 +95,10 @@ export function lureNextWanderer(scene, specific) {
     c.arrived = false;
     c.arrivalTime = 0;
     GameState.queue.push(c);
-    if (c.dogCustomer) {
-      const d = c.dogCustomer;
-      const di = GameState.wanderers.indexOf(d);
-      if (di !== -1) GameState.wanderers.splice(di, 1);
-      if (d.followEvent) { d.followEvent.remove(false); d.followEvent = null; }
-      d.atOrder = false;
-      d.arrived = false;
-      d.arrivalTime = 0;
-      GameState.queue.push(d);
-    }
+
+    // Dogs no longer wait in the queue. They stay near their owner until
+    // the owner reaches the counter.
+
     if (typeof debugLog === 'function') debugLog('customer lured to queue');
     GameState.activeCustomer = GameState.queue[0];
     const targetX = ORDER_X;

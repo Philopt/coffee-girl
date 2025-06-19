@@ -93,6 +93,14 @@ export function lureNextWanderer(scene, specific) {
     const idx = GameState.queue.length;
     c.atOrder = false;
     GameState.queue.push(c);
+    if (c.dogCustomer) {
+      const d = c.dogCustomer;
+      const di = GameState.wanderers.indexOf(d);
+      if (di !== -1) GameState.wanderers.splice(di, 1);
+      if (d.followEvent) { d.followEvent.remove(false); d.followEvent = null; }
+      d.atOrder = false;
+      GameState.queue.push(d);
+    }
     if (typeof debugLog === 'function') debugLog('customer lured to queue');
     GameState.activeCustomer = GameState.queue[0];
     const targetX = idx === 0 ? ORDER_X : QUEUE_X - QUEUE_SPACING * (idx - 1);
@@ -110,6 +118,15 @@ export function lureNextWanderer(scene, specific) {
         showDialog.call(scene);
       }
     }, LURE_SPEED);
+    if (c.dogCustomer) {
+      const dogIdx = GameState.queue.length - 1;
+      const dx = QUEUE_X - QUEUE_SPACING * (dogIdx - 1);
+      const dy = QUEUE_Y - QUEUE_OFFSET * (dogIdx - 1);
+      c.dogCustomer.sprite.setDepth(5 + bottomY * 0.006);
+      c.dogCustomer.walkTween = curvedApproach(scene, c.dogCustomer.sprite, dir, dx, dy, () => {
+        c.dogCustomer.walkTween = null;
+      }, LURE_SPEED);
+    }
     if (typeof checkQueueSpacing === 'function') checkQueueSpacing(scene);
   }
 }
@@ -327,6 +344,22 @@ export function spawnCustomer() {
       loop: true,
       callback: () => { if (typeof updateDog === 'function') updateDog.call(this, c); }
     });
+
+    const dogCust = {
+      sprite: dog,
+      spriteKey: 'dog1',
+      orders: [{ coins: 1, req: 'Pup Cup', price: 1.00, qty: 1 }],
+      dir: c.dir,
+      memory: { state: CustomerState.NORMAL },
+      atOrder: false,
+      isDog: true,
+      owner: c,
+      walkTween: null,
+      pauseEvent: null
+    };
+    dog.dogCustomer = dogCust;
+    c.dogCustomer = dogCust;
+    GameState.wanderers.push(dogCust);
   }
   const insideX = dir === 1 ? 480 - EDGE_TURN_BUFFER : EDGE_TURN_BUFFER;
   const firstTarget = c.loopsRemaining > 0 ? insideX : exitX;

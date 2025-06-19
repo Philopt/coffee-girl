@@ -51,7 +51,8 @@ export function updateDog(owner) {
     dog.currentTween = null;
   }
   if (type !== 'service' && !dog.excited) {
-    const seen = birds.find(b => Phaser.Math.Distance.Between(dog.x, dog.y, b.sprite.x, b.sprite.y) < 80);
+    const seenBird = birds.find(b => Phaser.Math.Distance.Between(dog.x, dog.y, b.sprite.x, b.sprite.y) < 80);
+    const seen = seenBird || others.find(o => Phaser.Math.Distance.Between(dog.x, dog.y, o.sprite.x, o.sprite.y) < 80);
     if (seen) {
       dog.excited = true;
       const s = seen.sprite;
@@ -97,7 +98,7 @@ export function updateDog(owner) {
         dog.play('dog_walk');
       }
       tl.play();
-      scatterSparrows(this);
+      if (seenBird) scatterSparrows(this);
       return;
     }
   }
@@ -108,7 +109,7 @@ export function updateDog(owner) {
         const ang = Phaser.Math.Angle.Between(o.sprite.x, o.sprite.y, dog.x, dog.y);
         targetX = dog.x + Math.cos(ang) * (near - d);
         targetY = dog.y + Math.sin(ang) * (near - d);
-        dog.restUntil = this.time.now + Phaser.Math.Between(5000, 10000);
+        dog.restUntil = this.time.now + Phaser.Math.Between(2000, 4000);
         break;
       }
     }
@@ -118,7 +119,7 @@ export function updateDog(owner) {
       const offsetY = Phaser.Math.Between(10, 20);
       targetX = ms.x + offsetX;
       targetY = ms.y + offsetY;
-      dog.restUntil = this.time.now + Phaser.Math.Between(5000, 10000);
+      dog.restUntil = this.time.now + Phaser.Math.Between(2000, 4000);
     }
   } else {
     dog.restUntil = 0;

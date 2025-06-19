@@ -33,7 +33,7 @@ function randomTarget(scene){
         const top = truck.getTopCenter();
         const y = top.y + 25 * truck.scaleY;
         const left = truck.x - truck.displayWidth / 2 + 40 * truck.scaleX;
-        const right = truck.x + truck.displayWidth / 2 - 25 * truck.scaleX;
+        const right = truck.x + truck.displayWidth / 2 - 33 * truck.scaleX;
         return new Phaser.Math.Vector2(
           Phaser.Math.Between(left, right),
           y
@@ -77,7 +77,7 @@ export class Sparrow {
       const top = truck.getTopCenter();
       const y = top.y + 25 * truck.scaleY;
       const left = truck.x - truck.displayWidth / 2 + 40 * truck.scaleX;
-      const right = truck.x + truck.displayWidth / 2 - 25 * truck.scaleX;
+      const right = truck.x + truck.displayWidth / 2 - 33 * truck.scaleX;
       const x = Phaser.Math.Between(left, right);
       this.target.set(x, y);
     } else {
@@ -183,7 +183,7 @@ export class Sparrow {
           const roofY = top.y + 25 * truck.scaleY;
           if(Math.abs(this.sprite.y - roofY) < 3){
             const left = truck.x - truck.displayWidth / 2 + 40 * truck.scaleX;
-            const right = truck.x + truck.displayWidth / 2 - 25 * truck.scaleX;
+            const right = truck.x + truck.displayWidth / 2 - 33 * truck.scaleX;
             targetX = Phaser.Math.Clamp(targetX, left, right);
           }
         }
@@ -207,7 +207,7 @@ export class Sparrow {
       const roofY = top.y + 25 * truck.scaleY;
       if(Math.abs(this.sprite.y - roofY) < 5){
         const left = truck.x - truck.displayWidth / 2 + 40 * truck.scaleX;
-        const right = truck.x + truck.displayWidth / 2 - 25 * truck.scaleX;
+        const right = truck.x + truck.displayWidth / 2 - 33 * truck.scaleX;
         this.sprite.x = Phaser.Math.Clamp(this.sprite.x, left, right);
       }
     }

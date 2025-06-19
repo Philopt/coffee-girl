@@ -1593,8 +1593,8 @@ export function setupGame(){
                 onStart:()=>{
                   if(c.dog){
                     scene.tweens.killTweensOf(c.dog);
-                    sendDogOffscreen.call(scene,c.dog,targetX,c.sprite.y);
-                    c.dog=null;
+                    if(c.dog.followEvent) c.dog.followEvent.remove(false);
+                    // keep the dog on screen to bark at the falcon
                   }
                 },
                 onComplete:()=>{

@@ -127,9 +127,9 @@ export function setupGame(){
   }
 
 
-  function fadeInButtons(canAfford){
+  function fadeInButtons(canSell){
     const buttons = [];
-    if (canAfford) buttons.push(btnSell);
+    if (canSell) buttons.push(btnSell);
     buttons.push(btnGive, btnRef);
     buttons.forEach(b => {
       b.setAlpha(0).setVisible(true);
@@ -139,8 +139,8 @@ export function setupGame(){
       targets: buttons,
       alpha: 1,
       duration: dur(150),
-      onComplete: () => {
-        if (canAfford && btnSell.input) btnSell.input.enabled = true;
+        onComplete: () => {
+          if (canSell && btnSell.input) btnSell.input.enabled = true;
         if (btnGive.input) btnGive.input.enabled = true;
         if (btnRef.input) btnRef.input.enabled = true;
       }
@@ -608,8 +608,9 @@ export function setupGame(){
       .setText(wantLine)
       .setVisible(true);
 
-    const totalCost=c.isDog?0:c.orders.reduce((s,o)=>s+o.price*o.qty,0);
-    const canAfford = c.isDog ? true : (c.orders[0].coins >= totalCost);
+      const totalCost=c.isDog?0:c.orders.reduce((s,o)=>s+o.price*o.qty,0);
+      const canAfford = c.isDog ? true : (c.orders[0].coins >= totalCost);
+      const canSell = !c.isDog && canAfford;
     let coinLine='';
     if(!c.isDog){
       if (canAfford) {
@@ -707,9 +708,9 @@ export function setupGame(){
             ease:'Sine.easeOut',
             onComplete:()=>{
               if (typeof fadeInButtons === 'function') {
-                fadeInButtons.call(this, canAfford);
+                fadeInButtons.call(this, canSell);
               } else {
-                if (canAfford) {
+                if (canSell) {
                   btnSell.setVisible(true);
                   if (btnSell.input) btnSell.input.enabled = true;
                 } else {
@@ -785,7 +786,7 @@ export function setupGame(){
       if(typeof dialogCoins!=='undefined') bubbleObjs.push(dialogCoins);
       const ticket = typeof dialogPriceContainer!=='undefined' ? dialogPriceContainer : null;
       if(this.tweens && (bubbleObjs.length || ticket)){
-        if(type==='refuse' || (type==='give' && current.isDog)){
+        if(type==='refuse'){
           if(dialogBg.setTint) dialogBg.setTint(0xff0000);
           if(dialogText.setColor) dialogText.setColor('#f00');
           if(dialogCoins.setColor) dialogCoins.setColor('#f00');
@@ -861,8 +862,12 @@ export function setupGame(){
     }
     if(current.heartEmoji){ current.heartEmoji.destroy(); current.heartEmoji=null; }
     if(memory.state !== CustomerState.NORMAL && current.sprite){
-      current.heartEmoji = current.sprite.scene.add.text(0,0,HEART_EMOJIS[memory.state]||'',{font:'28px sans-serif'})
+      const hy = current.sprite.y + current.sprite.displayHeight * 0.30;
+      const hs = scaleForY(current.sprite.y) * 0.8;
+      current.heartEmoji = current.sprite.scene.add.text(current.sprite.x, hy, HEART_EMOJIS[memory.state]||'',{font:'28px sans-serif'})
         .setOrigin(0.5)
+        .setScale(hs)
+        .setDepth(current.sprite.depth+1)
         .setShadow(0, 0, '#000', 4);
     }
 

@@ -1,22 +1,20 @@
 import { debugLog, DEBUG } from './debug.js';
 import { dur, scaleForY, articleFor, flashMoney, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_Y, DIALOG_Y } from "./ui.js";
 import { ORDER_X, ORDER_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel } from "./customers.js";
-import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer, queueLimit } from './entities/customerQueue.js';
+import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer } from './entities/customerQueue.js';
 import { baseConfig } from "./scene.js";
 import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from "./state.js";
 import { CustomerState } from './constants.js';
 
 import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows } from './sparrow.js';
-import { DOG_TYPES, updateDog, sendDogOffscreen, scaleDog, cleanupDogs } from './entities/dog.js';
-import { startWander, resumeWanderer } from './entities/wanderers.js';
+import { DOG_TYPES, sendDogOffscreen, scaleDog, cleanupDogs } from './entities/dog.js';
+import { startWander } from './entities/wanderers.js';
 import { flashBorder, flashFill, blinkButton, applyRandomSkew, emphasizePrice, blinkPriceBorder } from './ui/helpers.js';
-import { keys, requiredAssets, genzSprites, preload as preloadAssets, receipt, emojiFor } from './assets.js';
+import { keys, requiredAssets, preload as preloadAssets, receipt, emojiFor } from './assets.js';
 import { showStartScreen, playIntro } from './intro.js';
 
 export let Assets, Scene, Customers, config;
 export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;
-// Customers move slower now that the line works better
-const CUSTOMER_SPEED = 560 / 12; // pixels per second for wanderers and queue
 // Minimum duration when a customer dashes to the table
 const DART_MIN_DURATION = 300;
 // Maximum speed (pixels per second) when dashing to the table

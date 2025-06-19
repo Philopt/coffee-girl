@@ -9,7 +9,7 @@ import { CustomerState } from './constants.js';
 import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows } from './sparrow.js';
 import { DOG_TYPES, updateDog, sendDogOffscreen, scaleDog, cleanupDogs } from './entities/dog.js';
 import { startWander, resumeWanderer } from './entities/wanderers.js';
-import { flashBorder, flashFill, blinkButton, applyRandomSkew, emphasizePrice } from './ui/helpers.js';
+import { flashBorder, flashFill, blinkButton, applyRandomSkew, emphasizePrice, blinkPriceBorder } from './ui/helpers.js';
 import { keys, requiredAssets, genzSprites, preload as preloadAssets, receipt, emojiFor } from './assets.js';
 import { showStartScreen, playIntro } from './intro.js';
 
@@ -1007,6 +1007,7 @@ export function setupGame(){
       // raise the price above the stamp after the stamp lands
       this.time.delayedCall(dur(300), () => {
         t.setDepth(paidStamp.depth + 1);
+        blinkPriceBorder(t, this);
       }, [], this);
       t.setPosition(t.x, 15);
 
@@ -1019,21 +1020,27 @@ export function setupGame(){
       let delay=dur(300);
       if(tip>0){
         this.time.delayedCall(delay,()=>{
-          const ticketH = dialogPriceBox.height;
-          const tipX = ticket.x;
-          const tipY = ticket.y + ticketH * 0.2;
           const oldLeft = t.x - t.displayWidth/2;
           const randFloat2 = Phaser.Math.FloatBetween || ((a,b)=>Phaser.Math.Between(a*1000,b*1000)/1000);
           tipText
             .setText('TIP')
             .setScale(1.3 + randFloat2(-0.1, 0.1))
-            .setPosition(tipX + Phaser.Math.Between(-3,3), tipY + Phaser.Math.Between(-3,3))
+            .setPosition(paidStamp.x, paidStamp.y)
             .setAngle(Phaser.Math.Between(-15,15))
             .setVisible(true);
           skewFn(tipText);
+          this.tweens.add({
+            targets: tipText,
+            x: t.x,
+            y: t.y,
+            duration: dur(200),
+            ease: 'Back.easeOut'
+          });
           t.setText(receipt(totalCost + tip));
           t.setPosition(oldLeft + t.displayWidth/2, t.y);
           emphasizePrice(t);
+          blinkPriceBorder(t, this);
+          this.tweens.add({targets:t, scale:1.1, duration:dur(120), yoyo:true});
           flashPrice();
         },[],this);
         delay+=dur(300);

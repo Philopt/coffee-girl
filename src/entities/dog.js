@@ -25,7 +25,7 @@ export function scaleDog(d) {
   const s = scaleForY(d.y) * factor;
   const dir = d.dir || 1;
   d.setScale(s * dir, s);
-  setDepthFromBottom(d, 3);
+  setDepthFromBottom(d, 5);
 }
 
 // Keep the dog positioned near its owner and react to other customers.
@@ -189,7 +189,7 @@ export function updateDog(owner) {
       t.prevX = t.x;
       const s = scaleForY(t.y) * (t.scaleFactor || 0.6);
       t.setScale(s * (t.dir || 1), s);
-      setDepthFromBottom(t, 3);
+      setDepthFromBottom(t, 5);
       if (dog.heartEmoji && dog.heartEmoji.scene && dog.heartEmoji.active) {
         const hy = t.y + t.displayHeight * 0.30;
         const hs = scaleForY(t.y) * 0.8;
@@ -231,7 +231,7 @@ export function sendDogOffscreen(dog, x, y) {
       t.prevX = t.x;
       const s = scaleForY(t.y) * (t.scaleFactor || 0.6);
       t.setScale(s * (t.dir || 1), s);
-      setDepthFromBottom(t, 3);
+      setDepthFromBottom(t, 5);
       if (dog.heartEmoji && dog.heartEmoji.scene && dog.heartEmoji.active) {
         const hy = t.y + t.displayHeight * 0.30;
         const hs = scaleForY(t.y) * 0.8;

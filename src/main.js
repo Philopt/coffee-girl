@@ -979,7 +979,22 @@ export function setupGame(){
         dogCust.arrivalTime = this.time ? this.time.now : Date.now();
         GameState.queue.unshift(dogCust);
         const waitX = ORDER_X + 50;
-        this.tweens.add({targets:sprite, x:waitX, duration:dur(300)});
+        this.tweens.add({
+          targets: sprite,
+          x: waitX,
+          duration: dur(300),
+          onUpdate: (tw, t) => {
+            if (current.heartEmoji) {
+              const hy = t.y + t.displayHeight * 0.30;
+              const hs = scaleForY(t.y) * 0.8;
+              current.heartEmoji
+                .setPosition(t.x, hy)
+                .setScale(hs)
+                .setDepth(t.depth + 1)
+                .setShadow(0, 0, '#000', 4);
+            }
+          }
+        });
         current.waitingForDog = true;
         current.exitHandler = exit;
         GameState.activeCustomer = dogCust;

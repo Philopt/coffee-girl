@@ -180,6 +180,7 @@ export function setupGame(){
       btnSell, btnGive, btnRef;
   let reportLine1, reportLine2, reportLine3, tipText;
   let paidStamp, lossStamp;
+  let priceValueYOffset = 15;
   let truck, girl;
   let sideCText;
   let sideCAlpha=0;
@@ -757,8 +758,10 @@ export function setupGame(){
       dialogPriceLabel.setVisible(false);
       dialogPriceValue.setVisible(false);
       dialogDrinkEmoji
+
         .setText('')
         .setVisible(false);
+
     } else {
       dialogPupCup.setVisible(false);
       dialogPriceTicket.setVisible(true);
@@ -771,11 +774,14 @@ export function setupGame(){
         .setText(receipt(totalCost))
         .setColor('#000')
         .setOrigin(0.5)
-        .setPosition(0, dialogPriceBox.height/2 - 24)
         .setScale(1)
         .setAlpha(1);
+      priceValueYOffset = dialogPriceBox.height/2 - 24;
+      const orderEmoji = emojiFor(c.orders[0].req);
+      dialogPriceValue.setPosition(0, priceValueYOffset);
       dialogDrinkEmoji
-        .setText(emojiFor(c.orders[0].req))
+        .setText(orderEmoji)
+        .setLineSpacing(orderEmoji.includes('\n') ? -8 : 0)
         .setPosition(0,-dialogPriceBox.height/4 + 8) // slightly lower
         .setScale(2)
         .setVisible(true);
@@ -1244,8 +1250,6 @@ export function setupGame(){
         t.setDepth(paidStamp.depth + 1);
         blinkPriceBorder(t, this, '#0f0', 6);
       }, [], this);
-      t.setPosition(t.x, 15);
-
       // Removed flashing movement of the price text
 
       let delay=dur(300);
@@ -1291,7 +1295,7 @@ export function setupGame(){
           onStart:()=>{
             if(!dialogPriceValue.parentContainer){
               ticket.add(dialogPriceValue);
-              dialogPriceValue.setPosition(0, 15);
+              dialogPriceValue.setPosition(0, priceValueYOffset);
             }
             flashBorder(dialogPriceBox,this,0x00ff00);
             flashFill(dialogPriceBox,this,0x00ff00);
@@ -1341,7 +1345,6 @@ export function setupGame(){
           t.setDepth(lossStamp.depth + 1);
           blinkPriceBorder(t, this, '#f00', 6);
         }, [], this);
-        t.setPosition(t.x, 15);
         this.time.delayedCall(dur(1000),()=>{
           lossStamp.setVisible(false);
           dialogBg.setVisible(false);
@@ -1365,7 +1368,7 @@ export function setupGame(){
             onStart:()=>{
               if(!dialogPriceValue.parentContainer){
                 ticket.add(dialogPriceValue);
-                dialogPriceValue.setPosition(0, 15);
+                dialogPriceValue.setPosition(0, priceValueYOffset);
               }
               if(this.tweens && typeof dialogPriceBox !== 'undefined' && dialogPriceBox){
                 this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});

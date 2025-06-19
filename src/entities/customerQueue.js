@@ -31,6 +31,8 @@ const CUSTOMER_SPEED = 560 / 12;
 // and caused customers to lag behind their wander speed.
 const LURE_SPEED = CUSTOMER_SPEED * 1.5;
 const EDGE_TURN_BUFFER = 40;
+// Trigger arrival when two customer sprites get this close while walking
+const EARLY_COLLIDE_DIST = 32;
 const HEART_EMOJIS = {
   [CustomerState.NORMAL]: null,
   [CustomerState.BROKEN]: '💔',
@@ -114,7 +116,7 @@ export function lureNextWanderer(scene, specific) {
     c.walkTween = curvedApproach(scene, c.sprite, dir, targetX, targetY, () => {
       c.walkTween = null;
       registerArrival(scene, c);
-    }, LURE_SPEED);
+    }, LURE_SPEED, c);
     if (typeof checkQueueSpacing === 'function') checkQueueSpacing(scene);
   }
 }
@@ -139,7 +141,7 @@ export function moveQueueForward() {
           }
           showDialog.call(scene);
         }
-      });
+      }, idx === 0 ? CUSTOMER_SPEED : LURE_SPEED, cust);
       if (idx === 0) willShow = true;
     }
   });
@@ -188,7 +190,8 @@ export function checkQueueSpacing(scene) {
             showDialog.call(scene);
           }
         },
-        idx === 0 ? CUSTOMER_SPEED : LURE_SPEED
+        idx === 0 ? CUSTOMER_SPEED : LURE_SPEED,
+        cust
       );
       // Track the tween so future spacing checks don't interrupt it while
       // the customer is already moving. Previously only the front customer
@@ -215,7 +218,7 @@ function registerArrival(scene, cust) {
   moveQueueForward.call(scene);
 }
 
-function curvedApproach(scene, sprite, dir, targetX, targetY, onComplete, speed = CUSTOMER_SPEED) {
+function curvedApproach(scene, sprite, dir, targetX, targetY, onComplete, speed = CUSTOMER_SPEED, cust) {
   const startX = sprite.x;
   const startY = sprite.y;
   const dx = Math.abs(targetX - startX);
@@ -229,7 +232,22 @@ function curvedApproach(scene, sprite, dir, targetX, targetY, onComplete, speed 
   const dist = Phaser.Math.Distance.Between(startX, startY, targetX, targetY);
   const duration = dur((dist / speed) * 1000);
   const follower = { t: 0, vec: new Phaser.Math.Vector2() };
-  return scene.tweens.add({
+  let tween;
+  const checkCollision = () => {
+    if (!cust || cust.arrived) return false;
+    for (const other of GameState.queue) {
+      if (other === cust || !other.sprite) continue;
+      const d = Phaser.Math.Distance.Between(sprite.x, sprite.y, other.sprite.x, other.sprite.y);
+      if (d < EARLY_COLLIDE_DIST) {
+        if (tween) tween.stop();
+        cust.walkTween = null;
+        registerArrival(scene, cust);
+        return true;
+      }
+    }
+    return false;
+  };
+  tween = scene.tweens.add({
     targets: follower,
     t: 1,
     duration,
@@ -238,6 +256,7 @@ function curvedApproach(scene, sprite, dir, targetX, targetY, onComplete, speed 
       curve.getPoint(follower.t, follower.vec);
       sprite.setPosition(follower.vec.x, follower.vec.y);
       sprite.setScale(scaleForY(sprite.y));
+      checkCollision();
     },
     onComplete: () => {
       sprite.setPosition(targetX, targetY);
@@ -245,6 +264,7 @@ function curvedApproach(scene, sprite, dir, targetX, targetY, onComplete, speed 
       if (onComplete) onComplete();
     }
   });
+  return tween;
 }
 
 export function scheduleNextSpawn(scene) {

@@ -7,7 +7,7 @@ import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from
 import { CustomerState } from './constants.js';
 
 import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows } from './sparrow.js';
-import { DOG_TYPES, sendDogOffscreen, scaleDog, cleanupDogs } from './entities/dog.js';
+import { DOG_TYPES, sendDogOffscreen, scaleDog, cleanupDogs, updateDog } from './entities/dog.js';
 import { startWander } from './entities/wanderers.js';
 import { flashBorder, flashFill, blinkButton, applyRandomSkew, emphasizePrice, blinkPriceBorder, setDepthFromBottom } from './ui/helpers.js';
 import { keys, requiredAssets, preload as preloadAssets, receipt, emojiFor } from './assets.js';
@@ -1003,6 +1003,14 @@ export function setupGame(){
       }
 
       moveQueueForward.call(this);
+
+      if(current.dog && !current.dog.followEvent){
+        current.dog.followEvent = this.time.addEvent({
+          delay: dur(Phaser.Math.Between(800, 1200)),
+          loop: true,
+          callback: () => { if (typeof updateDog === 'function') updateDog.call(this, current); }
+        });
+      }
 
       if(current.isDog && current.owner && current.owner.waitingForDog){
         const owner=current.owner;

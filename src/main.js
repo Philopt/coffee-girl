@@ -420,12 +420,14 @@ export function setupGame(){
     dialogPriceBox=this.add.rectangle(0,0,120,80,0xffeeb5)
       .setStrokeStyle(2,0x000)
       .setOrigin(0.5);
-    dialogPriceTicket=this.add.image(0,0,'price_ticket')
-      .setOrigin(0.5)
-      .setVisible(false);
-    dialogPupCup=this.add.image(0,0,'pupcup')
-      .setOrigin(0.5)
-      .setVisible(false);
+  dialogPriceTicket=this.add.image(0,0,'price_ticket')
+    .setOrigin(0.5)
+    .setScale(1.25)
+    .setVisible(false);
+  dialogPupCup=this.add.image(0,0,'pupcup')
+    .setOrigin(0.5)
+    .setScale(0.8)
+    .setVisible(false);
 
     dialogPriceLabel=this.add.text(0,-15,'',{font:'14px sans-serif',fill:'#000',align:'center'})
       .setOrigin(0.5);
@@ -755,10 +757,8 @@ export function setupGame(){
       dialogPriceLabel.setVisible(false);
       dialogPriceValue.setVisible(false);
       dialogDrinkEmoji
-        .setText('🍨')
-        .setPosition(0,-dialogPriceBox.height/4 + 5)
-        .setScale(2)
-        .setVisible(true);
+        .setText('')
+        .setVisible(false);
     } else {
       dialogPupCup.setVisible(false);
       dialogPriceTicket.setVisible(true);

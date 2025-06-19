@@ -1,5 +1,6 @@
 import { ORDER_X, ORDER_Y } from '../customers.js';
 import { GameState } from '../state.js';
+import { CustomerState } from '../constants.js';
 import { dur, scaleForY } from '../ui.js';
 import { setDepthFromBottom } from '../ui/helpers.js';
 import { scatterSparrows } from '../sparrow.js';
@@ -38,6 +39,9 @@ export function updateDog(owner) {
   let near = 60;
   let targetX = ms.x, targetY = ms.y;
   const type = dog.dogType || 'standard';
+  const mood = dog.dogCustomer && dog.dogCustomer.memory
+    ? dog.dogCustomer.memory.state
+    : CustomerState.NORMAL;
   const atCounter = ms.x === ORDER_X && ms.y === ORDER_Y;
   const ordering = owner === GameState.activeCustomer && atCounter;
   if (ordering && dogDist <= DOG_PAUSE_DISTANCE) {
@@ -60,6 +64,17 @@ export function updateDog(owner) {
     const dir = owner.dir || 1;
     targetX = ms.x + dir * 40;
   }
+  if (mood === CustomerState.BROKEN) {
+    const truck = GameState.truck;
+    if (truck) {
+      const distTruck = Phaser.Math.Distance.Between(dog.x, dog.y, truck.x, truck.y);
+      if (distTruck < 120) {
+        const ang = Phaser.Math.Angle.Between(truck.x, truck.y, dog.x, dog.y);
+        targetX = dog.x + Math.cos(ang) * 40;
+        targetY = dog.y + Math.sin(ang) * 40;
+      }
+    }
+  }
 
   const others = [...GameState.queue, ...GameState.wanderers].filter(c => c !== owner && c.sprite);
   const birds = (GameState.sparrows || []).filter(b => b && b.sprite);
@@ -72,7 +87,16 @@ export function updateDog(owner) {
     const seenDog = otherDogs.find(o => Phaser.Math.Distance.Between(dog.x, dog.y, o.sprite.x, o.sprite.y) < 80);
     const seenBird = birds.find(b => Phaser.Math.Distance.Between(dog.x, dog.y, b.sprite.x, b.sprite.y) < 80);
     const seen = seenDog || seenBird;
-    if (seen) {
+    const barkProb = {
+      [CustomerState.BROKEN]: 1,
+      [CustomerState.MENDING]: 0.8,
+      [CustomerState.NORMAL]: 0.6,
+      [CustomerState.GROWING]: 0.4,
+      [CustomerState.SPARKLING]: 0.3,
+      [CustomerState.ARROW]: 0.1
+    };
+    const chance = barkProb[mood] ?? 0.6;
+    if (seen && Math.random() < chance) {
       dog.excited = true;
       const s = seen.sprite;
       const bark = this.add.sprite(dog.x, dog.y - 20, 'dog1', 3)
@@ -276,4 +300,22 @@ export function cleanupDogs(scene){
       });
     }
   });
+}
+
+export function dogTruckRuckus(scene, dog){
+  if(!scene || !dog) return;
+  const truck = GameState.truck;
+  if(!truck) return;
+  const tl = scene.tweens.createTimeline();
+  const left = truck.x - truck.displayWidth/2 + 20 * truck.scaleX;
+  const right = truck.x + truck.displayWidth/2 - 20 * truck.scaleX;
+  const top = truck.y - truck.displayHeight/2;
+  const bottom = truck.y + truck.displayHeight/2 - 10;
+  tl.add({ targets: dog, x: left, y: bottom, duration: dur(300) });
+  tl.add({ targets: dog, x: right, y: bottom, duration: dur(400) });
+  tl.add({ targets: dog, x: truck.x, y: top, duration: dur(250) });
+  tl.add({ targets: dog, x: dog.x, y: dog.y, duration: dur(300) });
+  tl.setCallback('onComplete', () => scatterSparrows(scene));
+  dog.play && dog.play('dog_walk');
+  tl.play();
 }

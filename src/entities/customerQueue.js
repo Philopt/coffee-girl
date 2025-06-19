@@ -40,7 +40,7 @@ const HEART_EMOJIS = {
 };
 
 export function maxWanderers() {
-  return customersMaxWanderers(GameState.love);
+  return customersMaxWanderers();
 }
 
 export function queueLimit() {

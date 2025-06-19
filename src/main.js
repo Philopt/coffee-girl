@@ -931,9 +931,14 @@ export function setupGame(){
           owner.exitY=targetY;
           current.exitX=owner.exitX;
           current.exitY=owner.exitY;
-          if(owner.heartEmoji){ owner.heartEmoji.destroy(); owner.heartEmoji=null; }
           this.tweens.add({targets:owner.sprite,y:targetY,duration:dur(6000),callbackScope:this,
-            onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+p*distanceX+Math.sin(p*Math.PI*freq)*amp; t.setScale(scaleForY(t.y));},
+            onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+p*distanceX+Math.sin(p*Math.PI*freq)*amp; t.setScale(scaleForY(t.y));
+              if(owner.heartEmoji){
+                const hy=t.y+t.displayHeight*0.30;
+                const hs=scaleForY(t.y)*0.8;
+                owner.heartEmoji.setPosition(t.x,hy).setScale(hs).setDepth(t.depth+1).setShadow(0,0,'#000',4);
+              }
+            },
             onComplete:owner.exitHandler});
           sendDogOffscreen.call(this,current.sprite,owner.exitX,owner.exitY);
           owner.dog = null;
@@ -1033,9 +1038,14 @@ export function setupGame(){
         owner.exitY=targetY;
         current.exitX=owner.exitX;
         current.exitY=owner.exitY;
-        if(owner.heartEmoji){ owner.heartEmoji.destroy(); owner.heartEmoji=null; }
         this.tweens.add({targets:owner.sprite,y:targetY,duration:dur(6000),callbackScope:this,
-          onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+p*distanceX+Math.sin(p*Math.PI*freq)*amp; t.setScale(scaleForY(t.y));},
+          onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+p*distanceX+Math.sin(p*Math.PI*freq)*amp; t.setScale(scaleForY(t.y));
+            if(owner.heartEmoji){
+              const hy=t.y+t.displayHeight*0.30;
+              const hs=scaleForY(t.y)*0.8;
+              owner.heartEmoji.setPosition(t.x,hy).setScale(hs).setDepth(t.depth+1).setShadow(0,0,'#000',4);
+            }
+          },
           onComplete:owner.exitHandler});
         sendDogOffscreen.call(this,current.sprite,current.exitX,current.exitY);
         return;

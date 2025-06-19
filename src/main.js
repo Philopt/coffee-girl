@@ -588,21 +588,6 @@ export function setupGame(){
       });
       return;
     }
-    if(!c.isDog && c.dogCustomer && !c.waitingForDog){
-      const d=c.dogCustomer;
-      const di=GameState.wanderers.indexOf(d);
-      if(di!==-1) GameState.wanderers.splice(di,1);
-      if(d.followEvent){ d.followEvent.remove(false); d.followEvent=null; }
-      const dist = Phaser.Math.Distance.Between(d.sprite.x, d.sprite.y, ORDER_X, ORDER_Y);
-      const duration = dur(Math.max(200, (dist / CUSTOMER_SPEED) * 1000));
-      d.walkTween=this.tweens.add({
-        targets:d.sprite,
-        x:ORDER_X,
-        y:ORDER_Y,
-        duration,
-        onComplete:()=>{ d.walkTween=null; }
-      });
-    }
     let wantLine;
     if(c.isDog){
       const sounds=['woof woof!','bark bark!','arf arf!','ruff ruff!','awoo!','🐶🐶'];
@@ -980,24 +965,24 @@ export function setupGame(){
       const bottomY = sprite.y + sprite.displayHeight * (1 - sprite.originY);
       sprite.setDepth(5 + bottomY*0.006);
 
-      // Shift queue forward as soon as customer starts to walk away
+      // Remove the current customer from the queue
       GameState.queue.shift();
-      moveQueueForward.call(this);
 
       if(current.dogCustomer && !current.isDog){
         const dogCust = current.dogCustomer;
-        const di = GameState.wanderers.indexOf(dogCust);
-        if(di !== -1) GameState.wanderers.splice(di,1);
         if(dogCust.followEvent){ dogCust.followEvent.remove(false); dogCust.followEvent=null; }
         dogCust.atOrder = false;
         GameState.queue.unshift(dogCust);
-        moveQueueForward.call(this);
         const waitX = ORDER_X + 50;
         this.tweens.add({targets:sprite, x:waitX, duration:dur(300)});
         current.waitingForDog = true;
         current.exitHandler = exit;
+        GameState.activeCustomer = dogCust;
+        showDialog.call(this);
         return;
       }
+
+      moveQueueForward.call(this);
 
       if(current.isDog && current.owner && current.owner.waitingForDog){
         const owner=current.owner;

@@ -1577,8 +1577,9 @@ export function setupGame(){
           const dog=c.dog;
           if(dog.followEvent) dog.followEvent.remove(false);
           const bark=scene.add.sprite(dog.x,dog.y-20,'dog1',3)
-            .setOrigin(0.5).setDepth(dog.depth+1)
-            .setScale(dog.scaleX,dog.scaleY);
+            .setOrigin(0.5)
+            .setDepth(dog.depth+1)
+            .setScale(Math.abs(dog.scaleX), Math.abs(dog.scaleY));
           scene.tweens.add({targets:bark,y:'-=20',alpha:0,duration:dur(600),onComplete:()=>bark.destroy()});
           const dTl=scene.tweens.createTimeline();
           for(let j=0;j<4;j++){
@@ -1617,8 +1618,9 @@ export function setupGame(){
         if(dog.followEvent) dog.followEvent.remove(false);
         scene.tweens.killTweensOf(dog);
         const bark=scene.add.sprite(dog.x,dog.y-20,'dog1',3)
-          .setOrigin(0.5).setDepth(dog.depth+1)
-          .setScale(dog.scaleX,dog.scaleY);
+          .setOrigin(0.5)
+          .setDepth(dog.depth+1)
+          .setScale(Math.abs(dog.scaleX), Math.abs(dog.scaleY));
         scene.tweens.add({targets:bark,y:'-=20',alpha:0,duration:dur(600),onComplete:()=>bark.destroy()});
         const dTl=scene.tweens.createTimeline();
         for(let j=0;j<3;j++){

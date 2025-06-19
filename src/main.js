@@ -94,7 +94,9 @@ export function setupGame(){
     });
   }
 
-  function cleanupHeartEmojis(){
+  const HEART_EMOJI_LIST = Object.values(HEART_EMOJIS).filter(Boolean);
+
+  function cleanupHeartEmojis(scene){
     const everyone = [];
     if(GameState.activeCustomer) everyone.push(GameState.activeCustomer);
     if(Array.isArray(GameState.queue)) everyone.push(...GameState.queue);
@@ -105,6 +107,14 @@ export function setupGame(){
         c.heartEmoji = null;
       }
     });
+
+    if(scene && scene.children){
+      scene.children.list.slice().forEach(child=>{
+        if(child instanceof Phaser.GameObjects.Text && HEART_EMOJI_LIST.includes(child.text)){
+          child.destroy();
+        }
+      });
+    }
   }
 
 
@@ -1267,7 +1277,7 @@ export function setupGame(){
     scene.tweens.killAll();
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
-    cleanupHeartEmojis();
+    cleanupHeartEmojis(scene);
     cleanupSparrows(scene);
     hideOverlayTexts();
     clearDialog.call(scene);
@@ -1439,7 +1449,7 @@ export function setupGame(){
     scene.tweens.killAll();
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
-    cleanupHeartEmojis();
+    cleanupHeartEmojis(scene);
     hideOverlayTexts();
     clearDialog.call(scene);
     if (GameState.spawnTimer) { GameState.spawnTimer.remove(false); GameState.spawnTimer = null; }
@@ -1545,7 +1555,7 @@ export function setupGame(){
     scene.tweens.killAll();
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
-    cleanupHeartEmojis();
+    cleanupHeartEmojis(scene);
     hideOverlayTexts();
     if (GameState.spawnTimer) {
       GameState.spawnTimer.remove(false);
@@ -1601,7 +1611,7 @@ export function setupGame(){
       scene.time.removeAllEvents();
     }
     cleanupFloatingEmojis();
-    cleanupHeartEmojis();
+    cleanupHeartEmojis(scene);
     hideOverlayTexts();
     if (GameState.spawnTimer) { GameState.spawnTimer.remove(false); GameState.spawnTimer=null; }
     clearDialog.call(scene);
@@ -1651,7 +1661,7 @@ export function setupGame(){
     scene.tweens.killAll();
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
-    cleanupHeartEmojis();
+    cleanupHeartEmojis(scene);
     cleanupSparrows(scene);
     if (GameState.spawnTimer) {
       GameState.spawnTimer.remove(false);

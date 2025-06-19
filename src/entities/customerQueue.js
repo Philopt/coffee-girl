@@ -286,8 +286,10 @@ export function spawnCustomer() {
   c.spriteKey = k;
 
   const memory = GameState.customerMemory[k] || { state: CustomerState.NORMAL };
-
   GameState.customerMemory[k] = memory;
+  if (!memory.dogMemory) {
+    memory.dogMemory = { hasDog: false, type: null, state: CustomerState.NORMAL };
+  }
   c.memory = memory;
   const order = createOrder();
 
@@ -327,11 +329,22 @@ export function spawnCustomer() {
       .setShadow(0, 0, '#000', 4);
   }
 
-  if (Phaser.Math.Between(0, 4) === 0) {
+  let spawnDog = memory.dogMemory.hasDog;
+  if (spawnDog === undefined) {
+    spawnDog = Phaser.Math.Between(0, 4) === 0;
+    memory.dogMemory.hasDog = spawnDog;
+    if (spawnDog) {
+      const chosen = Phaser.Utils.Array.GetRandom(DOG_TYPES);
+      memory.dogMemory.type = chosen.type;
+      memory.dogMemory.state = CustomerState.NORMAL;
+    }
+  }
+
+  if (spawnDog) {
     const side = Phaser.Math.Between(0, 1) ? 1 : -1;
     const offsetX = side * Phaser.Math.Between(20, 30);
     const offsetY = Phaser.Math.Between(10, 20);
-    const dogType = Phaser.Utils.Array.GetRandom(DOG_TYPES);
+    const dogType = DOG_TYPES.find(d => d.type === memory.dogMemory.type) || Phaser.Utils.Array.GetRandom(DOG_TYPES);
     const dog = this.add.sprite(startX + offsetX, startY + offsetY, 'dog1', 1)
       .setOrigin(0.5)
       .setTint(dogType.tint || 0xffffff);
@@ -354,7 +367,7 @@ export function spawnCustomer() {
       spriteKey: 'dog1',
       orders: [{ coins: 0, req: 'PUP CUP', price: 0.00, qty: 1 }],
       dir: c.dir,
-      memory: { state: CustomerState.NORMAL },
+      memory: memory.dogMemory,
       atOrder: false,
       isDog: true,
       owner: c,
@@ -363,6 +376,13 @@ export function spawnCustomer() {
     };
     dog.dogCustomer = dogCust;
     c.dogCustomer = dogCust;
+
+    if (dogCust.memory.state !== CustomerState.NORMAL) {
+      dogCust.heartEmoji = this.add.text(0, 0, HEART_EMOJIS[dogCust.memory.state] || '', { font: '28px sans-serif' })
+        .setOrigin(0.5)
+        .setShadow(0, 0, '#000', 4);
+      dog.heartEmoji = dogCust.heartEmoji;
+    }
   }
   const insideX = dir === 1 ? 480 - EDGE_TURN_BUFFER : EDGE_TURN_BUFFER;
   const firstTarget = c.loopsRemaining > 0 ? insideX : exitX;

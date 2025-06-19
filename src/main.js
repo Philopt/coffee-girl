@@ -194,12 +194,14 @@ export function setupGame(){
       if(c.dog) scaleDog(c.dog);
       if(c.isDog) scaleDog(c.sprite);
       updateHeart(c);
+      if(c.dogCustomer) updateHeart(c.dogCustomer);
     });
     GameState.wanderers.forEach(c=>{
       if(c.sprite){ c.sprite.setScale(scaleForY(c.sprite.y)); setDepth(c.sprite,5); }
       if(c.dog) scaleDog(c.dog);
       if(c.isDog) scaleDog(c.sprite);
       updateHeart(c);
+      if(c.dogCustomer) updateHeart(c.dogCustomer);
     });
   }
 

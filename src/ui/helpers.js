@@ -66,7 +66,15 @@ export function emphasizePrice(text){
   text.setStyle({fontStyle:'bold', stroke:'#fff', strokeThickness:2});
 }
 
-export function blinkPriceBorder(text, scene){
+/**
+ * Briefly flash a colored border around a text object.
+ *
+ * @param {Phaser.GameObjects.Text} text - Text to outline.
+ * @param {Phaser.Scene} scene - Scene providing timers.
+ * @param {string} [color="#fff"] - Stroke color used when the border is visible.
+ * @param {number} [thickness=2] - Thickness of the temporary border.
+ */
+export function blinkPriceBorder(text, scene, color="#fff", thickness=2){
   if(!text || !text.setStroke) return;
   const originalColor = text.style.stroke || '#fff';
   const originalThickness = text.style.strokeThickness || 0;
@@ -76,7 +84,7 @@ export function blinkPriceBorder(text, scene){
     repeat:flashes,
     delay:scene.dur ? scene.dur(60) : 60,
     callback:()=>{
-      text.setStroke('#fff', on?2:0);
+      text.setStroke(color, on?thickness:0);
       on=!on;
     }
   });

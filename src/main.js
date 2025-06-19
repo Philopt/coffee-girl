@@ -1026,7 +1026,7 @@ export function setupGame(){
           dialogPriceValue.setPosition(m.tx, m.ty);
         }
         t.setDepth(paidStamp.depth + 1);
-        blinkPriceBorder(t, this);
+        blinkPriceBorder(t, this, '#0f0', 6);
       }, [], this);
       t.setPosition(t.x, 15);
 
@@ -1058,7 +1058,7 @@ export function setupGame(){
           t.setText(receipt(totalCost + tip));
           t.setPosition(oldLeft + t.displayWidth/2, t.y);
           emphasizePrice(t);
-          blinkPriceBorder(t, this);
+          blinkPriceBorder(t, this, '#0f0', 6);
           this.tweens.add({targets:t, scale:1.1, duration:dur(120), yoyo:true});
           flashPrice();
         },[],this);
@@ -1080,18 +1080,18 @@ export function setupGame(){
         }});
         tl.add({targets:ticket,x:destX,y:destY,scale:0,duration:dur(400),
           onStart:()=>{
-
+            if(!dialogPriceValue.parentContainer){
+              ticket.add(dialogPriceValue);
+              dialogPriceValue.setPosition(0, 15);
+            }
             flashBorder(dialogPriceBox,this,0x00ff00);
             flashFill(dialogPriceBox,this,0x00ff00);
             if(this.tweens){
-
               this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});
             }
-
             if(dialogDrinkEmoji){
               dialogDrinkEmoji.clearTint();
             }
-
           }});
         tl.play();
       },[],this);
@@ -1118,6 +1118,7 @@ export function setupGame(){
       // raise the price above the stamp after the stamp lands
       this.time.delayedCall(dur(300), () => {
         t.setDepth(lossStamp.depth + 1);
+        blinkPriceBorder(t, this, '#f00', 6);
       }, [], this);
       t.setPosition(t.x, 15);
       this.time.delayedCall(dur(1000),()=>{
@@ -1141,6 +1142,10 @@ export function setupGame(){
         }
         tl.add({targets:ticket,x:destX,y:destY,scale:0,duration:dur(400),
           onStart:()=>{
+            if(!dialogPriceValue.parentContainer){
+              ticket.add(dialogPriceValue);
+              dialogPriceValue.setPosition(0, 15);
+            }
             if(this.tweens && typeof dialogPriceBox !== 'undefined' && dialogPriceBox){
               this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});
             }

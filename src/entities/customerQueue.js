@@ -186,7 +186,8 @@ export function checkQueueSpacing(scene) {
 function curvedApproach(scene, sprite, dir, targetX, targetY, onComplete, speed = CUSTOMER_SPEED) {
   const startX = sprite.x;
   const startY = sprite.y;
-  const offset = 40 * dir;
+  const dx = Math.abs(targetX - startX);
+  const offset = Math.min(20, dx * 0.5) * dir;
   const curve = new Phaser.Curves.CubicBezier(
     new Phaser.Math.Vector2(startX, startY),
     new Phaser.Math.Vector2(startX + offset, startY),

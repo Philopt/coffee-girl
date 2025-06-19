@@ -303,10 +303,11 @@ export function spawnCustomer() {
     const offsetX = side * Phaser.Math.Between(20, 30);
     const offsetY = Phaser.Math.Between(10, 20);
     const dogType = Phaser.Utils.Array.GetRandom(DOG_TYPES);
-    const dog = this.add.text(startX + offsetX, startY + offsetY, dogType.emoji, { font: '32px sans-serif' })
+    const dog = this.add.sprite(startX + offsetX, startY + offsetY, 'dog1', 1)
       .setOrigin(0.5)
       .setScale(distScale * 0.5)
-      .setDepth(3);
+      .setDepth(3)
+      .setTint(dogType.tint || 0xffffff);
     dog.dir = 1;
     dog.prevX = dog.x;
     dog.dogType = dogType.type;

@@ -1,7 +1,7 @@
 import { DEBUG } from './debug.js';
 
 export const keys = [];
-export const requiredAssets = ['bg','truck','girl','lady_falcon','falcon_end','revolt_end','sparrow','sparrow2','sparrow3','dog1','price_ticket'];
+export const requiredAssets = ['bg','truck','girl','lady_falcon','falcon_end','revolt_end','sparrow','sparrow2','sparrow3','dog1','price_ticket','pupcup'];
 export const genzSprites = [
   'new_kid_0_0','new_kid_0_1','new_kid_0_2','new_kid_0_4','new_kid_0_5',
   'new_kid_1_0','new_kid_1_1','new_kid_1_2','new_kid_1_3','new_kid_1_4','new_kid_1_5',
@@ -41,6 +41,7 @@ export function preload(){
   loader.image('falcon_end','assets/ladyfalconend.png');
   loader.image('revolt_end','assets/revolt.png');
   loader.image('price_ticket','assets/priceticket.png');
+  loader.image('pupcup','assets/pupcup.png');
   loader.spritesheet('sparrow','assets/sparrow.png',{frameWidth:16,frameHeight:16});
   loader.spritesheet('sparrow2','assets/sparrow2.png',{frameWidth:20,frameHeight:20});
   loader.spritesheet('sparrow3','assets/sparrow3.png',{frameWidth:20,frameHeight:20});

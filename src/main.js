@@ -1274,7 +1274,7 @@ export function setupGame(){
     GameState.gameOver = true;
     if (GameState.spawnTimer) { GameState.spawnTimer.remove(false); GameState.spawnTimer = null; }
 
-    function panicCustomers(){
+    function panicCustomers(done){
       const fleeing=[...GameState.queue, ...GameState.wanderers];
       if(GameState.activeCustomer && !fleeing.includes(GameState.activeCustomer)){
         fleeing.push(GameState.activeCustomer);
@@ -1298,6 +1298,8 @@ export function setupGame(){
         }
       });
 
+      let remaining = fleeing.length;
+      if(remaining===0){ if(done) done(); return; }
       fleeing.forEach(c=>{
         if(c.heartEmoji){ c.heartEmoji.destroy(); c.heartEmoji=null; }
         if(c.walkTween){ c.walkTween.stop(); c.walkTween=null; }
@@ -1321,6 +1323,8 @@ export function setupGame(){
                     c.dog=null;
                   }
                   c.sprite.destroy();
+                  remaining--;
+                  if(remaining===0 && done) done();
                 }});
         tl.play();
 
@@ -1357,9 +1361,17 @@ export function setupGame(){
     }
 
     // send everyone scattering immediately in case a new spawn sneaks in
+    let finished=false;
+    let falcon=null;
+    const endAttack=()=>{
+      if(finished) return;
+      finished=true;
+      if(falcon) falcon.destroy();
+      if(cb) cb();
+    };
     panicCustomers();
 
-    const falcon=scene.add.sprite(-40,-40,'lady_falcon',0)
+    falcon=scene.add.sprite(-40,-40,'lady_falcon',0)
       .setScale(1.4,1.68)
       .setDepth(20);
     falcon.anims.play('falcon_fly');
@@ -1372,12 +1384,9 @@ export function setupGame(){
       duration:dur(900),
       ease:'Cubic.easeIn',
       onComplete:()=>{
-        panicCustomers();
+        panicCustomers(endAttack);
         blinkAngry(scene);
-        const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
-            falcon.destroy();
-            if(cb) cb();
-        }});
+        const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:endAttack});
         for(let i=0;i<4;i++){
           tl.add({targets:falcon,y:targetY+10,duration:dur(80),yoyo:true});
           tl.add({targets:girl,y:girl.y+5,duration:dur(80),yoyo:true,

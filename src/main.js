@@ -588,11 +588,26 @@ export function setupGame(){
       });
       return;
     }
+    if(!c.isDog && c.dogCustomer && !c.waitingForDog){
+      const d=c.dogCustomer;
+      const di=GameState.wanderers.indexOf(d);
+      if(di!==-1) GameState.wanderers.splice(di,1);
+      if(d.followEvent){ d.followEvent.remove(false); d.followEvent=null; }
+      const dist = Phaser.Math.Distance.Between(d.sprite.x, d.sprite.y, ORDER_X, ORDER_Y);
+      const duration = dur(Math.max(200, (dist / CUSTOMER_SPEED) * 1000));
+      d.walkTween=this.tweens.add({
+        targets:d.sprite,
+        x:ORDER_X,
+        y:ORDER_Y,
+        duration,
+        onComplete:()=>{ d.walkTween=null; }
+      });
+    }
     let wantLine;
     if(c.isDog){
       const sounds=['woof woof!','bark bark!','arf arf!','ruff ruff!','awoo!','🐶🐶'];
       const sound=Phaser.Utils.Array.GetRandom(sounds);
-      wantLine=`${sound} (pup cup)`;
+      wantLine=sound;
     } else {
       const itemStr=c.orders.map(o=>{
         return o.qty>1 ? `${o.qty} ${o.req}` : o.req;
@@ -609,37 +624,41 @@ export function setupGame(){
       .setText(wantLine)
       .setVisible(true);
 
-    const totalCost=c.orders.reduce((s,o)=>s+o.price*o.qty,0);
-    const canAfford = c.orders[0].coins >= totalCost;
-    let coinLine;
-    if (canAfford) {
-      coinLine = `I have $${c.orders[0].coins}`;
-    } else if (c.orders[0].coins === 0) {
-      const options = ['...but I have nothing', "...I'm poor", "I don't have money"];
-      coinLine = Phaser.Utils.Array.GetRandom(options);
-    } else {
-      coinLine = `...but I only have $${c.orders[0].coins}`;
+    const totalCost=c.isDog?0:c.orders.reduce((s,o)=>s+o.price*o.qty,0);
+    const canAfford = c.isDog ? true : (c.orders[0].coins >= totalCost);
+    let coinLine='';
+    if(!c.isDog){
+      if (canAfford) {
+        coinLine = `I have $${c.orders[0].coins}`;
+      } else if (c.orders[0].coins === 0) {
+        const options = ['...but I have nothing', "...I'm poor", "I don't have money"];
+        coinLine = Phaser.Utils.Array.GetRandom(options);
+      } else {
+        coinLine = `...but I only have $${c.orders[0].coins}`;
+      }
     }
     dialogCoins
       .setOrigin(0.5)
       .setStyle({fontSize:'24px'})
       .setText(coinLine)
-      .setVisible(true);
+      .setVisible(!c.isDog);
 
-    const maxW=Math.max(dialogText.width, dialogCoins.width);
+    const maxW=Math.max(dialogText.width, c.isDog?0:dialogCoins.width);
     const hMargin = 20;
     const vMargin = 15;
     const lineGap = 10;
     dialogBg.width = Math.max(maxW + hMargin * 2, 160);
-    dialogBg.height = dialogText.height + dialogCoins.height + lineGap + vMargin * 2;
+    dialogBg.height = dialogText.height + (c.isDog?0:dialogCoins.height + lineGap) + vMargin * 2;
 
     const bubbleTop=dialogBg.y - dialogBg.height/2;
     const textY=bubbleTop + vMargin + dialogText.height/2;
     dialogText.setPosition(dialogBg.x, textY);
-    dialogCoins.setPosition(
-      dialogBg.x,
-      textY + dialogText.height/2 + lineGap + dialogCoins.height/2
-    );
+    if(!c.isDog){
+      dialogCoins.setPosition(
+        dialogBg.x,
+        textY + dialogText.height/2 + lineGap + dialogCoins.height/2
+      );
+    }
 
     dialogBg.setScale(0).setVisible(true);
     dialogText.setScale(0);
@@ -670,19 +689,19 @@ export function setupGame(){
     dialogPriceContainer.alpha = 1;
     dialogPriceLabel
       .setStyle({fontSize:'14px'})
-      .setText('Total Cost')
+      .setText(c.isDog?'Free':'Total Cost')
       .setOrigin(1,0)
       .setPosition(dialogPriceBox.width/2-5, -dialogPriceBox.height/2+5);
     dialogPriceValue
       .setStyle({fontSize:'40px'})
-      .setText(receipt(totalCost))
+      .setText(c.isDog?'pup cup':receipt(totalCost))
       .setColor('#000')
       .setOrigin(0.5)
       .setPosition(0, 15)
       .setScale(1)
       .setAlpha(1);
     dialogDrinkEmoji
-      .setText(emojiFor(c.orders[0].req))
+      .setText(c.isDog?'🍨':emojiFor(c.orders[0].req))
       .setPosition(-dialogPriceBox.width/2+23,-dialogPriceBox.height/2+23)
       .setScale(1.2)
       .setVisible(true);
@@ -966,6 +985,13 @@ export function setupGame(){
       moveQueueForward.call(this);
 
       if(current.dogCustomer && !current.isDog){
+        const dogCust = current.dogCustomer;
+        const di = GameState.wanderers.indexOf(dogCust);
+        if(di !== -1) GameState.wanderers.splice(di,1);
+        if(dogCust.followEvent){ dogCust.followEvent.remove(false); dogCust.followEvent=null; }
+        dogCust.atOrder = false;
+        GameState.queue.unshift(dogCust);
+        moveQueueForward.call(this);
         const waitX = ORDER_X + 50;
         this.tweens.add({targets:sprite, x:waitX, duration:dur(300)});
         current.waitingForDog = true;

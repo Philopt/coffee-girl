@@ -170,12 +170,15 @@ export function setupGame(){
         if(!c.sprite || !c.sprite.scene) return;
       const state = c.memory && c.memory.state || CustomerState.NORMAL;
       if(state !== CustomerState.NORMAL){
-        if(!c.heartEmoji || !c.heartEmoji.scene){
+        if(!c.heartEmoji || !c.heartEmoji.scene || !c.heartEmoji.active){
+          if (c.heartEmoji && c.heartEmoji.destroy) {
+            c.heartEmoji.destroy();
+          }
           c.heartEmoji = c.sprite.scene.add.text(c.sprite.x, c.sprite.y, HEART_EMOJIS[state] || '', {font:'28px sans-serif'})
             .setOrigin(0.5)
             .setShadow(0, 0, '#000', 4);
         }
-        if(c.heartEmoji && c.heartEmoji.scene){
+        if(c.heartEmoji && c.heartEmoji.scene && c.heartEmoji.active){
           const y = c.sprite.y + c.sprite.displayHeight * 0.30;
           const scale = scaleForY(c.sprite.y)*0.8;
           c.heartEmoji.setText(HEART_EMOJIS[state] || '').setPosition(c.sprite.x, y).setScale(scale).setShadow(0, 0, '#000', 4);
@@ -872,7 +875,10 @@ export function setupGame(){
     if(type==='refuse'){
       memory.state = CustomerState.BROKEN;
     }
-    if(current.heartEmoji){ current.heartEmoji.destroy(); current.heartEmoji=null; }
+    if(current.heartEmoji && current.heartEmoji.scene && current.heartEmoji.active){
+      current.heartEmoji.destroy();
+    }
+    current.heartEmoji=null;
     if(memory.state !== CustomerState.NORMAL && current.sprite){
       const hy = current.sprite.y + current.sprite.displayHeight * 0.30;
       const hs = scaleForY(current.sprite.y) * 0.8;
@@ -938,7 +944,7 @@ export function setupGame(){
           current.exitY=owner.exitY;
           this.tweens.add({targets:owner.sprite,y:targetY,duration:dur(6000),callbackScope:this,
             onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+p*distanceX+Math.sin(p*Math.PI*freq)*amp; t.setScale(scaleForY(t.y));
-              if(owner.heartEmoji){
+              if(owner.heartEmoji && owner.heartEmoji.scene && owner.heartEmoji.active){
                 const hy=t.y+t.displayHeight*0.30;
                 const hs=scaleForY(t.y)*0.8;
                 owner.heartEmoji.setPosition(t.x,hy).setScale(hs).setDepth(t.depth+1).setShadow(0,0,'#000',4);
@@ -956,7 +962,10 @@ export function setupGame(){
             current.dog.destroy();
           }
         }
-        if(current.heartEmoji){ current.heartEmoji.destroy(); current.heartEmoji = null; }
+        if(current.heartEmoji && current.heartEmoji.scene && current.heartEmoji.active){
+          current.heartEmoji.destroy();
+        }
+        current.heartEmoji = null;
         const winSpriteKey = current.sprite.texture ? current.sprite.texture.key : current.spriteKey;
         current.sprite.destroy();
         if(GameState.money<=0){
@@ -1002,7 +1011,7 @@ export function setupGame(){
           x: waitX,
           duration: dur(300),
           onUpdate: (tw, t) => {
-            if (current.heartEmoji) {
+            if (current.heartEmoji && current.heartEmoji.scene && current.heartEmoji.active) {
               const hy = t.y + t.displayHeight * 0.30;
               const hs = scaleForY(t.y) * 0.8;
               current.heartEmoji
@@ -1045,7 +1054,7 @@ export function setupGame(){
         current.exitY=owner.exitY;
         this.tweens.add({targets:owner.sprite,y:targetY,duration:dur(6000),callbackScope:this,
           onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+p*distanceX+Math.sin(p*Math.PI*freq)*amp; t.setScale(scaleForY(t.y));
-            if(owner.heartEmoji){
+            if(owner.heartEmoji && owner.heartEmoji.scene && owner.heartEmoji.active){
               const hy=t.y+t.displayHeight*0.30;
               const hs=scaleForY(t.y)*0.8;
               owner.heartEmoji.setPosition(t.x,hy).setScale(hs).setDepth(t.depth+1).setShadow(0,0,'#000',4);
@@ -1074,7 +1083,7 @@ export function setupGame(){
             const p = tw.progress;
             t.x = startX + p * distanceX + Math.sin(p * Math.PI * freq) * amp;
             t.setScale(scaleForY(t.y));
-            if(current.heartEmoji){
+            if(current.heartEmoji && current.heartEmoji.scene && current.heartEmoji.active){
               const hy = t.y + t.displayHeight * 0.30;
               const hs = scaleForY(t.y) * 0.8;
               current.heartEmoji.setPosition(t.x, hy).setScale(hs).setDepth(t.depth+1).setShadow(0, 0, '#000', 4);
@@ -1093,7 +1102,7 @@ export function setupGame(){
         current.exitY = targetY;
         this.tweens.add({targets:sprite,y:targetY,duration:dur(6000),callbackScope:this,
           onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+p*distanceX+Math.sin(p*Math.PI*freq)*amp; t.setScale(scaleForY(t.y));
-            if(current.heartEmoji){
+            if(current.heartEmoji && current.heartEmoji.scene && current.heartEmoji.active){
               const hy = t.y + t.displayHeight * 0.30;
               const hs = scaleForY(t.y) * 0.8;
               current.heartEmoji.setPosition(t.x, hy).setScale(hs).setDepth(t.depth+1).setShadow(0, 0, '#000', 4);

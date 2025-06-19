@@ -1474,6 +1474,8 @@ export function setupGame(){
     clearDialog.call(scene);
     GameState.falconActive = true;
     GameState.gameOver = true;
+    if (GameState.dogBarkEvent) { GameState.dogBarkEvent.remove(false); }
+    GameState.dogBarkEvent = null;
     if (GameState.spawnTimer) { GameState.spawnTimer.remove(false); GameState.spawnTimer = null; }
 
     function panicCustomers(done){
@@ -1608,6 +1610,12 @@ export function setupGame(){
     const endAttack=()=>{
       if(finished) return;
       finished=true;
+      if(GameState.dogBarkEvent){
+        GameState.dogBarkEvent.remove(false);
+        GameState.dogBarkEvent = null;
+      }
+      cleanupDogs(scene);
+      GameState.falconActive = false;
       if(falcon) falcon.destroy();
       if(cb) cb();
     };
@@ -1621,6 +1629,12 @@ export function setupGame(){
     const targetX=girl.x;
     const targetY=girl.y-40;
     dogsBarkAtFalcon();
+    GameState.dogBarkEvent = scene.time.addEvent({
+      delay: dur(800),
+      loop: true,
+      callback: dogsBarkAtFalcon,
+      callbackScope: scene
+    });
     scene.tweens.add({
       targets:falcon,
       x:targetX,
@@ -1899,6 +1913,10 @@ export function setupGame(){
     if (GameState.spawnTimer) {
       GameState.spawnTimer.remove(false);
       GameState.spawnTimer = null;
+    }
+    if (GameState.dogBarkEvent) {
+      GameState.dogBarkEvent.remove(false);
+      GameState.dogBarkEvent = null;
     }
     GameState.falconActive = false;
     clearDialog.call(scene);

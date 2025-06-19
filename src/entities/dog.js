@@ -1,4 +1,4 @@
-import { ORDER_Y } from '../customers.js';
+import { ORDER_X, ORDER_Y } from '../customers.js';
 import { GameState } from '../state.js';
 import { dur, scaleForY } from '../ui.js';
 
@@ -155,16 +155,22 @@ export function sendDogOffscreen(dog, x, y) {
 export function cleanupDogs(scene){
   const gs = scene.gameState || GameState;
   if(gs.activeCustomer && gs.activeCustomer.dog){
-    if(gs.activeCustomer.dog.followEvent) gs.activeCustomer.dog.followEvent.remove(false);
-    gs.activeCustomer.dog.destroy();
+    const dog = gs.activeCustomer.dog;
+    if(dog.followEvent) dog.followEvent.remove(false);
+    const dir = dog.x < ORDER_X ? -1 : 1;
+    const targetX = dir===1 ? 520 : -40;
+    sendDogOffscreen.call(scene, dog, targetX, dog.y);
     gs.activeCustomer.dog = null;
   }
   [gs.queue, gs.wanderers].forEach(arr => {
     if(Array.isArray(arr)){
       arr.forEach(c => {
         if(c.dog){
-          if(c.dog.followEvent) c.dog.followEvent.remove(false);
-          c.dog.destroy();
+          const dog = c.dog;
+          if(dog.followEvent) dog.followEvent.remove(false);
+          const dir = dog.x < ORDER_X ? -1 : 1;
+          const targetX = dir===1 ? 520 : -40;
+          sendDogOffscreen.call(scene, dog, targetX, dog.y);
           c.dog = null;
         }
       });

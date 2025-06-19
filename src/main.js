@@ -177,16 +177,25 @@ export function setupGame(){
           c.heartEmoji = c.sprite.scene.add.text(c.sprite.x, c.sprite.y, HEART_EMOJIS[state] || '', {font:'28px sans-serif'})
             .setOrigin(0.5)
             .setShadow(0, 0, '#000', 4);
+          if(c.isDog){
+            c.sprite.heartEmoji = c.heartEmoji;
+          }
         }
         if(c.heartEmoji && c.heartEmoji.scene && c.heartEmoji.active){
           const y = c.sprite.y + c.sprite.displayHeight * 0.30;
           const scale = scaleForY(c.sprite.y)*0.8;
           c.heartEmoji.setText(HEART_EMOJIS[state] || '').setPosition(c.sprite.x, y).setScale(scale).setShadow(0, 0, '#000', 4);
           c.heartEmoji.setDepth(c.sprite.depth+1);
+          if(c.isDog){
+            c.sprite.heartEmoji = c.heartEmoji;
+          }
         }
       }else if(c.heartEmoji){
         c.heartEmoji.destroy();
         c.heartEmoji = null;
+        if(c.isDog){
+          c.sprite.heartEmoji = null;
+        }
       }
     };
     GameState.queue.forEach(c=>{
@@ -1081,7 +1090,7 @@ export function setupGame(){
         this.tweens.add({
           targets: sprite,
           y: targetY,
-          duration: dur(WALK_OFF_BASE*1.2),
+          duration: dur(3000),
           callbackScope: this,
           onUpdate: (tw, t) => {
             const p = tw.progress;

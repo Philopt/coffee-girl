@@ -15,10 +15,19 @@ function randomTarget(scene){
     // top of the truck
     (() => {
       const truck = GameState.truck;
-      const y = (truck && truck.getTopCenter) ? truck.getTopCenter().y : 217;
+      if (truck && truck.getTopCenter) {
+        const top = truck.getTopCenter();
+        const y = top.y + 25 * truck.scaleY;
+        const left = truck.x - truck.displayWidth / 2 + 40 * truck.scaleX;
+        const right = truck.x + truck.displayWidth / 2 - 24 * truck.scaleX;
+        return new Phaser.Math.Vector2(
+          Phaser.Math.Between(left, right),
+          y
+        );
+      }
       return new Phaser.Math.Vector2(
-        Phaser.Math.Between(220,260),
-        y
+        Phaser.Math.Between(220, 260),
+        217
       );
     })(),
     // offscreen above
@@ -51,8 +60,12 @@ export class Sparrow {
 
     const truck = GameState.truck;
     if (truck && truck.getTopCenter) {
-      const tmp = truck.getTopCenter();
-      this.target.set(tmp.x, tmp.y);
+      const top = truck.getTopCenter();
+      const y = top.y + 25 * truck.scaleY;
+      const left = truck.x - truck.displayWidth / 2 + 40 * truck.scaleX;
+      const right = truck.x + truck.displayWidth / 2 - 24 * truck.scaleX;
+      const x = Phaser.Math.Between(left, right);
+      this.target.set(x, y);
     } else {
       this.target.copy(randomTarget(scene));
     }

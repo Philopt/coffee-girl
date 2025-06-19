@@ -153,7 +153,7 @@ export function setupGame(){
   let moneyText, loveText, queueLevelText;
   let dialogBg, dialogText, dialogCoins,
       dialogPriceLabel, dialogPriceValue, dialogPriceBox,
-      dialogDrinkEmoji, dialogPriceContainer, dialogPriceTicket,
+      dialogDrinkEmoji, dialogPriceContainer, dialogPriceTicket, dialogPupCup,
       btnSell, btnGive, btnRef;
   let reportLine1, reportLine2, reportLine3, tipText;
   let paidStamp, lossStamp;
@@ -400,6 +400,9 @@ export function setupGame(){
     dialogPriceTicket=this.add.image(0,0,'price_ticket')
       .setOrigin(0.5)
       .setVisible(false);
+    dialogPupCup=this.add.image(0,0,'pupcup')
+      .setOrigin(0.5)
+      .setVisible(false);
 
     dialogPriceLabel=this.add.text(0,-15,'',{font:'14px sans-serif',fill:'#000',align:'center'})
       .setOrigin(0.5);
@@ -408,7 +411,7 @@ export function setupGame(){
     dialogDrinkEmoji=this.add.text(-30,-20,'',{font:'24px sans-serif'})
       .setOrigin(0.5);
 
-    dialogPriceContainer=this.add.container(0,0,[dialogPriceTicket, dialogPriceBox, dialogDrinkEmoji, dialogPriceLabel, dialogPriceValue])
+    dialogPriceContainer=this.add.container(0,0,[dialogPriceTicket, dialogPupCup, dialogPriceBox, dialogDrinkEmoji, dialogPriceLabel, dialogPriceValue])
       .setDepth(11)
       .setVisible(false);
 
@@ -680,19 +683,14 @@ export function setupGame(){
     let bubbleColor = 0xffffff;
     drawDialogBubble(c.sprite.x, c.sprite.y, bubbleColor);
 
-    const ticketW = c.isDog
-      ? dialogPriceBox.width
-      : (dialogPriceTicket ? dialogPriceTicket.displayWidth : dialogPriceBox.width);
-    const ticketH = c.isDog
-      ? dialogPriceBox.height
-      : (dialogPriceTicket ? dialogPriceTicket.displayHeight : dialogPriceBox.height);
-    const ticketOffset = ticketW / 2 + 10;
+    const priceTargetXDefault = dialogBg.x + dialogBg.width/2 - 30; // nudge right
+    const priceTargetY = dialogBg.y - dialogBg.height - 20 - (c.isDog ? 30 : 0);
 
-    const truckRef = (typeof truck !== 'undefined' && truck) ? truck : null;
+    const ticketW = c.isDog ? dialogPriceBox.width : (dialogPriceTicket ? dialogPriceTicket.displayWidth : dialogPriceBox.width);
+    const ticketOffset = ticketW/2 + 10;
+    const girlRight = (typeof girl !== 'undefined' && girl) ?
+      girl.x + girl.displayWidth/2 : dialogBg.x;
 
-    const girlRight = (typeof girl !== 'undefined' && girl)
-      ? girl.x + girl.displayWidth / 2
-      : dialogBg.x;
     const minX = girlRight + ticketOffset;
 
     let priceTargetX;
@@ -721,30 +719,19 @@ export function setupGame(){
     dialogPriceContainer.alpha = 1;
     if(c.isDog){
       dialogPriceTicket.setVisible(false);
-      dialogPriceBox.setVisible(true);
-      resetPriceBox();
-      dialogPriceBox.width = 120;
-      dialogPriceBox.height = 80;
-      dialogPriceLabel
-        .setStyle({fontSize:'14px'})
-        .setText('Free')
-        .setOrigin(1,0)
-        .setPosition(dialogPriceBox.width/2-5, -dialogPriceBox.height/2+5)
-        .setVisible(true);
-      dialogPriceValue
-        .setStyle({fontSize:'24px'})
-        .setText('Pup Cup')
-        .setColor('#000')
-        .setOrigin(0.5)
-        .setPosition(0, 15)
-        .setScale(1)
-        .setAlpha(1);
+      dialogPupCup.setVisible(true);
+      dialogPriceBox.setVisible(false);
+      dialogPriceBox.width = dialogPupCup.displayWidth;
+      dialogPriceBox.height = dialogPupCup.displayHeight;
+      dialogPriceLabel.setVisible(false);
+      dialogPriceValue.setVisible(false);
       dialogDrinkEmoji
         .setText('🍨')
-        .setPosition(-dialogPriceBox.width/2+23,-dialogPriceBox.height/2+23)
-        .setScale(1.2)
+        .setPosition(0,-dialogPriceBox.height/4 + 5)
+        .setScale(2)
         .setVisible(true);
     } else {
+      dialogPupCup.setVisible(false);
       dialogPriceTicket.setVisible(true);
       dialogPriceBox.setVisible(false); // hide outline from old ticket
       dialogPriceBox.width = dialogPriceTicket.displayWidth;

@@ -7,15 +7,17 @@ export const DOG_MIN_Y = ORDER_Y + 20;
 export const DOG_SPEED = 120; // base movement speed for the dog
 export const DOG_FAST_DISTANCE = 160; // accelerate when farther than this from owner
 export const DOG_TYPES = [
-  { type: 'standard', emoji: '🐶', tint: 0xffffff },
-  { type: 'poodle', emoji: '🐩', tint: 0xffc0cb },
-  { type: 'guide', emoji: '🦮', tint: 0xffff66 },
-  { type: 'service', emoji: '🐕‍🦺', tint: 0xffaa00 }
+  // scale represents relative size compared to a customer sprite
+  { type: 'standard', emoji: '🐶', tint: 0xffbb99, scale: 0.6 },
+  { type: 'poodle',   emoji: '🐩', tint: 0xffc0cb, scale: 0.55 },
+  { type: 'guide',    emoji: '🦮', tint: 0x99ddff, scale: 0.5 },
+  { type: 'service',  emoji: '🐕‍🦺', tint: 0x996633, scale: 0.45 }
 ];
 
 export function scaleDog(d) {
   if (!d) return;
-  const s = scaleForY(d.y) * 0.5;
+  const factor = d.scaleFactor || 0.6;
+  const s = scaleForY(d.y) * factor;
   const dir = d.dir || 1;
   d.setScale(s * dir, s);
   const bottomY = d.y + d.displayHeight * (1 - d.originY);
@@ -64,7 +66,7 @@ export function updateDog(owner) {
           dog.dir = dx > 0 ? 1 : -1;
         }
         dog.prevX = dog.x;
-        const s = scaleForY(dog.y) * 0.5;
+        const s = scaleForY(dog.y) * (dog.scaleFactor || 0.6);
         dog.setScale(s * (dog.dir || 1), s);
       });
       tl.setCallback('onComplete', () => { dog.excited = false; dog.currentTween = null; dog.setFrame(1); });
@@ -135,7 +137,7 @@ export function updateDog(owner) {
         t.dir = dx > 0 ? 1 : -1;
       }
       t.prevX = t.x;
-      const s = scaleForY(t.y) * 0.5;
+      const s = scaleForY(t.y) * (t.scaleFactor || 0.6);
       t.setScale(s * (t.dir || 1), s);
       const bottomY = t.y + t.displayHeight * (1 - t.originY);
       t.setDepth(3 + bottomY * 0.006);
@@ -167,7 +169,7 @@ export function sendDogOffscreen(dog, x, y) {
         t.dir = dx > 0 ? 1 : -1;
       }
       t.prevX = t.x;
-      const s = scaleForY(t.y) * 0.5;
+      const s = scaleForY(t.y) * (t.scaleFactor || 0.6);
       t.setScale(s * (t.dir || 1), s);
       const bottomY = t.y + t.displayHeight * (1 - t.originY);
       t.setDepth(3 + bottomY * 0.006);

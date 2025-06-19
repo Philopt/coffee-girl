@@ -197,7 +197,13 @@ export function sendDogOffscreen(dog, x, y) {
       const bottomY = t.y + t.displayHeight * (1 - t.originY);
       t.setDepth(3 + bottomY * 0.006);
     },
-    onComplete: () => dog.destroy()
+    onComplete: () => {
+      if (dog.heartEmoji) {
+        dog.heartEmoji.destroy();
+        dog.heartEmoji = null;
+      }
+      dog.destroy();
+    }
   });
 }
 

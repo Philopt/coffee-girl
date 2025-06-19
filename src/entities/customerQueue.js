@@ -92,6 +92,8 @@ export function lureNextWanderer(scene, specific) {
     if (c.pauseEvent) { c.pauseEvent.remove(); c.pauseEvent = null; }
     const idx = GameState.queue.length;
     c.atOrder = false;
+    c.arrived = false;
+    c.arrivalTime = 0;
     GameState.queue.push(c);
     if (c.dogCustomer) {
       const d = c.dogCustomer;
@@ -99,29 +101,25 @@ export function lureNextWanderer(scene, specific) {
       if (di !== -1) GameState.wanderers.splice(di, 1);
       if (d.followEvent) { d.followEvent.remove(false); d.followEvent = null; }
       d.atOrder = false;
+      d.arrived = false;
+      d.arrivalTime = 0;
       GameState.queue.push(d);
     }
     if (typeof debugLog === 'function') debugLog('customer lured to queue');
     GameState.activeCustomer = GameState.queue[0];
-    const targetX = idx === 0 ? ORDER_X : QUEUE_X - QUEUE_SPACING * (idx - 1);
-    const targetY = idx === 0 ? ORDER_Y : QUEUE_Y - QUEUE_OFFSET * (idx - 1);
+    const targetX = ORDER_X;
+    const targetY = ORDER_Y;
     const bottomY = c.sprite.y + c.sprite.displayHeight * (1 - c.sprite.originY);
     c.sprite.setDepth(5 + bottomY * 0.006);
     const dir = c.dir || (c.sprite.x < targetX ? 1 : -1);
     c.walkTween = curvedApproach(scene, c.sprite, dir, targetX, targetY, () => {
-      if (idx === 0 && typeof debugLog === 'function') debugLog('customer reached order position');
       c.walkTween = null;
-      if (idx === 0) {
-        if (typeof debugLog === 'function') {
-          debugLog('curvedApproach complete: calling showDialog');
-        }
-        showDialog.call(scene);
-      }
+      registerArrival(scene, c);
     }, LURE_SPEED);
     if (c.dogCustomer) {
       const dogIdx = GameState.queue.length - 1;
-      const dx = QUEUE_X - QUEUE_SPACING * (dogIdx - 1);
-      const dy = QUEUE_Y - QUEUE_OFFSET * (dogIdx - 1);
+      const dx = ORDER_X;
+      const dy = ORDER_Y;
       c.dogCustomer.sprite.setDepth(5 + bottomY * 0.006);
       c.dogCustomer.walkTween = curvedApproach(scene, c.dogCustomer.sprite, dir, dx, dy, () => {
         c.dogCustomer.walkTween = null;
@@ -203,6 +201,22 @@ export function checkQueueSpacing(scene) {
       cust.walkTween = tween;
     }
   });
+}
+
+function registerArrival(scene, cust) {
+  cust.arrived = true;
+  cust.arrivalTime = scene.time ? scene.time.now : Date.now();
+  if (cust.dogCustomer) {
+    cust.dogCustomer.arrived = true;
+    cust.dogCustomer.arrivalTime = cust.arrivalTime;
+  }
+  GameState.queue.sort((a, b) => {
+    if (a.arrived && b.arrived) return a.arrivalTime - b.arrivalTime;
+    if (a.arrived) return -1;
+    if (b.arrived) return 1;
+    return 0;
+  });
+  moveQueueForward.call(scene);
 }
 
 function curvedApproach(scene, sprite, dir, targetX, targetY, onComplete, speed = CUSTOMER_SPEED) {

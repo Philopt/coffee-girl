@@ -7,10 +7,10 @@ export const DOG_MIN_Y = ORDER_Y + 20;
 export const DOG_SPEED = 120; // base movement speed for the dog
 export const DOG_FAST_DISTANCE = 160; // accelerate when farther than this from owner
 export const DOG_TYPES = [
-  { type: 'standard', emoji: '🐶' },
-  { type: 'poodle', emoji: '🐩' },
-  { type: 'guide', emoji: '🦮' },
-  { type: 'service', emoji: '🐕‍🦺' }
+  { type: 'standard', emoji: '🐶', tint: 0xffffff },
+  { type: 'poodle', emoji: '🐩', tint: 0xffc0cb },
+  { type: 'guide', emoji: '🦮', tint: 0xffff66 },
+  { type: 'service', emoji: '🐕‍🦺', tint: 0xffaa00 }
 ];
 
 export function scaleDog(d) {
@@ -67,8 +67,9 @@ export function updateDog(owner) {
         const s = scaleForY(dog.y) * 0.5;
         dog.setScale(s * (dog.dir || 1), s);
       });
-      tl.setCallback('onComplete', () => { dog.excited = false; dog.currentTween = null; });
+      tl.setCallback('onComplete', () => { dog.excited = false; dog.currentTween = null; dog.setFrame(1); });
       dog.currentTween = tl;
+      dog.play && dog.play('dog_walk');
       tl.play();
       return;
     }
@@ -100,9 +101,10 @@ export function updateDog(owner) {
      Phaser.Math.Distance.Between(dog.x, dog.y, ORDER_X, ORDER_Y) < 60 &&
      !dog.hasBarked){
     dog.hasBarked = true;
-    const bark = this.add.text(dog.x, dog.y - 20, 'BARK!', {
-      font: '16px sans-serif', fill: '#000'
-    }).setOrigin(0.5).setDepth(dog.depth + 1);
+    const bark = this.add.sprite(dog.x, dog.y - 20, 'dog1', 3)
+      .setOrigin(0.5)
+      .setDepth(dog.depth + 1)
+      .setScale(dog.scaleX, dog.scaleY);
     this.tweens.add({
       targets: bark,
       y: '-=20',
@@ -120,6 +122,7 @@ export function updateDog(owner) {
   if (Math.abs(targetX - dog.x) > 3) {
     dog.dir = targetX > dog.x ? 1 : -1;
   }
+  dog.play && dog.play('dog_walk');
   dog.currentTween = this.tweens.add({
     targets: dog,
     x: targetX,
@@ -139,6 +142,7 @@ export function updateDog(owner) {
     },
     onComplete: () => {
       dog.currentTween = null;
+      dog.setFrame(1);
     }
   });
 }
@@ -150,6 +154,7 @@ export function sendDogOffscreen(dog, x, y) {
   if (Math.abs(x - dog.x) > 3) {
     dog.dir = x > dog.x ? 1 : -1;
   }
+  dog.play && dog.play('dog_walk');
   this.tweens.add({
     targets: dog,
     x,

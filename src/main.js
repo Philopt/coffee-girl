@@ -365,6 +365,15 @@ export function setupGame(){
       repeat:-1
     });
 
+    // dog animations
+    this.anims.create({
+      key:'dog_walk',
+      frames:this.anims.generateFrameNumbers('dog1',{start:0,end:1}),
+      frameRate:4,
+      repeat:-1
+    });
+    this.anims.create({ key:'dog_bark', frames:[{key:'dog1',frame:2}], frameRate:1 });
+
     // dialog
     dialogBg=this.add.graphics()
       .setVisible(false)
@@ -1359,8 +1368,9 @@ export function setupGame(){
         if(c.dog){
           const dog=c.dog;
           if(dog.followEvent) dog.followEvent.remove(false);
-          const bark=scene.add.text(dog.x,dog.y-20,'BARK!',{font:'16px sans-serif',fill:'#000'})
-            .setOrigin(0.5).setDepth(dog.depth+1);
+          const bark=scene.add.sprite(dog.x,dog.y-20,'dog1',3)
+            .setOrigin(0.5).setDepth(dog.depth+1)
+            .setScale(dog.scaleX,dog.scaleY);
           scene.tweens.add({targets:bark,y:'-=20',alpha:0,duration:dur(600),onComplete:()=>bark.destroy()});
           const dTl=scene.tweens.createTimeline();
           for(let j=0;j<4;j++){
@@ -1378,6 +1388,8 @@ export function setupGame(){
             const s=scaleForY(dog.y)*0.5;
             dog.setScale(s*(dog.dir||1), s);
           });
+          dTl.setCallback('onComplete',()=>{dog.setFrame(1);});
+          dog.play && dog.play('dog_walk');
           dTl.play();
         }
       });

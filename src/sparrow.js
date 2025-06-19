@@ -184,12 +184,22 @@ export class Sparrow {
   }
 }
 
-export function spawnSparrow(scene){
+export function spawnSparrow(scene, opts = {}){
   const birds = scene.gameState.sparrows;
   if (Array.isArray(birds) && birds.length >= MAX_SPARROWS) {
     return null;
   }
   const bird = new Sparrow(scene);
+  if (opts.ground) {
+    bird.curve = null;
+    bird.state = BirdState.IDLE_GROUND;
+    bird.sprite.anims.play('sparrow_ground');
+    bird.sprite.setPosition(
+      Phaser.Math.Between(180, 300),
+      Phaser.Math.Between(260, 300)
+    );
+    bird.timer = Phaser.Math.FloatBetween(1, 3);
+  }
   birds.push(bird);
   return bird;
 }

@@ -194,11 +194,13 @@ export function setupGame(){
     GameState.queue.forEach(c=>{
       if(c.sprite){ c.sprite.setScale(scaleForY(c.sprite.y)); setDepth(c.sprite,5); }
       if(c.dog) scaleDog(c.dog);
+      if(c.isDog) scaleDog(c.sprite);
       updateHeart(c);
     });
     GameState.wanderers.forEach(c=>{
       if(c.sprite){ c.sprite.setScale(scaleForY(c.sprite.y)); setDepth(c.sprite,5); }
       if(c.dog) scaleDog(c.dog);
+      if(c.isDog) scaleDog(c.sprite);
       updateHeart(c);
     });
   }
@@ -586,12 +588,19 @@ export function setupGame(){
       });
       return;
     }
-    const itemStr=c.orders.map(o=>{
-      return o.qty>1 ? `${o.qty} ${o.req}` : o.req;
-    }).join(' and ');
-    const wantLine=(c.orders.length===1 && c.orders[0].qty===1)
-      ? `I want ${articleFor(c.orders[0].req)} ${c.orders[0].req}`
-      : `I want ${itemStr}`;
+    let wantLine;
+    if(c.isDog){
+      const sounds=['woof woof!','bark bark!','arf arf!','ruff ruff!','awoo!','🐶🐶'];
+      const sound=Phaser.Utils.Array.GetRandom(sounds);
+      wantLine=`${sound} (pup cup)`;
+    } else {
+      const itemStr=c.orders.map(o=>{
+        return o.qty>1 ? `${o.qty} ${o.req}` : o.req;
+      }).join(' and ');
+      wantLine=(c.orders.length===1 && c.orders[0].qty===1)
+        ? `I want ${articleFor(c.orders[0].req)} ${c.orders[0].req}`
+        : `I want ${itemStr}`;
+    }
 
 
     dialogText
@@ -894,7 +903,26 @@ export function setupGame(){
           dialogDrinkEmoji.attachedTo = null;
           dialogDrinkEmoji.setVisible(false);
         }
-        if(current.dog){
+        if(current.isDog && current.owner && current.owner.waitingForDog){
+          const owner=current.owner;
+          const dir = Phaser.Math.Between(0,1)?1:-1;
+          const startX=owner.sprite.x;
+          const targetY=700;
+          const distanceX=Phaser.Math.Between(80,160)*dir;
+          const amp=Phaser.Math.Between(10,25);
+          const freq=Phaser.Math.Between(2,4);
+          owner.exitX=startX+distanceX;
+          owner.exitY=targetY;
+          current.exitX=owner.exitX;
+          current.exitY=owner.exitY;
+          if(owner.heartEmoji){ owner.heartEmoji.destroy(); owner.heartEmoji=null; }
+          this.tweens.add({targets:owner.sprite,y:targetY,duration:dur(6000),callbackScope:this,
+            onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+p*distanceX+Math.sin(p*Math.PI*freq)*amp; t.setScale(scaleForY(t.y));},
+            onComplete:owner.exitHandler});
+          sendDogOffscreen.call(this,current.sprite,owner.exitX,owner.exitY);
+          owner.dog = null;
+          return;
+        } else if(current.dog){
           if(typeof current.exitX==='number' && typeof current.exitY==='number'){
             sendDogOffscreen.call(this,current.dog,current.exitX,current.exitY);
           } else {
@@ -936,6 +964,35 @@ export function setupGame(){
       // Shift queue forward as soon as customer starts to walk away
       GameState.queue.shift();
       moveQueueForward.call(this);
+
+      if(current.dogCustomer && !current.isDog){
+        const waitX = ORDER_X + 50;
+        this.tweens.add({targets:sprite, x:waitX, duration:dur(300)});
+        current.waitingForDog = true;
+        current.exitHandler = exit;
+        return;
+      }
+
+      if(current.isDog && current.owner && current.owner.waitingForDog){
+        const owner=current.owner;
+        owner.waitingForDog=false;
+        const dir = Phaser.Math.Between(0,1)?1:-1;
+        const startX=owner.sprite.x;
+        const targetY=700;
+        const distanceX=Phaser.Math.Between(80,160)*dir;
+        const amp=Phaser.Math.Between(10,25);
+        const freq=Phaser.Math.Between(2,4);
+        owner.exitX=startX+distanceX;
+        owner.exitY=targetY;
+        current.exitX=owner.exitX;
+        current.exitY=owner.exitY;
+        if(owner.heartEmoji){ owner.heartEmoji.destroy(); owner.heartEmoji=null; }
+        this.tweens.add({targets:owner.sprite,y:targetY,duration:dur(6000),callbackScope:this,
+          onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+p*distanceX+Math.sin(p*Math.PI*freq)*amp; t.setScale(scaleForY(t.y));},
+          onComplete:owner.exitHandler});
+        sendDogOffscreen.call(this,current.sprite,current.exitX,current.exitY);
+        return;
+      }
 
       if(type==='refuse'){
         const dir = sprite.x < girl.x ? -1 : 1;

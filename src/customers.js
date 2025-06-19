@@ -21,7 +21,8 @@ export const MENU = [
   {name:"Pink Crush", price:5.70},
   {name:"Iced Under the Pink", price:6.10},
   {name:"Iced Rose Tea", price:5.70},
-  {name:"Iced Starry Night Tea", price:5.70}
+  {name:"Iced Starry Night Tea", price:5.70},
+  {name:"Pup Cup", price:1.00}
 ];
 
 export const SPAWN_DELAY = 2000;

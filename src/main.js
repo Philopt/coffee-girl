@@ -7,7 +7,7 @@ import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from
 import { CustomerState } from './constants.js';
 
 import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows } from './sparrow.js';
-import { DOG_TYPES, sendDogOffscreen, scaleDog, cleanupDogs, updateDog } from './entities/dog.js';
+import { DOG_TYPES, DOG_MIN_Y, sendDogOffscreen, scaleDog, cleanupDogs, updateDog } from './entities/dog.js';
 import { startWander } from './entities/wanderers.js';
 import { flashBorder, flashFill, blinkButton, applyRandomSkew, emphasizePrice, blinkPriceBorder, setDepthFromBottom } from './ui/helpers.js';
 import { keys, requiredAssets, preload as preloadAssets, receipt, emojiFor } from './assets.js';
@@ -1552,7 +1552,8 @@ export function setupGame(){
           const ang=Phaser.Math.FloatBetween(0,Math.PI*2);
           const r=Phaser.Math.Between(40,60);
           const dx=girl.x+Math.cos(ang)*r;
-          const dy=girl.y+Math.sin(ang)*r;
+          let dy=girl.y+Math.sin(ang)*r;
+          if(dy < DOG_MIN_Y) dy = DOG_MIN_Y;
           dTl.add({targets:dog,x:dx,y:dy,duration:dur(Phaser.Math.Between(300,500)),ease:'Sine.easeInOut'});
         }
         dTl.setCallback('onUpdate',()=>{

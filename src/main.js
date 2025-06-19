@@ -868,6 +868,36 @@ export function setupGame(){
 
   }
 
+  function flingTicketEmojiToCustomer(target){
+    if(!dialogDrinkEmoji || !dialogPriceContainer || !dialogPriceContainer.visible || !target) return;
+    let worldX = dialogDrinkEmoji.x;
+    let worldY = dialogDrinkEmoji.y;
+    if(dialogDrinkEmoji.getWorldTransformMatrix){
+      const m = dialogDrinkEmoji.getWorldTransformMatrix();
+      worldX = m.tx;
+      worldY = m.ty;
+    }
+    if(dialogDrinkEmoji.parentContainer){
+      dialogPriceContainer.remove(dialogDrinkEmoji);
+      this.add.existing(dialogDrinkEmoji);
+    }
+    dialogDrinkEmoji.setPosition(worldX, worldY);
+    dialogDrinkEmoji.attachedTo = null;
+    this.tweens.add({
+      targets: dialogDrinkEmoji,
+      x: target.x + DRINK_HOLD_OFFSET.x,
+      y: target.y + DRINK_HOLD_OFFSET.y,
+      scale: 0,
+      alpha: 0,
+      duration: dur(300),
+      ease: 'Cubic.easeIn',
+      onComplete: () => {
+        dialogDrinkEmoji.setVisible(false);
+        dialogDrinkEmoji.setScale(2).setAlpha(1);
+      }
+    });
+  }
+
   function handleAction(type){
     const current=GameState.activeCustomer;
     if (current) {
@@ -875,6 +905,7 @@ export function setupGame(){
     }
     if ((type==='sell' || type==='give') && dialogDrinkEmoji && dialogPriceContainer && dialogPriceContainer.visible) {
       dialogDrinkEmoji.clearTint();
+      flingTicketEmojiToCustomer.call(this, current ? current.sprite : null);
     }
     if(current){
       const bubbleObjs=[];

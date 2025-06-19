@@ -1013,6 +1013,10 @@ export function setupGame(){
 
       if(current.dogCustomer && !current.isDog){
         const dogCust = current.dogCustomer;
+        if(current.dog && current.dog.followEvent){
+          current.dog.followEvent.remove(false);
+          current.dog.followEvent = null;
+        }
         if(dogCust.followEvent){ dogCust.followEvent.remove(false); dogCust.followEvent=null; }
         dogCust.atOrder = false;
         dogCust.arrived = true;

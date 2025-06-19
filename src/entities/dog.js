@@ -67,9 +67,11 @@ export function updateDog(owner) {
     dog.currentTween.stop();
     dog.currentTween = null;
   }
-  if (type !== 'service' && !dog.excited) {
+  if (type !== 'service' && !dog.excited && !ordering) {
+    const otherDogs = others.filter(o => o.isDog);
+    const seenDog = otherDogs.find(o => Phaser.Math.Distance.Between(dog.x, dog.y, o.sprite.x, o.sprite.y) < 80);
     const seenBird = birds.find(b => Phaser.Math.Distance.Between(dog.x, dog.y, b.sprite.x, b.sprite.y) < 80);
-    const seen = seenBird || others.find(o => Phaser.Math.Distance.Between(dog.x, dog.y, o.sprite.x, o.sprite.y) < 80);
+    const seen = seenDog || seenBird;
     if (seen) {
       dog.excited = true;
       const s = seen.sprite;

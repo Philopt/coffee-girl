@@ -48,6 +48,13 @@ export function lureNextWanderer(scene, specific) {
     debugLog('lureNextWanderer', GameState.queue.length, GameState.wanderers.length, GameState.activeCustomer);
   }
 
+  // clear stale tween references that were stopped externally
+  GameState.queue.forEach(c => {
+    if (c.walkTween && !c.walkTween.isPlaying) {
+      c.walkTween = null;
+    }
+  });
+
   if (GameState.wanderers.length && GameState.queue.length < queueLimit()) {
     if (GameState.queue.some(c => c.walkTween)) {
       if (typeof debugLog === 'function') {

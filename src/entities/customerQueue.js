@@ -43,6 +43,8 @@ const LURE_SPEED = CUSTOMER_SPEED * 1.5;
 const EDGE_TURN_BUFFER = 40;
 // Trigger arrival when two customer sprites get this close while walking
 const EARLY_COLLIDE_DIST = 32;
+// Ensure small adjustments don't happen instantaneously
+const MIN_MOVE_DURATION = 250;
 const HEART_EMOJIS = {
   [CustomerState.NORMAL]: null,
   [CustomerState.BROKEN]: '💔',
@@ -264,7 +266,9 @@ function curvedApproach(scene, sprite, dir, targetX, targetY, onComplete, speed 
     new Phaser.Math.Vector2(targetX, targetY)
   );
   const dist = Phaser.Math.Distance.Between(startX, startY, targetX, targetY);
-  const duration = dur((dist / speed) * 1000);
+  const raw = (dist / speed) * 1000;
+  // Guarantee a minimum duration so short adjustments don't appear instantaneous
+  const duration = dur(Math.max(raw, MIN_MOVE_DURATION));
   const follower = { t: 0, vec: new Phaser.Math.Vector2() };
   let tween;
   const checkCollision = () => {

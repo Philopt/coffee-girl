@@ -54,6 +54,16 @@ function loadCustomerState(context) {
   }
 }
 
+function loadBirdState(context) {
+  const constPath = path.join(__dirname, '..', 'src', 'constants.js');
+  if (!fs.existsSync(constPath)) return;
+  const code = fs.readFileSync(constPath, 'utf8');
+  const m = /export const BirdState = (\{[\s\S]*?\});/.exec(code);
+  if (m) {
+    context.BirdState = Function(`return ${m[1]}`)();
+  }
+}
+
 function readModule(...names) {
   for (const n of names) {
     const file = path.join(__dirname, '..', 'src', n);
@@ -288,6 +298,7 @@ function testHandleActionSell() {
     clearDialog: () => {},
     animateStatChange: () => {},
     emphasizePrice: () => {},
+    blinkPriceBorder: () => {},
     flashMoney: () => {},
     moneyText: { x: 0, y: 0, width: 50, setText() { return this; } },
     loveText: { setText() { return this; } },
@@ -370,7 +381,7 @@ function testShowStartScreen() {
           on() { return obj; },
           add() { return obj; }
         };
-        calls.container = obj;
+        if (!calls.container) calls.container = obj;
         return obj;
       }
     }
@@ -391,6 +402,7 @@ function testStartButtonPlaysIntro() {
   }
   RectStub.Contains = () => true;
   const context = { Phaser: { Geom: { Rectangle: RectStub } }, spawnCustomer: () => {}, scheduleNextSpawn: () => {}, debugLog() {} };
+  context.spawnSparrow = () => {};
   loadGameState(context);
   loadCustomerState(context);
   vm.createContext(context);
@@ -413,7 +425,7 @@ function testStartButtonPlaysIntro() {
       text() { return { setOrigin() { return this; }, setDepth() { return this; }, width: 100, height: 40 }; },
       graphics() { return { fillStyle() { return this; }, fillRoundedRect() { return this; } }; },
       sprite() { return { setOrigin() { return this; }, setScale() { return this; }, setDepth() { return this; }, setVisible() { return this; } }; },
-      zone() { return { setOrigin() { return this; }, setInteractive() { return this; }, on(event, cb) { if (event === 'pointerdown') pointerCb = cb; return this; } }; },
+      zone() { return { setOrigin() { return this; }, setInteractive() { return this; }, on(event, cb) { if (event === 'pointerdown' && !pointerCb) pointerCb = cb; return this; }, emit() {} }; },
       container() {
         const obj = {
           setSize() { return obj; },
@@ -695,6 +707,68 @@ function testScheduleNextSpawn() {
   console.log('scheduleNextSpawn behavior test passed');
 }
 
+function testSparrowRemovalOffscreen() {
+  const srcPath = path.join(__dirname, '..', 'src', 'sparrow.js');
+  let code = fs.readFileSync(srcPath, 'utf8');
+  code = code.replace(/import[^\n]*\n/g, '').replace(/export\s+(?=const|function|class)/g, '');
+  const context = {
+    Phaser: {
+      Math: {
+        Between: (min, max) => min,
+        FloatBetween: (min, max) => min,
+        Clamp: (v, l, h) => Math.max(l, Math.min(h, v)),
+        Linear: (a, b, t) => a + (b - a) * t,
+        Vector2: class Vector2 {
+          constructor(x = 0, y = 0) { this.x = x; this.y = y; }
+          set(x, y) { this.x = x; this.y = y; return this; }
+          copy(v) { this.x = v.x; this.y = v.y; return this; }
+          normalize() { const l = Math.hypot(this.x, this.y); if (l) { this.x /= l; this.y /= l; } return this; }
+          scale(s) { this.x *= s; this.y *= s; return this; }
+        },
+        Easing: { Sine: { Out: v => v } },
+        Distance: { Between: (x1, y1, x2, y2) => Math.hypot(x2 - x1, y2 - y1) }
+      },
+      Curves: { QuadraticBezier: class {
+        constructor(p0, p1, p2) { this.p0 = p0; this.p1 = p1; this.p2 = p2; }
+        getPoint(t, out) {
+          const inv = 1 - t;
+          const x = inv * inv * this.p0.x + 2 * inv * t * this.p1.x + t * t * this.p2.x;
+          const y = inv * inv * this.p0.y + 2 * inv * t * this.p1.y + t * t * this.p2.y;
+          out.x = x; out.y = y; return out;
+        }
+      } },
+      Utils: { Array: { GetRandom: a => a[0] } }
+    }
+  };
+  loadGameState(context);
+  loadCustomerState(context);
+  loadBirdState(context);
+  vm.createContext(context);
+  vm.runInContext(code + '\nresult = { spawnSparrow, updateSparrows };', context);
+  const spawnSparrow = context.result.spawnSparrow;
+  const updateSparrows = context.result.updateSparrows;
+
+  const scene = {
+    add: { sprite(x, y) { return { x, y, setDepth() { return this; }, setScale() { return this; }, setPosition(x2, y2) { this.x = x2; this.y = y2; return this; }, anims: { play() {} }, destroy() { this.destroyed = true; } }; } },
+    scale: { width: 480, height: 640 },
+    gameState: context.GameState,
+    time: { delayedCall() { return { remove() {} }; } }
+  };
+
+  const bird = spawnSparrow(scene);
+  bird.threatCheck = { removed: false, remove() { this.removed = true; } };
+  bird.timerEvent = { removed: false, remove() { this.removed = true; } };
+  bird.sprite.y = scene.scale.height + 60;
+
+  updateSparrows(scene, 16);
+
+  assert.strictEqual(scene.gameState.sparrows.length, 0, 'sparrow not removed when offscreen');
+  assert.ok(bird.threatCheck.removed, 'threatCheck not removed');
+  assert.ok(bird.timerEvent.removed, 'timerEvent not removed');
+  assert.ok(bird.sprite.destroyed, 'sprite not destroyed');
+  console.log('updateSparrows offscreen removal test passed');
+}
+
 function testLureNextWandererQueueLimit() {
   const code = extractFunction(['entities/customerQueue.js'], 'lureNextWanderer');
   if (!code) throw new Error('lureNextWanderer not found');
@@ -949,6 +1023,7 @@ async function run() {
     testShowDialogButtons();
     testAnimateLoveChange();
     testScheduleNextSpawn();
+    testSparrowRemovalOffscreen();
     testLureNextWandererQueueLimit();
     testShowEndRestart();
     if (!SKIP_PUPPETEER) {

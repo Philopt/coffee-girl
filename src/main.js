@@ -9,7 +9,7 @@ import { CustomerState } from './constants.js';
 import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows } from './sparrow.js';
 import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog, dogTruckRuckus } from './entities/dog.js';
 import { startWander } from './entities/wanderers.js';
-import { flashBorder, flashFill, blinkButton, applyRandomSkew, emphasizePrice, blinkPriceBorder, setDepthFromBottom } from './ui/helpers.js';
+import { flashBorder, flashFill, blinkButton, applyRandomSkew, emphasizePrice, setDepthFromBottom } from './ui/helpers.js';
 import { keys, requiredAssets, preload as preloadAssets, receipt, emojiFor } from './assets.js';
 import { showStartScreen, playIntro } from './intro.js';
 
@@ -1284,7 +1284,7 @@ export function setupGame(){
           dialogPriceValue.setPosition(m.tx, m.ty);
         }
         t.setDepth(paidStamp.depth + 1);
-        blinkPriceBorder(t, this, '#0f0', 6);
+        // Removed blinkPriceBorder; no need to flash the price text
       }, [], this);
       // Removed flashing movement of the price text
 
@@ -1308,7 +1308,7 @@ export function setupGame(){
             ease: 'Back.easeOut'
           });
           countPrice(t, this, totalCost, totalCost + tip, oldLeft, t.y);
-          blinkPriceBorder(t, this, '#0f0', 6);
+          // Removed blinkPriceBorder; price text stays static
           // no scaling or flash animation for price text
         },[],this);
         delay+=dur(300);

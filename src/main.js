@@ -683,7 +683,6 @@ export function setupGame(){
     let bubbleColor = 0xffffff;
     drawDialogBubble(c.sprite.x, c.sprite.y, bubbleColor);
 
-
     const priceTargetXDefault = dialogBg.x + dialogBg.width/2 - 30; // nudge right
     const priceTargetY = dialogBg.y - dialogBg.height - 20 - (c.isDog ? 30 : 0);
 
@@ -691,8 +690,22 @@ export function setupGame(){
     const ticketOffset = ticketW/2 + 10;
     const girlRight = (typeof girl !== 'undefined' && girl) ?
       girl.x + girl.displayWidth/2 : dialogBg.x;
+
     const minX = girlRight + ticketOffset;
-    const priceTargetX = Math.max(priceTargetXDefault, minX);
+
+    let priceTargetX;
+    let priceTargetY;
+    if (truckRef) {
+      const truckRight = truckRef.x + truckRef.displayWidth / 2;
+      const truckTop = truckRef.y - truckRef.displayHeight / 2;
+      priceTargetX = Math.max(truckRight + ticketOffset, minX);
+      priceTargetY = truckTop + ticketH / 2;
+    } else {
+      const priceTargetXDefault = dialogBg.x + dialogBg.width/2 - 30; // nudge right
+      priceTargetX = Math.max(priceTargetXDefault, minX);
+      priceTargetY = dialogBg.y - dialogBg.height - 20 - (c.isDog ? 30 : 0);
+    }
+
     const startX = (typeof girl !== 'undefined' && girl) ? girl.x : dialogBg.x;
     const startY = (typeof girl !== 'undefined' && girl) ? girl.y - 20 : dialogBg.y;
     dialogPriceContainer

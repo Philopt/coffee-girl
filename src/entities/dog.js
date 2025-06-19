@@ -85,7 +85,7 @@ export function updateDog(owner) {
         dog.prevX = dog.x;
         const s = scaleForY(dog.y) * (dog.scaleFactor || 0.6);
         dog.setScale(s * (dog.dir || 1), s);
-      if (dog.heartEmoji && dog.heartEmoji.scene) {
+      if (dog.heartEmoji && dog.heartEmoji.scene && dog.heartEmoji.active) {
         const hy = dog.y + dog.displayHeight * 0.30;
         const hs = scaleForY(dog.y) * 0.8;
         dog.heartEmoji
@@ -174,7 +174,7 @@ export function updateDog(owner) {
       const s = scaleForY(t.y) * (t.scaleFactor || 0.6);
       t.setScale(s * (t.dir || 1), s);
       setDepthFromBottom(t, 3);
-      if (dog.heartEmoji && dog.heartEmoji.scene) {
+      if (dog.heartEmoji && dog.heartEmoji.scene && dog.heartEmoji.active) {
         const hy = t.y + t.displayHeight * 0.30;
         const hs = scaleForY(t.y) * 0.8;
         dog.heartEmoji
@@ -216,7 +216,7 @@ export function sendDogOffscreen(dog, x, y) {
       const s = scaleForY(t.y) * (t.scaleFactor || 0.6);
       t.setScale(s * (t.dir || 1), s);
       setDepthFromBottom(t, 3);
-      if (dog.heartEmoji && dog.heartEmoji.scene) {
+      if (dog.heartEmoji && dog.heartEmoji.scene && dog.heartEmoji.active) {
         const hy = t.y + t.displayHeight * 0.30;
         const hs = scaleForY(t.y) * 0.8;
         dog.heartEmoji
@@ -227,7 +227,7 @@ export function sendDogOffscreen(dog, x, y) {
       }
     },
     onComplete: () => {
-      if (dog.heartEmoji && dog.heartEmoji.scene) {
+      if (dog.heartEmoji && dog.heartEmoji.scene && dog.heartEmoji.active) {
         dog.heartEmoji.destroy();
         dog.heartEmoji = null;
       }

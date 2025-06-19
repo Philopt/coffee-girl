@@ -64,11 +64,10 @@ export function lureNextWanderer(scene, specific) {
       if (typeof debugLog === 'function') {
         debugLog('lureNextWanderer abort: walkTween active');
       }
-      if (!GameState.lureRetry && scene.time && scene.time.delayedCall) {
-        GameState.lureRetry = scene.time.delayedCall(500, () => {
-          GameState.lureRetry = null;
-          lureNextWanderer(scene, specific);
-        }, [], scene);
+
+      if (scene && scene.time && scene.time.delayedCall) {
+        scene.time.delayedCall(250, () => lureNextWanderer(scene, specific), [], scene);
+
       }
       return;
     }

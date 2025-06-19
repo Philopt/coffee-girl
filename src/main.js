@@ -655,7 +655,7 @@ export function setupGame(){
     drawDialogBubble(c.sprite.x, c.sprite.y, bubbleColor);
 
     const priceTargetXDefault = dialogBg.x + dialogBg.width/2 - 40;
-    const priceTargetY = dialogBg.y - dialogBg.height;
+    const priceTargetY = dialogBg.y - dialogBg.height - (c.isDog ? 30 : 0);
     const ticketW = dialogPriceBox.width;
     const ticketOffset = ticketW/2 + 10;
     const girlRight = (typeof girl !== 'undefined' && girl) ?
@@ -680,8 +680,8 @@ export function setupGame(){
       .setOrigin(1,0)
       .setPosition(dialogPriceBox.width/2-5, -dialogPriceBox.height/2+5);
     dialogPriceValue
-      .setStyle({fontSize:'32px'})
-      .setText(c.isDog?'PUP CUP':receipt(totalCost))
+      .setStyle({fontSize: c.isDog ? '24px' : '32px'})
+      .setText(c.isDog ? 'Pup Cup' : receipt(totalCost))
       .setColor('#000')
       .setOrigin(0.5)
       .setPosition(0, 15)

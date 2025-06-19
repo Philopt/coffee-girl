@@ -379,7 +379,7 @@ export function setupGame(){
 
     dialogPriceLabel=this.add.text(0,-15,'',{font:'14px sans-serif',fill:'#000',align:'center'})
       .setOrigin(0.5);
-    dialogPriceValue=this.add.text(0,15,'',{font:'32px sans-serif',fill:'#000'})
+    dialogPriceValue=this.add.text(0,15,'',{font:'40px sans-serif',fill:'#000'})
       .setOrigin(0.5);
     dialogDrinkEmoji=this.add.text(-30,-20,'',{font:'24px sans-serif'})
       .setOrigin(0.5);
@@ -655,7 +655,7 @@ export function setupGame(){
       .setOrigin(1,0)
       .setPosition(dialogPriceBox.width/2-5, -dialogPriceBox.height/2+5);
     dialogPriceValue
-      .setStyle({fontSize:'32px'})
+      .setStyle({fontSize:'40px'})
       .setText(receipt(totalCost))
       .setColor('#000')
       .setOrigin(0.5)
@@ -730,6 +730,9 @@ export function setupGame(){
     if (!flinging && !dialogDrinkEmoji.attachedTo &&
         dialogDrinkEmoji.parentContainer !== dialogPriceContainer) {
       dialogPriceContainer.add(dialogDrinkEmoji);
+    }
+    if (dialogPriceValue.parentContainer !== dialogPriceContainer) {
+      dialogPriceContainer.add(dialogPriceValue);
     }
     // Keep the drink emoji visible when the price ticket remains on screen
     if(!keepPrice){
@@ -1006,6 +1009,10 @@ export function setupGame(){
       skewFn(paidStamp);
       // raise the price above the stamp after the stamp lands
       this.time.delayedCall(dur(300), () => {
+        if (dialogPriceValue.parentContainer) {
+          dialogPriceContainer.remove(dialogPriceValue);
+          this.add.existing(dialogPriceValue);
+        }
         t.setDepth(paidStamp.depth + 1);
         blinkPriceBorder(t, this);
       }, [], this);

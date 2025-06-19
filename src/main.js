@@ -581,6 +581,9 @@ export function setupGame(){
       dialogPriceBox.setStrokeStyle(2,0x000000);
     }
     dialogPriceBox.fillAlpha = 1;
+    if (dialogPriceTicket && dialogPriceTicket.clearTint) {
+      dialogPriceTicket.clearTint();
+    }
   }
 
   function showDialog(){
@@ -1345,6 +1348,30 @@ export function setupGame(){
           .setAngle(Phaser.Math.Between(-10,10))
           .setVisible(true);
         skewFn2(lossStamp);
+        // Ticket turns grayscale while the price flashes red
+        if (dialogPriceTicket && dialogPriceTicket.setTint) {
+          dialogPriceTicket.setTint(0x808080);
+        }
+        if (dialogPriceValue && dialogPriceValue.setColor) {
+          dialogPriceValue.setColor('#ff0000');
+        }
+        // Keep the emoji in color and fly it over to the customer
+        if (dialogDrinkEmoji) {
+          if (dialogDrinkEmoji.parentContainer) {
+            const m = dialogDrinkEmoji.getWorldTransformMatrix();
+            dialogPriceContainer.remove(dialogDrinkEmoji);
+            this.add.existing(dialogDrinkEmoji);
+            dialogDrinkEmoji.setPosition(m.tx, m.ty);
+          }
+          this.tweens.add({
+            targets: dialogDrinkEmoji,
+            x: customer.x + DRINK_HOLD_OFFSET.x,
+            y: customer.y + DRINK_HOLD_OFFSET.y,
+            duration: dur(400),
+            ease: 'Cubic.easeOut',
+            onComplete: () => { dialogDrinkEmoji.attachedTo = customer; }
+          });
+        }
         // raise the price above the stamp after the stamp lands
         this.time.delayedCall(dur(300), () => {
           t.setDepth(lossStamp.depth + 1);

@@ -7,7 +7,7 @@ import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from
 import { CustomerState } from './constants.js';
 
 import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows } from './sparrow.js';
-import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog } from './entities/dog.js';
+import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog, dogTruckRuckus } from './entities/dog.js';
 import { startWander } from './entities/wanderers.js';
 import { flashBorder, flashFill, blinkButton, applyRandomSkew, emphasizePrice, blinkPriceBorder, setDepthFromBottom } from './ui/helpers.js';
 import { keys, requiredAssets, preload as preloadAssets, receipt, emojiFor } from './assets.js';
@@ -956,6 +956,9 @@ export function setupGame(){
     }
     if(type==='refuse'){
       memory.state = CustomerState.BROKEN;
+      if(current.dog && current.dog.dogCustomer && current.dog.dogCustomer.memory){
+        current.dog.dogCustomer.memory.state = CustomerState.BROKEN;
+      }
     }
     if(current.heartEmoji && current.heartEmoji.scene && current.heartEmoji.active){
       current.heartEmoji.destroy();
@@ -969,6 +972,11 @@ export function setupGame(){
         .setScale(hs)
         .setDepth(current.sprite.depth+1)
         .setShadow(0, 0, '#000', 4);
+    }
+
+    if(type==='refuse' && current.dog && current.dog.dogCustomer &&
+       current.dog.dogCustomer.memory.state === CustomerState.BROKEN){
+      dogTruckRuckus.call(this, current.dog);
     }
 
     if(type==='sell'){

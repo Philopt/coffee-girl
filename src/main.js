@@ -680,8 +680,8 @@ export function setupGame(){
     let bubbleColor = 0xffffff;
     drawDialogBubble(c.sprite.x, c.sprite.y, bubbleColor);
 
-    const priceTargetXDefault = dialogBg.x + dialogBg.width/2 - 40;
-    const priceTargetY = dialogBg.y - dialogBg.height - (c.isDog ? 30 : 0);
+    const priceTargetXDefault = dialogBg.x + dialogBg.width/2 - 30; // nudge right
+    const priceTargetY = dialogBg.y - dialogBg.height - 20 - (c.isDog ? 30 : 0);
     const ticketW = c.isDog ? dialogPriceBox.width : (dialogPriceTicket ? dialogPriceTicket.displayWidth : dialogPriceBox.width);
     const ticketOffset = ticketW/2 + 10;
     const girlRight = (typeof girl !== 'undefined' && girl) ?
@@ -740,7 +740,7 @@ export function setupGame(){
         .setAlpha(1);
       dialogDrinkEmoji
         .setText(emojiFor(c.orders[0].req))
-        .setPosition(0,-dialogPriceBox.height/4 + 5)
+        .setPosition(0,-dialogPriceBox.height/4 + 8) // slightly lower
         .setScale(2)
         .setVisible(true);
     }

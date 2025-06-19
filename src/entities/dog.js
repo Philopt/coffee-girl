@@ -84,7 +84,9 @@ export function updateDog(owner) {
       });
       tl.setCallback('onComplete', () => { dog.excited = false; dog.currentTween = null; dog.setFrame(1); });
       dog.currentTween = tl;
-      dog.play && dog.play('dog_walk');
+      if (dog.anims && dog.play) {
+        dog.play('dog_walk');
+      }
       tl.play();
       scatterSparrows(this);
       return;
@@ -141,7 +143,9 @@ export function updateDog(owner) {
   if (Math.abs(targetX - dog.x) > 3) {
     dog.dir = targetX > dog.x ? 1 : -1;
   }
-  dog.play && dog.play('dog_walk');
+  if (dog.anims && dog.play) {
+    dog.play('dog_walk');
+  }
   dog.currentTween = this.tweens.add({
     targets: dog,
     x: targetX,
@@ -173,7 +177,9 @@ export function sendDogOffscreen(dog, x, y) {
   if (Math.abs(x - dog.x) > 3) {
     dog.dir = x > dog.x ? 1 : -1;
   }
-  dog.play && dog.play('dog_walk');
+  if (dog.anims && dog.play) {
+    dog.play('dog_walk');
+  }
   this.tweens.add({
     targets: dog,
     x,

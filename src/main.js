@@ -1745,6 +1745,7 @@ export function setupGame(){
           tl.play();
           if(c.dog){
             const dog=c.dog;
+            if(!dog) { return; }
             if(dog.followEvent) dog.followEvent.remove(false);
             const bark=scene.add.sprite(dog.x,dog.y-20,'dog1',3).setOrigin(0.5).setDepth(dog.depth+1).setScale(Math.abs(dog.scaleX),Math.abs(dog.scaleY));
             scene.tweens.add({targets:bark,y:'-=20',alpha:0,duration:dur(600),onComplete:()=>bark.destroy()});
@@ -1764,8 +1765,8 @@ export function setupGame(){
               const s=scaleForY(dog.y)*0.5;
               dog.setScale(s*(dog.dir||1), s);
             });
-            dTl.setCallback('onComplete',()=>{dog.setFrame(1);});
-            dog.play && dog.play('dog_walk');
+            dTl.setCallback('onComplete',()=>{ if(dog) dog.setFrame(1); });
+            if(dog && dog.play){ dog.play('dog_walk'); }
             dTl.play();
           }
           return;

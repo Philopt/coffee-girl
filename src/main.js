@@ -161,14 +161,14 @@ export function setupGame(){
     const SELL_X = 240;
     const FINAL = canSell ?
       {
-        sell:{x:SELL_X, scale:1.3, depth:13},
-        give:{x:370, scale:1.15, depth:12},
-        ref:{x:110, scale:1.15, depth:12}
+        sell:{x:SELL_X, scale:1.3, depth:13, angle:180},
+        give:{x:370, scale:1.15, depth:12, angle:20},
+        ref:{x:110, scale:1.15, depth:12, angle:-20}
       } :
       {
-        sell:{x:SELL_X, scale:1.3, depth:11},
-        give:{x:340, scale:1.4, depth:13},
-        ref:{x:140, scale:1.4, depth:13}
+        sell:{x:SELL_X, scale:1.3, depth:11, angle:180},
+        give:{x:340, scale:1.4, depth:13, angle:20},
+        ref:{x:140, scale:1.4, depth:13, angle:-20}
       };
 
     const buttonImage = btn => {
@@ -187,6 +187,7 @@ export function setupGame(){
 
       }
       btn.setDepth(info.depth);
+      btn.setAngle(info.angle || 0);
       btn.setAlpha(0).setVisible(true);
       if(btn.zone && btn.zone.input) btn.zone.input.enabled = false;
       if(btn.glow){
@@ -211,6 +212,7 @@ export function setupGame(){
     timeline.add({
       targets: btnSell,
       y: BUTTON_Y,
+      angle: 0,
       alpha: 1,
       ease: 'Sine.easeOut',
       duration: dur(250),
@@ -228,6 +230,7 @@ export function setupGame(){
       targets: btnGive,
       x: FINAL.give.x,
       y: BUTTON_Y,
+      angle: 0,
       alpha: 1,
       ease: 'Sine.easeOut',
       duration: dur(200)
@@ -236,6 +239,7 @@ export function setupGame(){
       targets: btnRef,
       x: FINAL.ref.x,
       y: BUTTON_Y,
+      angle: 0,
       alpha: 1,
       ease: 'Sine.easeOut',
       duration: dur(200),
@@ -295,10 +299,11 @@ export function setupGame(){
           alpha:0,
           duration:dur(300),
           ease:'Cubic.easeIn',
-          onComplete:()=>{btn.setVisible(false);}
+          onComplete:()=>{btn.setVisible(false); btn.setAngle(0);}
         });
       }else{
         btn.setVisible(false);
+        btn.setAngle(0);
       }
     });
   }
@@ -708,11 +713,7 @@ export function setupGame(){
       const zone=this.add.zone(0,0,width,height).setOrigin(0.5);
       zone.setInteractive({ useHandCursor:true });
       zone.on('pointerdown',()=>{
-        if(key==='refuse'){
-          blowButtonsAway.call(this,c);
-        }else{
-          fadeOutOtherButtons.call(this,c);
-        }
+        blowButtonsAway.call(this,c);
         blinkButton.call(this,c,handler,zone);
       });
       c.add(zone);

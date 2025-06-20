@@ -1269,7 +1269,7 @@ export function setupGame(){
         current.sprite.destroy();
         if(GameState.money<=0){
           showFalconAttack.call(this,()=>{
-            showEnd.call(this,'Game Over\nYou lost all the money.\nLady Falcon reclaims the coffee truck.', null, {keepTweens:true});
+            showFalconLoss.call(this);
           });
           return;
         }
@@ -2281,6 +2281,61 @@ function dogsBarkAtFalcon(){
         lover.destroy();
         bigGirl.destroy();
         txt.destroy();
+        btn.destroy();
+        if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
+        restartGame.call(this);
+        againZone.destroy();
+      });
+    GameState.gameOver=true;
+  }
+
+  function showFalconLoss(){
+    const scene = this;
+    scene.tweens.killAll();
+    scene.time.removeAllEvents();
+    cleanupFloatingEmojis();
+    cleanupHeartEmojis(scene);
+    hideOverlayTexts();
+    if (GameState.spawnTimer) { GameState.spawnTimer.remove(false); GameState.spawnTimer = null; }
+    clearDialog.call(scene);
+    if(endOverlay){ endOverlay.destroy(); }
+    endOverlay = this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
+
+    const title = this.add.text(240,160,'GAME OVER',{
+      font:'80px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
+    }).setOrigin(0.5).setDepth(20).setAlpha(0);
+    this.tweens.add({targets:title,alpha:1,duration:dur(600)});
+
+    const img = this.add.image(240,310,'falcon_end')
+      .setScale(1.2)
+      .setDepth(20)
+      .setAlpha(0);
+    this.tweens.add({targets:img,alpha:1,duration:dur(600),delay:dur(600)});
+
+    const line1 = this.add.text(240,480,'you lost money',
+      {font:'28px sans-serif',fill:'#fff'})
+      .setOrigin(0.5)
+      .setDepth(21)
+      .setAlpha(0);
+    this.tweens.add({targets:line1,alpha:1,duration:dur(600),delay:dur(1200)});
+
+    const line2 = this.add.text(240,520,'Lady Falcon reclaims the coffee truck',
+      {font:'28px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
+      .setOrigin(0.5)
+      .setDepth(21)
+      .setAlpha(0);
+    this.tweens.add({targets:line2,alpha:1,duration:dur(600),delay:dur(1800)});
+
+    const btn = this.add.text(240,580,'Try Again',{font:'20px sans-serif',fill:'#fff',backgroundColor:'#006400',padding:{x:14,y:8}})
+      .setOrigin(0.5)
+      .setDepth(22);
+    const againZone = this.add.zone(240,580,btn.width,btn.height).setOrigin(0.5);
+    againZone.setInteractive({ useHandCursor:true });
+    againZone.on('pointerdown',()=>{
+        title.destroy();
+        img.destroy();
+        line1.destroy();
+        line2.destroy();
         btn.destroy();
         if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
         restartGame.call(this);

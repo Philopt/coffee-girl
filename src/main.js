@@ -861,7 +861,7 @@ export function setupGame(){
       dialogDrinkEmoji
         .setText('🍨')
         // Lower the dessert emoji slightly so it sits in the cup better
-        .setPosition(0,-dialogPriceBox.height/4 + 10)
+        .setPosition(0,-dialogPriceBox.height/4 + 14)
         .setScale(2)
         .setVisible(true);
       // Give the dessert emoji a dark, heavy shadow outline so it pops

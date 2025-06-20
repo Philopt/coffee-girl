@@ -448,20 +448,44 @@ export function setupGame(){
     dialogPriceValue=this.add.text(-5,20,'',{font:'40px sans-serif',fill:'#000'})
       .setOrigin(0.5);
     const baseEmoji = this.add.text(0,0,'',{font:'24px sans-serif'}).setOrigin(0.5);
-    const extrasEmoji = this.add.text(0,-18,'',{font:'16px sans-serif'}).setOrigin(0.5);
-    dialogDrinkEmoji=this.add.container(-30,-20,[extrasEmoji, baseEmoji]);
+    const extra1 = this.add.text(0,-18,'',{font:'16px sans-serif'}).setOrigin(0.5);
+    const extra2 = this.add.text(0,-18,'',{font:'16px sans-serif'}).setOrigin(0.5);
+    const extra3 = this.add.text(0,-18,'',{font:'16px sans-serif'}).setOrigin(0.5);
+    dialogDrinkEmoji=this.add.container(-30,-20,[extra1, extra2, extra3, baseEmoji]);
     dialogDrinkEmoji.base = baseEmoji;
-    dialogDrinkEmoji.extras = extrasEmoji;
+    dialogDrinkEmoji.extras = [extra1, extra2, extra3];
     dialogDrinkEmoji.setText = function(str){
       const parts = String(str||'').split('\n');
-      this.base.setText(parts.pop()||'');
-      this.extras.setText(parts.join('\n'));
+      const base = parts.pop() || '';
+      const extras = parts.join(' ').trim().split(/\s+/).filter(Boolean).slice(0,3);
+      this.base.setText(base);
+      this.extras.forEach((e,i)=>{
+        if(extras[i]){
+          e.setText(extras[i]).setVisible(true);
+        }else{
+          e.setText('').setVisible(false);
+        }
+      });
+
+      const count = extras.length;
+      const baseY = count ? 6 : 0;
+      this.base.setPosition(0, baseY).setScale(count ? 0.9 : 1.1);
+      if(count===1){
+        this.extras[0].setScale(0.5).setPosition(0, baseY-18);
+      }else if(count===2){
+        this.extras[0].setScale(0.25).setPosition(-8, baseY-18);
+        this.extras[1].setScale(0.25).setPosition(8, baseY-18);
+      }else if(count>=3){
+        this.extras[0].setScale(0.25).setPosition(-8, baseY-16);
+        this.extras[1].setScale(0.25).setPosition(8, baseY-16);
+        this.extras[2].setScale(0.25).setPosition(0, baseY-28);
+      }
       return this;
     };
     dialogDrinkEmoji.setLineSpacing = ()=>dialogDrinkEmoji;
     dialogDrinkEmoji.clearTint = function(){
       if(this.base.clearTint) this.base.clearTint();
-      if(this.extras.clearTint) this.extras.clearTint();
+      this.extras.forEach(e=>{ if(e.clearTint) e.clearTint(); });
       return this;
     };
 

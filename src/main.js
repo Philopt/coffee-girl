@@ -10,7 +10,7 @@ import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows } from './sparrow
 import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog, dogTruckRuckus } from './entities/dog.js';
 import { startWander } from './entities/wanderers.js';
 
-import { flashBorder, flashFill, blinkButton, applyRandomSkew, emphasizePrice, setDepthFromBottom } from './ui/helpers.js';
+import { flashBorder, flashFill, blinkButton, applyRandomSkew, emphasizePrice, setDepthFromBottom, createGrayscaleTexture } from './ui/helpers.js';
 
 import { keys, requiredAssets, preload as preloadAssets, receipt, emojiFor } from './assets.js';
 import { showStartScreen, playIntro } from './intro.js';
@@ -437,6 +437,7 @@ export function setupGame(){
     .setOrigin(0.5)
     .setScale(1.25)
     .setVisible(false);
+  createGrayscaleTexture(this, 'price_ticket', 'price_ticket_gray');
   dialogPupCup=this.add.image(0,0,'pupcup')
     .setOrigin(0.5)
     .setScale(0.8)
@@ -596,8 +597,11 @@ export function setupGame(){
       dialogPriceBox.setStrokeStyle(2,0x000000);
     }
     dialogPriceBox.fillAlpha = 1;
-    if (dialogPriceTicket && dialogPriceTicket.clearTint) {
-      dialogPriceTicket.clearTint();
+    if(dialogPriceTicket){
+      if(dialogPriceTicket.clearTint) dialogPriceTicket.clearTint();
+      if(dialogPriceTicket.setTexture && this.textures.exists('price_ticket')){
+        dialogPriceTicket.setTexture('price_ticket');
+      }
     }
   }
 
@@ -1395,8 +1399,12 @@ export function setupGame(){
           .setVisible(true);
         skewFn2(lossStamp);
         // Ticket turns grayscale while the price flashes red
-        if (dialogPriceTicket && dialogPriceTicket.setTint) {
-          dialogPriceTicket.setTint(0x808080);
+        if(dialogPriceTicket){
+          if(this.game.renderer.type === Phaser.WEBGL && dialogPriceTicket.setTint){
+            dialogPriceTicket.setTint(0x808080);
+          }else if(dialogPriceTicket.setTexture && this.textures.exists('price_ticket_gray')){
+            dialogPriceTicket.setTexture('price_ticket_gray');
+          }
         }
         if (dialogPriceValue && dialogPriceValue.setColor) {
           dialogPriceValue.setColor('#ff0000');

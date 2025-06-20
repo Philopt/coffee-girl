@@ -468,17 +468,17 @@ export function setupGame(){
       });
 
       const count = extras.length;
-      const baseY = count ? 6 : 0;
+      const baseY = count ? 4 : 0;
       this.base.setPosition(0, baseY).setScale(count ? 0.9 : 1.1);
       if(count===1){
-        this.extras[0].setScale(0.5).setPosition(0, baseY-18);
+        this.extras[0].setScale(0.5).setPosition(0, baseY-16);
       }else if(count===2){
-        this.extras[0].setScale(0.25).setPosition(-8, baseY-18);
-        this.extras[1].setScale(0.25).setPosition(8, baseY-18);
+        this.extras[0].setScale(0.4).setPosition(-4, baseY-15);
+        this.extras[1].setScale(0.4).setPosition(4, baseY-15);
       }else if(count>=3){
-        this.extras[0].setScale(0.25).setPosition(-8, baseY-16);
-        this.extras[1].setScale(0.25).setPosition(8, baseY-16);
-        this.extras[2].setScale(0.25).setPosition(0, baseY-28);
+        this.extras[0].setScale(0.35).setPosition(-6, baseY-15);
+        this.extras[1].setScale(0.35).setPosition(6, baseY-15);
+        this.extras[2].setScale(0.35).setPosition(0, baseY-25);
       }
       return this;
     };

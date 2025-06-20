@@ -32,6 +32,7 @@ const HEART_EMOJIS = {
   [CustomerState.SPARKLING]: '💖',
   [CustomerState.ARROW]: '💘'
 };
+const UPSET_EMOJIS = ['😠','🤬','😡','😤','😭','😢','😱','😖','😫','💢'];
 export function setupGame(){
   if (typeof debugLog === 'function') debugLog('main.js loaded');
   let initCalled = false;
@@ -1955,7 +1956,7 @@ export function setupGame(){
 
   function animateLoveChange(delta, customer, cb){
     const count=Math.abs(delta);
-    const emoji=delta>0?'❤️':'😠';
+    const emoji=delta>0?'❤️':UPSET_EMOJIS[Phaser.Math.Between(0,UPSET_EMOJIS.length-1)];
 
     if(delta<0){
       this.tweens.add({targets:customer,y:customer.y-20,duration:dur(150),yoyo:true});
@@ -1996,7 +1997,8 @@ export function setupGame(){
           .setOrigin(0.5).setDepth(10);
         this.tweens.add({targets:sp,scale:1.5,alpha:0,duration:dur(300),onComplete:()=>sp.destroy()});
       }else{
-        const ang=this.add.text(customer.x,customer.y,'💢',{font:'20px sans-serif',fill:'#f00'})
+        const burst=UPSET_EMOJIS[Phaser.Math.Between(0,UPSET_EMOJIS.length-1)];
+        const ang=this.add.text(customer.x,customer.y,burst,{font:'20px sans-serif',fill:'#f00'})
           .setOrigin(0.5).setDepth(12);
         this.tweens.add({targets:ang,alpha:0,duration:dur(300),onComplete:()=>ang.destroy()});
       }
@@ -2297,7 +2299,8 @@ function dogsBarkAtFalcon(){
       for(let b=0;b<3;b++){
         const bx=girl.x+Phaser.Math.Between(-20,20);
         const by=girl.y+Phaser.Math.Between(-40,0);
-        const burst=s.add.text(bx,by,'💢',{font:'24px sans-serif',fill:'#f00'})
+        const emoji=UPSET_EMOJIS[Phaser.Math.Between(0,UPSET_EMOJIS.length-1)];
+        const burst=s.add.text(bx,by,emoji,{font:'24px sans-serif',fill:'#f00'})
           .setOrigin(0.5).setDepth(21);
         s.tweens.add({targets:burst,scale:1.5,alpha:0,duration:dur(200),onComplete:()=>burst.destroy()});
       }

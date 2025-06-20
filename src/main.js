@@ -13,7 +13,7 @@ import { startWander } from './entities/wanderers.js';
 import { flashBorder, flashFill, blinkButton, applyRandomSkew, emphasizePrice, setDepthFromBottom, createGrayscaleTexture, createGlowTexture } from './ui/helpers.js';
 
 import { keys, requiredAssets, preload as preloadAssets, receipt, emojiFor } from './assets.js';
-import { showStartScreen, playIntro } from './intro.js';
+import { playOpening, showStartScreen, playIntro } from './intro.js';
 
 export let Assets, Scene, Customers, config;
 export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;
@@ -813,8 +813,8 @@ export function setupGame(){
       .setVisible(false)
       .setAlpha(1);
 
-    // wait for player to start the shift
-    showStartScreen.call(this);
+    // play opening sequence before showing start screen
+    playOpening.call(this);
     scheduleSparrowSpawn(this);
 
     // ensure customer sprites match vertical scale and keep drink emoji attached

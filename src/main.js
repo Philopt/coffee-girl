@@ -171,12 +171,20 @@ export function setupGame(){
         ref:{x:140, scale:1.4, depth:13}
       };
 
+    const buttonImage = btn => {
+      if(!btn || !btn.list) return null;
+      return btn.list.find(child => typeof child.setTexture === 'function');
+    };
+
     const resetBtn = (btn, info)=>{
       if(!btn) return;
+      const img = buttonImage(btn);
       btn.setPosition(SELL_X, startY);
+
       if(btn.image){
         btn.image.setScale(info.scale);
         btn.setSize(btn.image.displayWidth, btn.image.displayHeight);
+
       }
       btn.setDepth(info.depth);
       btn.setAlpha(0).setVisible(true);
@@ -188,9 +196,11 @@ export function setupGame(){
       }
     };
 
+
     if(btnSell && btnSell.image){
       btnSell.image.setTexture('sell');
       btnSell.image.setAlpha(1);
+
     }
 
     resetBtn(btnSell, FINAL.sell);
@@ -205,9 +215,11 @@ export function setupGame(){
       ease: 'Sine.easeOut',
       duration: dur(250),
       onComplete: () => {
+
         if(!canSell && btnSell && btnSell.image && this.textures.exists('sell_gray')){
           btnSell.image.setTexture('sell_gray');
           btnSell.image.setAlpha(0.6);
+
         }
       }
     });

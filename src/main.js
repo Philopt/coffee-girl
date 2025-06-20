@@ -601,6 +601,40 @@ export function setupGame(){
 
 
     // helper to create a button using an image asset
+    const fadeOutOtherButtons = (activeKey) => {
+      const active = activeKey === 'sell' ? btnSell
+                  : activeKey === 'give' ? btnGive
+                  : btnRef;
+      [btnSell, btnGive, btnRef].forEach(btn => {
+        if(!btn || btn === active) return;
+        if(btn.input) btn.input.enabled = false;
+        this.tweens.add({
+          targets: btn,
+          alpha: 0,
+          duration: dur(120),
+          onComplete: () => btn.setVisible(false)
+        });
+      });
+    };
+
+    const blowRefuseButton = (done) => {
+      if(!btnRef) { if(done) done(); return; }
+      if(btnRef.input) btnRef.input.enabled = false;
+      this.tweens.add({
+        targets: btnRef,
+        x: btnRef.x + Phaser.Math.Between(-60,60),
+        y: this.scale.height + 80,
+        angle: Phaser.Math.Between(-30,30),
+        alpha: 0,
+        duration: dur(400),
+        ease: 'Cubic.easeIn',
+        onComplete: () => {
+          btnRef.setVisible(false);
+          if(done) done();
+        }
+      });
+    };
+
     const createButton=(x,key,handler,scale=1,depth=12)=>{
       const img=this.add.image(0,0,key).setScale(scale);
       const width=img.displayWidth;
@@ -612,7 +646,16 @@ export function setupGame(){
 
       const zone=this.add.zone(0,0,width,height).setOrigin(0.5);
       zone.setInteractive({ useHandCursor:true });
-      zone.on('pointerdown',()=>blinkButton.call(this,c,handler,zone));
+      zone.on('pointerdown',()=>{
+        fadeOutOtherButtons.call(this, key);
+        blinkButton.call(this,c, () => {
+          if(key==='refuse'){
+            blowRefuseButton.call(this, handler);
+          }else{
+            handler();
+          }
+        }, zone);
+      });
       c.add(zone);
       return c;
     };

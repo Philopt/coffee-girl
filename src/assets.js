@@ -24,9 +24,15 @@ export function receipt(value){
 export function emojiFor(name){
   const n = name.toLowerCase();
   const iced = n.includes('iced') || n.includes('cold brew');
-  const chocolate = n.includes('chocolate');
+  const chocolate = n.includes('chocolate') || n.includes('mocha');
+  const latte = n.includes('latte') || n.includes('cappuccino');
+  const espresso = n.includes('espresso');
   const rose = n.includes('rose');
   const pink = n.includes('pink');
+  const starry = n.includes('starry night');
+  const falcon = n.includes('falcon');
+  const roast = n.includes('roaster');
+  const crush = n.includes('crush');
   const tea = n.includes('tea');
 
   // Base drink emoji: coffee by default, tea cup when mentioned explicitly.
@@ -35,14 +41,20 @@ export function emojiFor(name){
   else if (n.includes('hot chocolate')) base = '🍫';
 
   const extras = [];
-  // Add modifiers below, leaving iced last so it appears on top
+  // Build extra modifiers. Order roughly controls layering.
+  if (falcon) extras.push('🦅');
+  if (roast) extras.push('🔥');
+  if (espresso) extras.push('⚡');
+  if (latte && base === '☕') extras.push('🥛');
   if (chocolate && base === '☕') extras.push('🍫');
+  if (starry) extras.push('✨');
   if (rose) extras.push('🌹');
   else if (pink) extras.push('🌸');
+  if (crush) extras.push('💥');
   if (iced) extras.push('🧊🧊');
 
   if (extras.length) {
-    return `${extras.join('')}\n${base}`;
+    return `${extras.join(' ')}\n${base}`;
   }
   return base;
 }

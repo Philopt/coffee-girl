@@ -273,8 +273,12 @@ export function setupGame(){
         if(c.heartEmoji && c.heartEmoji.scene && c.heartEmoji.active){
           const y = c.sprite.y + c.sprite.displayHeight * 0.30;
           const scale = scaleForY(c.sprite.y)*0.8;
-          c.heartEmoji.setText(HEART_EMOJIS[state] || '').setPosition(c.sprite.x, y).setScale(scale).setShadow(0, 0, '#000', 4);
-          c.heartEmoji.setDepth(c.sprite.depth+1);
+          c.heartEmoji
+            .setText(HEART_EMOJIS[state] || '')
+            .setPosition(c.sprite.x, y)
+            .setScale(scale)
+            .setShadow(0, 0, '#000', 4)
+            .setDepth(c.sprite.depth);
           if(c.isDog){
             c.sprite.heartEmoji = c.heartEmoji;
           }
@@ -1163,10 +1167,15 @@ export function setupGame(){
     if(memory.state !== CustomerState.NORMAL && current.sprite){
       const hy = current.sprite.y + current.sprite.displayHeight * 0.30;
       const hs = scaleForY(current.sprite.y) * 0.8;
-      current.heartEmoji = current.sprite.scene.add.text(current.sprite.x, hy, HEART_EMOJIS[memory.state]||'',{font:'28px sans-serif'})
+      current.heartEmoji = current.sprite.scene.add.text(
+        current.sprite.x,
+        hy,
+        HEART_EMOJIS[memory.state] || '',
+        { font: '28px sans-serif' }
+      )
         .setOrigin(0.5)
         .setScale(hs)
-        .setDepth(current.sprite.depth+1)
+        .setDepth(current.sprite.depth)
         .setShadow(0, 0, '#000', 4);
     }
 
@@ -1233,7 +1242,11 @@ export function setupGame(){
               if(owner.heartEmoji && owner.heartEmoji.scene && owner.heartEmoji.active){
                 const hy=t.y+t.displayHeight*0.30;
                 const hs=scaleForY(t.y)*0.8;
-                owner.heartEmoji.setPosition(t.x,hy).setScale(hs).setDepth(t.depth+1).setShadow(0,0,'#000',4);
+                owner.heartEmoji
+                  .setPosition(t.x, hy)
+                  .setScale(hs)
+                  .setDepth(t.depth)
+                  .setShadow(0, 0, '#000', 4);
               }
             },
             onComplete:owner.exitHandler});
@@ -1307,7 +1320,7 @@ export function setupGame(){
               current.heartEmoji
                 .setPosition(t.x, hy)
                 .setScale(hs)
-                .setDepth(t.depth + 1)
+                .setDepth(t.depth)
                 .setShadow(0, 0, '#000', 4);
             }
           }
@@ -1347,7 +1360,11 @@ export function setupGame(){
             if(owner.heartEmoji && owner.heartEmoji.scene && owner.heartEmoji.active){
               const hy=t.y+t.displayHeight*0.30;
               const hs=scaleForY(t.y)*0.8;
-              owner.heartEmoji.setPosition(t.x,hy).setScale(hs).setDepth(t.depth+1).setShadow(0,0,'#000',4);
+              owner.heartEmoji
+                .setPosition(t.x, hy)
+                .setScale(hs)
+                .setDepth(t.depth)
+                .setShadow(0, 0, '#000', 4);
             }
           },
           onComplete:owner.exitHandler});
@@ -1376,7 +1393,11 @@ export function setupGame(){
             if(current.heartEmoji && current.heartEmoji.scene && current.heartEmoji.active){
               const hy = t.y + t.displayHeight * 0.30;
               const hs = scaleForY(t.y) * 0.8;
-              current.heartEmoji.setPosition(t.x, hy).setScale(hs).setDepth(t.depth+1).setShadow(0, 0, '#000', 4);
+              current.heartEmoji
+                .setPosition(t.x, hy)
+                .setScale(hs)
+                .setDepth(t.depth)
+                .setShadow(0, 0, '#000', 4);
             }
           },
           onComplete: exit
@@ -1395,7 +1416,11 @@ export function setupGame(){
             if(current.heartEmoji && current.heartEmoji.scene && current.heartEmoji.active){
               const hy = t.y + t.displayHeight * 0.30;
               const hs = scaleForY(t.y) * 0.8;
-              current.heartEmoji.setPosition(t.x, hy).setScale(hs).setDepth(t.depth+1).setShadow(0, 0, '#000', 4);
+              current.heartEmoji
+                .setPosition(t.x, hy)
+                .setScale(hs)
+                .setDepth(t.depth)
+                .setShadow(0, 0, '#000', 4);
             }
           },
           onComplete:exit});

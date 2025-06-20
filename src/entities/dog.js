@@ -131,8 +131,8 @@ export function updateDog(owner) {
         dog.heartEmoji
           .setPosition(dog.x, hy)
           .setScale(hs)
-            .setDepth(dog.depth + 1)
-            .setShadow(0, 0, '#000', 4);
+          .setDepth(dog.depth)
+          .setShadow(0, 0, '#000', 4);
         }
       });
       tl.setCallback('onComplete', () => { dog.excited = false; dog.currentTween = null; dog.setFrame(1); });
@@ -220,7 +220,7 @@ export function updateDog(owner) {
         dog.heartEmoji
           .setPosition(t.x, hy)
           .setScale(hs)
-          .setDepth(t.depth + 1)
+          .setDepth(t.depth)
           .setShadow(0, 0, '#000', 4);
       }
     },
@@ -262,7 +262,7 @@ export function sendDogOffscreen(dog, x, y) {
         dog.heartEmoji
           .setPosition(t.x, hy)
           .setScale(hs)
-          .setDepth(t.depth + 1)
+          .setDepth(t.depth)
           .setShadow(0, 0, '#000', 4);
       }
     },

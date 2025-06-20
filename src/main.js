@@ -1445,14 +1445,23 @@ export function setupGame(){
           // start below the stamp so the stamp animation appears on top
           .setDepth(lossStamp.depth-1)
           .setStyle({fontStyle:'bold', strokeThickness:0});
-        const stampX=ticket.x + Phaser.Math.Between(-5,5);
-        const stampY=ticket.y - 6 + Phaser.Math.Between(-5,5);
+        const ticketH = dialogPriceBox.height;
+        let centerX = ticket.x;
+        let stampY = ticket.y;
+        if (ticket.getWorldTransformMatrix) {
+          const m = ticket.getWorldTransformMatrix();
+          centerX = m.tx;
+          stampY = m.ty;
+        }
+        stampY -= ticketH * 0.2;
+        const stampX = centerX + Phaser.Math.Between(-5,5);
+        const stampYFinal = stampY + Phaser.Math.Between(-3,3);
         const randFloat3 = Phaser.Math.FloatBetween || ((a,b)=>Phaser.Math.Between(a*1000,b*1000)/1000);
         const skewFn2 = typeof applyRandomSkew === 'function' ? applyRandomSkew :()=>{};
         lossStamp
           .setText('LOSS')
           .setScale(1.25 + randFloat3(-0.1, 0.1))
-          .setPosition(stampX, stampY)
+          .setPosition(stampX, stampYFinal)
           .setAngle(Phaser.Math.Between(-10,10))
           .setVisible(true);
         skewFn2(lossStamp);

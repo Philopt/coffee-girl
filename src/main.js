@@ -702,6 +702,7 @@ export function setupGame(){
         const radius=Math.max(width,height)/2 + 4;
         glow.fillStyle(glowColor,0.5);
         glow.fillCircle(0,0,radius);
+        glow.setBlendMode(Phaser.BlendModes.ADD);
         c.add(glow);
         c.glow=glow;
       }

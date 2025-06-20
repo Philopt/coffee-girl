@@ -158,51 +158,81 @@ export function setupGame(){
       createGrayscaleTexture(this, 'sell', 'sell_gray');
     }
 
-    const resetBtn = (btn, x, scale, depth)=>{
+    const SELL_X = 240;
+    const FINAL = canSell ?
+      {
+        sell:{x:SELL_X, scale:1.3, depth:13},
+        give:{x:370, scale:1.15, depth:12},
+        ref:{x:110, scale:1.15, depth:12}
+      } :
+      {
+        sell:{x:SELL_X, scale:1.3, depth:11},
+        give:{x:340, scale:1.4, depth:13},
+        ref:{x:140, scale:1.4, depth:13}
+      };
+
+    const resetBtn = (btn, info)=>{
       if(!btn) return;
-      btn.setPosition(x, startY);
+      btn.setPosition(SELL_X, startY);
       if(btn.list && btn.list[0]){
-        btn.list[0].setScale(scale);
+        btn.list[0].setScale(info.scale);
       }
       if(btn.list && btn.list[0]){
         btn.setSize(btn.list[0].displayWidth, btn.list[0].displayHeight);
       }
-      btn.setDepth(depth);
+      btn.setDepth(info.depth);
       btn.setAlpha(0).setVisible(true);
       if(btn.input) btn.input.enabled = false;
     };
 
-    if(canSell){
-      if(btnSell.list && btnSell.list[0] && this.textures.exists('sell')){
-        btnSell.list[0].setTexture('sell');
-        btnSell.list[0].setAlpha(1);
-      }
-      resetBtn(btnSell, 240, 1.3, 13);
-      resetBtn(btnGive, 370, 1.15, 12);
-      resetBtn(btnRef, 110, 1.15, 12);
-    }else{
-      if(btnSell.list && btnSell.list[0] && this.textures.exists('sell_gray')){
-        btnSell.list[0].setTexture('sell_gray');
-        btnSell.list[0].setAlpha(0.6);
-      }
-      resetBtn(btnSell, 240, 1.3, 11);
-      resetBtn(btnGive, 280, 1.4, 13);
-      resetBtn(btnRef, 200, 1.4, 13);
+    if(btnSell.list && btnSell.list[0]){
+      btnSell.list[0].setTexture('sell');
+      btnSell.list[0].setAlpha(1);
     }
 
-    const buttons = [btnSell, btnGive, btnRef];
-    this.tweens.add({
-      targets: buttons,
+    resetBtn(btnSell, FINAL.sell);
+    resetBtn(btnGive, FINAL.give);
+    resetBtn(btnRef, FINAL.ref);
+
+    const timeline = this.tweens.createTimeline();
+    timeline.add({
+      targets: btnSell,
       y: BUTTON_Y,
       alpha: 1,
       ease: 'Sine.easeOut',
       duration: dur(250),
       onComplete: () => {
-        if(canSell && btnSell.input) btnSell.input.enabled = true;
-        if(btnGive.input) btnGive.input.enabled = true;
-        if(btnRef.input) btnRef.input.enabled = true;
+        if(!canSell && btnSell.list && btnSell.list[0] && this.textures.exists('sell_gray')){
+          btnSell.list[0].setTexture('sell_gray');
+          btnSell.list[0].setAlpha(0.6);
+        }
       }
     });
+
+    timeline.add({
+      targets: btnGive,
+      x: FINAL.give.x,
+      y: BUTTON_Y,
+      alpha: 1,
+      ease: 'Sine.easeOut',
+      duration: dur(200)
+    });
+    timeline.add({
+      targets: btnRef,
+      x: FINAL.ref.x,
+      y: BUTTON_Y,
+      alpha: 1,
+      ease: 'Sine.easeOut',
+      duration: dur(200),
+      offset: '-=200'
+    });
+
+    timeline.setCallback('onComplete', () => {
+      if(canSell && btnSell.input) btnSell.input.enabled = true;
+      if(btnGive.input) btnGive.input.enabled = true;
+      if(btnRef.input) btnRef.input.enabled = true;
+    });
+    timeline.play();
   }
 
 

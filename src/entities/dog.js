@@ -316,6 +316,6 @@ export function dogTruckRuckus(scene, dog){
   tl.add({ targets: dog, x: truck.x, y: top, duration: dur(250) });
   tl.add({ targets: dog, x: dog.x, y: dog.y, duration: dur(300) });
   tl.setCallback('onComplete', () => scatterSparrows(scene));
-  dog.play && dog.play('dog_walk');
+  if (dog.anims && dog.play) { dog.play('dog_walk'); }
   tl.play();
 }

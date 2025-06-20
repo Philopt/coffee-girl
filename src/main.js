@@ -1810,7 +1810,7 @@ export function setupGame(){
               dog.setScale(s*(dog.dir||1), s);
             });
             dTl.setCallback('onComplete',()=>{ if(dog) dog.setFrame(1); });
-            if(dog && dog.play){ dog.play('dog_walk'); }
+            if(dog && dog.anims && dog.play){ dog.play('dog_walk'); }
             dTl.play();
           }
           return;
@@ -1893,7 +1893,7 @@ function dogsBarkAtFalcon(){
           dog.setScale(s*(dog.dir||1), s);
         });
         dTl.setCallback('onComplete',()=>{dog.setFrame(1);});
-        dog.play && dog.play('dog_walk');
+        if(dog.anims && dog.play){ dog.play('dog_walk'); }
         dTl.play();
       });
     }

@@ -977,6 +977,22 @@ export function setupGame(){
       ease: 'Cubic.easeIn',
       onComplete: () => {
         dialogDrinkEmoji.attachedTo = target;
+        if (this.time && this.tweens) {
+          this.time.delayedCall(dur(100), () => {
+            this.tweens.add({
+              targets: dialogDrinkEmoji,
+              scale: 0,
+              alpha: 0,
+              duration: dur(100),
+              onComplete: () => {
+                dialogDrinkEmoji.attachedTo = null;
+                dialogDrinkEmoji.setVisible(false);
+                dialogDrinkEmoji.setScale(1);
+                dialogDrinkEmoji.setAlpha(1);
+              }
+            });
+          }, [], this);
+        }
       }
     });
   }

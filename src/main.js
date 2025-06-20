@@ -865,7 +865,7 @@ export function setupGame(){
     if (typeof debugLog === 'function') debugLog('showDialog end');
   }
 
-  function clearDialog(keepPrice=false){
+  function clearDialog(keepPrice=false, resetTicket=true){
     GameState.dialogActive = false;
     if(!keepPrice){
       dialogBg.setVisible(false);
@@ -893,7 +893,9 @@ export function setupGame(){
     }else{
       dialogDrinkEmoji.setVisible(true);
     }
-    resetPriceBox.call(this);
+    if(resetTicket){
+      resetPriceBox.call(this);
+    }
     btnSell.setVisible(false);
     if (btnSell.input) btnSell.input.enabled = false;
     btnGive.setVisible(false);
@@ -971,7 +973,7 @@ export function setupGame(){
           // Only animate the dialog bubble away. Leave the price ticket
           // visible so it can fly over to the score area.
           this.tweens.add({targets:bubbleObjs, y:current.sprite.y, scale:0, duration:dur(200), onComplete:()=>{
-            clearDialog.call(this, true);
+            clearDialog.call(this, true, type!=='give');
           }});
         }
       } else {
@@ -1434,10 +1436,21 @@ export function setupGame(){
         skewFn2(lossStamp);
         // Ticket turns grayscale while the price flashes red
         if(dialogPriceTicket){
-          if(this.game.renderer.type === Phaser.WEBGL && dialogPriceTicket.setTint){
-            dialogPriceTicket.setTint(0x808080);
-          }else if(dialogPriceTicket.setTexture && this.textures.exists('price_ticket_gray')){
+          if(dialogPriceTicket.setTexture && this.textures.exists('price_ticket_gray')){
             dialogPriceTicket.setTexture('price_ticket_gray');
+          }
+          if(dialogPriceTicket.setTint){
+            dialogPriceTicket.setTint(0xffffff);
+            this.tweens.addCounter({
+              from:0,
+              to:1,
+              duration:dur(1000),
+              onUpdate:t=>{
+                const p=t.getValue();
+                const g=Math.round(255*(1-p));
+                dialogPriceTicket.setTint(Phaser.Display.Color.GetColor(255,g,g));
+              }
+            });
           }
         }
         if (dialogPriceValue && dialogPriceValue.setColor) {

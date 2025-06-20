@@ -831,15 +831,15 @@ export function setupGame(){
       const truckRight = truckRef.x + truckRef.displayWidth / 2;
       const truckTop = truckRef.y - truckRef.displayHeight / 2;
       priceTargetX = Math.max(truckRight + ticketOffset, minX) - 10;
-      priceTargetY = truckTop + ticketH / 2;
+      priceTargetY = truckTop + ticketH / 2 - 10;
     } else {
       const priceTargetXDefault = dialogBg.x + dialogBg.width/2 - 30; // nudge right
       priceTargetX = Math.max(priceTargetXDefault, minX) - 10;
-      priceTargetY = dialogBg.y - dialogBg.height - 20 - (c.isDog ? 30 : 0);
+      priceTargetY = dialogBg.y - dialogBg.height - 20 - (c.isDog ? 30 : 0) - 10;
     }
 
     const startX = (typeof girl !== 'undefined' && girl) ? girl.x : dialogBg.x;
-    const startY = (typeof girl !== 'undefined' && girl) ? girl.y - 20 : dialogBg.y;
+    const startY = (typeof girl !== 'undefined' && girl) ? girl.y - 30 : dialogBg.y - 10;
     dialogPriceContainer
       .setPosition(startX, startY)
       .setScale(0.2)

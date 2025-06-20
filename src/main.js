@@ -546,9 +546,9 @@ export function setupGame(){
       .setVisible(false)
       .setAlpha(1);
     lossStamp=this.add.text(0,0,'LOSS',{
-        font:'bold 32px sans-serif',
-        fill:'#a00',
-        stroke:'#a00',
+        font:'bold 28px sans-serif',
+        fill:'#ff0000',
+        stroke:'#ff0000',
         strokeThickness:2
       })
       .setOrigin(0.5)
@@ -1422,12 +1422,12 @@ export function setupGame(){
           .setDepth(lossStamp.depth-1)
           .setStyle({fontStyle:'bold', strokeThickness:0});
         const stampX=ticket.x + Phaser.Math.Between(-5,5);
-        const stampY=ticket.y + Phaser.Math.Between(-5,5);
+        const stampY=ticket.y - 6 + Phaser.Math.Between(-5,5);
         const randFloat3 = Phaser.Math.FloatBetween || ((a,b)=>Phaser.Math.Between(a*1000,b*1000)/1000);
         const skewFn2 = typeof applyRandomSkew === 'function' ? applyRandomSkew :()=>{};
         lossStamp
           .setText('LOSS')
-          .setScale(1.4 + randFloat3(-0.1, 0.1))
+          .setScale(1.25 + randFloat3(-0.1, 0.1))
           .setPosition(stampX, stampY)
           .setAngle(Phaser.Math.Between(-10,10))
           .setVisible(true);

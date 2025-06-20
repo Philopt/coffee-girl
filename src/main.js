@@ -1336,6 +1336,7 @@ export function setupGame(){
           dialogPriceValue.setPosition(m.tx, m.ty);
         }
         t.setDepth(paidStamp.depth + 1);
+        t.setColor('#fff');
         // Removed blinkPriceBorder; no need to flash the price text
       }, [], this);
       // Removed flashing movement of the price text

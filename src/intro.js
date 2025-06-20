@@ -63,7 +63,8 @@ function showStartScreen(scene){
     .setVisible(true)
     .setAlpha(1)
     .setSize(phoneW + 20, phoneH + 20)
-    .setInteractive({ useHandCursor: true });
+    .setInteractive({ useHandCursor: true })
+    .setScale(4);
   if(!phoneContainer.visible || phoneContainer.alpha === 0){
     console.warn('phoneContainer not visible after creation');
   }
@@ -83,6 +84,30 @@ function showStartScreen(scene){
   startButton.add(startZone);
 
   phoneContainer.add(startButton);
+
+  // Add a large emoji and title card for the sequel intro
+  const topEmoji = scene.add.text(0, -phoneH/4, '🙋‍♀️', {
+    font: '96px sans-serif',
+    fill: '#000'
+  }).setOrigin(0.5).setDepth(16);
+  const titleCard = scene.add.text(0, -phoneH/2 + 100, 'Lady Falcon Coffee Club 2', {
+    font: '48px sans-serif',
+    fill: '#000',
+    align: 'center',
+    wordWrap: { width: phoneW - 40 }
+  }).setOrigin(0.5).setDepth(16);
+  phoneContainer.add([topEmoji, titleCard]);
+
+  // Zoom out from the white screen at the start
+  if (scene.tweens && scene.tweens.add) {
+    scene.tweens.add({
+      targets: phoneContainer,
+      scale: 1,
+      duration: 800,
+      delay: 200,
+      ease: 'Sine.easeOut'
+    });
+  }
 
   let startMsgY = -phoneH/2 + 20;
 

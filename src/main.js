@@ -469,16 +469,16 @@ export function setupGame(){
 
       const count = extras.length;
       const baseY = count ? 6 : 0;
-      this.base.setPosition(0, baseY).setScale(count ? 0.9 : 1.1);
-      if(count===1){
-        this.extras[0].setScale(0.5).setPosition(0, baseY-18);
-      }else if(count===2){
-        this.extras[0].setScale(0.25).setPosition(-8, baseY-18);
-        this.extras[1].setScale(0.25).setPosition(8, baseY-18);
-      }else if(count>=3){
-        this.extras[0].setScale(0.25).setPosition(-8, baseY-16);
-        this.extras[1].setScale(0.25).setPosition(8, baseY-16);
-        this.extras[2].setScale(0.25).setPosition(0, baseY-28);
+      this.base.setPosition(0, baseY).setScale(count ? 1.0 : 1.1);
+      if (count === 1) {
+        this.extras[0].setScale(0.7).setPosition(0, baseY - 18);
+      } else if (count === 2) {
+        this.extras[0].setScale(0.6).setPosition(0, baseY - 18);
+        this.extras[1].setScale(0.6).setPosition(0, baseY - 30);
+      } else if (count >= 3) {
+        this.extras[0].setScale(0.55).setPosition(0, baseY - 18);
+        this.extras[1].setScale(0.55).setPosition(0, baseY - 30);
+        this.extras[2].setScale(0.55).setPosition(0, baseY - 42);
       }
       return this;
     };

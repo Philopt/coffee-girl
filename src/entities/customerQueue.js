@@ -138,14 +138,22 @@ export function lureNextWanderer(scene, specific) {
 
     if (typeof debugLog === 'function') debugLog('customer lured to queue');
     GameState.activeCustomer = GameState.queue[0];
-    const targetX = ORDER_X;
-    const targetY = ORDER_Y;
+    let targetX;
+    let targetY;
+    if (idx === 0) {
+      targetX = ORDER_X;
+      targetY = ORDER_Y;
+    } else {
+      targetX = QUEUE_X - QUEUE_SPACING * (idx - 1);
+      targetY = QUEUE_Y - QUEUE_OFFSET * (idx - 1);
+    }
     setDepthFromBottom(c.sprite, 5);
     const dir = c.dir || (c.sprite.x < targetX ? 1 : -1);
+    const speed = idx === 0 ? LURE_SPEED : LURE_SPEED * 0.75;
     c.walkTween = curvedApproach(scene, c.sprite, dir, targetX, targetY, () => {
       c.walkTween = null;
       registerArrival(scene, c);
-    }, LURE_SPEED, c);
+    }, speed, c);
     if (typeof checkQueueSpacing === 'function') checkQueueSpacing(scene);
   }
 }

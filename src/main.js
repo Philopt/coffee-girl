@@ -987,13 +987,10 @@ export function setupGame(){
       targets: dialogDrinkEmoji,
       x: target.x + DRINK_HOLD_OFFSET.x,
       y: target.y + DRINK_HOLD_OFFSET.y,
-      scale: 0,
-      alpha: 0,
       duration: dur(300),
       ease: 'Cubic.easeIn',
       onComplete: () => {
-        dialogDrinkEmoji.setVisible(false);
-        dialogDrinkEmoji.setScale(2).setAlpha(1);
+        dialogDrinkEmoji.attachedTo = target;
       }
     });
   }
@@ -1690,6 +1687,19 @@ export function setupGame(){
 
     if(delta<0){
       this.tweens.add({targets:customer,y:customer.y-20,duration:dur(150),yoyo:true});
+    }
+
+    if(dialogDrinkEmoji && dialogDrinkEmoji.attachedTo === customer){
+      this.tweens.add({
+        targets: dialogDrinkEmoji,
+        alpha: 0,
+        duration: dur(150),
+        onComplete: () => {
+          dialogDrinkEmoji.setVisible(false);
+          dialogDrinkEmoji.setAlpha(1);
+          dialogDrinkEmoji.attachedTo = null;
+        }
+      });
     }
 
     const baseX=customer.x - 20*(count-1)/2;

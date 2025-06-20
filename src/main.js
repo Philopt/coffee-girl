@@ -1363,12 +1363,10 @@ export function setupGame(){
         centerX = m.tx;
         stampY = m.ty;
       }
-      if (tip > 0) {
-        stampY -= ticketH * 0.2;
-      }
+      stampY -= ticketH * 0.2;
       const randFloat = Phaser.Math.FloatBetween || ((a,b)=>Phaser.Math.Between(a*1000,b*1000)/1000);
       const skewFn = typeof applyRandomSkew === 'function' ? applyRandomSkew : ()=>{};
-      const finalScale = 1.4 + randFloat(-0.1, 0.1);
+      const finalScale = 1.2 + randFloat(-0.05, 0.05);
       const targetX = centerX + Phaser.Math.Between(-3,3);
       const targetY = stampY + Phaser.Math.Between(-3,3);
       const targetAngle = Phaser.Math.Between(-10,10);

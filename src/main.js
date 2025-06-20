@@ -791,9 +791,11 @@ export function setupGame(){
       dialogPriceLabel.setVisible(false);
       dialogPriceValue.setVisible(false);
       dialogDrinkEmoji
-
-        .setText('')
-        .setVisible(false);
+        .setText('🍨')
+        .setPosition(0, -dialogPriceBox.height/4 + 5)
+        .setScale(3)
+        .setVisible(true)
+        .setDepth(paidStamp.depth + 1);
 
     } else {
       dialogPupCup.setVisible(false);
@@ -1422,9 +1424,9 @@ export function setupGame(){
       const destX=moneyText.x+moneyText.width-15;
       const destY=moneyText.y+10;
       if(current.isDog){
-        // Pup cup: no stamp, just toss the ticket aside.
-        this.tweens.add({targets:ticket, x:520, alpha:0, duration:dur(300), ease:'Cubic.easeIn'});
-        this.time.delayedCall(dur(300), ()=>{
+        // Pup cup: fade the ticket and send the dessert to the dog.
+        this.tweens.add({targets:ticket, alpha:0, duration:dur(200), ease:'Cubic.easeIn'});
+        this.time.delayedCall(dur(200), ()=>{
           clearDialog.call(this);
           ticket.setVisible(false);
           GameState.money=+(GameState.money+mD).toFixed(2);

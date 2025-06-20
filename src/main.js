@@ -219,8 +219,30 @@ export function setupGame(){
       onComplete: () => {
 
         if(!canSell && btnSell && btnSell.image && this.textures.exists('sell_gray')){
-          btnSell.image.setTexture('sell_gray');
-          btnSell.image.setAlpha(0.6);
+          if(!btnSell.grayOverlay){
+            btnSell.grayOverlay = this.add.image(0,0,'sell_gray')
+              .setScale(btnSell.image.scale)
+              .setAlpha(0);
+            btnSell.add(btnSell.grayOverlay);
+          }else{
+            btnSell.grayOverlay.setAlpha(0).setVisible(true);
+            btnSell.grayOverlay.setScale(btnSell.image.scale);
+          }
+          this.tweens.add({
+            targets: btnSell.grayOverlay,
+            alpha: 0.6,
+            duration: dur(300)
+          });
+          this.tweens.add({
+            targets: btnSell.image,
+            alpha: 0,
+            duration: dur(300),
+            onComplete: () => {
+              btnSell.image.setTexture('sell_gray');
+              btnSell.image.setAlpha(0.6);
+              btnSell.grayOverlay.setVisible(false);
+            }
+          });
 
         }
       }

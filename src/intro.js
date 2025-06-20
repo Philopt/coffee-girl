@@ -11,6 +11,8 @@ let startButton=null;
 let phoneContainer=null;
 let startMsgTimers=[];
 let startMsgBubbles=[];
+let openingTitle=null;
+let openingNumber=null;
 
 function playOpening(scene){
   scene = scene || this;
@@ -21,20 +23,24 @@ function playOpening(scene){
     .setOrigin(0.5)
     .setDepth(15)
     .setAlpha(0);
-  const title=scene.add.text(240,420,'Lady Falcon\nCoffee Club',{
+  openingTitle=scene.add.text(240,420,'Lady Falcon\nCoffee Club',{
       font:'48px sans-serif',fill:'#000',align:'center',wordWrap:{width:460}})
+    .setOrigin(0.5)
+    .setDepth(15)
+    .setAlpha(0);
+  openingNumber=scene.add.text(240,500,'2',{
+      font:'96px sans-serif',fill:'#000'})
     .setOrigin(0.5)
     .setDepth(15)
     .setAlpha(0);
   const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
     white.destroy();
     emoji.destroy();
-    title.destroy();
     showStartScreen.call(scene);
   }});
   tl.add({targets:emoji,alpha:1,duration:600,ease:'Sine.easeOut',delay:100});
-  tl.add({targets:title,alpha:1,duration:600,ease:'Sine.easeOut'});
-  tl.add({targets:[emoji,title],alpha:0,duration:600,delay:1000});
+  tl.add({targets:[openingTitle,openingNumber],alpha:1,duration:600,ease:'Sine.easeOut'});
+  tl.add({targets:emoji,alpha:0,duration:600,delay:1000});
   tl.add({targets:white,alpha:0,duration:600});
   tl.play();
 }
@@ -113,7 +119,14 @@ function showStartScreen(scene){
   phoneContainer.add(startButton);
 
   // Add a large emoji and title card for the sequel intro
-  // No additional emoji or title card on the phone container
+  if(openingTitle){
+    openingTitle.setPosition(0, -phoneH/2 + 100).setDepth(16).setAlpha(1);
+    phoneContainer.add(openingTitle);
+  }
+  if(openingNumber){
+    openingNumber.setPosition(0, -phoneH/4).setDepth(16).setAlpha(1);
+    phoneContainer.add(openingNumber);
+  }
 
   // Zoom out from the white screen at the start
   if (scene.tweens && scene.tweens.add) {
@@ -174,11 +187,13 @@ function showStartScreen(scene){
     const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
       if(startButton) startButton.destroy();
       if(startOverlay){startOverlay.destroy(); startOverlay=null;}
+      if(openingTitle){ openingTitle.destroy(); openingTitle=null; }
+      if(openingNumber){ openingNumber.destroy(); openingNumber=null; }
       phoneContainer.destroy(); phoneContainer=null;
       playIntro.call(scene);
     }});
     tl.add({targets:phoneContainer,y:-320,duration:600,ease:'Sine.easeIn'});
-    tl.add({targets:startOverlay,alpha:0,duration:600},0);
+    tl.add({targets:[startOverlay,openingTitle,openingNumber],alpha:0,duration:600});
     tl.play();
   });
 

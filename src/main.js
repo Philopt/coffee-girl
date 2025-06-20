@@ -792,10 +792,11 @@ export function setupGame(){
       dialogPriceValue.setVisible(false);
       dialogDrinkEmoji
         .setText('🍨')
-        .setPosition(0, -dialogPriceBox.height/4 + 5)
-        .setScale(3)
-        .setVisible(true)
-        .setDepth(paidStamp.depth + 1);
+
+        .setPosition(0,-dialogPriceBox.height/4 + 5)
+        .setScale(2)
+        .setVisible(true);
+
 
     } else {
       dialogPupCup.setVisible(false);
@@ -1313,10 +1314,17 @@ export function setupGame(){
       const targetX = centerX + Phaser.Math.Between(-3,3);
       const targetY = stampY + Phaser.Math.Between(-3,3);
       const targetAngle = Phaser.Math.Between(-10,10);
+      let startX = t.x;
+      let startY = t.y;
+      if (t.getWorldTransformMatrix) {
+        const m2 = t.getWorldTransformMatrix();
+        startX = m2.tx;
+        startY = m2.ty;
+      }
       paidStamp
-        .setText('PAID')
+        .setText('SOLD')
         .setScale(finalScale * 0.5)
-        .setPosition(t.x, t.y)
+        .setPosition(startX, startY)
         .setAngle(0)
         .setVisible(true);
       this.tweens.add({
@@ -1338,6 +1346,7 @@ export function setupGame(){
           dialogPriceValue.setPosition(m.tx, m.ty);
         }
         t.setDepth(paidStamp.depth + 1);
+        t.setColor('#fff');
         // Removed blinkPriceBorder; no need to flash the price text
       }, [], this);
       // Removed flashing movement of the price text
@@ -1439,14 +1448,23 @@ export function setupGame(){
           // start below the stamp so the stamp animation appears on top
           .setDepth(lossStamp.depth-1)
           .setStyle({fontStyle:'bold', strokeThickness:0});
-        const stampX=ticket.x + Phaser.Math.Between(-5,5);
-        const stampY=ticket.y - 6 + Phaser.Math.Between(-5,5);
+        const ticketH = dialogPriceBox.height;
+        let centerX = ticket.x;
+        let stampY = ticket.y;
+        if (ticket.getWorldTransformMatrix) {
+          const m = ticket.getWorldTransformMatrix();
+          centerX = m.tx;
+          stampY = m.ty;
+        }
+        stampY -= ticketH * 0.2;
+        const stampX = centerX + Phaser.Math.Between(-5,5);
+        const stampYFinal = stampY + Phaser.Math.Between(-3,3);
         const randFloat3 = Phaser.Math.FloatBetween || ((a,b)=>Phaser.Math.Between(a*1000,b*1000)/1000);
         const skewFn2 = typeof applyRandomSkew === 'function' ? applyRandomSkew :()=>{};
         lossStamp
           .setText('LOSS')
           .setScale(1.25 + randFloat3(-0.1, 0.1))
-          .setPosition(stampX, stampY)
+          .setPosition(stampX, stampYFinal)
           .setAngle(Phaser.Math.Between(-10,10))
           .setVisible(true);
         skewFn2(lossStamp);
@@ -1563,7 +1581,7 @@ export function setupGame(){
           done();
       }});
       tl.add({targets:reportLine1,x:midX,y:midY,duration:dur(300),onComplete:()=>{
-            const word='PAID';
+            const word='SOLD';
             const color='#8f8';
             reportLine1.setColor(color);
             if(showTip){

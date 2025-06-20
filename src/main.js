@@ -464,15 +464,20 @@ export function setupGame(){
       this.stopHalo();
       const visibleExtras = this.extras.filter(e=>e.visible && e.text);
       if(!visibleExtras.length) return;
-      const radius = 12;
+      // Radii of the halo effect. Smaller values keep the extras
+      // closer together so they appear to almost touch. X and Y are
+      // separate so the orbit can be slightly flattened vertically.
+      const radiusX = 8;
+      const radiusY = 4;
       visibleExtras.forEach((e,i)=>{
         const offset = i/visibleExtras.length * Math.PI*2;
         const tween=this.scene.tweens.addCounter({
-          from:0,to:Math.PI*2,duration:2000,repeat:-1,
+          from:0,to:Math.PI*2,duration:4000,repeat:-1,
           onUpdate:t=>{
-            const ang=t.getValue()+offset;
-            e.x = Math.cos(ang)*radius;
-            e.y = this.base.y-12 + Math.sin(ang)*radius;
+            const ang = t.getValue() + offset;
+            const centerY = this.base.y - 7; // slightly lower center
+            e.x = Math.cos(ang) * radiusX;
+            e.y = centerY + Math.sin(ang) * radiusY;
           }
         });
         this.haloTweens.push(tween);

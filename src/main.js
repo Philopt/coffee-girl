@@ -816,10 +816,14 @@ export function setupGame(){
       dialogPriceValue.setVisible(false);
       dialogDrinkEmoji
         .setText('🍨')
-
-        .setPosition(0,-dialogPriceBox.height/4 + 5)
+        // Lower the dessert emoji slightly so it sits in the cup better
+        .setPosition(0,-dialogPriceBox.height/4 + 10)
         .setScale(2)
         .setVisible(true);
+      // Give the dessert emoji a dark, heavy shadow outline so it pops
+      dialogDrinkEmoji.base
+        .setShadow(0, 0, '#000', 8)
+        .setStyle({stroke:'#000', strokeThickness:4});
 
 
     } else {
@@ -846,6 +850,9 @@ export function setupGame(){
         .setScale(2)
         .setVisible(true)
         .setDepth(paidStamp.depth + 1);
+      dialogDrinkEmoji.base
+        .setShadow(0, 0, '#000', 0)
+        .setStyle({strokeThickness:0});
     }
 
     this.tweens.add({

@@ -893,7 +893,7 @@ export function setupGame(){
     }else{
       dialogDrinkEmoji.setVisible(true);
     }
-    resetPriceBox();
+    resetPriceBox.call(this);
     btnSell.setVisible(false);
     if (btnSell.input) btnSell.input.enabled = false;
     btnGive.setVisible(false);

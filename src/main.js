@@ -1144,6 +1144,11 @@ export function setupGame(){
             if(dialogText.setColor) dialogText.setColor('#000');
             if(dialogCoins.setColor) dialogCoins.setColor('#000');
             clearDialog.call(this, false);
+            if(lD!==0){
+              animateLoveChange.call(this,lD,current.sprite,done);
+            }else{
+              done();
+            }
           }});
         } else {
           // Only animate the dialog bubble away. Leave the price ticket
@@ -1601,6 +1606,9 @@ export function setupGame(){
             moneyText.setText('🪙 '+receipt(GameState.money));
             animateStatChange(moneyText, this, mD);
             done();
+            if(lD!==0){
+              animateLoveChange.call(this,lD,customer,done);
+            }
         }});
         tl.add({targets:ticket,x:destX,y:destY,scale:0,duration:dur(400),
           onStart:()=>{
@@ -1640,6 +1648,9 @@ export function setupGame(){
               moneyText.setText('🪙 ' + receipt(GameState.money));
               animateStatChange(moneyText, this, mD);
               done();
+              if(lD!==0){
+                animateLoveChange.call(this,lD,customer,done);
+              }
             }
           });
         }, [], this);
@@ -1779,6 +1790,9 @@ export function setupGame(){
           moneyText.setText('🪙 '+receipt(GameState.money));
           animateStatChange(moneyText, this, mD);
           done();
+          if(lD!==0){
+            animateLoveChange.call(this,lD,customer,done);
+          }
       }});
       tl.add({targets:reportLine1,x:midX,y:midY,duration:dur(300),onComplete:()=>{
             const word='SOLD';
@@ -1811,9 +1825,7 @@ export function setupGame(){
       tl.play();
     }
 
-    if(lD!==0){
-      animateLoveChange.call(this,lD,customer,done);
-    }
+    // Reaction happens after the order animation completes
     if(pending===0) finish();
   }
 

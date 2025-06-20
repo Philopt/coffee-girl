@@ -180,9 +180,11 @@ export function setupGame(){
       if(!btn) return;
       const img = buttonImage(btn);
       btn.setPosition(SELL_X, startY);
-      if(img){
-        img.setScale(info.scale);
-        btn.setSize(img.displayWidth, img.displayHeight);
+
+      if(btn.image){
+        btn.image.setScale(info.scale);
+        btn.setSize(btn.image.displayWidth, btn.image.displayHeight);
+
       }
       btn.setDepth(info.depth);
       btn.setAlpha(0).setVisible(true);
@@ -194,10 +196,11 @@ export function setupGame(){
       }
     };
 
-    const sellImg = buttonImage(btnSell);
-    if(sellImg){
-      sellImg.setTexture('sell');
-      sellImg.setAlpha(1);
+
+    if(btnSell && btnSell.image){
+      btnSell.image.setTexture('sell');
+      btnSell.image.setAlpha(1);
+
     }
 
     resetBtn(btnSell, FINAL.sell);
@@ -212,10 +215,11 @@ export function setupGame(){
       ease: 'Sine.easeOut',
       duration: dur(250),
       onComplete: () => {
-        const img = buttonImage(btnSell);
-        if(!canSell && img && this.textures.exists('sell_gray')){
-          img.setTexture('sell_gray');
-          img.setAlpha(0.6);
+
+        if(!canSell && btnSell && btnSell.image && this.textures.exists('sell_gray')){
+          btnSell.image.setTexture('sell_gray');
+          btnSell.image.setAlpha(0.6);
+
         }
       }
     });
@@ -578,10 +582,18 @@ export function setupGame(){
       .setOrigin(0.5);
     dialogPriceValue=this.add.text(-5,20,'',{font:'40px sans-serif',fill:'#000'})
       .setOrigin(0.5);
-    const baseEmoji = this.add.text(0,0,'',{font:'28px sans-serif'}).setOrigin(0.5);
-    const extra1 = this.add.text(0,-18,'',{font:'16px sans-serif'}).setOrigin(0.5);
-    const extra2 = this.add.text(0,-18,'',{font:'16px sans-serif'}).setOrigin(0.5);
-    const extra3 = this.add.text(0,-18,'',{font:'16px sans-serif'}).setOrigin(0.5);
+    const baseEmoji = this.add.text(0,0,'',{font:'28px sans-serif'})
+      .setOrigin(0.5)
+      .setShadow(0, 0, '#000', 4);
+    const extra1 = this.add.text(0,-18,'',{font:'16px sans-serif'})
+      .setOrigin(0.5)
+      .setShadow(0, 0, '#000', 4);
+    const extra2 = this.add.text(0,-18,'',{font:'16px sans-serif'})
+      .setOrigin(0.5)
+      .setShadow(0, 0, '#000', 4);
+    const extra3 = this.add.text(0,-18,'',{font:'16px sans-serif'})
+      .setOrigin(0.5)
+      .setShadow(0, 0, '#000', 4);
     // Add base first so extras render on top of the drink
     dialogDrinkEmoji=this.add.container(-30,-20,[baseEmoji, extra1, extra2, extra3]);
     dialogDrinkEmoji.base = baseEmoji;
@@ -667,9 +679,15 @@ export function setupGame(){
     // helper to create a button using an image asset
     const createButton=(x,key,handler,scale=1,depth=12,glowColor=null)=>{
       const img=this.add.image(0,0,key).setScale(scale);
+      const shadow=this.add.image(3,3,key)
+        .setScale(scale)
+        .setTint(0x000000)
+        .setAlpha(0.5);
       const width=img.displayWidth;
       const height=img.displayHeight;
+
       const c=this.add.container(x,BUTTON_Y)
+
         .setSize(width,height)
         .setDepth(depth)
         .setVisible(false);
@@ -684,6 +702,7 @@ export function setupGame(){
       }
 
       c.add(img);
+      c.image = img; // store reference for easy access
 
       const zone=this.add.zone(0,0,width,height).setOrigin(0.5);
       zone.setInteractive({ useHandCursor:true });

@@ -41,8 +41,10 @@ const CUSTOMER_SPEED = 560 / 12;
 // and caused customers to lag behind their wander speed.
 const LURE_SPEED = CUSTOMER_SPEED * 1.5;
 const EDGE_TURN_BUFFER = 40;
+// Begin adjusting queue spacing when customers reach this distance
+const EARLY_CHECK_DIST = 64;
 // Trigger arrival when two customer sprites get this close while walking
-const EARLY_COLLIDE_DIST = 32;
+const EARLY_COLLIDE_DIST = 40;
 // Ensure small adjustments don't happen instantaneously
 const MIN_MOVE_DURATION = 250;
 const HEART_EMOJIS = {
@@ -276,6 +278,9 @@ function curvedApproach(scene, sprite, dir, targetX, targetY, onComplete, speed 
     for (const other of GameState.queue) {
       if (other === cust || !other.sprite) continue;
       const d = Phaser.Math.Distance.Between(sprite.x, sprite.y, other.sprite.x, other.sprite.y);
+      if (d < EARLY_CHECK_DIST && typeof checkQueueSpacing === 'function') {
+        checkQueueSpacing(scene);
+      }
       if (d < EARLY_COLLIDE_DIST) {
         if (tween) tween.stop();
         cust.walkTween = null;

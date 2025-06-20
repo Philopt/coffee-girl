@@ -21,8 +21,8 @@ function playOpening(scene){
     .setOrigin(0.5)
     .setDepth(15)
     .setAlpha(0);
-  const title=scene.add.text(240,420,'Lady Falcon Coffee Club 2',{
-      font:'32px sans-serif',fill:'#000',align:'center',wordWrap:{width:460}})
+  const title=scene.add.text(240,420,'Lady Falcon\nCoffee Club',{
+      font:'48px sans-serif',fill:'#000',align:'center',wordWrap:{width:460}})
     .setOrigin(0.5)
     .setDepth(15)
     .setAlpha(0);
@@ -113,17 +113,7 @@ function showStartScreen(scene){
   phoneContainer.add(startButton);
 
   // Add a large emoji and title card for the sequel intro
-  const topEmoji = scene.add.text(0, -phoneH/4, '🙋‍♀️', {
-    font: '96px sans-serif',
-    fill: '#000'
-  }).setOrigin(0.5).setDepth(16);
-  const titleCard = scene.add.text(0, -phoneH/2 + 100, 'Lady Falcon Coffee Club 2', {
-    font: '48px sans-serif',
-    fill: '#000',
-    align: 'center',
-    wordWrap: { width: phoneW - 40 }
-  }).setOrigin(0.5).setDepth(16);
-  phoneContainer.add([topEmoji, titleCard]);
+  // No additional emoji or title card on the phone container
 
   // Zoom out from the white screen at the start
   if (scene.tweens && scene.tweens.add) {

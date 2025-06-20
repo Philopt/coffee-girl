@@ -1311,10 +1311,17 @@ export function setupGame(){
       const targetX = centerX + Phaser.Math.Between(-3,3);
       const targetY = stampY + Phaser.Math.Between(-3,3);
       const targetAngle = Phaser.Math.Between(-10,10);
+      let startX = t.x;
+      let startY = t.y;
+      if (t.getWorldTransformMatrix) {
+        const m2 = t.getWorldTransformMatrix();
+        startX = m2.tx;
+        startY = m2.ty;
+      }
       paidStamp
-        .setText('PAID')
+        .setText('SOLD')
         .setScale(finalScale * 0.5)
-        .setPosition(t.x, t.y)
+        .setPosition(startX, startY)
         .setAngle(0)
         .setVisible(true);
       this.tweens.add({
@@ -1561,7 +1568,7 @@ export function setupGame(){
           done();
       }});
       tl.add({targets:reportLine1,x:midX,y:midY,duration:dur(300),onComplete:()=>{
-            const word='PAID';
+            const word='SOLD';
             const color='#8f8';
             reportLine1.setColor(color);
             if(showTip){

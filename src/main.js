@@ -235,6 +235,39 @@ export function setupGame(){
     timeline.play();
   }
 
+  function fadeOutOtherButtons(selected){
+    const others=[btnSell,btnGive,btnRef].filter(b=>b&&b!==selected);
+    others.forEach(btn=>{
+      if(btn.input) btn.input.enabled=false;
+      if(this.tweens){
+        this.tweens.add({targets:btn,alpha:0,duration:dur(150),onComplete:()=>{btn.setVisible(false);}});
+      }else{
+        btn.setVisible(false);
+      }
+    });
+  }
+
+  function blowButtonsAway(except){
+    const buttons=[btnSell,btnGive,btnRef].filter(b=>b&&b!==except);
+    buttons.forEach(btn=>{
+      if(btn.input) btn.input.enabled=false;
+      if(this.tweens){
+        this.tweens.add({
+          targets:btn,
+          y:btn.y+200,
+          x:btn.x+Phaser.Math.Between(-40,40),
+          angle:Phaser.Math.Between(-90,90),
+          alpha:0,
+          duration:dur(300),
+          ease:'Cubic.easeIn',
+          onComplete:()=>{btn.setVisible(false);}
+        });
+      }else{
+        btn.setVisible(false);
+      }
+    });
+  }
+
 
 
 
@@ -612,7 +645,14 @@ export function setupGame(){
 
       const zone=this.add.zone(0,0,width,height).setOrigin(0.5);
       zone.setInteractive({ useHandCursor:true });
-      zone.on('pointerdown',()=>blinkButton.call(this,c,handler,zone));
+      zone.on('pointerdown',()=>{
+        if(key==='refuse'){
+          blowButtonsAway.call(this,c);
+        }else{
+          fadeOutOtherButtons.call(this,c);
+        }
+        blinkButton.call(this,c,handler,zone);
+      });
       c.add(zone);
       return c;
     };

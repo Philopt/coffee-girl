@@ -101,4 +101,25 @@ export function setDepthFromBottom(sprite, base = 5){
   sprite.setDepth(base + bottomY * 0.006);
 }
 
+export function createGrayscaleTexture(scene, key, destKey){
+  if(!scene || !scene.textures || !scene.textures.exists(key)) return;
+  const srcImg = scene.textures.get(key).getSourceImage();
+  if(!srcImg) return;
+  const w = srcImg.width;
+  const h = srcImg.height;
+  const canvasTex = scene.textures.createCanvas(destKey, w, h);
+  const ctx = canvasTex.getContext();
+  ctx.drawImage(srcImg, 0, 0);
+  const imgData = ctx.getImageData(0, 0, w, h);
+  const data = imgData.data;
+  for(let i=0;i<data.length;i+=4){
+    const r=data[i], g=data[i+1], b=data[i+2];
+    const gray=Math.round(0.299*r + 0.587*g + 0.114*b);
+    data[i]=data[i+1]=data[i+2]=gray;
+  }
+  ctx.putImageData(imgData, 0, 0);
+  canvasTex.refresh();
+  return canvasTex;
+}
+
 export { blinkButton as default };

@@ -447,7 +447,7 @@ export function setupGame(){
       .setOrigin(0.5);
     dialogPriceValue=this.add.text(-5,20,'',{font:'40px sans-serif',fill:'#000'})
       .setOrigin(0.5);
-    const baseEmoji = this.add.text(0,0,'',{font:'24px sans-serif'}).setOrigin(0.5);
+    const baseEmoji = this.add.text(0,0,'',{font:'28px sans-serif'}).setOrigin(0.5);
     const extra1 = this.add.text(0,-18,'',{font:'16px sans-serif'}).setOrigin(0.5);
     const extra2 = this.add.text(0,-18,'',{font:'16px sans-serif'}).setOrigin(0.5);
     const extra3 = this.add.text(0,-18,'',{font:'16px sans-serif'}).setOrigin(0.5);
@@ -475,7 +475,7 @@ export function setupGame(){
           from:0,to:Math.PI*2,duration:4000,repeat:-1,
           onUpdate:t=>{
             const ang = t.getValue() + offset;
-            const centerY = this.base.y - 7; // slightly lower center
+            const centerY = this.base.y - 6; // slightly lower center
             e.x = Math.cos(ang) * radiusX;
             e.y = centerY + Math.sin(ang) * radiusY;
           }
@@ -498,7 +498,7 @@ export function setupGame(){
 
       const count = extras.length;
       const baseY = count ? 4 : 0;
-      this.base.setPosition(0, baseY).setScale(count ? 0.9 : 1.1);
+      this.base.setPosition(0, baseY).setScale(count ? 1.0 : 1.3);
       if(count===1){
         this.extras[0].setScale(0.5).setPosition(0, baseY-16);
       }else if(count===2){

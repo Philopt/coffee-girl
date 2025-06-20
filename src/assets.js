@@ -51,7 +51,7 @@ export function emojiFor(name){
   if (rose) extras.push('🌹');
   else if (pink) extras.push('🌸');
   if (crush) extras.push('💥');
-  if (iced) extras.push('🧊🧊');
+  if (iced) extras.push('🧊 🧊');
 
   if (extras.length) {
     return `${extras.join(' ')}\n${base}`;

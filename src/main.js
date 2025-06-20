@@ -153,21 +153,54 @@ export function setupGame(){
 
 
   function fadeInButtons(canSell){
-    const buttons = [];
-    if (canSell) buttons.push(btnSell);
-    buttons.push(btnGive, btnRef);
-    buttons.forEach(b => {
-      b.setAlpha(0).setVisible(true);
-      if (b.input) b.input.enabled = false;
-    });
+    const startY = BUTTON_Y + 50;
+    if(!this.textures.exists('sell_gray')){
+      createGrayscaleTexture(this, 'sell', 'sell_gray');
+    }
+
+    const resetBtn = (btn, x, scale, depth)=>{
+      if(!btn) return;
+      btn.setPosition(x, startY);
+      if(btn.list && btn.list[0]){
+        btn.list[0].setScale(scale);
+      }
+      if(btn.list && btn.list[0]){
+        btn.setSize(btn.list[0].displayWidth, btn.list[0].displayHeight);
+      }
+      btn.setDepth(depth);
+      btn.setAlpha(0).setVisible(true);
+      if(btn.input) btn.input.enabled = false;
+    };
+
+    if(canSell){
+      if(btnSell.list && btnSell.list[0] && this.textures.exists('sell')){
+        btnSell.list[0].setTexture('sell');
+        btnSell.list[0].setAlpha(1);
+      }
+      resetBtn(btnSell, 240, 1.3, 13);
+      resetBtn(btnGive, 370, 1.15, 12);
+      resetBtn(btnRef, 110, 1.15, 12);
+    }else{
+      if(btnSell.list && btnSell.list[0] && this.textures.exists('sell_gray')){
+        btnSell.list[0].setTexture('sell_gray');
+        btnSell.list[0].setAlpha(0.6);
+      }
+      resetBtn(btnSell, 240, 1.3, 11);
+      resetBtn(btnGive, 280, 1.4, 13);
+      resetBtn(btnRef, 200, 1.4, 13);
+    }
+
+    const buttons = [btnSell, btnGive, btnRef];
     this.tweens.add({
       targets: buttons,
+      y: BUTTON_Y,
       alpha: 1,
-      duration: dur(150),
-        onComplete: () => {
-          if (canSell && btnSell.input) btnSell.input.enabled = true;
-        if (btnGive.input) btnGive.input.enabled = true;
-        if (btnRef.input) btnRef.input.enabled = true;
+      ease: 'Sine.easeOut',
+      duration: dur(250),
+      onComplete: () => {
+        if(canSell && btnSell.input) btnSell.input.enabled = true;
+        if(btnGive.input) btnGive.input.enabled = true;
+        if(btnRef.input) btnRef.input.enabled = true;
       }
     });
   }
@@ -534,13 +567,13 @@ export function setupGame(){
 
 
     // helper to create a button using an image asset
-    const createButton=(x,key,handler)=>{
-      const img=this.add.image(0,0,key);
-      const width=img.width;
-      const height=img.height;
+    const createButton=(x,key,handler,scale=1,depth=12)=>{
+      const img=this.add.image(0,0,key).setScale(scale);
+      const width=img.displayWidth;
+      const height=img.displayHeight;
       const c=this.add.container(x,BUTTON_Y,[img])
         .setSize(width,height)
-        .setDepth(12)
+        .setDepth(depth)
         .setVisible(false);
 
       const zone=this.add.zone(0,0,width,height).setOrigin(0.5);
@@ -553,9 +586,9 @@ export function setupGame(){
     // buttons evenly spaced
 
     // Arrange buttons: Refuse on the left, Sell in the middle (largest), Give on the right
-    btnRef=createButton(80,'refuse',()=>handleAction.call(this,'refuse'));
-    btnSell=createButton(240,'sell',()=>handleAction.call(this,'sell'));
-    btnGive=createButton(400,'give',()=>handleAction.call(this,'give'));
+    btnRef=createButton(110,'refuse',()=>handleAction.call(this,'refuse'),1.15,12);
+    btnSell=createButton(240,'sell',()=>handleAction.call(this,'sell'),1.3,13);
+    btnGive=createButton(370,'give',()=>handleAction.call(this,'give'),1.15,12);
 
 
     // sliding report texts

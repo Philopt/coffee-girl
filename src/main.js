@@ -1492,16 +1492,24 @@ export function setupGame(){
       const destX=moneyText.x+moneyText.width-15;
       const destY=moneyText.y+10;
       if(current.isDog){
-        // Pup cup: fade the ticket and send the dessert to the dog.
-        this.tweens.add({targets:ticket, alpha:0, duration:dur(200), ease:'Cubic.easeIn'});
-        this.time.delayedCall(dur(200), ()=>{
-          clearDialog.call(this);
-          ticket.setVisible(false);
-          GameState.money=+(GameState.money+mD).toFixed(2);
-          moneyText.setText('🪙 '+receipt(GameState.money));
-          animateStatChange(moneyText, this, mD);
-          done();
-        },[],this);
+        // Pup cup: keep the ticket visible briefly so the dessert emoji can fly
+        // to the dog before the ticket fades away.
+        this.time.delayedCall(dur(1000), () => {
+          this.tweens.add({
+            targets: ticket,
+            alpha: 0,
+            duration: dur(200),
+            ease: 'Cubic.easeIn',
+            onComplete: () => {
+              clearDialog.call(this);
+              ticket.setVisible(false);
+              GameState.money = +(GameState.money + mD).toFixed(2);
+              moneyText.setText('🪙 ' + receipt(GameState.money));
+              animateStatChange(moneyText, this, mD);
+              done();
+            }
+          });
+        }, [], this);
       } else {
         t.setVisible(true)
           // start below the stamp so the stamp animation appears on top

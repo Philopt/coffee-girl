@@ -10,7 +10,7 @@ import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows } from './sparrow
 import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog, dogTruckRuckus } from './entities/dog.js';
 import { startWander } from './entities/wanderers.js';
 
-import { flashBorder, flashFill, blinkButton, applyRandomSkew, emphasizePrice, setDepthFromBottom, createGrayscaleTexture } from './ui/helpers.js';
+import { flashBorder, flashFill, blinkButton, applyRandomSkew, emphasizePrice, setDepthFromBottom, createGrayscaleTexture, createGlowTexture } from './ui/helpers.js';
 
 import { keys, requiredAssets, preload as preloadAssets, receipt, emojiFor } from './assets.js';
 import { showStartScreen, playIntro } from './intro.js';
@@ -251,24 +251,20 @@ export function setupGame(){
       if(btnGive.zone && btnGive.zone.input) btnGive.zone.input.enabled = true;
       if(btnRef.zone && btnRef.zone.input) btnRef.zone.input.enabled = true;
       if(btnSell.glow){
-        if(canSell){
-          btnSell.glow.setVisible(true).setAlpha(0.6);
-          if(btnSell.glowTween && btnSell.glowTween.remove) btnSell.glowTween.remove();
-          btnSell.glowTween = this.tweens.add({
-            targets: btnSell.glow,
-            alpha: {from:0.6, to:0.2},
-            duration: dur(800),
-            yoyo: true,
-            repeat: -1
-          });
-        }else{
-          if(btnSell.glowTween && btnSell.glowTween.remove) btnSell.glowTween.remove();
-          btnSell.glowTween=null;
-          btnSell.glow.setVisible(false);
-        }
+        if(btnSell.glowTween && btnSell.glowTween.remove) btnSell.glowTween.remove();
+        btnSell.glowTween=null;
+        btnSell.glow.setVisible(false);
       }
       if(btnGive.glow){
-        btnGive.glow.setVisible(true);
+        if(btnGive.glowTween && btnGive.glowTween.remove) btnGive.glowTween.remove();
+        btnGive.glow.setVisible(true).setAlpha(0.2);
+        btnGive.glowTween = this.tweens.add({
+          targets: btnGive.glow,
+          alpha: {from:0.2, to:0.1},
+          duration: dur(800),
+          yoyo: true,
+          repeat: -1
+        });
       }
     });
     timeline.play();
@@ -306,6 +302,38 @@ export function setupGame(){
         btn.setAngle(0);
       }
     });
+  }
+
+  function startSellGlowSparkle(){
+    if(!btnSell || !btnSell.glow) return;
+    const glow=btnSell.glow;
+    if(btnSell.glowTween && btnSell.glowTween.remove){ btnSell.glowTween.remove(); btnSell.glowTween=null; }
+    if(btnSell.sparkleTween && btnSell.sparkleTween.remove) btnSell.sparkleTween.remove();
+    glow.setVisible(true).setAlpha(1).setScale(1).setPosition(0,0);
+    btnSell.sparkleTween = this.tweens.add({
+      targets: glow,
+      alpha: {from:1, to:0.3},
+      x: {from:-3, to:3},
+      y: {from:-3, to:3},
+      duration: dur(200),
+      yoyo: true,
+      repeat: -1
+    });
+  }
+
+  function growSellGlow(tipped){
+    if(!btnSell || !btnSell.glow) return;
+    const target=tipped?3:2;
+    this.tweens.add({targets:btnSell.glow, scale: target, duration: dur(300)});
+  }
+
+  function stopSellGlowSparkle(){
+    if(!btnSell || !btnSell.glow) return;
+    if(btnSell.sparkleTween && btnSell.sparkleTween.remove){
+      btnSell.sparkleTween.remove();
+      btnSell.sparkleTween=null;
+    }
+    btnSell.glow.setVisible(false).setScale(1).setPosition(0,0);
   }
 
 
@@ -698,12 +726,12 @@ export function setupGame(){
         .setVisible(false);
 
       if(glowColor){
-        const glow=this.add.graphics();
-        const radius=Math.max(width,height)/2 + 4;
-        glow.fillStyle(glowColor,0.5);
-        glow.fillCircle(0,0,radius);
-        glow.setBlendMode(Phaser.BlendModes.ADD);
+        const radius = Math.max(width,height)/2 + 8;
+        const key = `glow_${glowColor.toString(16)}_${Math.round(radius)}`;
+        createGlowTexture(this, glowColor, key, radius);
+        const glow=this.add.image(0,0,key).setVisible(false);
         c.add(glow);
+        glow.setBlendMode(Phaser.BlendModes.ADD);
         c.glow=glow;
       }
 
@@ -715,6 +743,7 @@ export function setupGame(){
       zone.setInteractive({ useHandCursor:true });
       zone.on('pointerdown',()=>{
         blowButtonsAway.call(this,c);
+        if(c===btnSell) startSellGlowSparkle.call(this);
         blinkButton.call(this,c,handler,zone);
       });
       c.add(zone);
@@ -1330,6 +1359,7 @@ export function setupGame(){
       const desiredTip=totalCost*pct;
       tip=+Math.min(desiredTip, maxTip).toFixed(2);
       mD += tip;
+      growSellGlow.call(this, tip>0);
     }
 
     const tipPct=type==='sell'? (totalCost>0? Math.round((tip/totalCost)*100):0):0;
@@ -1673,6 +1703,7 @@ export function setupGame(){
             GameState.money=+(GameState.money+mD).toFixed(2);
             moneyText.setText('🪙 '+receipt(GameState.money));
             animateStatChange(moneyText, this, mD);
+            stopSellGlowSparkle.call(this);
             done();
             if(lD!==0){
               animateLoveChange.call(this,lD,customer,done);

@@ -502,16 +502,15 @@ export function setupGame(){
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
     reportLine3=this.add.text(480,loveText.y,'',{font:'16px sans-serif',fill:'#fff'})
       .setOrigin(0,0.5).setVisible(false).setDepth(11);
-    tipText=this.add.text(0,0,'',{font:'bold 24px sans-serif',fill:'#0a0',stroke:'#0a0',strokeThickness:2})
+    tipText=this.add.text(0,0,'',{font:'bold 24px sans-serif',fill:'#fff',strokeThickness:0})
       .setOrigin(0.5)
       .setDepth(12)
       .setVisible(false)
       .setAlpha(1);
-    paidStamp=this.add.text(0,0,'PAID',{
+    paidStamp=this.add.text(0,0,'SOLD',{
         font:'bold 32px sans-serif',
-        fill:'#0a0',
-        stroke:'#0a0',
-        strokeThickness:2
+        fill:'#fff',
+        strokeThickness:0
       })
       .setOrigin(0.5)
       .setDepth(12)
@@ -786,7 +785,8 @@ export function setupGame(){
         .setLineSpacing(orderEmoji.includes('\n') ? -8 : 0)
         .setPosition(0,-dialogPriceBox.height/4 + 8) // slightly lower
         .setScale(2)
-        .setVisible(true);
+        .setVisible(true)
+        .setDepth(paidStamp.depth + 1);
     }
 
     this.tweens.add({
@@ -1303,14 +1303,34 @@ export function setupGame(){
             .setScale(1.3 + randFloat2(-0.1, 0.1))
             .setPosition(paidStamp.x, paidStamp.y)
             .setAngle(Phaser.Math.Between(-15,15))
-            .setVisible(true);
+            .setVisible(true)
+            .setDepth(paidStamp.depth);
           skewFn(tipText);
+          const blinkTween = this.tweens.add({
+            targets: tipText,
+            alpha: 0,
+            duration: dur(80),
+            yoyo: true,
+            repeat: -1
+          });
           this.tweens.add({
             targets: tipText,
             x: t.x,
             y: t.y,
             duration: dur(200),
-            ease: 'Back.easeOut'
+            ease: 'Back.easeOut',
+            onComplete: () => {
+              blinkTween.stop();
+              tipText.setAlpha(1);
+              this.tweens.add({
+                targets: tipText,
+                x: paidStamp.x,
+                y: paidStamp.y + tipText.displayHeight,
+                angle: Phaser.Math.Between(-15,15),
+                duration: dur(300),
+                ease: 'Bounce.easeOut'
+              });
+            }
           });
           countPrice(t, this, totalCost, totalCost + tip, oldLeft, t.y);
           // Removed blinkPriceBorder; price text stays static
@@ -1396,6 +1416,7 @@ export function setupGame(){
             this.add.existing(dialogDrinkEmoji);
             dialogDrinkEmoji.setPosition(m.tx, m.ty);
           }
+          dialogDrinkEmoji.setDepth(paidStamp.depth + 1);
           this.tweens.add({
             targets: dialogDrinkEmoji,
             x: customer.x + DRINK_HOLD_OFFSET.x,

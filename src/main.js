@@ -438,7 +438,7 @@ export function setupGame(){
     .setScale(1.25)
     .setVisible(false);
   createGrayscaleTexture(this, 'price_ticket', 'price_ticket_gray');
-  dialogPupCup=this.add.image(0,0,'pupcup')
+  dialogPupCup=this.add.image(0,0,'pupcup2')
     .setOrigin(0.5)
     .setScale(0.8)
     .setVisible(false);
@@ -818,6 +818,7 @@ export function setupGame(){
     dialogPriceContainer.alpha = 1;
     if(c.isDog){
       dialogPriceTicket.setVisible(false);
+      dialogPupCup.setTexture('pupcup2');
       dialogPupCup.setVisible(true);
       dialogPriceBox.setVisible(false);
       dialogPriceBox.width = dialogPupCup.displayWidth;
@@ -984,6 +985,9 @@ export function setupGame(){
     const current=GameState.activeCustomer;
     if (current) {
       GameState.saleInProgress = true;
+    }
+    if(type==='give' && current && current.isDog && dialogPupCup){
+      dialogPupCup.setTexture('pupcup');
     }
     if ((type==='sell' || type==='give') && dialogDrinkEmoji && dialogPriceContainer && dialogPriceContainer.visible) {
       dialogDrinkEmoji.clearTint();

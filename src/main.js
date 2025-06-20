@@ -1377,7 +1377,8 @@ export function setupGame(){
           dialogPriceValue.setPosition(m.tx, m.ty);
         }
         t.setDepth(paidStamp.depth + 1);
-        t.setColor('#fff');
+        // Keep the price text green after the sale
+        t.setColor('#006400');
         // Removed blinkPriceBorder; no need to flash the price text
       }, [], this);
       // Removed flashing movement of the price text

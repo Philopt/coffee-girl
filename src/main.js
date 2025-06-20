@@ -763,11 +763,11 @@ export function setupGame(){
     if (truckRef) {
       const truckRight = truckRef.x + truckRef.displayWidth / 2;
       const truckTop = truckRef.y - truckRef.displayHeight / 2;
-      priceTargetX = Math.max(truckRight + ticketOffset, minX);
+      priceTargetX = Math.max(truckRight + ticketOffset, minX) - 10;
       priceTargetY = truckTop + ticketH / 2;
     } else {
       const priceTargetXDefault = dialogBg.x + dialogBg.width/2 - 30; // nudge right
-      priceTargetX = Math.max(priceTargetXDefault, minX);
+      priceTargetX = Math.max(priceTargetXDefault, minX) - 10;
       priceTargetY = dialogBg.y - dialogBg.height - 20 - (c.isDog ? 30 : 0);
     }
 
@@ -1304,13 +1304,26 @@ export function setupGame(){
       }
       const randFloat = Phaser.Math.FloatBetween || ((a,b)=>Phaser.Math.Between(a*1000,b*1000)/1000);
       const skewFn = typeof applyRandomSkew === 'function' ? applyRandomSkew : ()=>{};
+      const finalScale = 1.4 + randFloat(-0.1, 0.1);
+      const targetX = centerX + Phaser.Math.Between(-3,3);
+      const targetY = stampY + Phaser.Math.Between(-3,3);
+      const targetAngle = Phaser.Math.Between(-10,10);
       paidStamp
         .setText('PAID')
-        .setScale(1.4 + randFloat(-0.1, 0.1))
-        .setPosition(centerX + Phaser.Math.Between(-3,3), stampY + Phaser.Math.Between(-3,3))
-        .setAngle(Phaser.Math.Between(-10,10))
+        .setScale(finalScale * 0.5)
+        .setPosition(t.x, t.y)
+        .setAngle(0)
         .setVisible(true);
-      skewFn(paidStamp);
+      this.tweens.add({
+        targets: paidStamp,
+        x: targetX,
+        y: targetY,
+        angle: targetAngle,
+        scale: finalScale,
+        duration: dur(200),
+        ease: 'Cubic.easeOut',
+        onComplete: () => { skewFn(paidStamp); }
+      });
       // raise the price above the stamp after the stamp lands
       this.time.delayedCall(dur(300), () => {
         if (dialogPriceValue.parentContainer) {

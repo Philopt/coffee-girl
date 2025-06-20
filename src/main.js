@@ -791,9 +791,10 @@ export function setupGame(){
       dialogPriceLabel.setVisible(false);
       dialogPriceValue.setVisible(false);
       dialogDrinkEmoji
-
-        .setText('')
-        .setVisible(false);
+        .setText('🍨')
+        .setPosition(0,-dialogPriceBox.height/4 + 5)
+        .setScale(2)
+        .setVisible(true);
 
     } else {
       dialogPupCup.setVisible(false);

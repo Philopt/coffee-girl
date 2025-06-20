@@ -808,7 +808,8 @@ export function setupGame(){
         .setColor('#006400')
         .setOrigin(0.5)
         .setScale(0.9)
-        .setAlpha(1);
+        .setAlpha(1)
+        .setVisible(true);
       priceValueYOffset = dialogPriceBox.height/2 - 34;
       const orderEmoji = emojiFor(c.orders[0].req);
       dialogPriceValue.setPosition(-5, priceValueYOffset + 5);

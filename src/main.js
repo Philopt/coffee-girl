@@ -451,9 +451,33 @@ export function setupGame(){
     const extra1 = this.add.text(0,-18,'',{font:'16px sans-serif'}).setOrigin(0.5);
     const extra2 = this.add.text(0,-18,'',{font:'16px sans-serif'}).setOrigin(0.5);
     const extra3 = this.add.text(0,-18,'',{font:'16px sans-serif'}).setOrigin(0.5);
-    dialogDrinkEmoji=this.add.container(-30,-20,[extra1, extra2, extra3, baseEmoji]);
+    // Add base first so extras render on top of the drink
+    dialogDrinkEmoji=this.add.container(-30,-20,[baseEmoji, extra1, extra2, extra3]);
     dialogDrinkEmoji.base = baseEmoji;
     dialogDrinkEmoji.extras = [extra1, extra2, extra3];
+    dialogDrinkEmoji.haloTweens = [];
+    dialogDrinkEmoji.stopHalo = function(){
+      this.haloTweens.forEach(t=>{ if(t && t.remove) t.remove(); else if(t && t.stop) t.stop(); });
+      this.haloTweens = [];
+    };
+    dialogDrinkEmoji.startHalo = function(){
+      this.stopHalo();
+      const visibleExtras = this.extras.filter(e=>e.visible && e.text);
+      if(!visibleExtras.length) return;
+      const radius = 12;
+      visibleExtras.forEach((e,i)=>{
+        const offset = i/visibleExtras.length * Math.PI*2;
+        const tween=this.scene.tweens.addCounter({
+          from:0,to:Math.PI*2,duration:2000,repeat:-1,
+          onUpdate:t=>{
+            const ang=t.getValue()+offset;
+            e.x = Math.cos(ang)*radius;
+            e.y = this.base.y-12 + Math.sin(ang)*radius;
+          }
+        });
+        this.haloTweens.push(tween);
+      });
+    };
     dialogDrinkEmoji.setText = function(str){
       const parts = String(str||'').split('\n');
       const base = parts.pop() || '';
@@ -480,6 +504,7 @@ export function setupGame(){
         this.extras[1].setScale(0.35).setPosition(6, baseY-15);
         this.extras[2].setScale(0.35).setPosition(0, baseY-25);
       }
+      this.startHalo();
       return this;
     };
     dialogDrinkEmoji.setLineSpacing = ()=>dialogDrinkEmoji;
@@ -908,6 +933,7 @@ export function setupGame(){
       dialogCoins.setVisible(false);
       dialogPriceContainer.setVisible(false);
       dialogPriceValue.setColor('#006400').setStyle({fontStyle:'', strokeThickness:0});
+      if(dialogDrinkEmoji && dialogDrinkEmoji.stopHalo) dialogDrinkEmoji.stopHalo();
     }else{
       dialogBg.setVisible(true);
       dialogText.setVisible(false);
@@ -943,6 +969,7 @@ export function setupGame(){
 
   function flingTicketEmojiToCustomer(target){
     if(!dialogDrinkEmoji || !dialogPriceContainer || !dialogPriceContainer.visible || !target) return;
+    if(dialogDrinkEmoji.stopHalo) dialogDrinkEmoji.stopHalo();
     let worldX = dialogDrinkEmoji.x;
     let worldY = dialogDrinkEmoji.y;
     if(dialogDrinkEmoji.getWorldTransformMatrix){

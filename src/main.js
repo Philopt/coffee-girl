@@ -171,14 +171,18 @@ export function setupGame(){
         ref:{x:140, scale:1.4, depth:13}
       };
 
+    const buttonImage = btn => {
+      if(!btn || !btn.list) return null;
+      return btn.list.find(child => typeof child.setTexture === 'function');
+    };
+
     const resetBtn = (btn, info)=>{
       if(!btn) return;
+      const img = buttonImage(btn);
       btn.setPosition(SELL_X, startY);
-      if(btn.list && btn.list[0]){
-        btn.list[0].setScale(info.scale);
-      }
-      if(btn.list && btn.list[0]){
-        btn.setSize(btn.list[0].displayWidth, btn.list[0].displayHeight);
+      if(img){
+        img.setScale(info.scale);
+        btn.setSize(img.displayWidth, img.displayHeight);
       }
       btn.setDepth(info.depth);
       btn.setAlpha(0).setVisible(true);
@@ -190,9 +194,10 @@ export function setupGame(){
       }
     };
 
-    if(btnSell.list && btnSell.list[0]){
-      btnSell.list[0].setTexture('sell');
-      btnSell.list[0].setAlpha(1);
+    const sellImg = buttonImage(btnSell);
+    if(sellImg){
+      sellImg.setTexture('sell');
+      sellImg.setAlpha(1);
     }
 
     resetBtn(btnSell, FINAL.sell);
@@ -207,9 +212,10 @@ export function setupGame(){
       ease: 'Sine.easeOut',
       duration: dur(250),
       onComplete: () => {
-        if(!canSell && btnSell.list && btnSell.list[0] && this.textures.exists('sell_gray')){
-          btnSell.list[0].setTexture('sell_gray');
-          btnSell.list[0].setAlpha(0.6);
+        const img = buttonImage(btnSell);
+        if(!canSell && img && this.textures.exists('sell_gray')){
+          img.setTexture('sell_gray');
+          img.setAlpha(0.6);
         }
       }
     });

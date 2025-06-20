@@ -1858,6 +1858,9 @@ export function setupGame(){
               moneyText.setText('🪙 '+receipt(GameState.money));
               animateStatChange(moneyText, this, mD);
               done();
+              if(lD!==0){
+                animateLoveChange.call(this,lD,customer,done);
+              }
           }});
           if (typeof dialogPriceBox !== 'undefined' && dialogPriceBox) {
             flashBorder(dialogPriceBox,this,0xff0000);

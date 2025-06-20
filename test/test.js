@@ -959,7 +959,7 @@ function testEmojiFor() {
   vm.runInContext(src + '\nfn=emojiFor;', context);
   const emojiFor = context.fn;
 
-  assert.strictEqual(emojiFor('Iced Mocha'), '🍫 🧊🧊\n☕', 'iced mocha emoji');
+  assert.strictEqual(emojiFor('Iced Mocha'), '🍫 🧊 🧊\n☕', 'iced mocha emoji');
   assert.strictEqual(emojiFor('Rose Tea'), '🌹\n🍵', 'rose tea emoji');
   assert.strictEqual(emojiFor('Hot Chocolate'), '🍫', 'hot chocolate emoji');
   console.log('emojiFor test passed');

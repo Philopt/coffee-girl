@@ -514,10 +514,18 @@ export function setupGame(){
       .setOrigin(0.5);
     dialogPriceValue=this.add.text(-5,20,'',{font:'40px sans-serif',fill:'#000'})
       .setOrigin(0.5);
-    const baseEmoji = this.add.text(0,0,'',{font:'28px sans-serif'}).setOrigin(0.5);
-    const extra1 = this.add.text(0,-18,'',{font:'16px sans-serif'}).setOrigin(0.5);
-    const extra2 = this.add.text(0,-18,'',{font:'16px sans-serif'}).setOrigin(0.5);
-    const extra3 = this.add.text(0,-18,'',{font:'16px sans-serif'}).setOrigin(0.5);
+    const baseEmoji = this.add.text(0,0,'',{font:'28px sans-serif'})
+      .setOrigin(0.5)
+      .setShadow(0, 0, '#000', 4);
+    const extra1 = this.add.text(0,-18,'',{font:'16px sans-serif'})
+      .setOrigin(0.5)
+      .setShadow(0, 0, '#000', 4);
+    const extra2 = this.add.text(0,-18,'',{font:'16px sans-serif'})
+      .setOrigin(0.5)
+      .setShadow(0, 0, '#000', 4);
+    const extra3 = this.add.text(0,-18,'',{font:'16px sans-serif'})
+      .setOrigin(0.5)
+      .setShadow(0, 0, '#000', 4);
     // Add base first so extras render on top of the drink
     dialogDrinkEmoji=this.add.container(-30,-20,[baseEmoji, extra1, extra2, extra3]);
     dialogDrinkEmoji.base = baseEmoji;
@@ -603,9 +611,13 @@ export function setupGame(){
     // helper to create a button using an image asset
     const createButton=(x,key,handler,scale=1,depth=12)=>{
       const img=this.add.image(0,0,key).setScale(scale);
+      const shadow=this.add.image(3,3,key)
+        .setScale(scale)
+        .setTint(0x000000)
+        .setAlpha(0.5);
       const width=img.displayWidth;
       const height=img.displayHeight;
-      const c=this.add.container(x,BUTTON_Y,[img])
+      const c=this.add.container(x,BUTTON_Y,[shadow, img])
         .setSize(width,height)
         .setDepth(depth)
         .setVisible(false);

@@ -182,7 +182,12 @@ export function setupGame(){
       }
       btn.setDepth(info.depth);
       btn.setAlpha(0).setVisible(true);
-      if(btn.input) btn.input.enabled = false;
+      if(btn.zone && btn.zone.input) btn.zone.input.enabled = false;
+      if(btn.glow){
+        if(btn.glowTween && btn.glowTween.remove) btn.glowTween.remove();
+        btn.glowTween=null;
+        btn.glow.setVisible(false);
+      }
     };
 
     if(btnSell.list && btnSell.list[0]){
@@ -228,11 +233,64 @@ export function setupGame(){
     });
 
     timeline.setCallback('onComplete', () => {
-      if(canSell && btnSell.input) btnSell.input.enabled = true;
-      if(btnGive.input) btnGive.input.enabled = true;
-      if(btnRef.input) btnRef.input.enabled = true;
+      if(canSell && btnSell.zone && btnSell.zone.input) btnSell.zone.input.enabled = true;
+      if(btnGive.zone && btnGive.zone.input) btnGive.zone.input.enabled = true;
+      if(btnRef.zone && btnRef.zone.input) btnRef.zone.input.enabled = true;
+      if(btnSell.glow){
+        if(canSell){
+          btnSell.glow.setVisible(true).setAlpha(0.6);
+          if(btnSell.glowTween && btnSell.glowTween.remove) btnSell.glowTween.remove();
+          btnSell.glowTween = this.tweens.add({
+            targets: btnSell.glow,
+            alpha: {from:0.6, to:0.2},
+            duration: dur(800),
+            yoyo: true,
+            repeat: -1
+          });
+        }else{
+          if(btnSell.glowTween && btnSell.glowTween.remove) btnSell.glowTween.remove();
+          btnSell.glowTween=null;
+          btnSell.glow.setVisible(false);
+        }
+      }
+      if(btnGive.glow){
+        btnGive.glow.setVisible(true);
+      }
     });
     timeline.play();
+  }
+
+  function fadeOutOtherButtons(selected){
+    const others=[btnSell,btnGive,btnRef].filter(b=>b&&b!==selected);
+    others.forEach(btn=>{
+      if(btn.input) btn.input.enabled=false;
+      if(this.tweens){
+        this.tweens.add({targets:btn,alpha:0,duration:dur(150),onComplete:()=>{btn.setVisible(false);}});
+      }else{
+        btn.setVisible(false);
+      }
+    });
+  }
+
+  function blowButtonsAway(except){
+    const buttons=[btnSell,btnGive,btnRef].filter(b=>b&&b!==except);
+    buttons.forEach(btn=>{
+      if(btn.input) btn.input.enabled=false;
+      if(this.tweens){
+        this.tweens.add({
+          targets:btn,
+          y:btn.y+200,
+          x:btn.x+Phaser.Math.Between(-40,40),
+          angle:Phaser.Math.Between(-90,90),
+          alpha:0,
+          duration:dur(300),
+          ease:'Cubic.easeIn',
+          onComplete:()=>{btn.setVisible(false);}
+        });
+      }else{
+        btn.setVisible(false);
+      }
+    });
   }
 
 
@@ -609,7 +667,7 @@ export function setupGame(){
 
 
     // helper to create a button using an image asset
-    const createButton=(x,key,handler,scale=1,depth=12)=>{
+    const createButton=(x,key,handler,scale=1,depth=12,glowColor=null)=>{
       const img=this.add.image(0,0,key).setScale(scale);
       const shadow=this.add.image(3,3,key)
         .setScale(scale)
@@ -617,15 +675,36 @@ export function setupGame(){
         .setAlpha(0.5);
       const width=img.displayWidth;
       const height=img.displayHeight;
-      const c=this.add.container(x,BUTTON_Y,[shadow, img])
+
+      const c=this.add.container(x,BUTTON_Y)
+
         .setSize(width,height)
         .setDepth(depth)
         .setVisible(false);
 
+      if(glowColor){
+        const glow=this.add.graphics();
+        const radius=Math.max(width,height)/2 + 4;
+        glow.fillStyle(glowColor,0.5);
+        glow.fillCircle(0,0,radius);
+        c.add(glow);
+        c.glow=glow;
+      }
+
+      c.add(img);
+
       const zone=this.add.zone(0,0,width,height).setOrigin(0.5);
       zone.setInteractive({ useHandCursor:true });
-      zone.on('pointerdown',()=>blinkButton.call(this,c,handler,zone));
+      zone.on('pointerdown',()=>{
+        if(key==='refuse'){
+          blowButtonsAway.call(this,c);
+        }else{
+          fadeOutOtherButtons.call(this,c);
+        }
+        blinkButton.call(this,c,handler,zone);
+      });
       c.add(zone);
+      c.zone=zone;
       return c;
     };
 
@@ -633,8 +712,8 @@ export function setupGame(){
 
     // Arrange buttons: Refuse on the left, Sell in the middle (largest), Give on the right
     btnRef=createButton(110,'refuse',()=>handleAction.call(this,'refuse'),1.15,12);
-    btnSell=createButton(240,'sell',()=>handleAction.call(this,'sell'),1.3,13);
-    btnGive=createButton(370,'give',()=>handleAction.call(this,'give'),1.15,12);
+    btnSell=createButton(240,'sell',()=>handleAction.call(this,'sell'),1.3,13,0xffd700);
+    btnGive=createButton(370,'give',()=>handleAction.call(this,'give'),1.15,12,0xff69b4);
 
 
     // sliding report texts
@@ -966,14 +1045,14 @@ export function setupGame(){
               } else {
                 if (canSell) {
                   btnSell.setVisible(true);
-                  if (btnSell.input) btnSell.input.enabled = true;
+                  if (btnSell.zone && btnSell.zone.input) btnSell.zone.input.enabled = true;
                 } else {
                   btnSell.setVisible(false);
-                  if (btnSell.input) btnSell.input.enabled = false;
+                  if (btnSell.zone && btnSell.zone.input) btnSell.zone.input.enabled = false;
                 }
                 btnGive.setVisible(true);
-                if (btnGive.input) btnGive.input.enabled = true;
-                if (btnRef.input) btnRef.input.enabled = true;
+                if (btnGive.zone && btnGive.zone.input) btnGive.zone.input.enabled = true;
+                if (btnRef.zone && btnRef.zone.input) btnRef.zone.input.enabled = true;
               }
             }
           });
@@ -1023,11 +1102,19 @@ export function setupGame(){
       resetPriceBox.call(this);
     }
     btnSell.setVisible(false);
-    if (btnSell.input) btnSell.input.enabled = false;
+    if (btnSell.zone && btnSell.zone.input) btnSell.zone.input.enabled = false;
+    if(btnSell.glow){
+      if(btnSell.glowTween && btnSell.glowTween.remove) btnSell.glowTween.remove();
+      btnSell.glowTween=null;
+      btnSell.glow.setVisible(false);
+    }
     btnGive.setVisible(false);
-    if (btnGive.input) btnGive.input.enabled = false;
+    if (btnGive.zone && btnGive.zone.input) btnGive.zone.input.enabled = false;
+    if(btnGive.glow){
+      btnGive.glow.setVisible(false);
+    }
     btnRef.setVisible(false);
-    if (btnRef.input) btnRef.input.enabled = false;
+    if (btnRef.zone && btnRef.zone.input) btnRef.zone.input.enabled = false;
     tipText.setVisible(false);
 
   }
@@ -1111,6 +1198,11 @@ export function setupGame(){
             if(dialogText.setColor) dialogText.setColor('#000');
             if(dialogCoins.setColor) dialogCoins.setColor('#000');
             clearDialog.call(this, false);
+            if(lD!==0){
+              animateLoveChange.call(this,lD,current.sprite,done);
+            }else{
+              done();
+            }
           }});
         } else {
           // Only animate the dialog bubble away. Leave the price ticket
@@ -1568,6 +1660,9 @@ export function setupGame(){
             moneyText.setText('🪙 '+receipt(GameState.money));
             animateStatChange(moneyText, this, mD);
             done();
+            if(lD!==0){
+              animateLoveChange.call(this,lD,customer,done);
+            }
         }});
         tl.add({targets:ticket,x:destX,y:destY,scale:0,duration:dur(400),
           onStart:()=>{
@@ -1607,6 +1702,9 @@ export function setupGame(){
               moneyText.setText('🪙 ' + receipt(GameState.money));
               animateStatChange(moneyText, this, mD);
               done();
+              if(lD!==0){
+                animateLoveChange.call(this,lD,customer,done);
+              }
             }
           });
         }, [], this);
@@ -1746,6 +1844,9 @@ export function setupGame(){
           moneyText.setText('🪙 '+receipt(GameState.money));
           animateStatChange(moneyText, this, mD);
           done();
+          if(lD!==0){
+            animateLoveChange.call(this,lD,customer,done);
+          }
       }});
       tl.add({targets:reportLine1,x:midX,y:midY,duration:dur(300),onComplete:()=>{
             const word='SOLD';
@@ -1778,9 +1879,7 @@ export function setupGame(){
       tl.play();
     }
 
-    if(lD!==0){
-      animateLoveChange.call(this,lD,customer,done);
-    }
+    // Reaction happens after the order animation completes
     if(pending===0) finish();
   }
 

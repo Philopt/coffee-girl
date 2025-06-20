@@ -122,4 +122,20 @@ export function createGrayscaleTexture(scene, key, destKey){
   return canvasTex;
 }
 
+export function createGlowTexture(scene, color, key, radius=64){
+  if(!scene || !scene.textures) return null;
+  if(scene.textures.exists(key)) return scene.textures.get(key);
+  const size = radius * 2;
+  const canvas = scene.textures.createCanvas(key, size, size);
+  const ctx = canvas.getContext();
+  const col = Phaser.Display.Color.IntegerToRGB(color);
+  const grd = ctx.createRadialGradient(radius, radius, 0, radius, radius, radius);
+  grd.addColorStop(0, `rgba(${col.r},${col.g},${col.b},1)`);
+  grd.addColorStop(1, `rgba(${col.r},${col.g},${col.b},0)`);
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, size, size);
+  canvas.refresh();
+  return canvas;
+}
+
 export { blinkButton as default };

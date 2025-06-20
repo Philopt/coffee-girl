@@ -701,6 +701,7 @@ export function setupGame(){
         c.glow=glow;
       }
 
+      c.add(shadow);
       c.add(img);
       c.image = img; // store reference for easy access
 

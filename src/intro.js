@@ -12,6 +12,33 @@ let phoneContainer=null;
 let startMsgTimers=[];
 let startMsgBubbles=[];
 
+function playOpening(scene){
+  scene = scene || this;
+  const white=scene.add.rectangle(240,320,480,640,0xffffff,1)
+    .setDepth(14);
+  const emoji=scene.add.text(240,320,'☕👧',{
+      font:'96px sans-serif',fill:'#000'})
+    .setOrigin(0.5)
+    .setDepth(15)
+    .setAlpha(0);
+  const title=scene.add.text(240,420,'Lady Falcon Coffee Club 2',{
+      font:'32px sans-serif',fill:'#000',align:'center',wordWrap:{width:460}})
+    .setOrigin(0.5)
+    .setDepth(15)
+    .setAlpha(0);
+  const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
+    white.destroy();
+    emoji.destroy();
+    title.destroy();
+    showStartScreen.call(scene);
+  }});
+  tl.add({targets:emoji,alpha:1,duration:600,ease:'Sine.easeOut',delay:100});
+  tl.add({targets:title,alpha:1,duration:600,ease:'Sine.easeOut'});
+  tl.add({targets:[emoji,title],alpha:0,duration:600,delay:1000});
+  tl.add({targets:white,alpha:0,duration:600});
+  tl.play();
+}
+
 function showStartScreen(scene){
   scene = scene || this;
   if (typeof debugLog === 'function') debugLog('showStartScreen called');
@@ -330,4 +357,4 @@ function playIntro(scene){
   intro.play();
 }
 
-export { showStartScreen, playIntro };
+export { playOpening, showStartScreen, playIntro };

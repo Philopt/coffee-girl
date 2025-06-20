@@ -433,8 +433,23 @@ export function setupGame(){
       .setOrigin(0.5);
     dialogPriceValue=this.add.text(-5,20,'',{font:'40px sans-serif',fill:'#000'})
       .setOrigin(0.5);
-    dialogDrinkEmoji=this.add.text(-30,-20,'',{font:'24px sans-serif'})
-      .setOrigin(0.5);
+    const baseEmoji = this.add.text(0,0,'',{font:'24px sans-serif'}).setOrigin(0.5);
+    const extrasEmoji = this.add.text(0,-18,'',{font:'16px sans-serif'}).setOrigin(0.5);
+    dialogDrinkEmoji=this.add.container(-30,-20,[extrasEmoji, baseEmoji]);
+    dialogDrinkEmoji.base = baseEmoji;
+    dialogDrinkEmoji.extras = extrasEmoji;
+    dialogDrinkEmoji.setText = function(str){
+      const parts = String(str||'').split('\n');
+      this.base.setText(parts.pop()||'');
+      this.extras.setText(parts.join('\n'));
+      return this;
+    };
+    dialogDrinkEmoji.setLineSpacing = ()=>dialogDrinkEmoji;
+    dialogDrinkEmoji.clearTint = function(){
+      if(this.base.clearTint) this.base.clearTint();
+      if(this.extras.clearTint) this.extras.clearTint();
+      return this;
+    };
 
     dialogPriceContainer=this.add.container(0,0,[dialogPriceTicket, dialogPupCup, dialogPriceBox, dialogDrinkEmoji, dialogPriceLabel, dialogPriceValue])
       .setDepth(11)
@@ -781,9 +796,8 @@ export function setupGame(){
       priceValueYOffset = dialogPriceBox.height/2 - 34;
       const orderEmoji = emojiFor(c.orders[0].req);
       dialogPriceValue.setPosition(-5, priceValueYOffset + 5);
+      dialogDrinkEmoji.setText(orderEmoji);
       dialogDrinkEmoji
-        .setText(orderEmoji)
-        .setLineSpacing(orderEmoji.includes('\n') ? -8 : 0)
         .setPosition(0,-dialogPriceBox.height/4 + 8) // slightly lower
         .setScale(2)
         .setVisible(true);

@@ -304,6 +304,15 @@ export function cleanupDogs(scene){
 
 export function dogTruckRuckus(scene, dog){
   if(!scene || !dog) return;
+  if(dog.followEvent){
+    dog.followEvent.remove(false);
+    dog.followEvent = null;
+  }
+  if(dog.currentTween){
+    dog.currentTween.stop();
+    dog.currentTween = null;
+  }
+  scene.tweens.killTweensOf(dog);
   const truck = GameState.truck;
   if(!truck) return;
   const tl = scene.tweens.createTimeline();
@@ -315,7 +324,17 @@ export function dogTruckRuckus(scene, dog){
   tl.add({ targets: dog, x: right, y: bottom, duration: dur(400) });
   tl.add({ targets: dog, x: truck.x, y: top, duration: dur(250) });
   tl.add({ targets: dog, x: dog.x, y: dog.y, duration: dur(300) });
-  tl.setCallback('onComplete', () => scatterSparrows(scene));
+  const owner = dog.dogCustomer && dog.dogCustomer.owner;
+  tl.setCallback('onComplete', () => {
+    scatterSparrows(scene);
+    if(owner && scene.time){
+      dog.followEvent = scene.time.addEvent({
+        delay: dur(Phaser.Math.Between(800, 1200)),
+        loop: true,
+        callback: () => { if(typeof updateDog==='function') updateDog.call(scene, owner); }
+      });
+    }
+  });
   if (dog.anims && dog.play) { dog.play('dog_walk'); }
   tl.play();
 }

@@ -319,3 +319,39 @@ export function dogTruckRuckus(scene, dog){
   if (dog.anims && dog.play) { dog.play('dog_walk'); }
   tl.play();
 }
+
+export function dogRefuseJumpBark(dog){
+  const scene = this;
+  if(!scene || !dog) return;
+  if(dog.currentTween){
+    dog.currentTween.stop();
+    dog.currentTween = null;
+  }
+  const bark = scene.add.sprite(dog.x, dog.y - 20, 'dog1', 3)
+    .setOrigin(0.5)
+    .setDepth(dog.depth + 1)
+    .setScale(Math.abs(dog.scaleX), Math.abs(dog.scaleY));
+  scene.tweens.add({
+    targets: bark,
+    y: '-=20',
+    alpha: 0,
+    duration: dur(600),
+    onComplete: () => bark.destroy()
+  });
+  if (dog.anims && dog.play) {
+    dog.play('dog_bark');
+  }
+  scene.tweens.add({
+    targets: dog,
+    y: '-=20',
+    duration: dur(150),
+    yoyo: true,
+    onUpdate: (tw, t) => {
+      const s = scaleForY(t.y) * (t.scaleFactor || 0.6);
+      t.setScale(s * (t.dir || 1), s);
+      setDepthFromBottom(t, 5);
+    },
+    onComplete: () => { dog.setFrame(1); }
+  });
+  scatterSparrows(scene);
+}

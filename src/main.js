@@ -7,7 +7,7 @@ import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from
 import { CustomerState } from './constants.js';
 
 import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows } from './sparrow.js';
-import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog, dogTruckRuckus } from './entities/dog.js';
+import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog, dogTruckRuckus, dogRefuseJumpBark } from './entities/dog.js';
 import { startWander } from './entities/wanderers.js';
 
 import { flashBorder, flashFill, blinkButton, applyRandomSkew, emphasizePrice, setDepthFromBottom, createGrayscaleTexture, createGlowTexture } from './ui/helpers.js';
@@ -1233,6 +1233,9 @@ export function setupGame(){
     const current=GameState.activeCustomer;
     if (current) {
       GameState.saleInProgress = true;
+    }
+    if(type==='refuse' && current && current.isDog){
+      dogRefuseJumpBark.call(this, current.sprite);
     }
     if(type==='give' && current && current.isDog && dialogPupCup){
       dialogPupCup.setTexture('pupcup');

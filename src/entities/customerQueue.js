@@ -433,7 +433,8 @@ export function spawnCustomer() {
     const dog = this.add.sprite(startX + offsetX, startY + offsetY, 'dog1', 1)
       .setOrigin(0.5)
       .setTint(dogType.tint || 0xffffff);
-    dog.scaleFactor = dogType.scale || 0.6;
+    dog.baseScaleFactor = dogType.scale || 0.6;
+    dog.scaleFactor = dog.baseScaleFactor;
     dog.dir = 1;
     dog.prevX = dog.x;
     dog.dogType = dogType.type;

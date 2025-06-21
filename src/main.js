@@ -32,7 +32,9 @@ const HEART_EMOJIS = {
   [CustomerState.SPARKLING]: '💖',
   [CustomerState.ARROW]: '💘'
 };
-const UPSET_EMOJIS = ['😠','🤬','😡','😤','😭','😢','😱','😖','😫','💢'];
+
+
+const UPSET_EMOJIS = ['😠','🤬','😡','😤','😭','😢','😱','😖','😫'];
 
 function nextMood(state){
   switch(state){
@@ -44,6 +46,7 @@ function nextMood(state){
     default: return state;
   }
 }
+
 export function setupGame(){
   if (typeof debugLog === 'function') debugLog('main.js loaded');
   let initCalled = false;
@@ -1240,6 +1243,21 @@ export function setupGame(){
     });
   }
 
+  function showDrinkReaction(target, type){
+    if(!target) return;
+    const faces = type==='give' ? LOVE_FACE_EMOJIS : HAPPY_FACE_EMOJIS;
+    const face = faces[Phaser.Math.Between(0, faces.length-1)];
+    const emo = this.add.text(target.x, target.y, face, {font:'24px sans-serif', fill:'#fff'})
+      .setOrigin(0.5).setDepth(11);
+    this.tweens.add({
+      targets: emo,
+      y: target.y - 30,
+      alpha: 0,
+      duration: dur(400),
+      onComplete: () => emo.destroy()
+    });
+  }
+
   function handleAction(type){
     const current=GameState.activeCustomer;
     if (current) {
@@ -1254,6 +1272,11 @@ export function setupGame(){
     if ((type==='sell' || type==='give') && dialogDrinkEmoji && dialogPriceContainer && dialogPriceContainer.visible) {
       dialogDrinkEmoji.clearTint();
       flingTicketEmojiToCustomer.call(this, current ? current.sprite : null);
+      if(current && this.time){
+        this.time.delayedCall(dur(300), () => {
+          showDrinkReaction.call(this, current.sprite, type);
+        }, [], this);
+      }
     }
     if(current){
       const bubbleObjs=[];
@@ -1279,7 +1302,7 @@ export function setupGame(){
             if(dialogCoins.setColor) dialogCoins.setColor('#000');
             clearDialog.call(this, false);
             if(lD!==0){
-              animateLoveChange.call(this,lD,current.sprite,done);
+              animateLoveChange.call(this,lD,current,done);
             }else{
               done();
             }
@@ -1388,20 +1411,6 @@ export function setupGame(){
       current.heartEmoji.destroy();
     }
     current.heartEmoji=null;
-    if(memory.state !== CustomerState.NORMAL && current.sprite){
-      const hy = current.sprite.y + current.sprite.displayHeight * 0.30;
-      const hs = scaleForY(current.sprite.y) * 0.8;
-      current.heartEmoji = current.sprite.scene.add.text(
-        current.sprite.x,
-        hy,
-        HEART_EMOJIS[memory.state] || '',
-        { font: '28px sans-serif' }
-      )
-        .setOrigin(0.5)
-        .setScale(hs)
-        .setDepth(current.sprite.depth)
-        .setShadow(0, 0, '#000', 4);
-    }
 
     if(type==='refuse' && current.dog && current.dog.dogCustomer &&
        current.dog.dogCustomer.memory.state === CustomerState.BROKEN){
@@ -1783,7 +1792,7 @@ export function setupGame(){
             stopSellGlowSparkle.call(this);
             done();
             if(lD!==0){
-              animateLoveChange.call(this,lD,customer,done);
+              animateLoveChange.call(this,lD,current,done);
             }
         }});
         tl.add({targets:ticket,x:destX,y:destY,scale:0,duration:dur(400),
@@ -1825,7 +1834,7 @@ export function setupGame(){
               animateStatChange(moneyText, this, mD);
               done();
               if(lD!==0){
-                animateLoveChange.call(this,lD,customer,done);
+                animateLoveChange.call(this,lD,current,done);
               }
             }
           });
@@ -1914,7 +1923,7 @@ export function setupGame(){
               animateStatChange(moneyText, this, mD);
               done();
               if(lD!==0){
-                animateLoveChange.call(this,lD,customer,done);
+                animateLoveChange.call(this,lD,current,done);
               }
           }});
           if (typeof dialogPriceBox !== 'undefined' && dialogPriceBox) {
@@ -1970,7 +1979,7 @@ export function setupGame(){
           animateStatChange(moneyText, this, mD);
           done();
           if(lD!==0){
-            animateLoveChange.call(this,lD,customer,done);
+            animateLoveChange.call(this,lD,current,done);
           }
       }});
       tl.add({targets:reportLine1,x:midX,y:midY,duration:dur(300),onComplete:()=>{
@@ -2009,14 +2018,31 @@ export function setupGame(){
   }
 
   function animateLoveChange(delta, customer, cb){
+    const sprite = customer.sprite || customer;
     const count=Math.abs(delta);
-    const emoji=delta>0?'❤️':UPSET_EMOJIS[Phaser.Math.Between(0,UPSET_EMOJIS.length-1)];
+    const emoji=delta>0?'❤️':null;
 
     if(delta<0){
-      this.tweens.add({targets:customer,y:customer.y-20,duration:dur(150),yoyo:true});
+      this.tweens.add({targets:sprite,y:sprite.y-20,duration:dur(150),yoyo:true});
     }
 
-    if(dialogDrinkEmoji && dialogDrinkEmoji.attachedTo === customer){
+    if(customer.memory && customer.memory.state !== CustomerState.NORMAL){
+      if(customer.heartEmoji && customer.heartEmoji.scene && customer.heartEmoji.active){
+        customer.heartEmoji.destroy();
+      }
+      const hy = sprite.y + sprite.displayHeight * 0.30;
+      const hs = scaleForY(sprite.y) * 0.8;
+      customer.heartEmoji = this.add.text(sprite.x, hy, HEART_EMOJIS[customer.memory.state] || '', {font:'28px sans-serif'})
+        .setOrigin(0.5)
+        .setScale(hs)
+        .setDepth(sprite.depth)
+        .setShadow(0,0,'#000',4);
+    } else if(customer.heartEmoji){
+      customer.heartEmoji.destroy();
+      customer.heartEmoji = null;
+    }
+
+    if(dialogDrinkEmoji && dialogDrinkEmoji.attachedTo === sprite){
       this.tweens.add({
         targets: dialogDrinkEmoji,
         alpha: 0,
@@ -2029,12 +2055,13 @@ export function setupGame(){
       });
     }
 
-    const baseX=customer.x - 20*(count-1)/2;
-    const baseY=customer.y + 40;
+    const baseX=sprite.x - 20*(count-1)/2;
+    const baseY=sprite.y + 40;
 
     const hearts=[];
     for(let i=0;i<count;i++){
-      const h=this.add.text(customer.x,customer.y,emoji,{font:'24px sans-serif',fill:'#fff'})
+      const face = delta>0 ? emoji : UPSET_EMOJIS[Phaser.Math.Between(0,UPSET_EMOJIS.length-1)];
+      const h=this.add.text(sprite.x,sprite.y,face,{font:'24px sans-serif',fill:'#fff'})
         .setOrigin(0.5).setDepth(11);
       hearts.push(h);
       if (typeof addFloatingEmoji === 'function') {
@@ -2047,12 +2074,12 @@ export function setupGame(){
       const targetX=baseX+i*20;
       // sparkle or anger flash
       if(delta>0){
-        const sp=this.add.text(customer.x,customer.y,'✨',{font:'18px sans-serif',fill:'#fff'})
+        const sp=this.add.text(sprite.x,sprite.y,'✨',{font:'18px sans-serif',fill:'#fff'})
           .setOrigin(0.5).setDepth(10);
         this.tweens.add({targets:sp,scale:1.5,alpha:0,duration:dur(300),onComplete:()=>sp.destroy()});
       }else{
         const burst=UPSET_EMOJIS[Phaser.Math.Between(0,UPSET_EMOJIS.length-1)];
-        const ang=this.add.text(customer.x,customer.y,burst,{font:'20px sans-serif',fill:'#f00'})
+        const ang=this.add.text(sprite.x,sprite.y,burst,{font:'20px sans-serif',fill:'#f00'})
           .setOrigin(0.5).setDepth(12);
         this.tweens.add({targets:ang,alpha:0,duration:dur(300),onComplete:()=>ang.destroy()});
       }

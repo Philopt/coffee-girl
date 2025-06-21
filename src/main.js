@@ -33,6 +33,10 @@ const HEART_EMOJIS = {
   [CustomerState.ARROW]: '💘'
 };
 
+// Reactions when a customer receives a drink
+const HAPPY_FACE_EMOJIS = ['🙂','😊','😃','😄','😆'];
+const LOVE_FACE_EMOJIS = ['😍','🥰','😘','😻','🤩'];
+
 
 const UPSET_EMOJIS = ['😠','🤬','😡','😤','😭','😢','😱','😖','😫'];
 const LOVE_FACE_EMOJIS = ['🥰', '😍', '😘', '😊'];
@@ -2418,7 +2422,7 @@ function dogsBarkAtFalcon(){
     const gatherStartY = Math.max(WANDER_TOP, girl.y + 60);
     const gather=(arr)=>{
       arr.forEach(c=>{
-        if(c.walkTween){ c.walkTween.stop(); c.walkTween=null; }
+        if(c.walkTween){ c.walkTween.stop(); if(c.walkTween.remove) c.walkTween.remove(); c.walkTween=null; }
         if(c.dog){
           if(c.dog.followEvent) c.dog.followEvent.remove(false);
           c.dog.destroy();
@@ -2436,6 +2440,8 @@ function dogsBarkAtFalcon(){
     };
     gather(GameState.queue);
     gather(GameState.wanderers);
+    GameState.queue.length = 0;
+    GameState.wanderers.length = 0;
     if(GameState.activeCustomer){
       gather([GameState.activeCustomer]);
     }
@@ -2714,6 +2720,8 @@ function dogsBarkAtFalcon(){
     }
     GameState.activeCustomer=null;
     cleanupDogs(scene);
+    GameState.queue.forEach(c => { if(c.walkTween){ c.walkTween.stop(); if(c.walkTween.remove) c.walkTween.remove(); c.walkTween=null; } });
+    GameState.wanderers.forEach(c => { if(c.walkTween){ c.walkTween.stop(); if(c.walkTween.remove) c.walkTween.remove(); c.walkTween=null; } });
     GameState.queue=[];
     GameState.wanderers=[];
     Object.keys(GameState.customerMemory).forEach(k=>{ delete GameState.customerMemory[k]; });

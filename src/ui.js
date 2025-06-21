@@ -5,10 +5,10 @@ export const START_PHONE_H = 500;
 
 export const BUTTON_WIDTH = 120;
 export const BUTTON_HEIGHT = 80;
-export const BUTTON_Y = 560;
+export const BUTTON_Y = 545;
 
 // Default vertical position for the order dialog bubble
-export const DIALOG_Y = 420;
+export const DIALOG_Y = 400;
 
 // Wraps timing values so any global speed adjustments can be made here
 export const dur = v => v;

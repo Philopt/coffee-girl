@@ -33,6 +33,17 @@ const HEART_EMOJIS = {
   [CustomerState.ARROW]: '💘'
 };
 const UPSET_EMOJIS = ['😠','🤬','😡','😤','😭','😢','😱','😖','😫','💢'];
+
+function nextMood(state){
+  switch(state){
+    case CustomerState.BROKEN: return CustomerState.MENDING;
+    case CustomerState.MENDING: return CustomerState.NORMAL;
+    case CustomerState.NORMAL: return CustomerState.GROWING;
+    case CustomerState.GROWING: return CustomerState.SPARKLING;
+    case CustomerState.SPARKLING: return CustomerState.ARROW;
+    default: return state;
+  }
+}
 export function setupGame(){
   if (typeof debugLog === 'function') debugLog('main.js loaded');
   let initCalled = false;
@@ -1323,6 +1334,46 @@ export function setupGame(){
         break;
       default:
         if(type==='give') memory.state = CustomerState.GROWING;
+    }
+
+    if(current.isDog){
+      if(type==='give') {
+        memory.state = nextMood(memory.state);
+        const dogSprite = current.sprite;
+        if(dogSprite){
+          const base = dogSprite.baseScaleFactor || dogSprite.scaleFactor || 0.6;
+          dogSprite.baseScaleFactor = base;
+          const max = base * 2;
+          dogSprite.scaleFactor = Math.min(dogSprite.scaleFactor * 1.2, max);
+          if(typeof scaleDog === 'function') scaleDog(dogSprite);
+        }
+      }
+      if(type==='refuse') memory.state = CustomerState.BROKEN;
+    } else if(current.dog && current.dog.dogCustomer && current.dog.dogCustomer.memory){
+      const dogMem = current.dog.dogCustomer.memory;
+      if(type==='give') dogMem.state = nextMood(dogMem.state);
+      if(type==='refuse') dogMem.state = CustomerState.BROKEN;
+      const dogSprite = current.dog;
+      if(dogSprite){
+        if(dogSprite.heartEmoji && dogSprite.heartEmoji.scene && dogSprite.heartEmoji.active){
+          dogSprite.heartEmoji.destroy();
+        }
+        dogSprite.heartEmoji = null;
+        if(dogMem.state !== CustomerState.NORMAL){
+          const hy = dogSprite.y + dogSprite.displayHeight * 0.30;
+          const hs = scaleForY(dogSprite.y) * 0.8;
+          dogSprite.heartEmoji = dogSprite.scene.add.text(
+            dogSprite.x,
+            hy,
+            HEART_EMOJIS[dogMem.state] || '',
+            { font: '28px sans-serif' }
+          )
+            .setOrigin(0.5)
+            .setScale(hs)
+            .setDepth(dogSprite.depth)
+            .setShadow(0, 0, '#000', 4);
+        }
+      }
     }
     if(type==='refuse'){
       memory.state = CustomerState.BROKEN;

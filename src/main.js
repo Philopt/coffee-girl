@@ -294,10 +294,10 @@ export function setupGame(){
       }
       if(btnGive.glow){
         if(btnGive.glowTween && btnGive.glowTween.remove) btnGive.glowTween.remove();
-        btnGive.glow.setVisible(true).setAlpha(0.2);
+        btnGive.glow.setVisible(true).setAlpha(0.1);
         btnGive.glowTween = this.tweens.add({
           targets: btnGive.glow,
-          alpha: {from:0.2, to:0.1},
+          alpha: {from:0.1, to:0.05},
           duration: dur(800),
           yoyo: true,
           repeat: -1
@@ -346,10 +346,10 @@ export function setupGame(){
     const glow=btnSell.glow;
     if(btnSell.glowTween && btnSell.glowTween.remove){ btnSell.glowTween.remove(); btnSell.glowTween=null; }
     if(btnSell.sparkleTween && btnSell.sparkleTween.remove) btnSell.sparkleTween.remove();
-    glow.setVisible(true).setAlpha(1).setScale(1).setPosition(0,0);
+    glow.setVisible(true).setAlpha(0.7).setScale(1).setPosition(0,0);
     btnSell.sparkleTween = this.tweens.add({
       targets: glow,
-      alpha: {from:1, to:0.3},
+      alpha: {from:0.7, to:0.2},
       x: {from:-3, to:3},
       y: {from:-3, to:3},
       duration: dur(200),
@@ -748,7 +748,10 @@ export function setupGame(){
 
     // helper to create a button using an image asset
     const createButton=(x,key,handler,scale=1,depth=12,glowColor=null)=>{
-      const img=this.add.image(0,0,key).setScale(scale);
+      const img=this.add.image(0,0,key)
+        .setScale(scale)
+        // reduce brightness slightly
+        .setTint(0xdddddd);
       const shadow=this.add.image(3,3,key)
         .setScale(scale)
         .setTint(0x000000)

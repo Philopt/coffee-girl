@@ -1,7 +1,7 @@
 import { debugLog, DEBUG } from './debug.js';
 import { dur, scaleForY, articleFor, flashMoney, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_Y, DIALOG_Y } from "./ui.js";
 import { ORDER_X, ORDER_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel, queueLimit } from "./customers.js";
-import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer } from './entities/customerQueue.js';
+import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer, startDogWaitTimer } from './entities/customerQueue.js';
 import { baseConfig } from "./scene.js";
 import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from "./state.js";
 import { CustomerState } from './constants.js';
@@ -35,6 +35,8 @@ const HEART_EMOJIS = {
 
 
 const UPSET_EMOJIS = ['😠','🤬','😡','😤','😭','😢','😱','😖','😫'];
+const LOVE_FACE_EMOJIS = ['🥰', '😍', '😘', '😊'];
+const HAPPY_FACE_EMOJIS = ['😄', '😃', '😀', '🙂'];
 
 function nextMood(state){
   switch(state){
@@ -1560,6 +1562,7 @@ export function setupGame(){
           }
         });
         current.waitingForDog = true;
+        startDogWaitTimer(this, current);
         current.exitHandler = exit;
         GameState.activeCustomer = dogCust;
         showDialog.call(this);
@@ -1578,6 +1581,10 @@ export function setupGame(){
 
       if(current.isDog && current.owner && current.owner.waitingForDog){
         const owner=current.owner;
+        if (owner.dogWaitEvent) {
+          owner.dogWaitEvent.remove(false);
+          owner.dogWaitEvent = null;
+        }
         owner.waitingForDog=false;
         const dir = Phaser.Math.Between(0,1)?1:-1;
         const startX=owner.sprite.x;

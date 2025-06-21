@@ -208,6 +208,9 @@ export function checkQueueSpacing(scene) {
   // recheck triggered by a new arrival.
   if (GameState.queue.some(c => c.waitingForDog ||
       (c.isDog && c.owner && c.owner.waitingForDog))) {
+    if (typeof debugLog === 'function') {
+      debugLog('checkQueueSpacing abort: waitingForDog');
+    }
     return;
   }
   GameState.queue.forEach((cust, idx) => {

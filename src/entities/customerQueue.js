@@ -169,6 +169,13 @@ export function moveQueueForward() {
     const ty = idx === 0 ? ORDER_Y : QUEUE_Y - QUEUE_OFFSET * (idx - 1);
     if (cust.sprite.y !== ty || cust.sprite.x !== tx) {
       const dir = cust.dir || (cust.sprite.x < tx ? 1 : -1);
+      // Cancel any existing movement tween so starting a new one doesn't leave
+      // customers frozen in place if the old tween was stopped externally.
+      if (cust.walkTween) {
+        cust.walkTween.stop();
+        cust.walkTween.remove();
+        cust.walkTween = null;
+      }
       cust.walkTween = curvedApproach(scene, cust.sprite, dir, tx, ty, () => {
         cust.walkTween = null;
         if (idx === 0) {

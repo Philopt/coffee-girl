@@ -1635,7 +1635,7 @@ export function setupGame(){
           onUpdate: (tw, t) => {
             const p = tw.progress;
             t.x = startX + p * distanceX + Math.sin(p * Math.PI * freq) * amp;
-            t.setScale(scaleForY(t.y));
+            t.setScale(scaleForY(t.y) * (t.scaleFactor || 1));
             if(current.heartEmoji && current.heartEmoji.scene && current.heartEmoji.active){
               const hy = t.y + t.displayHeight * 0.30;
               const hs = scaleForY(t.y) * 0.8;
@@ -1658,7 +1658,7 @@ export function setupGame(){
         current.exitX = startX + distanceX;
         current.exitY = targetY;
         this.tweens.add({targets:sprite,y:targetY,duration:dur(6000),callbackScope:this,
-          onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+p*distanceX+Math.sin(p*Math.PI*freq)*amp; t.setScale(scaleForY(t.y));
+          onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+p*distanceX+Math.sin(p*Math.PI*freq)*amp; t.setScale(scaleForY(t.y) * (t.scaleFactor || 1));
             if(current.heartEmoji && current.heartEmoji.scene && current.heartEmoji.active){
               const hy = t.y + t.displayHeight * 0.30;
               const hs = scaleForY(t.y) * 0.8;

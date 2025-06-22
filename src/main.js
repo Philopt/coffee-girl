@@ -1206,7 +1206,7 @@ export function setupGame(){
 
   }
 
-  function flingTicketEmojiToCustomer(target){
+  function flingTicketEmojiToCustomer(target, type){
     if(!dialogDrinkEmoji || !dialogPriceContainer || !dialogPriceContainer.visible || !target) return;
     if(dialogDrinkEmoji.stopHalo) dialogDrinkEmoji.stopHalo();
     let worldX = dialogDrinkEmoji.x;
@@ -1230,38 +1230,44 @@ export function setupGame(){
       ease: 'Cubic.easeIn',
       onComplete: () => {
         dialogDrinkEmoji.attachedTo = target;
-        if (this.time && this.tweens) {
+        if (this.time) {
           this.time.delayedCall(dur(100), () => {
-            this.tweens.add({
-              targets: dialogDrinkEmoji,
-              scale: 0,
-              alpha: 0,
-              duration: dur(100),
-              onComplete: () => {
-                dialogDrinkEmoji.attachedTo = null;
-                dialogDrinkEmoji.setVisible(false);
-                dialogDrinkEmoji.setScale(1);
-                dialogDrinkEmoji.setAlpha(1);
-              }
-            });
+            showDrinkReaction.call(this, target, type, dialogDrinkEmoji);
           }, [], this);
+        } else {
+          showDrinkReaction.call(this, target, type, dialogDrinkEmoji);
         }
       }
     });
   }
 
-  function showDrinkReaction(target, type){
+  function showDrinkReaction(target, type, emojiObj){
     if(!target) return;
     const faces = type==='give' ? LOVE_FACE_EMOJIS : HAPPY_FACE_EMOJIS;
     const face = faces[Phaser.Math.Between(0, faces.length-1)];
-    const emo = this.add.text(target.x, target.y, face, {font:'24px sans-serif', fill:'#fff'})
-      .setOrigin(0.5).setDepth(11);
+    let emo = emojiObj;
+    if(emo){
+      if(emo.setText) emo.setText(face);
+      if(emo.setPosition) emo.setPosition(target.x, target.y);
+      emo.setVisible(true).setAlpha(1).setScale(1);
+    }else{
+      emo = this.add.text(target.x, target.y, face, {font:'24px sans-serif', fill:'#fff'})
+        .setOrigin(0.5).setDepth(11);
+    }
     this.tweens.add({
       targets: emo,
       y: target.y - 30,
       alpha: 0,
       duration: dur(400),
-      onComplete: () => emo.destroy()
+      onComplete: () => {
+        if(emojiObj){
+          emo.attachedTo = null;
+          emo.setVisible(false);
+          emo.setAlpha(1);
+        }else{
+          emo.destroy();
+        }
+      }
     });
   }
 
@@ -1278,12 +1284,7 @@ export function setupGame(){
     }
     if ((type==='sell' || type==='give') && dialogDrinkEmoji && dialogPriceContainer && dialogPriceContainer.visible) {
       dialogDrinkEmoji.clearTint();
-      flingTicketEmojiToCustomer.call(this, current ? current.sprite : null);
-      if(current && this.time){
-        this.time.delayedCall(dur(300), () => {
-          showDrinkReaction.call(this, current.sprite, type);
-        }, [], this);
-      }
+      flingTicketEmojiToCustomer.call(this, current ? current.sprite : null, type);
     }
     if(current){
       const bubbleObjs=[];

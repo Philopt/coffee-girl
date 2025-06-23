@@ -574,50 +574,14 @@ export function setupGame(){
     });
     this.anims.create({
       key:'sparrow_fly',
-      frames:this.anims.generateFrameNumbers('sparrow',{start:0,end:2}),
+      frames:this.anims.generateFrameNumbers('sparrow',{start:1,end:2}),
       frameRate:8,
       repeat:-1
     });
     this.anims.create({
       key:'sparrow_ground',
-      frames:this.anims.generateFrameNumbers('sparrow',{start:3,end:5}),
-      frameRate:4,
-      repeat:-1
-    });
-    this.anims.create({
-      key:'sparrow_peck',
-      frames:this.anims.generateFrameNumbers('sparrow',{start:6,end:8}),
-      frameRate:6,
-      repeat:-1
-    });
-    this.anims.create({
-      key:'sparrow2_fly',
-      frames:this.anims.generateFrameNumbers('sparrow2',{start:0,end:2}),
-      frameRate:8,
-      repeat:-1
-    });
-    this.anims.create({
-      key:'sparrow2_ground',
-      frames:this.anims.generateFrameNumbers('sparrow2',{start:3,end:5}),
-      frameRate:4,
-      repeat:-1
-    });
-    this.anims.create({
-      key:'sparrow2_peck',
-      frames:this.anims.generateFrameNumbers('sparrow2',{start:6,end:8}),
-      frameRate:6,
-      repeat:-1
-    });
-    this.anims.create({
-      key:'sparrow3_fly',
-      frames:this.anims.generateFrameNumbers('sparrow3',{start:0,end:1}),
-      frameRate:8,
-      repeat:-1
-    });
-    this.anims.create({
-      key:'sparrow3_ground',
-      frames:this.anims.generateFrameNumbers('sparrow3',{start:2,end:3}),
-      frameRate:4,
+      frames:this.anims.generateFrameNumbers('sparrow',{start:0,end:0}),
+      frameRate:1,
       repeat:-1
     });
 

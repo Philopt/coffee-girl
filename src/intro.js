@@ -39,7 +39,7 @@ function playOpening(scene){
     .setOrigin(0.5)
     .setDepth(16)
     .setAlpha(0)
-    .setScale(2)
+    .setScale(2.6)
     .setAngle(-20);
 
   const tl = scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
@@ -50,19 +50,19 @@ function playOpening(scene){
   // Reveal the title card with a burst of coffee cups
   tl.add({targets:openingTitle,alpha:1,duration:400,ease:'Sine.easeOut',delay:100});
   tl.setCallback('onStart',()=>{
-    for(let i=0;i<15;i++){
+    for(let i=0;i<8;i++){
       const angle = Phaser.Math.DegToRad(Phaser.Math.Between(0,360));
       const dist = Phaser.Math.Between(80,200);
       const cup = scene.add.image(openingTitle.x,openingTitle.y,'coffeecup2')
         .setDepth(17)
-        .setScale(0.4);
+        .setScale(0.6);
       scene.tweens.add({
         targets:cup,
         x:openingTitle.x + Math.cos(angle)*dist,
         y:openingTitle.y + Math.sin(angle)*dist,
-        angle:Phaser.Math.Between(-180,180),
+        angle:Phaser.Math.Between(-360,360),
         alpha:0,
-        duration:600,
+        duration:1000,
         ease:'Cubic.easeOut',
         onComplete:()=>cup.destroy()
       });
@@ -73,9 +73,10 @@ function playOpening(scene){
     targets: openingDog,
     alpha: 1,
     scale: 2,
+    y: openingTitle.y - 80,
     duration: 600,
     ease: 'Sine.easeOut',
-    onStart: () => openingDog.setDepth(16)
+    onComplete: () => openingDog.setDepth(16)
   });
 
   tl.add({
@@ -93,19 +94,19 @@ function playOpening(scene){
     duration: 200,
     ease: 'Back.easeOut',
     onComplete: () => {
-      for (let i = 0; i < 15; i++) {
+      for (let i = 0; i < 8; i++) {
         const angle = Phaser.Math.DegToRad(Phaser.Math.Between(0, 360));
         const dist = Phaser.Math.Between(80, 200);
         const cup = scene.add.image(openingTitle.x, openingTitle.y, 'coffeecup2')
           .setDepth(17)
-          .setScale(0.4);
+          .setScale(0.6);
         scene.tweens.add({
           targets: cup,
           x: openingTitle.x + Math.cos(angle) * dist,
           y: openingTitle.y + Math.sin(angle) * dist,
-          angle: Phaser.Math.Between(-180, 180),
+          angle: Phaser.Math.Between(-360, 360),
           alpha: 0,
-          duration: 600,
+          duration: 1000,
           ease: 'Cubic.easeOut',
           onComplete: () => cup.destroy()
         });
@@ -205,7 +206,7 @@ function showStartScreen(scene){
     phoneContainer.add(openingNumber);
   }
   if(openingDog){
-    openingDog.setPosition(0, 0)
+    openingDog.setPosition(0, -80)
       .setScale(openingDog.scale/2)
       .setDepth(15)
       .setAlpha(1);

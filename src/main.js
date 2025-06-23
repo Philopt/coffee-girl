@@ -1206,7 +1206,7 @@ export function setupGame(){
 
   }
 
-  function flingTicketEmojiToCustomer(target, type){
+  function flingTicketEmojiToCustomer(target, type, loveDelta, cb){
     if(!dialogDrinkEmoji || !dialogPriceContainer || !dialogPriceContainer.visible || !target) return;
     if(dialogDrinkEmoji.stopHalo) dialogDrinkEmoji.stopHalo();
     let worldX = dialogDrinkEmoji.x;
@@ -1226,23 +1226,24 @@ export function setupGame(){
       targets: dialogDrinkEmoji,
       x: target.x + DRINK_HOLD_OFFSET.x,
       y: target.y + DRINK_HOLD_OFFSET.y,
+      scale: 0.5,
       duration: dur(300),
       ease: 'Cubic.easeIn',
       onComplete: () => {
         dialogDrinkEmoji.attachedTo = target;
         if (this.time) {
           this.time.delayedCall(dur(100), () => {
-            showDrinkReaction.call(this, target, type, dialogDrinkEmoji);
+            showDrinkReaction.call(this, target, type, dialogDrinkEmoji, loveDelta, cb);
           }, [], this);
         } else {
-          showDrinkReaction.call(this, target, type, dialogDrinkEmoji);
+          showDrinkReaction.call(this, target, type, dialogDrinkEmoji, loveDelta, cb);
         }
       }
     });
   }
 
-  function showDrinkReaction(target, type, emojiObj){
-    if(!target) return;
+  function showDrinkReaction(target, type, emojiObj, loveDelta, cb){
+    if(!target){ if(cb) cb(); return; }
     const faces = type==='give' ? LOVE_FACE_EMOJIS : HAPPY_FACE_EMOJIS;
     const face = faces[Phaser.Math.Between(0, faces.length-1)];
     let emo = emojiObj;
@@ -1269,6 +1270,11 @@ export function setupGame(){
         }
       }
     });
+    if(loveDelta){
+      animateLoveChange.call(this,loveDelta,target,cb);
+    }else if(cb){
+      cb();
+    }
   }
 
   function handleAction(type){
@@ -1276,66 +1282,18 @@ export function setupGame(){
     if (current) {
       GameState.saleInProgress = true;
     }
-    if(type==='refuse' && current && current.isDog){
-      dogRefuseJumpBark.call(this, current.sprite);
-    }
-    if(type==='give' && current && current.isDog && dialogPupCup){
-      dialogPupCup.setTexture('pupcup');
-    }
-    if ((type==='sell' || type==='give') && dialogDrinkEmoji && dialogPriceContainer && dialogPriceContainer.visible) {
-      dialogDrinkEmoji.clearTint();
-      flingTicketEmojiToCustomer.call(this, current ? current.sprite : null, type);
-    }
-    if(current){
-      const bubbleObjs=[];
-      if(typeof dialogBg!=='undefined') bubbleObjs.push(dialogBg);
-      if(typeof dialogText!=='undefined') bubbleObjs.push(dialogText);
-      if(typeof dialogCoins!=='undefined') bubbleObjs.push(dialogCoins);
-      const ticket = typeof dialogPriceContainer!=='undefined' ? dialogPriceContainer : null;
-      if(this.tweens && (bubbleObjs.length || ticket)){
-        if(type==='refuse'){
-          if(dialogBg.setTint) dialogBg.setTint(0xff0000);
-          if(dialogText.setColor) dialogText.setColor('#f00');
-          if(dialogCoins.setColor) dialogCoins.setColor('#f00');
-          if(ticket){
-            this.tweens.add({targets:ticket, x:520, alpha:0,
-                            duration:dur(300), ease:'Cubic.easeIn'});
-          }
-          // Move each dialog element downward together rather than
-          // converging on a single absolute Y position.
-          this.tweens.add({targets:bubbleObjs, y:'+=80', scale:1.5, alpha:0,
-                          duration:dur(300), ease:'Cubic.easeIn', onComplete:()=>{
-            if(dialogBg.clearTint) dialogBg.clearTint();
-            if(dialogText.setColor) dialogText.setColor('#000');
-            if(dialogCoins.setColor) dialogCoins.setColor('#000');
-            clearDialog.call(this, false);
-            if(lD!==0){
-              animateLoveChange.call(this,lD,current,done);
-            }else{
-              done();
-            }
-          }});
-        } else {
-          // Only animate the dialog bubble away. Leave the price ticket
-          // visible so it can fly over to the score area.
-          this.tweens.add({targets:bubbleObjs, y:current.sprite.y, scale:0, duration:dur(200), onComplete:()=>{
-            clearDialog.call(this, true, type!=='give');
-          }});
-        }
-      } else {
-        clearDialog.call(this, type!=='refuse');
-      }
-    } else {
+    if(!current){
       clearDialog.call(this, type!=='refuse');
+      return;
     }
-    if(!current) return;
+
     const orderCount=current.orders.length;
     const totalCost=current.orders.reduce((s,o)=>s+o.price*o.qty,0);
 
     let mD=0, lD=0, tip=0;
     if(type==='sell'){
       lD=Phaser.Math.Between(0,2)*orderCount;
-      mD=totalCost; // tip added later based on mood
+      mD=totalCost;
     } else if(type==='give'){
       lD=Phaser.Math.Between(2,4)*orderCount;
       mD=-totalCost;
@@ -1423,6 +1381,55 @@ export function setupGame(){
     if(type==='refuse' && current.dog && current.dog.dogCustomer &&
        current.dog.dogCustomer.memory.state === CustomerState.BROKEN){
       dogTruckRuckus.call(this, current.dog);
+    }
+
+    if(type==='give' && current && current.isDog && dialogPupCup){
+      dialogPupCup.setTexture('pupcup');
+    }
+    if(type==='refuse' && current && current.isDog){
+      dogRefuseJumpBark.call(this, current.sprite);
+    }
+    if ((type==='sell' || type==='give') && dialogDrinkEmoji && dialogPriceContainer && dialogPriceContainer.visible) {
+      dialogDrinkEmoji.clearTint();
+      flingTicketEmojiToCustomer.call(this, current.sprite, type, lD);
+    }
+    if(current){
+      const bubbleObjs=[];
+      if(typeof dialogBg!=='undefined') bubbleObjs.push(dialogBg);
+      if(typeof dialogText!=='undefined') bubbleObjs.push(dialogText);
+      if(typeof dialogCoins!=='undefined') bubbleObjs.push(dialogCoins);
+      const ticket = typeof dialogPriceContainer!=='undefined' ? dialogPriceContainer : null;
+      if(this.tweens && (bubbleObjs.length || ticket)){
+        if(type==='refuse'){
+          if(dialogBg.setTint) dialogBg.setTint(0xff0000);
+          if(dialogText.setColor) dialogText.setColor('#f00');
+          if(dialogCoins.setColor) dialogCoins.setColor('#f00');
+          if(ticket){
+            this.tweens.add({targets:ticket, x:520, alpha:0,
+                            duration:dur(300), ease:'Cubic.easeIn'});
+          }
+          // Move each dialog element downward together rather than
+          // converging on a single absolute Y position.
+          this.tweens.add({targets:bubbleObjs, y:'+=80', scale:1.5, alpha:0,
+                          duration:dur(300), ease:'Cubic.easeIn', onComplete:()=>{
+            if(dialogBg.clearTint) dialogBg.clearTint();
+            if(dialogText.setColor) dialogText.setColor('#000');
+            if(dialogCoins.setColor) dialogCoins.setColor('#000');
+            clearDialog.call(this, false);
+            done();
+          }});
+        } else {
+          // Only animate the dialog bubble away. Leave the price ticket
+          // visible so it can fly over to the score area.
+          this.tweens.add({targets:bubbleObjs, y:current.sprite.y, scale:0, duration:dur(200), onComplete:()=>{
+            clearDialog.call(this, true, type!=='give');
+          }});
+        }
+      } else {
+        clearDialog.call(this, type!=='refuse');
+      }
+    } else {
+      clearDialog.call(this, type!=='refuse');
     }
 
     if(type==='sell'){
@@ -1677,7 +1684,7 @@ export function setupGame(){
     // animated report using timelines
     const midX=240, midY=120;
 
-    let pending=(type!=='refuse'?1:0)+(lD!==0?1:0);
+    let pending=(type!=='refuse'?1:0);
     const done=()=>{ if(--pending<=0) finish(); };
 
     if(type==='sell'){
@@ -1804,10 +1811,7 @@ export function setupGame(){
             animateStatChange(moneyText, this, mD);
             stopSellGlowSparkle.call(this);
             done();
-            if(lD!==0){
-              animateLoveChange.call(this,lD,current,done);
-            }
-        }});
+          }});
         tl.add({targets:ticket,x:destX,y:destY,scale:0,duration:dur(400),
           onStart:()=>{
             if(!dialogPriceValue.parentContainer){
@@ -1846,9 +1850,6 @@ export function setupGame(){
               moneyText.setText('🪙 ' + receipt(GameState.money));
               animateStatChange(moneyText, this, mD);
               done();
-              if(lD!==0){
-                animateLoveChange.call(this,lD,current,done);
-              }
             }
           });
         }, [], this);
@@ -1935,9 +1936,6 @@ export function setupGame(){
               moneyText.setText('🪙 '+receipt(GameState.money));
               animateStatChange(moneyText, this, mD);
               done();
-              if(lD!==0){
-                animateLoveChange.call(this,lD,current,done);
-              }
           }});
           if (typeof dialogPriceBox !== 'undefined' && dialogPriceBox) {
             flashBorder(dialogPriceBox,this,0xff0000);
@@ -1991,9 +1989,7 @@ export function setupGame(){
           moneyText.setText('🪙 '+receipt(GameState.money));
           animateStatChange(moneyText, this, mD);
           done();
-          if(lD!==0){
-            animateLoveChange.call(this,lD,current,done);
-          }
+          
       }});
       tl.add({targets:reportLine1,x:midX,y:midY,duration:dur(300),onComplete:()=>{
             const word='SOLD';

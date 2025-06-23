@@ -20,27 +20,27 @@ function playOpening(scene){
   const white = scene.add.rectangle(240,320,480,640,0xffffff,1)
     .setDepth(14);
 
-  // Title card image
+  // Title card image starts large so it can shrink with the phone later
   openingTitle = scene.add.image(240,320,'titlecard')
     .setOrigin(0.5)
     .setDepth(15)
-    .setAlpha(0);
+    .setAlpha(0)
+    .setScale(2);
 
-  // Girl and dog pop out from behind the sign
+  // Girl and dog initially hidden behind the title card
   openingDog = scene.add.image(240,320,'girldog')
     .setOrigin(0.5)
-    .setDepth(14);
-  const dogStartY = openingTitle.y + openingTitle.displayHeight/2 + openingDog.displayHeight/2;
-  const dogEndY = openingTitle.y + openingTitle.displayHeight/2 - openingDog.displayHeight/2;
-  openingDog.setY(dogStartY);
+    .setDepth(14)
+    .setAlpha(0)
+    .setScale(1.5);
 
   // Number 2 graphic that will rise above the sign
   openingNumber = scene.add.image(240,320,'title2')
     .setOrigin(0.5)
     .setDepth(16)
     .setAlpha(0)
-    .setScale(0.5);
-  const numEndY = openingTitle.y - openingTitle.displayHeight/2 - openingNumber.displayHeight/2;
+    .setScale(2)
+    .setAngle(-20);
 
   const tl = scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
     white.destroy();
@@ -69,8 +69,49 @@ function playOpening(scene){
     }
   });
 
-  tl.add({targets:openingDog,y:dogEndY,duration:600,ease:'Sine.easeOut'});
-  tl.add({targets:openingNumber,alpha:1,y:numEndY,scale:1,duration:600,ease:'Sine.easeOut'});
+  tl.add({
+    targets: openingDog,
+    alpha: 1,
+    scale: 2,
+    duration: 600,
+    ease: 'Sine.easeOut',
+    onStart: () => openingDog.setDepth(16)
+  });
+
+  tl.add({
+    targets: openingNumber,
+    alpha: 1,
+    y: openingTitle.y + 100,
+    angle: -20,
+    duration: 400,
+    ease: 'Sine.easeOut'
+  });
+  tl.add({
+    targets: openingNumber,
+    y: openingTitle.y,
+    angle: 0,
+    duration: 200,
+    ease: 'Back.easeOut',
+    onComplete: () => {
+      for (let i = 0; i < 15; i++) {
+        const angle = Phaser.Math.DegToRad(Phaser.Math.Between(0, 360));
+        const dist = Phaser.Math.Between(80, 200);
+        const cup = scene.add.image(openingTitle.x, openingTitle.y, 'coffeecup2')
+          .setDepth(17)
+          .setScale(0.4);
+        scene.tweens.add({
+          targets: cup,
+          x: openingTitle.x + Math.cos(angle) * dist,
+          y: openingTitle.y + Math.sin(angle) * dist,
+          angle: Phaser.Math.Between(-180, 180),
+          alpha: 0,
+          duration: 600,
+          ease: 'Cubic.easeOut',
+          onComplete: () => cup.destroy()
+        });
+      }
+    }
+  });
   tl.add({targets:white,alpha:0,duration:600});
   tl.play();
 }
@@ -127,7 +168,7 @@ function showStartScreen(scene){
     .setAlpha(1)
     .setSize(phoneW + 20, phoneH + 20)
     .setInteractive({ useHandCursor: true })
-    .setScale(4);
+    .setScale(2);
   if(!phoneContainer.visible || phoneContainer.alpha === 0){
     console.warn('phoneContainer not visible after creation');
   }
@@ -150,15 +191,24 @@ function showStartScreen(scene){
 
   // Add intro graphics for the sequel intro
   if(openingTitle){
-    openingTitle.setPosition(0, -phoneH/2 + 100).setDepth(16).setAlpha(1);
+    openingTitle.setPosition(0, 0)
+      .setScale(openingTitle.scale/2)
+      .setDepth(16)
+      .setAlpha(1);
     phoneContainer.add(openingTitle);
   }
   if(openingNumber){
-    openingNumber.setPosition(0, -phoneH/4).setDepth(16).setAlpha(1);
+    openingNumber.setPosition(0, 0)
+      .setScale(openingNumber.scale/2)
+      .setDepth(16)
+      .setAlpha(1);
     phoneContainer.add(openingNumber);
   }
   if(openingDog){
-    openingDog.setPosition(0, -phoneH/2 + 160).setDepth(15).setAlpha(1);
+    openingDog.setPosition(0, 0)
+      .setScale(openingDog.scale/2)
+      .setDepth(15)
+      .setAlpha(1);
     phoneContainer.add(openingDog);
   }
 

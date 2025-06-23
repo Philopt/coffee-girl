@@ -13,34 +13,64 @@ let startMsgTimers=[];
 let startMsgBubbles=[];
 let openingTitle=null;
 let openingNumber=null;
+let openingDog=null;
 
 function playOpening(scene){
   scene = scene || this;
-  const white=scene.add.rectangle(240,320,480,640,0xffffff,1)
+  const white = scene.add.rectangle(240,320,480,640,0xffffff,1)
     .setDepth(14);
-  const emoji=scene.add.text(240,320,'☕👧',{
-      font:'96px sans-serif',fill:'#000'})
+
+  // Title card image
+  openingTitle = scene.add.image(240,320,'titlecard')
     .setOrigin(0.5)
     .setDepth(15)
     .setAlpha(0);
-  openingTitle=scene.add.text(240,420,'Lady Falcon\nCoffee Club',{
-      font:'48px sans-serif',fill:'#000',align:'center',wordWrap:{width:460}})
+
+  // Girl and dog pop out from behind the sign
+  openingDog = scene.add.image(240,320,'girldog')
     .setOrigin(0.5)
-    .setDepth(15)
-    .setAlpha(0);
-  openingNumber=scene.add.text(240,500,'2',{
-      font:'96px sans-serif',fill:'#000'})
+    .setDepth(14);
+  const dogStartY = openingTitle.y + openingTitle.displayHeight/2 + openingDog.displayHeight/2;
+  const dogEndY = openingTitle.y + openingTitle.displayHeight/2 - openingDog.displayHeight/2;
+  openingDog.setY(dogStartY);
+
+  // Number 2 graphic that will rise above the sign
+  openingNumber = scene.add.image(240,320,'title2')
     .setOrigin(0.5)
-    .setDepth(15)
-    .setAlpha(0);
-  const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
+    .setDepth(16)
+    .setAlpha(0)
+    .setScale(0.5);
+  const numEndY = openingTitle.y - openingTitle.displayHeight/2 - openingNumber.displayHeight/2;
+
+  const tl = scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
     white.destroy();
-    emoji.destroy();
     showStartScreen.call(scene);
   }});
-  tl.add({targets:emoji,alpha:1,duration:600,ease:'Sine.easeOut',delay:100});
-  tl.add({targets:[openingTitle,openingNumber],alpha:1,duration:600,ease:'Sine.easeOut'});
-  tl.add({targets:emoji,alpha:0,duration:600,delay:1000});
+
+  // Reveal the title card with a burst of coffee cups
+  tl.add({targets:openingTitle,alpha:1,duration:400,ease:'Sine.easeOut',delay:100});
+  tl.setCallback('onStart',()=>{
+    for(let i=0;i<15;i++){
+      const angle = Phaser.Math.DegToRad(Phaser.Math.Between(0,360));
+      const dist = Phaser.Math.Between(80,200);
+      const cup = scene.add.image(openingTitle.x,openingTitle.y,'coffeecup2')
+        .setDepth(17)
+        .setScale(0.4);
+      scene.tweens.add({
+        targets:cup,
+        x:openingTitle.x + Math.cos(angle)*dist,
+        y:openingTitle.y + Math.sin(angle)*dist,
+        angle:Phaser.Math.Between(-180,180),
+        alpha:0,
+        duration:600,
+        ease:'Cubic.easeOut',
+        onComplete:()=>cup.destroy()
+      });
+    }
+  });
+
+  tl.add({targets:openingDog,y:dogEndY,duration:600,ease:'Sine.easeOut'});
+  tl.add({targets:openingNumber,alpha:1,y:numEndY,scale:1,duration:600,ease:'Sine.easeOut'});
   tl.add({targets:white,alpha:0,duration:600});
   tl.play();
 }
@@ -118,7 +148,7 @@ function showStartScreen(scene){
 
   phoneContainer.add(startButton);
 
-  // Add a large emoji and title card for the sequel intro
+  // Add intro graphics for the sequel intro
   if(openingTitle){
     openingTitle.setPosition(0, -phoneH/2 + 100).setDepth(16).setAlpha(1);
     phoneContainer.add(openingTitle);
@@ -126,6 +156,10 @@ function showStartScreen(scene){
   if(openingNumber){
     openingNumber.setPosition(0, -phoneH/4).setDepth(16).setAlpha(1);
     phoneContainer.add(openingNumber);
+  }
+  if(openingDog){
+    openingDog.setPosition(0, -phoneH/2 + 160).setDepth(15).setAlpha(1);
+    phoneContainer.add(openingDog);
   }
 
   // Zoom out from the white screen at the start
@@ -137,6 +171,18 @@ function showStartScreen(scene){
       delay: 200,
       ease: 'Sine.easeOut'
     });
+  }
+
+  if(scene.time && scene.tweens){
+    scene.time.delayedCall(5000,()=>{
+      const targets=[];
+      if(openingTitle) targets.push(openingTitle);
+      if(openingNumber) targets.push(openingNumber);
+      if(openingDog) targets.push(openingDog);
+      if(targets.length){
+        scene.tweens.add({targets,alpha:0,duration:600});
+      }
+    },[],scene);
   }
 
   let startMsgY = -phoneH/2 + 20;
@@ -189,11 +235,12 @@ function showStartScreen(scene){
       if(startOverlay){startOverlay.destroy(); startOverlay=null;}
       if(openingTitle){ openingTitle.destroy(); openingTitle=null; }
       if(openingNumber){ openingNumber.destroy(); openingNumber=null; }
+      if(openingDog){ openingDog.destroy(); openingDog=null; }
       phoneContainer.destroy(); phoneContainer=null;
       playIntro.call(scene);
     }});
     tl.add({targets:phoneContainer,y:-320,duration:600,ease:'Sine.easeIn'});
-    tl.add({targets:[startOverlay,openingTitle,openingNumber],alpha:0,duration:600});
+    tl.add({targets:[startOverlay,openingTitle,openingNumber,openingDog],alpha:0,duration:600});
     tl.play();
   });
 

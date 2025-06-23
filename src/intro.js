@@ -55,7 +55,7 @@ function playOpening(scene){
       const dist = Phaser.Math.Between(80,200);
       const cup = scene.add.image(openingTitle.x,openingTitle.y,'coffeecup2')
         .setDepth(17)
-        .setScale(0.6);
+        .setScale(1.2);
       scene.tweens.add({
         targets:cup,
         x:openingTitle.x + Math.cos(angle)*dist,
@@ -73,7 +73,7 @@ function playOpening(scene){
     targets: openingDog,
     alpha: 1,
     scale: 2,
-    y: openingTitle.y - 80,
+    y: openingTitle.y - 100,
     duration: 600,
     ease: 'Sine.easeOut',
     onComplete: () => openingDog.setDepth(16)
@@ -92,18 +92,53 @@ function playOpening(scene){
     y: openingTitle.y,
     angle: 0,
     duration: 200,
-    ease: 'Back.easeOut',
-    onComplete: () => {
-      for (let i = 0; i < 8; i++) {
-        const angle = Phaser.Math.DegToRad(Phaser.Math.Between(0, 360));
-        const dist = Phaser.Math.Between(80, 200);
-        const cup = scene.add.image(openingTitle.x, openingTitle.y, 'coffeecup2')
+    ease: 'Back.easeOut'
+  });
+  tl.add({
+    targets: openingNumber,
+    y: openingTitle.y + 150,
+    duration: 300,
+    ease: 'Sine.easeIn'
+  });
+  const finalX = openingTitle.x + openingTitle.displayWidth / 2 - openingNumber.displayWidth / 2;
+  const finalY = openingTitle.y + openingTitle.displayHeight / 2 - openingNumber.displayHeight / 2;
+  tl.add({
+    targets: openingNumber,
+    x: finalX,
+    y: finalY,
+    angle: 0,
+    duration: 400,
+    ease: 'Cubic.easeOut',
+    onStart: () => {
+      for (let i = 0; i < 6; i++) {
+        const angle = Phaser.Math.DegToRad(Phaser.Math.Between(120, 240));
+        const dist = Phaser.Math.Between(50, 100);
+        const cup = scene.add.image(openingNumber.x, openingNumber.y + openingNumber.displayHeight/2, 'coffeecup2')
           .setDepth(17)
-          .setScale(0.6);
+          .setScale(1.2);
         scene.tweens.add({
           targets: cup,
-          x: openingTitle.x + Math.cos(angle) * dist,
-          y: openingTitle.y + Math.sin(angle) * dist,
+          x: cup.x + Math.cos(angle) * dist,
+          y: cup.y + Math.sin(angle) * dist,
+          angle: Phaser.Math.Between(-360, 360),
+          alpha: 0,
+          duration: 800,
+          ease: 'Cubic.easeOut',
+          onComplete: () => cup.destroy()
+        });
+      }
+    },
+    onComplete: () => {
+      for (let i = 0; i < 6; i++) {
+        const angle = Phaser.Math.DegToRad(Phaser.Math.Between(0, 360));
+        const dist = Phaser.Math.Between(50, 120);
+        const cup = scene.add.image(finalX, finalY, 'coffeecup2')
+          .setDepth(17)
+          .setScale(1.2);
+        scene.tweens.add({
+          targets: cup,
+          x: finalX + Math.cos(angle) * dist,
+          y: finalY + Math.sin(angle) * dist,
           angle: Phaser.Math.Between(-360, 360),
           alpha: 0,
           duration: 1000,

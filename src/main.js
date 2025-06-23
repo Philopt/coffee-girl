@@ -1219,11 +1219,12 @@ export function setupGame(){
       emo = this.add.text(target.x, target.y, face, {font:'24px sans-serif', fill:'#fff'})
         .setOrigin(0.5).setDepth(11);
     }
+    const scoreDuration = 400 + Math.abs(loveDelta || 0) * 250;
     this.tweens.add({
       targets: emo,
       y: target.y - 30,
       alpha: 0,
-      duration: dur(400),
+      duration: dur(scoreDuration),
       onComplete: () => {
         if(emojiObj){
           emo.attachedTo = null;

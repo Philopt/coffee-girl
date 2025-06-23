@@ -91,6 +91,11 @@ export function lureNextWanderer(scene, specific) {
     debugLog('lureNextWanderer', GameState.queue.length, GameState.wanderers.length, GameState.activeCustomer);
   }
 
+  if (GameState.lureRetry) {
+    GameState.lureRetry.remove(false);
+    GameState.lureRetry = null;
+  }
+
   // clear stale tween references that were stopped externally
   GameState.queue.forEach(c => {
     if (c.walkTween && !c.walkTween.isPlaying) {
@@ -106,8 +111,11 @@ export function lureNextWanderer(scene, specific) {
     if (typeof debugLog === 'function') {
       debugLog('lureNextWanderer abort: dog switching');
     }
-    if (scene && scene.time && scene.time.delayedCall) {
-      scene.time.delayedCall(250, () => lureNextWanderer(scene, specific), [], scene);
+    if (scene && scene.time && scene.time.delayedCall && !GameState.lureRetry) {
+      GameState.lureRetry = scene.time.delayedCall(250, () => {
+        GameState.lureRetry = null;
+        lureNextWanderer(scene, specific);
+      }, [], scene);
     }
     return;
   }
@@ -141,8 +149,11 @@ export function lureNextWanderer(scene, specific) {
         debugLog('lureNextWanderer abort: walkTween active');
       }
 
-      if (scene && scene.time && scene.time.delayedCall) {
-        scene.time.delayedCall(250, () => lureNextWanderer(scene, specific), [], scene);
+      if (scene && scene.time && scene.time.delayedCall && !GameState.lureRetry) {
+        GameState.lureRetry = scene.time.delayedCall(250, () => {
+          GameState.lureRetry = null;
+          lureNextWanderer(scene, specific);
+        }, [], scene);
 
       }
       return;
@@ -181,7 +192,6 @@ export function lureNextWanderer(scene, specific) {
       c.walkTween = null;
       registerArrival(scene, c);
     }, speed, c);
-    if (typeof checkQueueSpacing === 'function') checkQueueSpacing(scene);
   }
 }
 
@@ -226,7 +236,6 @@ export function moveQueueForward() {
   if (GameState.girlReady && GameState.queue.length < queueLimit() + 3) {
     lureNextWanderer(scene);
   }
-  if (typeof checkQueueSpacing === 'function') checkQueueSpacing(scene);
 }
 
 export function checkQueueSpacing(scene) {
@@ -272,7 +281,8 @@ export function checkQueueSpacing(scene) {
           }
         },
         idx === 0 ? CUSTOMER_SPEED : LURE_SPEED,
-        cust
+        cust,
+        true
       );
       // Track the tween so future spacing checks don't interrupt it while
       // the customer is already moving. Previously only the front customer
@@ -317,7 +327,7 @@ function registerArrival(scene, cust) {
   moveQueueForward.call(scene);
 }
 
-function curvedApproach(scene, sprite, dir, targetX, targetY, onComplete, speed = CUSTOMER_SPEED, cust) {
+function curvedApproach(scene, sprite, dir, targetX, targetY, onComplete, speed = CUSTOMER_SPEED, cust, skipSpacingCheck = false) {
   const startX = sprite.x;
   const startY = sprite.y;
   const dx = Math.abs(targetX - startX);
@@ -370,6 +380,9 @@ function curvedApproach(scene, sprite, dir, targetX, targetY, onComplete, speed 
       sprite.setPosition(targetX, targetY);
       sprite.setScale(scaleForY(targetY));
       if (onComplete) onComplete();
+      if (!skipSpacingCheck && typeof checkQueueSpacing === 'function') {
+        checkQueueSpacing(scene);
+      }
     }
   });
   return tween;

@@ -368,7 +368,6 @@ export function setupGame(){
   let sideCAlpha=0;
   let sideCFadeTween=null;
   let endOverlay=null;
-  let queueCheckTimer = 0;
   // hearts or anger symbols currently animating
 
 
@@ -784,11 +783,6 @@ export function setupGame(){
       enforceCustomerScaling();
       updateDrinkEmojiPosition();
       updateSparrows(this, dt);
-      queueCheckTimer += dt;
-      if (queueCheckTimer >= 500) {
-        queueCheckTimer = 0;
-        if (typeof checkQueueSpacing === 'function') checkQueueSpacing(this);
-      }
     });
 
 

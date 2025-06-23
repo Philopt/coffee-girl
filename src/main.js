@@ -2019,7 +2019,7 @@ export function setupGame(){
     for(let i=0;i<count;i++){
       const face = delta>0 ? emoji : UPSET_EMOJIS[Phaser.Math.Between(0,UPSET_EMOJIS.length-1)];
       const h=this.add.text(sprite.x,sprite.y,face,{font:'24px sans-serif',fill:'#fff'})
-        .setOrigin(0.5).setDepth(11);
+        .setOrigin(0.5).setDepth(10);
       hearts.push(h);
       if (typeof addFloatingEmoji === 'function') {
         addFloatingEmoji(h);

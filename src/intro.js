@@ -34,13 +34,15 @@ function playOpening(scene){
     .setAlpha(0)
     .setScale(1.5);
 
-  // Number 2 graphic that will rise above the sign
-  openingNumber = scene.add.image(240,320,'title2')
+  // Number 2 graphic enters like a shooting star
+  const startX = (scene.scale && scene.scale.width) ? scene.scale.width + 80 : 560;
+  const startY = -80;
+  openingNumber = scene.add.image(startX, startY, 'title2')
     .setOrigin(0.5)
     .setDepth(16)
-    .setAlpha(0)
+    .setAlpha(1)
     .setScale(2.6)
-    .setAngle(-20);
+    .setAngle(-45);
 
   const tl = scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
     white.destroy();
@@ -79,73 +81,51 @@ function playOpening(scene){
     onComplete: () => openingDog.setDepth(16)
   });
 
-  tl.add({
-    targets: openingNumber,
-    alpha: 1,
-    y: openingTitle.y + 100,
-    angle: -20,
-    duration: 400,
-    ease: 'Sine.easeOut'
-  });
-  tl.add({
-    targets: openingNumber,
-    y: openingTitle.y,
-    angle: 0,
-    duration: 200,
-    ease: 'Back.easeOut'
-  });
-  tl.add({
-    targets: openingNumber,
-    y: openingTitle.y + 150,
-    duration: 300,
-    ease: 'Sine.easeIn'
-  });
   const finalX = openingTitle.x + openingTitle.displayWidth / 2 - openingNumber.displayWidth / 2;
   const finalY = openingTitle.y + openingTitle.displayHeight / 2 - openingNumber.displayHeight / 2;
+
+  const spawnThrust = () => {
+    const ang = Phaser.Math.DegToRad(Phaser.Math.Between(240, 300));
+    const dist = Phaser.Math.Between(40, 80);
+    const cup = scene.add.image(openingNumber.x, openingNumber.y, 'coffeecup2')
+      .setDepth(17)
+      .setScale(1);
+    scene.tweens.add({
+      targets: cup,
+      x: cup.x + Math.cos(ang) * dist,
+      y: cup.y + Math.sin(ang) * dist,
+      angle: Phaser.Math.Between(-360, 360),
+      alpha: 0,
+      duration: 700,
+      ease: 'Cubic.easeOut',
+      onComplete: () => cup.destroy()
+    });
+  };
+
+  let thrustEvent = null;
   tl.add({
     targets: openingNumber,
     x: finalX,
-    y: finalY,
-    angle: 0,
-    duration: 400,
-    ease: 'Cubic.easeOut',
+    y: finalY - 40,
+    angle: -20,
+    duration: 800,
+    ease: 'Cubic.easeIn',
     onStart: () => {
-      for (let i = 0; i < 6; i++) {
-        const angle = Phaser.Math.DegToRad(Phaser.Math.Between(120, 240));
-        const dist = Phaser.Math.Between(50, 100);
-        const cup = scene.add.image(openingNumber.x, openingNumber.y + openingNumber.displayHeight/2, 'coffeecup2')
-          .setDepth(17)
-          .setScale(1.2);
-        scene.tweens.add({
-          targets: cup,
-          x: cup.x + Math.cos(angle) * dist,
-          y: cup.y + Math.sin(angle) * dist,
-          angle: Phaser.Math.Between(-360, 360),
-          alpha: 0,
-          duration: 800,
-          ease: 'Cubic.easeOut',
-          onComplete: () => cup.destroy()
-        });
-      }
+      thrustEvent = scene.time.addEvent({ delay: 80, loop: true, callback: spawnThrust });
     },
     onComplete: () => {
-      for (let i = 0; i < 6; i++) {
-        const angle = Phaser.Math.DegToRad(Phaser.Math.Between(0, 360));
-        const dist = Phaser.Math.Between(50, 120);
-        const cup = scene.add.image(finalX, finalY, 'coffeecup2')
-          .setDepth(17)
-          .setScale(1.2);
-        scene.tweens.add({
-          targets: cup,
-          x: finalX + Math.cos(angle) * dist,
-          y: finalY + Math.sin(angle) * dist,
-          angle: Phaser.Math.Between(-360, 360),
-          alpha: 0,
-          duration: 1000,
-          ease: 'Cubic.easeOut',
-          onComplete: () => cup.destroy()
-        });
-      }
+      if (thrustEvent) thrustEvent.remove(false);
+    }
+  });
+
+  tl.add({
+    targets: openingNumber,
+    y: finalY,
+    angle: 0,
+    duration: 300,
+    ease: 'Bounce.easeOut',
+    onStart: () => {
+      for (let i = 0; i < 4; i++) spawnThrust();
     }
   });
   tl.add({targets:white,alpha:0,duration:600});

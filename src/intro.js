@@ -81,8 +81,18 @@ function playOpening(scene){
     onComplete: () => openingDog.setDepth(16)
   });
 
-  const finalX = openingTitle.x + openingTitle.displayWidth / 2 - openingNumber.displayWidth / 2;
-  const finalY = openingTitle.y + openingTitle.displayHeight / 2 - openingNumber.displayHeight / 2;
+  // Shift the landing position slightly so the 2 settles a bit further
+  // to the right and lower on the title card.
+  const finalX =
+    openingTitle.x +
+    openingTitle.displayWidth / 2 -
+    openingNumber.displayWidth / 2 +
+    10;
+  const finalY =
+    openingTitle.y +
+    openingTitle.displayHeight / 2 -
+    openingNumber.displayHeight / 2 +
+    10;
 
   const spawnThrust = (scale=2) => {
     const ang = Phaser.Math.DegToRad(Phaser.Math.Between(240, 300));

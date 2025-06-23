@@ -209,23 +209,32 @@ function showStartScreen(scene){
   phoneContainer.add(startButton);
 
   // Add intro graphics for the sequel intro
+  const pcScale = phoneContainer.scale || phoneContainer.scaleX || 1;
+  const pcX = phoneContainer.x;
+  const pcY = phoneContainer.y;
+
   if(openingTitle){
-    openingTitle.setPosition(0, 0)
-      .setScale(openingTitle.scale/2)
+    openingTitle
+      .setPosition((openingTitle.x - pcX) / pcScale, (openingTitle.y - pcY) / pcScale)
+      .setScale(openingTitle.scale / pcScale)
       .setDepth(16)
       .setAlpha(1);
     phoneContainer.add(openingTitle);
   }
+
   if(openingNumber){
-    openingNumber.setPosition(0, 0)
-      .setScale(openingNumber.scale/2)
+    openingNumber
+      .setPosition((openingNumber.x - pcX) / pcScale, (openingNumber.y - pcY) / pcScale)
+      .setScale(openingNumber.scale / pcScale)
       .setDepth(16)
       .setAlpha(1);
     phoneContainer.add(openingNumber);
   }
+
   if(openingDog){
-    openingDog.setPosition(0, -80)
-      .setScale(openingDog.scale/2)
+    openingDog
+      .setPosition((openingDog.x - pcX) / pcScale, (openingDog.y - pcY) / pcScale)
+      .setScale(openingDog.scale / pcScale)
       .setDepth(15)
       .setAlpha(1);
     phoneContainer.add(openingDog);

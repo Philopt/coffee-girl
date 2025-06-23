@@ -531,22 +531,9 @@ export function spawnCustomer() {
   startW(this, c, firstTarget, c.loopsRemaining === 0);
 
   GameState.wanderers.push(c);
-  if ((GameState.queue.length === 0 || GameState.girlReady) && GameState.queue.length < queueLimit() + 3) {
-    lureNextWanderer(this);
-  }
   scheduleNextSpawn(this);
-  if (this.time && this.time.delayedCall) {
-    this.time.delayedCall(1000, () => {
-      if (GameState.girlReady && GameState.queue.length < queueLimit() + 3 && GameState.wanderers.includes(c)) {
-        lureNextWanderer(this);
-      } else if (!GameState.girlReady) {
-        this.time.delayedCall(1000, () => {
-          if (GameState.girlReady && GameState.queue.length < queueLimit() + 3 && GameState.wanderers.includes(c)) {
-            lureNextWanderer(this);
-          }
-        }, [], this);
-      }
-    }, [], this);
-  }
+  // Wanderers should decide to approach the cart on their own rather than being
+  // immediately pulled into line. The intro or queue logic will lure them when
+  // they wander close enough.
 }
 

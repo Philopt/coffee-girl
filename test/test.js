@@ -280,8 +280,10 @@ function testSpawnCustomerQueuesWhenEmpty() {
     time: { addEvent() { return { remove() {} }; }, delayedCall() { return { remove() {} }; } }
   };
   spawnCustomer.call(scene);
-  assert.strictEqual(context.queue.length, 1, 'customer not queued when empty');
-  console.log('spawnCustomer enqueues when queue empty test passed');
+  // Newly spawned customers should remain wanderers until they approach the cart.
+  assert.strictEqual(context.queue.length, 0, 'customer queued prematurely');
+  assert.strictEqual(context.wanderers.length, 1, 'wanderer not added');
+  console.log('spawnCustomer leaves wanderer when queue empty test passed');
 }
 
 function testHandleActionSell() {

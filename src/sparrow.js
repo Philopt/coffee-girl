@@ -159,12 +159,12 @@ export class Sparrow {
       this.sprite.setPosition(this.followVec.x, this.followVec.y);
       const dx = this.sprite.x - prevX;
       if(Math.abs(dx) > 0.5){
-        this.sprite.flipX = dx < 0;
+        this.sprite.flipX = dx > 0;
       } else {
-        this.setFacingToTarget();
+        this.sprite.flipX = this.target.x > this.sprite.x;
       }
     } else {
-      this.setFacingToTarget();
+      this.sprite.flipX = this.target.x > this.sprite.x;
     }
   }
 
@@ -339,25 +339,24 @@ export function updateSparrows(scene, delta){
       if(!b2.sprite) continue;
       const dx = b2.sprite.x - b1.sprite.x;
       const dy = b2.sprite.y - b1.sprite.y;
-      const dist = Math.hypot(dx, dy);
+      const distX = Math.abs(dx);
       const min = 12;
-      if(dist > 0 && dist < min){
-        const nx = dx / dist;
-        const ny = dy / dist;
+      if(distX > 0 && distX < min && Math.abs(dy) < min){
+        const dir = Math.sign(dx) || 1;
         const hop = 10;
-        const hopBird = (bird, dir) => {
+        const hopBird = (bird, sign) => {
           if(!bird || !bird.sprite) return;
           if(bird.state === BirdState.FLY || bird.state === BirdState.FLEE || bird.state === BirdState.LAND) return;
           bird.state = BirdState.WANDER_GROUND;
           bird.target.set(
-            bird.sprite.x + nx * hop * dir,
-            bird.sprite.y + ny * hop * dir
+            bird.sprite.x + hop * sign,
+            bird.sprite.y
           );
           bird.timer = Phaser.Math.FloatBetween(0.5, 1);
           bird.setFacingToTarget();
         };
-        hopBird(b1, -1);
-        hopBird(b2, 1);
+        hopBird(b1, -dir);
+        hopBird(b2, dir);
       }
     }
   }

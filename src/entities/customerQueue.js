@@ -47,6 +47,10 @@ const EARLY_CHECK_DIST = 64;
 const EARLY_COLLIDE_DIST = 40;
 // Ensure small adjustments don't happen instantaneously
 const MIN_MOVE_DURATION = 250;
+// Require customers to be near their destination before early collision
+// triggers an arrival. This prevents distant customers from blocking the line
+// when another wanderer approaches.
+const ARRIVAL_DIST_THRESHOLD = 48;
 const HEART_EMOJIS = {
   [CustomerState.NORMAL]: null,
   [CustomerState.BROKEN]: '💔',
@@ -340,7 +344,8 @@ function curvedApproach(scene, sprite, dir, targetX, targetY, onComplete, speed 
       if (d < EARLY_CHECK_DIST && typeof checkQueueSpacing === 'function') {
         checkQueueSpacing(scene);
       }
-      if (d < EARLY_COLLIDE_DIST) {
+      const targetDist = Phaser.Math.Distance.Between(sprite.x, sprite.y, targetX, targetY);
+      if (d < EARLY_COLLIDE_DIST && targetDist <= ARRIVAL_DIST_THRESHOLD) {
         if (tween) tween.stop();
         cust.walkTween = null;
         registerArrival(scene, cust);

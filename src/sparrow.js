@@ -159,12 +159,14 @@ export class Sparrow {
       this.sprite.setPosition(this.followVec.x, this.followVec.y);
       const dx = this.sprite.x - prevX;
       if(Math.abs(dx) > 0.5){
-        this.sprite.flipX = dx > 0;
+        // face the direction of travel
+        this.sprite.flipX = dx < 0;
       } else {
-        this.sprite.flipX = this.target.x > this.sprite.x;
+        // small movements fall back to target facing
+        this.sprite.flipX = this.target.x < this.sprite.x;
       }
     } else {
-      this.sprite.flipX = this.target.x > this.sprite.x;
+      this.sprite.flipX = this.target.x < this.sprite.x;
     }
   }
 

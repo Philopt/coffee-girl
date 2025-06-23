@@ -265,7 +265,7 @@ function pauseWanderersForTruck(scene){
       if(c.pauseEvent){ c.pauseEvent.remove(); c.pauseEvent=null; }
       scene.tweens.add({targets:c.sprite,y:'-=20',duration:dur(150),yoyo:true});
       scene.time.delayedCall(dur(1000),()=>{
-        if(GameState.girlReady && GameState.queue.length < queueLimit() && GameState.wanderers.includes(c)){
+        if(GameState.girlReady && GameState.queue.length < queueLimit() + 3 && GameState.wanderers.includes(c)){
           lureNextWanderer(scene, c);
         }else{
           resumeWanderer(scene, c);

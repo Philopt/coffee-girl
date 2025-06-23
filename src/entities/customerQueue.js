@@ -64,6 +64,24 @@ export function queueLimit() {
   return customersQueueLimit(GameState.love);
 }
 
+function customerQueueThreshold(cust){
+  const base = queueLimit();
+  const state = (cust && cust.memory && cust.memory.state) || CustomerState.NORMAL;
+  switch(state){
+    case CustomerState.BROKEN:
+      // Will only join if there's effectively no line
+      return 1;
+    case CustomerState.GROWING:
+      return base + 1;
+    case CustomerState.SPARKLING:
+      return base + 2;
+    case CustomerState.ARROW:
+      return base + 3;
+    default:
+      return base;
+  }
+}
+
 export function lureNextWanderer(scene, specific) {
   if (typeof debugLog === 'function') {
     debugLog('lureNextWanderer', GameState.queue.length, GameState.wanderers.length, GameState.activeCustomer);
@@ -90,9 +108,31 @@ export function lureNextWanderer(scene, specific) {
     return;
   }
 
-  if (GameState.wanderers.length && GameState.queue.length < queueLimit()) {
+  if (GameState.wanderers.length) {
+    let c = null;
+    let idx = -1;
+    if (specific) {
+      idx = GameState.wanderers.indexOf(specific);
+      if (idx !== -1 && GameState.queue.length < customerQueueThreshold(GameState.wanderers[idx])) {
+        c = GameState.wanderers.splice(idx, 1)[0];
+      } else if (idx !== -1) {
+        return;
+      }
+    } else {
+      let closestIdx = -1;
+      let minDist = Number.MAX_VALUE;
+      for (let i = 0; i < GameState.wanderers.length; i++) {
+        const w = GameState.wanderers[i];
+        if (GameState.queue.length >= customerQueueThreshold(w)) continue;
+        const d = Math.abs(w.sprite.x - ORDER_X);
+        if (d < minDist) { closestIdx = i; minDist = d; }
+      }
+      if (closestIdx !== -1) c = GameState.wanderers.splice(closestIdx, 1)[0];
+    }
+
+    if (!c) return;
     sparkleQueueSpot(scene);
-    if (GameState.queue.some((c, i) => i > 0 && c.walkTween && c.walkTween.isPlaying)) {
+    if (GameState.queue.some((cust, i) => i > 0 && cust.walkTween && cust.walkTween.isPlaying)) {
       if (typeof debugLog === 'function') {
         debugLog('lureNextWanderer abort: walkTween active');
       }
@@ -104,30 +144,13 @@ export function lureNextWanderer(scene, specific) {
       return;
     }
 
-    let c;
-    if (specific) {
-      const idx = GameState.wanderers.indexOf(specific);
-      if (idx === -1) return;
-      c = GameState.wanderers.splice(idx, 1)[0];
-    } else {
-      let closestIdx = 0;
-      let minDist = Number.MAX_VALUE;
-      for (let i = 0; i < GameState.wanderers.length; i++) {
-        const d = Math.abs(GameState.wanderers[i].sprite.x - ORDER_X);
-        if (d < minDist) {
-          closestIdx = i;
-          minDist = d;
-        }
-      }
-      c = GameState.wanderers.splice(closestIdx, 1)[0];
-    }
+    const idx = GameState.queue.length;
     if (c.walkTween) {
       c.walkTween.stop();
       c.walkTween.remove();
       c.walkTween = null;
     }
     if (c.pauseEvent) { c.pauseEvent.remove(); c.pauseEvent = null; }
-    const idx = GameState.queue.length;
     c.atOrder = false;
     c.arrived = false;
     c.arrivalTime = 0;
@@ -196,7 +219,7 @@ export function moveQueueForward() {
       showDialog.call(scene);
     }
   }
-  if (GameState.girlReady && GameState.queue.length < queueLimit()) {
+  if (GameState.girlReady && GameState.queue.length < queueLimit() + 3) {
     lureNextWanderer(scene);
   }
   if (typeof checkQueueSpacing === 'function') checkQueueSpacing(scene);
@@ -503,17 +526,17 @@ export function spawnCustomer() {
   startW(this, c, firstTarget, c.loopsRemaining === 0);
 
   GameState.wanderers.push(c);
-  if ((GameState.queue.length === 0 || GameState.girlReady) && GameState.queue.length < queueLimit()) {
+  if ((GameState.queue.length === 0 || GameState.girlReady) && GameState.queue.length < queueLimit() + 3) {
     lureNextWanderer(this);
   }
   scheduleNextSpawn(this);
   if (this.time && this.time.delayedCall) {
     this.time.delayedCall(1000, () => {
-      if (GameState.girlReady && GameState.queue.length < queueLimit() && GameState.wanderers.includes(c)) {
+      if (GameState.girlReady && GameState.queue.length < queueLimit() + 3 && GameState.wanderers.includes(c)) {
         lureNextWanderer(this);
       } else if (!GameState.girlReady) {
         this.time.delayedCall(1000, () => {
-          if (GameState.girlReady && GameState.queue.length < queueLimit() && GameState.wanderers.includes(c)) {
+          if (GameState.girlReady && GameState.queue.length < queueLimit() + 3 && GameState.wanderers.includes(c)) {
             lureNextWanderer(this);
           }
         }, [], this);

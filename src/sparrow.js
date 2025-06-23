@@ -63,6 +63,7 @@ export class Sparrow {
     this.sprite = scene.add.sprite(startX, startY, 'sparrow', 0)
       .setDepth(4)
       .setScale(0.5);
+    this.sprite.flipX = !fromLeft;
     this.state = BirdState.FLY;
     this.velocity = new Phaser.Math.Vector2();
     this.target = new Phaser.Math.Vector2();
@@ -91,6 +92,13 @@ export class Sparrow {
       new Phaser.Math.Vector2(this.target.x, this.target.y)
     );
     this.sprite.anims.play('sparrow_fly');
+    this.setFacingToTarget();
+  }
+
+  setFacingToTarget(){
+    if(this.sprite){
+      this.sprite.flipX = this.target.x < this.sprite.x;
+    }
   }
 
   update(dt){
@@ -149,15 +157,18 @@ export class Sparrow {
       this.curve.getPoint(eased, this.followVec);
       this.sprite.setPosition(this.followVec.x, this.followVec.y);
     }
+    this.setFacingToTarget();
   }
 
   fleeUpdate(dt){
     this.timer += dt;
     this.sprite.x += this.velocity.x * dt * 1.5;
     this.sprite.y += this.velocity.y * dt * 1.5;
+    this.sprite.flipX = this.velocity.x < 0;
   }
 
   landUpdate(dt){
+    this.setFacingToTarget();
     const dx = this.target.x - this.sprite.x;
     const dy = this.target.y - this.sprite.y;
     this.sprite.x += dx * 4 * dt;
@@ -188,6 +199,7 @@ export class Sparrow {
           }
         }
         this.target.set(targetX, this.sprite.y);
+        this.setFacingToTarget();
         this.timer = Phaser.Math.FloatBetween(1,2);
       }else{
         this.timer = Phaser.Math.FloatBetween(1,3);
@@ -196,6 +208,7 @@ export class Sparrow {
   }
 
   wanderUpdate(dt){
+    this.setFacingToTarget();
     const angle = Phaser.Math.Angle.Between(this.sprite.x, this.sprite.y, this.target.x, this.target.y);
     const step = 20 * dt;
     this.sprite.x += Math.cos(angle)*step;
@@ -229,6 +242,7 @@ export class Sparrow {
       new Phaser.Math.Vector2(target.x, target.y)
     );
     this.sprite.anims.play('sparrow_fly');
+    this.setFacingToTarget();
     this.state = BirdState.FLY;
     this.timer = 0;
   }
@@ -236,6 +250,7 @@ export class Sparrow {
   flee(vec){
     this.velocity.copy(vec.normalize().scale(60));
     this.sprite.anims.play('sparrow_fly');
+    this.sprite.flipX = this.velocity.x < 0;
     this.state = BirdState.FLEE;
     this.timer = 0;
   }
@@ -263,6 +278,7 @@ export function spawnSparrow(scene, opts = {}){
       Phaser.Math.Between(180, 300),
       Phaser.Math.Between(260, 300)
     );
+    bird.sprite.flipX = Math.random() < 0.5;
     bird.timer = Phaser.Math.FloatBetween(1, 3);
   }
   birds.push(bird);
@@ -304,6 +320,28 @@ export function updateSparrows(scene, delta){
       }
       const idx = birds.indexOf(bird);
       if(idx !== -1) birds.splice(idx,1);
+    }
+  }
+  // simple separation to prevent overlapping
+  for(let i=0;i<birds.length;i++){
+    const b1 = birds[i];
+    if(!b1.sprite) continue;
+    for(let j=i+1;j<birds.length;j++){
+      const b2 = birds[j];
+      if(!b2.sprite) continue;
+      const dx = b2.sprite.x - b1.sprite.x;
+      const dy = b2.sprite.y - b1.sprite.y;
+      const dist = Math.hypot(dx, dy);
+      const min = 12;
+      if(dist > 0 && dist < min){
+        const push = (min - dist) / 2;
+        const nx = dx / dist;
+        const ny = dy / dist;
+        b1.sprite.x -= nx * push;
+        b1.sprite.y -= ny * push;
+        b2.sprite.x += nx * push;
+        b2.sprite.y += ny * push;
+      }
     }
   }
 }

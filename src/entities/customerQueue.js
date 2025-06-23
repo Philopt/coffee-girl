@@ -110,12 +110,12 @@ export function lureNextWanderer(scene, specific) {
 
   if (GameState.wanderers.length) {
     let c = null;
-    let idx = -1;
+    let wandererIdx = -1;
     if (specific) {
-      idx = GameState.wanderers.indexOf(specific);
-      if (idx !== -1 && GameState.queue.length < customerQueueThreshold(GameState.wanderers[idx])) {
-        c = GameState.wanderers.splice(idx, 1)[0];
-      } else if (idx !== -1) {
+      wandererIdx = GameState.wanderers.indexOf(specific);
+      if (wandererIdx !== -1 && GameState.queue.length < customerQueueThreshold(GameState.wanderers[wandererIdx])) {
+        c = GameState.wanderers.splice(wandererIdx, 1)[0];
+      } else if (wandererIdx !== -1) {
         return;
       }
     } else {
@@ -144,7 +144,7 @@ export function lureNextWanderer(scene, specific) {
       return;
     }
 
-    const idx = GameState.queue.length;
+    const queueIdx = GameState.queue.length;
     if (c.walkTween) {
       c.walkTween.stop();
       c.walkTween.remove();
@@ -163,16 +163,16 @@ export function lureNextWanderer(scene, specific) {
     GameState.activeCustomer = GameState.queue[0];
     let targetX;
     let targetY;
-    if (idx === 0) {
+    if (queueIdx === 0) {
       targetX = ORDER_X;
       targetY = ORDER_Y;
     } else {
-      targetX = QUEUE_X - QUEUE_SPACING * (idx - 1);
-      targetY = QUEUE_Y - QUEUE_OFFSET * (idx - 1);
+      targetX = QUEUE_X - QUEUE_SPACING * (queueIdx - 1);
+      targetY = QUEUE_Y - QUEUE_OFFSET * (queueIdx - 1);
     }
     setDepthFromBottom(c.sprite, 5);
     const dir = c.dir || (c.sprite.x < targetX ? 1 : -1);
-    const speed = idx === 0 ? LURE_SPEED : LURE_SPEED * 0.75;
+    const speed = queueIdx === 0 ? LURE_SPEED : LURE_SPEED * 0.75;
     c.walkTween = curvedApproach(scene, c.sprite, dir, targetX, targetY, () => {
       c.walkTween = null;
       registerArrival(scene, c);

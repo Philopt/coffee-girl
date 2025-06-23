@@ -35,7 +35,7 @@ function playOpening(scene){
     .setScale(1.5);
 
   // Number 2 graphic enters like a shooting star
-  const startX = (scene.scale && scene.scale.width) ? scene.scale.width + 80 : 560;
+  const startX = (scene.scale && scene.scale.width) ? -80 : -80;
   const startY = -80;
   openingNumber = scene.add.image(startX, startY, 'title2')
     .setOrigin(0.5)
@@ -84,19 +84,19 @@ function playOpening(scene){
   const finalX = openingTitle.x + openingTitle.displayWidth / 2 - openingNumber.displayWidth / 2;
   const finalY = openingTitle.y + openingTitle.displayHeight / 2 - openingNumber.displayHeight / 2;
 
-  const spawnThrust = () => {
+  const spawnThrust = (scale=2) => {
     const ang = Phaser.Math.DegToRad(Phaser.Math.Between(240, 300));
-    const dist = Phaser.Math.Between(40, 80);
+    const dist = Phaser.Math.Between(80, 160);
     const cup = scene.add.image(openingNumber.x, openingNumber.y, 'coffeecup2')
       .setDepth(17)
-      .setScale(1);
+      .setScale(scale);
     scene.tweens.add({
       targets: cup,
       x: cup.x + Math.cos(ang) * dist,
       y: cup.y + Math.sin(ang) * dist,
       angle: Phaser.Math.Between(-360, 360),
       alpha: 0,
-      duration: 700,
+      duration: 900,
       ease: 'Cubic.easeOut',
       onComplete: () => cup.destroy()
     });
@@ -126,6 +126,9 @@ function playOpening(scene){
     ease: 'Bounce.easeOut',
     onStart: () => {
       for (let i = 0; i < 4; i++) spawnThrust();
+    },
+    onComplete: () => {
+      for (let i = 0; i < 8; i++) spawnThrust(3);
     }
   });
   tl.add({targets:white,alpha:0,duration:600});

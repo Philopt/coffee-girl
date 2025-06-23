@@ -191,7 +191,6 @@ export class Sparrow {
         this.timer = Phaser.Math.FloatBetween(1,2);
       }else{
         this.timer = Phaser.Math.FloatBetween(1,3);
-        if(Math.random() < 0.5) this.sprite.anims.play('sparrow_peck', true);
       }
     }
   }

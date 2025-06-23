@@ -1467,7 +1467,7 @@ export function setupGame(){
           dialogDrinkEmoji.attachedTo = null;
           dialogDrinkEmoji.setVisible(false);
         }
-        if(current.isDog && current.owner && current.owner.waitingForDog){
+        if(current.isDog && current.owner && (current.owner.waitingForDog || current.owner.exitHandler)){
           const owner=current.owner;
           const dir = Phaser.Math.Between(0,1)?1:-1;
           const startX=owner.sprite.x;
@@ -1585,7 +1585,7 @@ export function setupGame(){
         });
       }
 
-      if(current.isDog && current.owner && current.owner.waitingForDog){
+      if(current.isDog && current.owner && (current.owner.waitingForDog || current.owner.exitHandler)){
         const owner=current.owner;
         if (owner.dogWaitEvent) {
           owner.dogWaitEvent.remove(false);

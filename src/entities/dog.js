@@ -34,21 +34,33 @@ export function animateDogGrowth(scene, dog) {
   const factor = dog.scaleFactor || 0.6;
   const s = scaleForY(dog.y) * factor;
   const dir = dog.dir || 1;
-  const finalX = s * dir;
-  const finalY = s;
-  scene.tweens.add({
+  const baseX = s * dir;
+  const baseY = s;
+  const tl = scene.tweens.createTimeline();
+  const growX = baseX * 1.2;
+  const growY = baseY * 1.2;
+  for (let i = 0; i < 3; i++) {
+    tl.add({
+      targets: dog,
+      scaleX: growX,
+      scaleY: growY,
+      duration: dur(120),
+      yoyo: true,
+      onUpdate: () => setDepthFromBottom(dog, 5)
+    });
+  }
+  tl.add({
     targets: dog,
-    scaleX: finalX * 1.2,
-    scaleY: finalY * 1.2,
-    yoyo: true,
-    repeat: 1,
+    scaleX: growX,
+    scaleY: growY,
     duration: dur(120),
-    onUpdate: () => setDepthFromBottom(dog, 5),
-    onComplete: () => {
-      dog.setScale(finalX, finalY);
-      setDepthFromBottom(dog, 5);
-    }
+    onUpdate: () => setDepthFromBottom(dog, 5)
   });
+  tl.setCallback('onComplete', () => {
+    dog.setScale(baseX, baseY);
+    setDepthFromBottom(dog, 5);
+  });
+  tl.play();
 }
 
 // Keep the dog positioned near its owner and react to other customers.

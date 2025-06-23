@@ -87,7 +87,7 @@ function playOpening(scene){
     openingTitle.x +
     openingTitle.displayWidth / 2 -
     openingNumber.displayWidth / 2 +
-    10;
+    25; // shift 15px further right
   const finalY =
     openingTitle.y +
     openingTitle.displayHeight / 2 -

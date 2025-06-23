@@ -29,6 +29,28 @@ export function scaleDog(d) {
   setDepthFromBottom(d, 5);
 }
 
+export function animateDogGrowth(scene, dog) {
+  if (!scene || !dog) return;
+  const factor = dog.scaleFactor || 0.6;
+  const s = scaleForY(dog.y) * factor;
+  const dir = dog.dir || 1;
+  const finalX = s * dir;
+  const finalY = s;
+  scene.tweens.add({
+    targets: dog,
+    scaleX: finalX * 1.2,
+    scaleY: finalY * 1.2,
+    yoyo: true,
+    repeat: 1,
+    duration: dur(120),
+    onUpdate: () => setDepthFromBottom(dog, 5),
+    onComplete: () => {
+      dog.setScale(finalX, finalY);
+      setDepthFromBottom(dog, 5);
+    }
+  });
+}
+
 // Keep the dog positioned near its owner and react to other customers.
 export function updateDog(owner) {
   const dog = owner && owner.dog;

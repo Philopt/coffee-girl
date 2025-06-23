@@ -7,7 +7,7 @@ import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from
 import { CustomerState } from './constants.js';
 
 import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows } from './sparrow.js';
-import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog, dogTruckRuckus, dogRefuseJumpBark } from './entities/dog.js';
+import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog, dogTruckRuckus, dogRefuseJumpBark, animateDogGrowth } from './entities/dog.js';
 import { startWander } from './entities/wanderers.js';
 
 import { flashBorder, flashFill, blinkButton, applyRandomSkew, emphasizePrice, setDepthFromBottom, createGrayscaleTexture, createGlowTexture } from './ui/helpers.js';
@@ -1338,6 +1338,8 @@ export function setupGame(){
           const max = base * 2;
           dogSprite.scaleFactor = Math.min(dogSprite.scaleFactor * 1.2, max);
           if(typeof scaleDog === 'function') scaleDog(dogSprite);
+          if(typeof animateDogGrowth === 'function')
+            animateDogGrowth(this, dogSprite);
         }
       }
       if(type==='refuse') memory.state = CustomerState.BROKEN;

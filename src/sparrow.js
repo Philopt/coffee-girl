@@ -154,10 +154,18 @@ export class Sparrow {
     if(this.curve){
       const t = Phaser.Math.Clamp(this.timer / 2.5, 0, 1);
       const eased = Phaser.Math.Easing.Sine.Out(t);
+      const prevX = this.sprite.x;
       this.curve.getPoint(eased, this.followVec);
       this.sprite.setPosition(this.followVec.x, this.followVec.y);
+      const dx = this.sprite.x - prevX;
+      if(Math.abs(dx) > 0.5){
+        this.sprite.flipX = dx < 0;
+      } else {
+        this.setFacingToTarget();
+      }
+    } else {
+      this.setFacingToTarget();
     }
-    this.setFacingToTarget();
   }
 
   fleeUpdate(dt){
@@ -322,7 +330,7 @@ export function updateSparrows(scene, delta){
       if(idx !== -1) birds.splice(idx,1);
     }
   }
-  // simple separation to prevent overlapping
+  // encourage birds to avoid overlapping without pushing each other
   for(let i=0;i<birds.length;i++){
     const b1 = birds[i];
     if(!b1.sprite) continue;
@@ -334,13 +342,22 @@ export function updateSparrows(scene, delta){
       const dist = Math.hypot(dx, dy);
       const min = 12;
       if(dist > 0 && dist < min){
-        const push = (min - dist) / 2;
         const nx = dx / dist;
         const ny = dy / dist;
-        b1.sprite.x -= nx * push;
-        b1.sprite.y -= ny * push;
-        b2.sprite.x += nx * push;
-        b2.sprite.y += ny * push;
+        const hop = 10;
+        const hopBird = (bird, dir) => {
+          if(!bird || !bird.sprite) return;
+          if(bird.state === BirdState.FLY || bird.state === BirdState.FLEE || bird.state === BirdState.LAND) return;
+          bird.state = BirdState.WANDER_GROUND;
+          bird.target.set(
+            bird.sprite.x + nx * hop * dir,
+            bird.sprite.y + ny * hop * dir
+          );
+          bird.timer = Phaser.Math.FloatBetween(0.5, 1);
+          bird.setFacingToTarget();
+        };
+        hopBird(b1, -1);
+        hopBird(b2, 1);
       }
     }
   }

@@ -178,17 +178,16 @@ export function setupGame(){
     }
 
     const SELL_X = 240;
-    const FINAL = canSell ?
-      {
-        sell:{x:SELL_X, scale:1.3, depth:13, angle:180},
-        give:{x:370, scale:1.15, depth:12, angle:20},
-        ref:{x:110, scale:1.15, depth:12, angle:-20}
-      } :
-      {
-        sell:{x:SELL_X, scale:1.3, depth:11, angle:180},
-        give:{x:340, scale:1.4, depth:13, angle:20},
-        ref:{x:140, scale:1.4, depth:13, angle:-20}
-      };
+    const WITH_SELL = {
+      sell:{x:SELL_X, scale:1.15, depth:13, angle:180},
+      give:{x:360, scale:1.0, depth:12, angle:20},
+      ref:{x:120, scale:1.0, depth:12, angle:-20}
+    };
+    const WITHOUT_SELL = {
+      give:{x:320, scale:1.0, depth:13, angle:20},
+      ref:{x:160, scale:1.0, depth:13, angle:-20}
+    };
+    const FINAL = canSell ? WITH_SELL : WITHOUT_SELL;
 
     const buttonImage = btn => {
       if(!btn || !btn.list) return null;
@@ -223,49 +222,25 @@ export function setupGame(){
 
     }
 
-    resetBtn(btnSell, FINAL.sell);
+    if(canSell){
+      resetBtn(btnSell, FINAL.sell);
+    }else if(btnSell){
+      btnSell.setVisible(false);
+    }
     resetBtn(btnGive, FINAL.give);
     resetBtn(btnRef, FINAL.ref);
 
     const timeline = this.tweens.createTimeline();
-    timeline.add({
-      targets: btnSell,
-      y: BUTTON_Y,
-      angle: 0,
-      alpha: 1,
-      ease: 'Sine.easeOut',
-      duration: dur(250),
-      onComplete: () => {
-
-        if(!canSell && btnSell && btnSell.image && this.textures.exists('sell_gray')){
-          if(!btnSell.grayOverlay){
-            btnSell.grayOverlay = this.add.image(0,0,'sell_gray')
-              .setScale(btnSell.image.scale)
-              .setAlpha(0);
-            btnSell.add(btnSell.grayOverlay);
-          }else{
-            btnSell.grayOverlay.setAlpha(0).setVisible(true);
-            btnSell.grayOverlay.setScale(btnSell.image.scale);
-          }
-          this.tweens.add({
-            targets: btnSell.grayOverlay,
-            alpha: 0.6,
-            duration: dur(300)
-          });
-          this.tweens.add({
-            targets: btnSell.image,
-            alpha: 0,
-            duration: dur(300),
-            onComplete: () => {
-              btnSell.image.setTexture('sell_gray');
-              btnSell.image.setAlpha(0.6);
-              btnSell.grayOverlay.setVisible(false);
-            }
-          });
-
-        }
-      }
-    });
+    if(canSell){
+      timeline.add({
+        targets: btnSell,
+        y: BUTTON_Y,
+        angle: 0,
+        alpha: 1,
+        ease: 'Sine.easeOut',
+        duration: dur(250)
+      });
+    }
 
     timeline.add({
       targets: btnGive,
@@ -291,7 +266,7 @@ export function setupGame(){
       if(canSell && btnSell.zone && btnSell.zone.input) btnSell.zone.input.enabled = true;
       if(btnGive.zone && btnGive.zone.input) btnGive.zone.input.enabled = true;
       if(btnRef.zone && btnRef.zone.input) btnRef.zone.input.enabled = true;
-      if(btnSell.glow){
+      if(canSell && btnSell.glow){
         if(btnSell.glowTween && btnSell.glowTween.remove) btnSell.glowTween.remove();
         btnSell.glowTween=null;
         btnSell.glow.setVisible(false);
@@ -762,9 +737,9 @@ export function setupGame(){
     // buttons evenly spaced
 
     // Arrange buttons: Refuse on the left, Sell in the middle (largest), Give on the right
-    btnRef=createButton(110,'refuse',()=>handleAction.call(this,'refuse'),1.15,12);
-    btnSell=createButton(240,'sell',()=>handleAction.call(this,'sell'),1.3,13,0xffd700);
-    btnGive=createButton(370,'give',()=>handleAction.call(this,'give'),1.15,12,0xff69b4);
+    btnRef=createButton(110,'refuse',()=>handleAction.call(this,'refuse'),1.0,12);
+    btnSell=createButton(240,'sell',()=>handleAction.call(this,'sell'),1.15,13,0xffd700);
+    btnGive=createButton(370,'give',()=>handleAction.call(this,'give'),1.0,12,0xff69b4);
 
 
     // sliding report texts

@@ -72,6 +72,7 @@ export class Sparrow {
     this.timer = 0;
     this.scared = false;
     this.threatTimer = 0;
+    this.hopCooldown = 0;
 
     const truck = GameState.truck;
     if (truck && truck.getTopCenter) {
@@ -102,6 +103,7 @@ export class Sparrow {
   }
 
   update(dt){
+    this.hopCooldown = Math.max(0, this.hopCooldown - dt);
     this.threatTimer -= dt;
     if(this.threatTimer <= 0){
       checkThreats(this.scene, this);
@@ -178,14 +180,11 @@ export class Sparrow {
   }
 
   landUpdate(dt){
-    this.setFacingToTarget();
-    const dx = this.target.x - this.sprite.x;
     const dy = this.target.y - this.sprite.y;
-    this.sprite.x += dx * 4 * dt;
+    this.sprite.x = this.target.x;
     this.sprite.y += dy * 4 * dt;
-    if(Math.abs(dx) + Math.abs(dy) < 1){
-      this.sprite.x = this.target.x;
-      this.sprite.y = this.target.y;
+    if(Math.abs(dy) < 1){
+      this.sprite.setPosition(this.target.x, this.target.y);
       this.sprite.anims.play('sparrow_ground');
       this.state = BirdState.IDLE_GROUND;
       this.timer = Phaser.Math.FloatBetween(1,3);
@@ -344,21 +343,26 @@ export function updateSparrows(scene, delta){
       const distX = Math.abs(dx);
       const min = 12;
       if(distX > 0 && distX < min && Math.abs(dy) < min){
-        const dir = Math.sign(dx) || 1;
-        const hop = 10;
-        const hopBird = (bird, sign) => {
-          if(!bird || !bird.sprite) return;
-          if(bird.state === BirdState.FLY || bird.state === BirdState.FLEE || bird.state === BirdState.LAND) return;
-          bird.state = BirdState.WANDER_GROUND;
-          bird.target.set(
-            bird.sprite.x + hop * sign,
-            bird.sprite.y
-          );
-          bird.timer = Phaser.Math.FloatBetween(0.5, 1);
-          bird.setFacingToTarget();
-        };
-        hopBird(b1, -dir);
-        hopBird(b2, dir);
+        if(b1.hopCooldown <= 0 && b2.hopCooldown <= 0){
+          const dir = Math.sign(dx) || 1;
+          const hop = 10;
+          const hopBird = (bird, sign) => {
+            if(!bird || !bird.sprite) return;
+            if(bird.state === BirdState.FLY || bird.state === BirdState.FLEE || bird.state === BirdState.LAND) return;
+            if(Math.random() < 0.5){
+              bird.state = BirdState.WANDER_GROUND;
+              bird.target.set(
+                bird.sprite.x + hop * sign,
+                bird.sprite.y
+              );
+              bird.timer = Phaser.Math.FloatBetween(0.5, 1);
+              bird.setFacingToTarget();
+            }
+          };
+          hopBird(b1, -dir);
+          hopBird(b2, dir);
+          b1.hopCooldown = b2.hopCooldown = 1.5;
+        }
       }
     }
   }

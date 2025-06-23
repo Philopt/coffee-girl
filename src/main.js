@@ -1195,11 +1195,13 @@ export function setupGame(){
         .setOrigin(0.5).setDepth(11);
     }
     const scoreDuration = 400 + Math.abs(loveDelta || 0) * 250;
+    const holdDuration = Math.max(scoreDuration, 1000);
     this.tweens.add({
       targets: emo,
       y: target.y - 30,
       alpha: 0,
-      duration: dur(scoreDuration),
+      duration: dur(200),
+      delay: dur(holdDuration),
       onComplete: () => {
         if(emojiObj){
           emo.attachedTo = null;

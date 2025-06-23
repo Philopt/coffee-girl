@@ -1,7 +1,7 @@
 import { debugLog, DEBUG } from './debug.js';
 import { dur, scaleForY, articleFor, flashMoney, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_Y, DIALOG_Y } from "./ui.js";
 import { ORDER_X, ORDER_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel, queueLimit } from "./customers.js";
-import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer, startDogWaitTimer } from './entities/customerQueue.js';
+import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer, startDogWaitTimer, checkQueueSpacing } from './entities/customerQueue.js';
 import { baseConfig } from "./scene.js";
 import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from "./state.js";
 import { CustomerState } from './constants.js';
@@ -368,6 +368,7 @@ export function setupGame(){
   let sideCAlpha=0;
   let sideCFadeTween=null;
   let endOverlay=null;
+  let queueCheckTimer = 0;
   // hearts or anger symbols currently animating
 
 
@@ -783,6 +784,11 @@ export function setupGame(){
       enforceCustomerScaling();
       updateDrinkEmojiPosition();
       updateSparrows(this, dt);
+      queueCheckTimer += dt;
+      if (queueCheckTimer >= 500) {
+        queueCheckTimer = 0;
+        if (typeof checkQueueSpacing === 'function') checkQueueSpacing(this);
+      }
     });
 
 

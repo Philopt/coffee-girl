@@ -2546,20 +2546,31 @@ function dogsBarkAtFalcon(){
       .setAlpha(0);
     this.tweens.add({targets:line2,alpha:1,duration:dur(600),delay:dur(1800)});
 
-    const btn = this.add.text(240,580,'Try Again',{font:'20px sans-serif',fill:'#fff',backgroundColor:'#006400',padding:{x:14,y:8}})
+    const btn = this.add.text(240,580,'Try Again',{font:'20px sans-serif',fill:'#000',backgroundColor:'#ffffff',padding:{x:14,y:8}})
       .setOrigin(0.5)
       .setDepth(22);
     const againZone = this.add.zone(240,580,btn.width,btn.height).setOrigin(0.5);
     againZone.setInteractive({ useHandCursor:true });
     againZone.on('pointerdown',()=>{
-        title.destroy();
-        img.destroy();
-        line1.destroy();
-        line2.destroy();
-        btn.destroy();
-        if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
-        restartGame.call(this);
-        againZone.destroy();
+        againZone.disableInteractive();
+        GameState.lastEndKey = 'falcon_end';
+        if(!GameState.badges.includes('falcon_end')) GameState.badges.push('falcon_end');
+        createGrayscaleTexture(this,'falcon_end','falcon_end_gray');
+        img.setTexture('falcon_end_gray');
+        GameState.carryPortrait = img.setDepth(25);
+        const glowTex = createGlowTexture(this,0xffffff,'tryagain_glow');
+        const glow = this.add.image(btn.x,btn.y,'tryagain_glow').setDepth(24).setAlpha(0.8).setScale(0.1);
+        this.tweens.add({targets:glow,scale:3,alpha:0,duration:300,onComplete:()=>glow.destroy()});
+        const overlay=this.add.rectangle(240,320,480,640,0xffffff).setDepth(23).setAlpha(0);
+        this.tweens.add({targets:overlay,alpha:1,duration:300,onComplete:()=>{
+          title.destroy();
+          line1.destroy();
+          line2.destroy();
+          btn.destroy();
+          if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
+          restartGame.call(this, overlay);
+          againZone.destroy();
+        }});
       });
     GameState.gameOver=true;
   }
@@ -2604,20 +2615,36 @@ function dogsBarkAtFalcon(){
     }
     const txt=this.add.text(240,offset,lines.slice(startIdx).join('\n'),{font:'24px sans-serif',fill:'#000',align:'center',wordWrap:{width:440}})
       .setOrigin(0.5).setDepth(21);
-    const btn=this.add.text(240,bgY+80,'Try Again',{font:'20px sans-serif',fill:'#fff',backgroundColor:'#006400',padding:{x:14,y:8}})
+    const btn=this.add.text(240,bgY+80,'Try Again',{font:'20px sans-serif',fill:'#000',backgroundColor:'#ffffff',padding:{x:14,y:8}})
       .setOrigin(0.5).setDepth(22);
     const againZone=this.add.zone(240,bgY+80,btn.width,btn.height).setOrigin(0.5);
     againZone.setInteractive({ useHandCursor:true });
     againZone.on('pointerdown',()=>{
-        bg.destroy(); txt.destroy(); btn.destroy(); if(titleText) titleText.destroy(); if(img) img.destroy();
-        if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
-        restartGame.call(this);
-        againZone.destroy();
+        againZone.disableInteractive();
+        const key = img ? img.texture.key : null;
+        if(key){
+          GameState.lastEndKey = key;
+          if(!GameState.badges.includes(key)) GameState.badges.push(key);
+          const grayKey = `${key}_gray`;
+          createGrayscaleTexture(this,key,grayKey);
+          img.setTexture(grayKey);
+          GameState.carryPortrait = img.setDepth(25);
+        }
+        const glowTex = createGlowTexture(this,0xffffff,'tryagain_glow');
+        const glow = this.add.image(btn.x,btn.y,'tryagain_glow').setDepth(24).setAlpha(0.8).setScale(0.1);
+        this.tweens.add({targets:glow,scale:3,alpha:0,duration:300,onComplete:()=>glow.destroy()});
+        const overlay=this.add.rectangle(240,320,480,640,0xffffff).setDepth(23).setAlpha(0);
+        this.tweens.add({targets:overlay,alpha:1,duration:300,onComplete:()=>{
+          bg.destroy(); txt.destroy(); btn.destroy(); if(titleText) titleText.destroy();
+          if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
+          restartGame.call(this, overlay);
+          againZone.destroy();
+        }});
       });
     GameState.gameOver=true;
   }
 
-  function restartGame(){
+  function restartGame(overlay){
     const scene=this;
     scene.tweens.killAll();
     scene.time.removeAllEvents();
@@ -2672,6 +2699,11 @@ function dogsBarkAtFalcon(){
     GameState.gameOver=false;
     showStartScreen.call(this);
     scheduleSparrowSpawn(this);
+    if(overlay){
+      scene.time.delayedCall(50,()=>{
+        scene.tweens.add({targets:overlay,alpha:0,duration:400,onComplete:()=>overlay.destroy()});
+      },[],scene);
+    }
   }
 
    Assets = { keys, requiredAssets, preload };

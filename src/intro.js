@@ -5,6 +5,7 @@ import { GameState } from './state.js';
 import { debugLog, DEBUG } from './debug.js';
 import { dur } from './ui.js';
 import { spawnSparrow, scatterSparrows } from './sparrow.js';
+import { createGrayscaleTexture } from './ui/helpers.js';
 
 let startOverlay=null;
 let startButton=null;
@@ -14,6 +15,7 @@ let startMsgBubbles=[];
 let openingTitle=null;
 let openingNumber=null;
 let openingDog=null;
+let badgeIcons=[];
 
 function playOpening(scene){
   scene = scene || this;
@@ -201,6 +203,7 @@ function showStartScreen(scene){
   if(!phoneContainer.visible || phoneContainer.alpha === 0){
     console.warn('phoneContainer not visible after creation');
   }
+  GameState.phoneContainer = phoneContainer;
 
   // Removed animated bird sprites so the start button remains clickable
 
@@ -217,6 +220,47 @@ function showStartScreen(scene){
   startButton.add(startZone);
 
   phoneContainer.add(startButton);
+
+  badgeIcons.forEach(i=>i.destroy());
+  badgeIcons=[];
+  const iconY = offsetY + bh/2 + 20;
+  const iconStartX = -phoneW/2 + 30;
+  GameState.badges.forEach((key,idx)=>{
+    const grayKey = `${key}_gray`;
+    if(!scene.textures.exists(grayKey)) createGrayscaleTexture(scene,key,grayKey);
+    const icon = scene.add.image(iconStartX + idx*36, iconY, grayKey)
+      .setScale(0.35)
+      .setDepth(16);
+    phoneContainer.add(icon);
+    badgeIcons.push(icon);
+  });
+
+  if(GameState.carryPortrait && GameState.lastEndKey){
+    const idx = GameState.badges.indexOf(GameState.lastEndKey);
+    if(idx !== -1){
+      badgeIcons[idx].setAlpha(0);
+      const destX = phoneContainer.x + iconStartX + idx*36;
+      const destY = phoneContainer.y + iconY;
+      const p = GameState.carryPortrait;
+      scene.children.bringToTop(p);
+      scene.tweens.add({
+        targets:p,
+        x:destX,
+        y:destY,
+        scale:0.35,
+        duration:600,
+        ease:'Sine.easeIn',
+        onComplete:()=>{
+          badgeIcons[idx].setAlpha(1);
+          p.destroy();
+          GameState.carryPortrait=null;
+        }
+      });
+    } else {
+      GameState.carryPortrait.destroy();
+      GameState.carryPortrait=null;
+    }
+  }
 
   // Add intro graphics for the sequel intro
   const pcScale = phoneContainer.scale || phoneContainer.scaleX || 1;
@@ -324,7 +368,10 @@ function showStartScreen(scene){
       if(openingTitle){ openingTitle.destroy(); openingTitle=null; }
       if(openingNumber){ openingNumber.destroy(); openingNumber=null; }
       if(openingDog){ openingDog.destroy(); openingDog=null; }
+      badgeIcons.forEach(i=>i.destroy());
+      badgeIcons=[];
       phoneContainer.destroy(); phoneContainer=null;
+      GameState.phoneContainer = null;
       playIntro.call(scene);
     }});
     tl.add({targets:phoneContainer,y:-320,duration:600,ease:'Sine.easeIn'});

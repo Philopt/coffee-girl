@@ -1091,12 +1091,32 @@ export function setupGame(){
       }
     });
 
-    tipText.setVisible(false);
-    if (typeof debugLog === 'function') debugLog('showDialog end');
-  }
+      tipText.setVisible(false);
+      if (typeof debugLog === 'function') debugLog('showDialog end');
+      if (this.time && this.time.delayedCall) {
+        if (GameState.orderTimeoutEvent) {
+          GameState.orderTimeoutEvent.remove(false);
+          GameState.orderTimeoutEvent = null;
+        }
+        GameState.orderTimeoutEvent = this.time.delayedCall(
+          dur(8000),
+          () => {
+            if (GameState.dialogActive && !GameState.saleInProgress) {
+              handleAction.call(this, 'refuse');
+            }
+          },
+          [],
+          this
+        );
+      }
+    }
 
-  function clearDialog(keepPrice=false, resetTicket=true){
+    function clearDialog(keepPrice=false, resetTicket=true){
     GameState.dialogActive = false;
+    if (GameState.orderTimeoutEvent) {
+      GameState.orderTimeoutEvent.remove(false);
+      GameState.orderTimeoutEvent = null;
+    }
     if(!keepPrice){
       dialogBg.setVisible(false);
       dialogText.setVisible(false);
@@ -1223,6 +1243,10 @@ export function setupGame(){
     const current=GameState.activeCustomer;
     if (current) {
       GameState.saleInProgress = true;
+    }
+    if (GameState.orderTimeoutEvent) {
+      GameState.orderTimeoutEvent.remove(false);
+      GameState.orderTimeoutEvent = null;
     }
     if(!current){
       clearDialog.call(this, type!=='refuse');

@@ -1373,6 +1373,12 @@ export function setupGame(){
         .setShadow(0,0,'#000',4);
     }
 
+    // Track how many animations need to finish before resolving
+    let pending = (type !== 'refuse' ? 1 : 0);
+    if (lD !== 0) pending += 1;
+    if (type === 'refuse' && lD !== 0) pending += 1;
+    const done = () => { if (--pending <= 0) finish(); };
+
     if(type==='refuse'){
       showDrinkReaction.call(this, current.sprite, 'refuse', null, lD, done);
     }
@@ -1683,10 +1689,7 @@ export function setupGame(){
     // animated report using timelines
     const midX=240, midY=120;
 
-    let pending=(type!=='refuse'?1:0);
-    if(lD!==0) pending += 1;
-    if(type==='refuse' && lD!==0) pending += 1;
-    const done=()=>{ if(--pending<=0) finish(); };
+
 
     if(type==='sell'){
       const ticket=dialogPriceContainer;

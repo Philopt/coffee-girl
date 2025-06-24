@@ -48,7 +48,6 @@ function playOpening(scene){
 
   const tl = scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
     white.destroy();
-    showStartScreen.call(scene);
   }});
 
   // Reveal the title card with a burst of coffee cups
@@ -143,7 +142,17 @@ function playOpening(scene){
       for (let i = 0; i < 8; i++) spawnThrust(3);
     }
   });
-  tl.add({targets:white,alpha:0,duration:600});
+  tl.add({
+    targets: white,
+    alpha: 0,
+    duration: 600,
+    onStart: () => {
+      showStartScreen.call(scene);
+      if (scene.children && scene.children.bringToTop) {
+        scene.children.bringToTop(white);
+      }
+    }
+  });
   tl.play();
 }
 
@@ -164,7 +173,7 @@ function showStartScreen(scene){
   startMsgBubbles.forEach(b => b.destroy());
   startMsgBubbles = [];
   startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.75)
-    .setDepth(14);
+    .setDepth(13);
 
   const phoneW = (typeof START_PHONE_W === 'number') ? START_PHONE_W : 260;
   const phoneH = (typeof START_PHONE_H === 'number') ? START_PHONE_H : 500;

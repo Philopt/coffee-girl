@@ -2307,7 +2307,7 @@ function dogsBarkAtFalcon(){
           tl.add({targets:debris,
                   x:debris.x+Phaser.Math.Between(-60,60),
                   y:debris.y+Phaser.Math.Between(-50,10),
-                  angle:Phaser.Math.Between(-180,180),
+                  angle:Phaser.Math.Between(-360,360),
                   alpha:0,
                   duration:dur(400),
                   onComplete:()=>debris.destroy()},'<');
@@ -2329,17 +2329,15 @@ function dogsBarkAtFalcon(){
       for(let b=0;b<3;b++){
         const bx=girl.x+Phaser.Math.Between(-20,20);
         const by=girl.y+Phaser.Math.Between(-40,0);
-        const emoji=UPSET_EMOJIS[Phaser.Math.Between(0,UPSET_EMOJIS.length-1)];
-        const burst=s.add.text(bx,by,emoji,{font:'24px sans-serif',fill:'#f00'})
-          .setOrigin(0.5).setDepth(21);
-        s.tweens.add({targets:burst,scale:1.5,alpha:0,duration:dur(200),onComplete:()=>burst.destroy()});
+        const line=s.add.rectangle(bx,by,Phaser.Math.Between(2,4),18,0xff0000)
+          .setOrigin(0.5).setDepth(21)
+          .setAngle(Phaser.Math.Between(-45,45));
+        s.tweens.add({targets:line,alpha:0,scaleY:1.5,y:by-10,duration:dur(200),onComplete:()=>line.destroy()});
       }
     }
 
     function createDebrisEmoji(s, x, y){
-      const chars=['✨','💥','🪶'];
-      const ch=chars[Phaser.Math.Between(0,chars.length-1)];
-      return s.add.text(x,y,ch,{font:'24px sans-serif',fill:'#555'})
+      return s.add.text(x,y,'🪶',{font:'24px sans-serif',fill:'#555'})
         .setOrigin(0.5).setDepth(21);
     }
   }
@@ -2536,10 +2534,10 @@ function dogsBarkAtFalcon(){
       .setOrigin(0.5)
       .setDepth(21)
       .setAlpha(0);
-    this.tweens.add({targets:line1,alpha:1,duration:dur(1200),delay:dur(1200)});
+    this.tweens.add({targets:line1,alpha:1,duration:dur(1200),delay:dur(1700)});
 
     const line2 = this.add.text(240,520,'Lady Falcon reclaims her coffee truck',
-      {font:'28px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
+      {font:'24px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
       .setOrigin(0.5)
       .setDepth(21)
       .setAlpha(0);
@@ -2551,17 +2549,28 @@ function dogsBarkAtFalcon(){
     const againZone = this.add.zone(240,580,btn.width,btn.height).setOrigin(0.5);
     againZone.setInteractive({ useHandCursor:true });
     againZone.on('pointerdown',()=>{
-
-        titleGame.destroy();
-        titleOver.destroy();
-        img.destroy();
-        line1.destroy();
-        line2.destroy();
-        btn.destroy();
-        if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
-        restartGame.call(this);
-        againZone.destroy();
-
+        againZone.disableInteractive();
+        btn.setVisible(false);
+        const overlay=this.add.rectangle(btn.x,btn.y,btn.width,btn.height,0xffffff)
+          .setDepth(23).setOrigin(0.5);
+        this.tweens.add({
+          targets:overlay,
+          scaleX:480/btn.width,
+          scaleY:640/btn.height,
+          duration:300,
+          ease:'Cubic.easeOut',
+          onComplete:()=>{
+            titleGame.destroy();
+            titleOver.destroy();
+            img.destroy();
+            line1.destroy();
+            line2.destroy();
+            btn.destroy();
+            if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
+            restartGame.call(this, overlay);
+            againZone.destroy();
+          }
+        });
       });
     GameState.gameOver=true;
   }
@@ -2624,8 +2633,9 @@ function dogsBarkAtFalcon(){
         const glowTex = createGlowTexture(this,0xffffff,'tryagain_glow');
         const glow = this.add.image(btn.x,btn.y,'tryagain_glow').setDepth(24).setAlpha(0.8).setScale(0.1);
         this.tweens.add({targets:glow,scale:3,alpha:0,duration:300,onComplete:()=>glow.destroy()});
-        const overlay=this.add.rectangle(240,320,480,640,0xffffff).setDepth(23).setAlpha(0);
-        this.tweens.add({targets:overlay,alpha:1,duration:300,onComplete:()=>{
+        btn.setVisible(false);
+        const overlay=this.add.rectangle(btn.x,btn.y,btn.width,btn.height,0xffffff).setDepth(23).setOrigin(0.5);
+        this.tweens.add({targets:overlay,scaleX:480/btn.width,scaleY:640/btn.height,duration:300,ease:'Cubic.easeOut',onComplete:()=>{
           bg.destroy(); txt.destroy(); btn.destroy(); if(titleText) titleText.destroy();
           if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
           restartGame.call(this, overlay);

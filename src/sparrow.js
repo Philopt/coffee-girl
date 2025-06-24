@@ -63,7 +63,7 @@ export class Sparrow {
     this.sprite = scene.add.sprite(startX, startY, 'sparrow', 0)
       .setDepth(4)
       .setScale(0.5);
-    this.sprite.flipX = !fromLeft;
+    this.sprite.flipX = fromLeft;
     this.state = BirdState.FLY;
     this.velocity = new Phaser.Math.Vector2();
     this.target = new Phaser.Math.Vector2();
@@ -98,7 +98,7 @@ export class Sparrow {
 
   setFacingToTarget(){
     if(this.sprite){
-      this.sprite.flipX = this.target.x < this.sprite.x;
+      this.sprite.flipX = this.target.x > this.sprite.x;
     }
   }
 
@@ -162,13 +162,13 @@ export class Sparrow {
       const dx = this.sprite.x - prevX;
       if(Math.abs(dx) > 0.5){
         // face the direction of travel
-        this.sprite.flipX = dx < 0;
+        this.sprite.flipX = dx > 0;
       } else {
         // small movements fall back to target facing
-        this.sprite.flipX = this.target.x < this.sprite.x;
+        this.sprite.flipX = this.target.x > this.sprite.x;
       }
     } else {
-      this.sprite.flipX = this.target.x < this.sprite.x;
+      this.sprite.flipX = this.target.x > this.sprite.x;
     }
   }
 
@@ -176,7 +176,7 @@ export class Sparrow {
     this.timer += dt;
     this.sprite.x += this.velocity.x * dt * 1.5;
     this.sprite.y += this.velocity.y * dt * 1.5;
-    this.sprite.flipX = this.velocity.x < 0;
+    this.sprite.flipX = this.velocity.x > 0;
   }
 
   landUpdate(dt){
@@ -259,7 +259,7 @@ export class Sparrow {
   flee(vec){
     this.velocity.copy(vec.normalize().scale(60));
     this.sprite.anims.play('sparrow_fly');
-    this.sprite.flipX = this.velocity.x < 0;
+    this.sprite.flipX = this.velocity.x > 0;
     this.state = BirdState.FLEE;
     this.timer = 0;
   }

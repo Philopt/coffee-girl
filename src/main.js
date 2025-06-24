@@ -1248,6 +1248,13 @@ export function setupGame(){
       clearDialog.call(this, type!=='refuse');
       return;
     }
+    if(type==='refuse' && current.dog){
+      if(current.dog.followEvent) current.dog.followEvent.remove(false);
+      const dir = current.dog.x < ORDER_X ? -1 : 1;
+      const offX = dir===1 ? 520 : -40;
+      sendDogOffscreen.call(this, current.dog, offX, current.dog.y);
+      current.dog = null;
+    }
 
     const orderCount=current.orders.length;
     const totalCost=current.orders.reduce((s,o)=>s+o.price*o.qty,0);

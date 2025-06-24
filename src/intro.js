@@ -232,13 +232,19 @@ function showStartScreen(scene){
 
   badgeIcons.forEach(i=>i.destroy());
   badgeIcons=[];
-  const iconY = offsetY + bh/2 + 20;
-  const iconStartX = -phoneW/2 + 30;
-  GameState.badges.forEach((key,idx)=>{
+  const iconY = 80; // place badges above the Clock In button
+  const badgeScale = 0.3;
+  const badgeSlots = {
+    falcon_end: { x: -60, y: iconY },
+    revolt_end: { x:  60, y: iconY }
+  };
+  const iconStartX = -phoneW/2 + 30; // fallback for unknown badges
+  GameState.badges.forEach((key, idx) => {
     const grayKey = `${key}_gray`;
-    if(!scene.textures.exists(grayKey)) createGrayscaleTexture(scene,key,grayKey);
-    const icon = scene.add.image(iconStartX + idx*36, iconY, grayKey)
-      .setScale(0.35)
+    if(!scene.textures.exists(grayKey)) createGrayscaleTexture(scene, key, grayKey);
+    const slot = badgeSlots[key] || { x: iconStartX + idx*36, y: offsetY + bh/2 + 20 };
+    const icon = scene.add.image(slot.x, slot.y, grayKey)
+      .setScale(badgeScale)
       .setDepth(16);
     phoneContainer.add(icon);
     badgeIcons.push(icon);
@@ -248,15 +254,16 @@ function showStartScreen(scene){
     const idx = GameState.badges.indexOf(GameState.lastEndKey);
     if(idx !== -1){
       badgeIcons[idx].setAlpha(0);
-      const destX = phoneContainer.x + iconStartX + idx*36;
-      const destY = phoneContainer.y + iconY;
+      const slot = badgeSlots[GameState.lastEndKey] || { x: iconStartX + idx*36, y: offsetY + bh/2 + 20 };
+      const destX = phoneContainer.x + slot.x;
+      const destY = phoneContainer.y + slot.y;
       const p = GameState.carryPortrait;
       scene.children.bringToTop(p);
       scene.tweens.add({
         targets:p,
         x:destX,
         y:destY,
-        scale:0.35,
+        scale:badgeScale,
         duration:600,
         ease:'Sine.easeIn',
         onComplete:()=>{

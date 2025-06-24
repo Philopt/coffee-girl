@@ -76,7 +76,7 @@ function playOpening(scene){
     targets: openingDog,
     alpha: 1,
     scale: 2,
-    y: openingTitle.y - 100,
+    y: openingTitle.y - 101,
     duration: 600,
     ease: 'Sine.easeOut',
     onComplete: () => openingDog.setDepth(16)

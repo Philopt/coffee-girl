@@ -21,6 +21,10 @@ export const GameState = {
   girlReady: false,
   truck: null,
   girl: null
+  ,badges: []
+  ,carryPortrait: null
+  ,lastEndKey: null
+  ,phoneContainer: null
 };
 
 export const floatingEmojis = [];

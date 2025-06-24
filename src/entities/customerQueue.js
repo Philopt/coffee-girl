@@ -357,6 +357,8 @@ function curvedApproach(scene, sprite, dir, targetX, targetY, onComplete, speed 
       const targetDist = Phaser.Math.Distance.Between(sprite.x, sprite.y, targetX, targetY);
       if (d < EARLY_COLLIDE_DIST && targetDist <= ARRIVAL_DIST_THRESHOLD) {
         if (tween) tween.stop();
+        sprite.setPosition(targetX, targetY);
+        sprite.setScale(scaleForY(targetY));
         cust.walkTween = null;
         registerArrival(scene, cust);
         return true;

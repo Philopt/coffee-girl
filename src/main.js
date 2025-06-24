@@ -2521,25 +2521,28 @@ function dogsBarkAtFalcon(){
     if(endOverlay){ endOverlay.destroy(); }
     endOverlay = this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
 
-    const title = this.add.text(240,160,'GAME OVER',{
+    const titleGame = this.add.text(240,120,'GAME',{
       font:'80px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
     }).setOrigin(0.5).setDepth(20).setAlpha(0);
-    this.tweens.add({targets:title,alpha:1,duration:dur(600)});
+    const titleOver = this.add.text(240,200,'OVER',{
+      font:'80px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
+    }).setOrigin(0.5).setDepth(20).setAlpha(0);
+    this.tweens.add({targets:[titleGame,titleOver],alpha:1,duration:dur(600)});
 
     const img = this.add.image(240,310,'falcon_end')
       .setScale(1.2)
       .setDepth(20)
       .setAlpha(0);
-    this.tweens.add({targets:img,alpha:1,duration:dur(600),delay:dur(600)});
+    this.tweens.add({targets:img,alpha:1,duration:dur(600),delay:dur(1000)});
 
-    const line1 = this.add.text(240,480,'you lost money',
+    const line1 = this.add.text(240,480,"You've lost all the money",
       {font:'28px sans-serif',fill:'#fff'})
       .setOrigin(0.5)
       .setDepth(21)
       .setAlpha(0);
     this.tweens.add({targets:line1,alpha:1,duration:dur(600),delay:dur(1200)});
 
-    const line2 = this.add.text(240,520,'Lady Falcon reclaims the coffee truck',
+    const line2 = this.add.text(240,520,'Lady Falcon reclaims her coffee truck',
       {font:'28px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
       .setOrigin(0.5)
       .setDepth(21)
@@ -2552,25 +2555,17 @@ function dogsBarkAtFalcon(){
     const againZone = this.add.zone(240,580,btn.width,btn.height).setOrigin(0.5);
     againZone.setInteractive({ useHandCursor:true });
     againZone.on('pointerdown',()=>{
-        againZone.disableInteractive();
-        GameState.lastEndKey = 'falcon_end';
-        if(!GameState.badges.includes('falcon_end')) GameState.badges.push('falcon_end');
-        createGrayscaleTexture(this,'falcon_end','falcon_end_gray');
-        img.setTexture('falcon_end_gray');
-        GameState.carryPortrait = img.setDepth(25);
-        const glowTex = createGlowTexture(this,0xffffff,'tryagain_glow');
-        const glow = this.add.image(btn.x,btn.y,'tryagain_glow').setDepth(24).setAlpha(0.8).setScale(0.1);
-        this.tweens.add({targets:glow,scale:3,alpha:0,duration:300,onComplete:()=>glow.destroy()});
-        const overlay=this.add.rectangle(240,320,480,640,0xffffff).setDepth(23).setAlpha(0);
-        this.tweens.add({targets:overlay,alpha:1,duration:300,onComplete:()=>{
-          title.destroy();
-          line1.destroy();
-          line2.destroy();
-          btn.destroy();
-          if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
-          restartGame.call(this, overlay);
-          againZone.destroy();
-        }});
+
+        titleGame.destroy();
+        titleOver.destroy();
+        img.destroy();
+        line1.destroy();
+        line2.destroy();
+        btn.destroy();
+        if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
+        restartGame.call(this);
+        againZone.destroy();
+
       });
     GameState.gameOver=true;
   }

@@ -1199,7 +1199,18 @@ export function setupGame(){
 
   function showDrinkReaction(target, type, emojiObj, loveDelta, cb){
     if(!target){ if(cb) cb(); return; }
-    const faces = type==='give' ? LOVE_FACE_EMOJIS : HAPPY_FACE_EMOJIS;
+    let faces;
+    let delay;
+    if(type==='refuse'){
+      faces = UPSET_EMOJIS;
+      delay = 500;
+    }else if(type==='give'){
+      faces = LOVE_FACE_EMOJIS;
+      delay = loveDelta ? 250 : 500;
+    }else{
+      faces = HAPPY_FACE_EMOJIS;
+      delay = loveDelta ? 250 : 500;
+    }
     const face = faces[Phaser.Math.Between(0, faces.length-1)];
     let emo = emojiObj;
     if(emo){
@@ -1210,29 +1221,30 @@ export function setupGame(){
       emo = this.add.text(target.x, target.y, face, {font:'24px sans-serif', fill:'#fff'})
         .setOrigin(0.5).setDepth(11);
     }
-    const scoreDuration = 400 + Math.abs(loveDelta || 0) * 250;
-    const holdDuration = Math.max(scoreDuration, 1000);
-    this.tweens.add({
-      targets: emo,
-      y: target.y - 30,
-      alpha: 0,
-      duration: dur(200),
-      delay: dur(holdDuration),
-      onComplete: () => {
+
+    this.time.delayedCall(dur(delay), () => {
+      if(loveDelta){
+        animateLoveChange.call(this,loveDelta,target, () => {
+          if(emojiObj){
+            emo.attachedTo = null;
+            emo.setVisible(false);
+            emo.setAlpha(1);
+          } else {
+            emo.destroy();
+          }
+          if(cb) cb();
+        }, emo.x, emo.y);
+      }else if(cb){
         if(emojiObj){
           emo.attachedTo = null;
           emo.setVisible(false);
           emo.setAlpha(1);
-        }else{
+        } else {
           emo.destroy();
         }
+        cb();
       }
-    });
-    if(loveDelta){
-      animateLoveChange.call(this,loveDelta,target,cb);
-    }else if(cb){
-      cb();
-    }
+    }, [], this);
   }
 
   function handleAction(type){
@@ -1362,7 +1374,7 @@ export function setupGame(){
     }
 
     if(type==='refuse'){
-      animateLoveChange.call(this, lD, current);
+      showDrinkReaction.call(this, current.sprite, 'refuse', null, lD, done);
     }
 
     if(type==='refuse' && current.dog && current.dog.dogCustomer &&
@@ -1378,7 +1390,7 @@ export function setupGame(){
     }
     if ((type==='sell' || type==='give') && dialogDrinkEmoji && dialogPriceContainer && dialogPriceContainer.visible) {
       dialogDrinkEmoji.clearTint();
-      flingTicketEmojiToCustomer.call(this, current.sprite, type, lD);
+      flingTicketEmojiToCustomer.call(this, current.sprite, type, lD, lD!==0?done:null);
     }
     if(current){
       const bubbleObjs=[];
@@ -1672,6 +1684,8 @@ export function setupGame(){
     const midX=240, midY=120;
 
     let pending=(type!=='refuse'?1:0);
+    if(lD!==0) pending += 1;
+    if(type==='refuse' && lD!==0) pending += 1;
     const done=()=>{ if(--pending<=0) finish(); };
 
     if(type==='sell'){
@@ -2013,118 +2027,52 @@ export function setupGame(){
     if(pending===0) finish();
   }
 
-  function animateLoveChange(delta, customer, cb){
+  function animateLoveChange(delta, customer, cb, startX=null, startY=null){
     const sprite = customer.sprite || customer;
-    const count=Math.abs(delta);
-    const emoji=delta>0?'❤️':null;
+    const count = Math.max(1, Math.abs(delta));
+    const isPos = delta > 0;
+    const delay = isPos ? 250 : 500;
 
-    if(delta<0){
-      this.tweens.add({targets:sprite,y:sprite.y-20,duration:dur(150),yoyo:true});
-    }
+    const sx = startX !== null ? startX : sprite.x;
+    const sy = startY !== null ? startY : sprite.y;
 
-    if(customer.memory){
-      if(!customer.heartEmoji || !customer.heartEmoji.scene || !customer.heartEmoji.active){
-        if(customer.heartEmoji && customer.heartEmoji.destroy){
-          customer.heartEmoji.destroy();
-        }
-        customer.heartEmoji = this.add.text(sprite.x, sprite.y, '', {font:'28px sans-serif'})
-          .setOrigin(0.5)
-          .setShadow(0,0,'#000',4);
-      }
-      if(customer.heartEmoji && customer.heartEmoji.scene && customer.heartEmoji.active){
-        const hy = sprite.y + sprite.displayHeight * 0.30;
-        const hs = scaleForY(sprite.y) * 0.8;
-        customer.heartEmoji
-          .setText(HEART_EMOJIS[customer.memory.state] || '')
-          .setPosition(sprite.x, hy)
-          .setScale(hs)
-          .setDepth(sprite.depth)
-          .setShadow(0,0,'#000',4);
-      }
-    }
-
-    if(dialogDrinkEmoji && dialogDrinkEmoji.attachedTo === sprite){
-      this.tweens.add({
-        targets: dialogDrinkEmoji,
-        alpha: 0,
-        duration: dur(150),
-        onComplete: () => {
-          dialogDrinkEmoji.setVisible(false);
-          dialogDrinkEmoji.setAlpha(1);
-          dialogDrinkEmoji.attachedTo = null;
-        }
-      });
-    }
-
-    const baseX=sprite.x - 20*(count-1)/2;
-    const baseY=sprite.y + 40;
-
-    const hearts=[];
-    for(let i=0;i<count;i++){
-      const face = delta>0 ? emoji : UPSET_EMOJIS[Phaser.Math.Between(0,UPSET_EMOJIS.length-1)];
-      const h=this.add.text(sprite.x,sprite.y,face,{font:'24px sans-serif',fill:'#fff'})
-        .setOrigin(0.5).setDepth(10);
-      hearts.push(h);
-      if (typeof addFloatingEmoji === 'function') {
-        addFloatingEmoji(h);
-      } else if (GameState && typeof GameState.addFloatingEmoji === 'function') {
-        GameState.addFloatingEmoji(h);
-      } else if (Array.isArray(floatingEmojis)) {
-        floatingEmojis.push(h);
-      }
-      const targetX=baseX+i*20;
-      // sparkle or anger flash
-      if(delta>0){
-        const sp=this.add.text(sprite.x,sprite.y,'✨',{font:'18px sans-serif',fill:'#fff'})
-          .setOrigin(0.5).setDepth(10);
-        this.tweens.add({targets:sp,scale:1.5,alpha:0,duration:dur(300),onComplete:()=>sp.destroy()});
-      }else{
-        const burst=UPSET_EMOJIS[Phaser.Math.Between(0,UPSET_EMOJIS.length-1)];
-        const ang=this.add.text(sprite.x,sprite.y,burst,{font:'20px sans-serif',fill:'#f00'})
-          .setOrigin(0.5).setDepth(12);
-        this.tweens.add({targets:ang,alpha:0,duration:dur(300),onComplete:()=>ang.destroy()});
-      }
-      this.tweens.add({targets:h,x:targetX,y:baseY,duration:dur(400),ease:'Cubic.easeOut'});
-    }
     const destX = () => loveText.x + loveText.width + 6;
     const destY = () => loveText.y + loveText.height;
 
-    const popOne=(idx)=>{
-      if(idx>=hearts.length){
-        if(cb) cb();
-        return;
-      }
-      const h=hearts[idx];
-      const tl=this.tweens.createTimeline({callbackScope:this});
-      tl.add({
-        targets:h,
-        x:destX(),
-        y:destY(),
-        scaleX:0,
-        scaleY:1.2,
-        duration:dur(125),
-        onComplete:()=>{
-          GameState.love += delta>0?1:-1;
-          loveText.setText('❤️ '+GameState.love);
-          updateLevelDisplay();
-          animateStatChange(loveText, this, delta>0?1:-1, true);
-        }
-      });
-      tl.add({targets:h,scaleX:1,alpha:0,duration:dur(125),onComplete:()=>{
-            if (typeof removeFloatingEmoji === 'function') {
-              removeFloatingEmoji(h);
-            } else if (GameState && typeof GameState.removeFloatingEmoji === 'function') {
-              GameState.removeFloatingEmoji(h);
-            } else if (Array.isArray(floatingEmojis)) {
-              const i = floatingEmojis.indexOf(h);
-              if (i !== -1) floatingEmojis.splice(i, 1);
-            }
-            h.destroy();
-            popOne(idx+1);
+    const showFace = () => isPos ? HAPPY_FACE_EMOJIS[Phaser.Math.Between(0, HAPPY_FACE_EMOJIS.length-1)]
+                                : UPSET_EMOJIS[Phaser.Math.Between(0, UPSET_EMOJIS.length-1)];
+
+    const popOne = (idx) => {
+      if(idx >= count){ if(cb) cb(); return; }
+      const face = showFace();
+      const h = this.add.text(sx, sy, face, {font:'24px sans-serif', fill:'#fff'})
+        .setOrigin(0.5).setDepth(10);
+      this.time.delayedCall(dur(delay), () => {
+        h.setText(isPos ? '❤️' : '💔');
+        const tl = this.tweens.createTimeline({callbackScope:this});
+        tl.add({
+          targets:h,
+          x:destX(),
+          y:destY(),
+          scaleX:0,
+          scaleY:1.2,
+          duration:dur(125),
+          onComplete:()=>{
+            GameState.love += isPos?1:-1;
+            loveText.setText('❤️ '+GameState.love);
+            updateLevelDisplay();
+            animateStatChange(loveText, this, isPos?1:-1, true);
+          }
+        });
+        tl.add({targets:h,scaleX:1,alpha:0,duration:dur(125),onComplete:()=>{
+              h.destroy();
+              popOne(idx+1);
         }});
-      tl.play();
+        tl.play();
+      }, [], this);
     };
-    this.time.delayedCall(dur(1000),()=>popOne(0),[],this);
+
+    popOne(0);
   }
 
   function showFalconAttack(cb){

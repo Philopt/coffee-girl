@@ -1094,7 +1094,11 @@ export function setupGame(){
           dur(8000),
           () => {
             if (GameState.dialogActive && !GameState.saleInProgress) {
-              handleAction.call(this, 'refuse');
+              if (typeof blinkButton === 'function') {
+                blinkButton.call(this, btnRef, () => handleAction.call(this, 'refuse'), btnRef.zone);
+              } else {
+                handleAction.call(this, 'refuse');
+              }
             }
           },
           [],
@@ -1348,6 +1352,10 @@ export function setupGame(){
         .setScale(hs)
         .setDepth(current.sprite.depth)
         .setShadow(0,0,'#000',4);
+    }
+
+    if(type==='refuse'){
+      animateLoveChange.call(this, lD, current);
     }
 
     if(type==='refuse' && current.dog && current.dog.dogCustomer &&
@@ -2109,7 +2117,7 @@ export function setupGame(){
         }});
       tl.play();
     };
-    this.time.delayedCall(dur(400),()=>popOne(0),[],this);
+    this.time.delayedCall(dur(1000),()=>popOne(0),[],this);
   }
 
   function showFalconAttack(cb){

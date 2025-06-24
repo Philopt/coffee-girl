@@ -41,16 +41,6 @@ const CUSTOMER_SPEED = 560 / 12;
 // and caused customers to lag behind their wander speed.
 const LURE_SPEED = CUSTOMER_SPEED * 1.5;
 const EDGE_TURN_BUFFER = 40;
-// Begin adjusting queue spacing when customers reach this distance
-const EARLY_CHECK_DIST = 64;
-// Trigger arrival when two customer sprites get this close while walking
-const EARLY_COLLIDE_DIST = 40;
-// Ensure small adjustments don't happen instantaneously
-const MIN_MOVE_DURATION = 250;
-// Require customers to be near their destination before early collision
-// triggers an arrival. This prevents distant customers from blocking the line
-// when another wanderer approaches.
-const ARRIVAL_DIST_THRESHOLD = 48;
 const HEART_EMOJIS = {
   [CustomerState.NORMAL]: null,
   [CustomerState.BROKEN]: '💔',
@@ -188,7 +178,7 @@ export function lureNextWanderer(scene, specific) {
     setDepthFromBottom(c.sprite, 5);
     const dir = c.dir || (c.sprite.x < targetX ? 1 : -1);
     const speed = queueIdx === 0 ? LURE_SPEED : LURE_SPEED * 0.75;
-    c.walkTween = curvedApproach(scene, c.sprite, dir, targetX, targetY, () => {
+    c.walkTween = approachTarget(scene, c.sprite, dir, targetX, targetY, () => {
       c.walkTween = null;
       registerArrival(scene, c);
     }, speed, c);
@@ -213,13 +203,10 @@ export function moveQueueForward() {
         cust.walkTween.remove();
         cust.walkTween = null;
       }
-      cust.walkTween = curvedApproach(scene, cust.sprite, dir, tx, ty, () => {
+      cust.walkTween = approachTarget(scene, cust.sprite, dir, tx, ty, () => {
         cust.walkTween = null;
         if (idx === 0) {
           if (typeof debugLog === 'function') debugLog('customer reached order position');
-          if (typeof debugLog === 'function') {
-            debugLog('curvedApproach complete: calling showDialog');
-          }
           showDialog.call(scene);
         }
       }, idx === 0 ? CUSTOMER_SPEED : LURE_SPEED, cust);
@@ -266,7 +253,7 @@ export function checkQueueSpacing(scene) {
         cust.walkTween = null;
       }
       const dir = cust.dir || (cust.sprite.x < tx ? 1 : -1);
-      const tween = curvedApproach(
+      const tween = approachTarget(
         scene,
         cust.sprite,
         dir,
@@ -327,67 +314,47 @@ function registerArrival(scene, cust) {
   moveQueueForward.call(scene);
 }
 
-function curvedApproach(scene, sprite, dir, targetX, targetY, onComplete, speed = CUSTOMER_SPEED, cust, skipSpacingCheck = false) {
-  const startX = sprite.x;
-  const startY = sprite.y;
-  const dx = Math.abs(targetX - startX);
-  // Reduce the curvature of the approach so customers don't appear to dart
-  // sideways when adjusting positions in the queue.
-  const offset = Math.min(10, dx * 0.3) * dir;
-  const curve = new Phaser.Curves.CubicBezier(
-    new Phaser.Math.Vector2(startX, startY),
-    new Phaser.Math.Vector2(startX + offset, startY),
-    new Phaser.Math.Vector2(targetX - offset, targetY),
-    new Phaser.Math.Vector2(targetX, targetY)
-  );
-  const dist = Phaser.Math.Distance.Between(startX, startY, targetX, targetY);
-  const raw = (dist / speed) * 1000;
-  // Guarantee a minimum duration so short adjustments don't appear instantaneous
-  const duration = dur(Math.max(raw, MIN_MOVE_DURATION));
-  const follower = { t: 0, vec: new Phaser.Math.Vector2() };
-  let tween;
-  const checkCollision = () => {
-    if (!cust || cust.arrived) return false;
-    for (const other of GameState.queue) {
-      if (other === cust || !other.sprite) continue;
-      const d = Phaser.Math.Distance.Between(sprite.x, sprite.y, other.sprite.x, other.sprite.y);
-      if (d < EARLY_CHECK_DIST && typeof checkQueueSpacing === 'function') {
-        checkQueueSpacing(scene);
-      }
-      const targetDist = Phaser.Math.Distance.Between(sprite.x, sprite.y, targetX, targetY);
-      if (d < EARLY_COLLIDE_DIST && targetDist <= ARRIVAL_DIST_THRESHOLD) {
-        if (tween) tween.stop();
-        sprite.setPosition(targetX, targetY);
-        sprite.setScale(scaleForY(targetY));
-        cust.walkTween = null;
-        registerArrival(scene, cust);
-        return true;
-      }
+function approachTarget(scene, sprite, dir, targetX, targetY, onComplete, speed = CUSTOMER_SPEED, cust, skipSpacingCheck = false) {
+  const accel = speed * 2;
+  let vx = 0;
+  let vy = 0;
+  const mover = { isPlaying: true };
+  const update = () => {
+    if (!mover.isPlaying) return;
+    const dt = scene.game && scene.game.loop ? scene.game.loop.delta / 1000 : 0.016;
+    const dx = targetX - sprite.x;
+    const dy = targetY - sprite.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < 1) {
+      finish();
+      return;
     }
-    return false;
+    const ang = Math.atan2(dy, dx);
+    vx += Math.cos(ang) * accel * dt;
+    vy += Math.sin(ang) * accel * dt;
+    const vmag = Math.sqrt(vx * vx + vy * vy);
+    if (vmag > speed) {
+      vx = (vx / vmag) * speed;
+      vy = (vy / vmag) * speed;
+    }
+    sprite.x += vx * dt;
+    sprite.y += vy * dt;
+    sprite.setScale(scaleForY(sprite.y));
   };
-  tween = scene.tweens.add({
-    targets: follower,
-    t: 1,
-    duration,
-    // Use a gentle easing curve so movements start and stop smoothly
-    ease: 'Sine.easeInOut',
-    onUpdate: () => {
-      curve.getPoint(follower.t, follower.vec);
-      sprite.setPosition(follower.vec.x, follower.vec.y);
-      sprite.setScale(scaleForY(sprite.y));
-      checkCollision();
-    },
-    onComplete: () => {
-      sprite.setPosition(targetX, targetY);
-      sprite.setScale(scaleForY(targetY));
-      if (onComplete) onComplete();
-      if (!skipSpacingCheck && typeof checkQueueSpacing === 'function') {
-        checkQueueSpacing(scene);
-      }
+  const finish = () => {
+    mover.isPlaying = false;
+    sprite.setPosition(targetX, targetY);
+    sprite.setScale(scaleForY(targetY));
+    if (onComplete) onComplete();
+    if (!skipSpacingCheck && typeof checkQueueSpacing === 'function') {
+      checkQueueSpacing(scene);
     }
-  });
-  return tween;
+    if (timer) timer.remove(false);
+  };
+  const timer = scene.time.addEvent({ delay: 16, loop: true, callback: update });
+  mover.stop = () => { mover.isPlaying = false; if (timer) timer.remove(false); };
+  mover.remove = () => { if (timer) timer.remove(false); };
+  return mover;
 }
 
 export function scheduleNextSpawn(scene) {

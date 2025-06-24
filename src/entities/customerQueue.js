@@ -196,9 +196,13 @@ export function moveQueueForward() {
     const ty = idx === 0 ? ORDER_Y : QUEUE_Y - QUEUE_OFFSET * (idx - 1);
     if (cust.sprite.y !== ty || cust.sprite.x !== tx) {
       const dir = cust.dir || (cust.sprite.x < tx ? 1 : -1);
-      // Cancel any existing movement tween so starting a new one doesn't leave
-      // customers frozen in place if the old tween was stopped externally.
+      // Avoid restarting movement if the customer is already walking to
+      // this position. Repeatedly resetting the tween prevented the front
+      // customer from ever reaching the counter.
       if (cust.walkTween) {
+        if (cust.walkTween.isPlaying) {
+          return;
+        }
         cust.walkTween.stop();
         cust.walkTween.remove();
         cust.walkTween = null;

@@ -479,11 +479,9 @@ export function spawnCustomer() {
   c.atOrder = false;
   c.sprite = this.add.sprite(startX, startY, k).setScale(distScale);
   setDepthFromBottom(c.sprite, 5);
-  if (c.memory.state !== CustomerState.NORMAL) {
-    c.heartEmoji = this.add.text(0, 0, HEART_EMOJIS[c.memory.state] || '', { font: '28px sans-serif' })
-      .setOrigin(0.5)
-      .setShadow(0, 0, '#000', 4);
-  }
+  c.heartEmoji = this.add.text(0, 0, HEART_EMOJIS[c.memory.state] || '', { font: '28px sans-serif' })
+    .setOrigin(0.5)
+    .setShadow(0, 0, '#000', 4);
 
   let spawnDog = memory.dogMemory.hasDog;
   if (spawnDog === undefined) {
@@ -534,12 +532,10 @@ export function spawnCustomer() {
     dog.dogCustomer = dogCust;
     c.dogCustomer = dogCust;
 
-    if (dogCust.memory.state !== CustomerState.NORMAL) {
-      dogCust.heartEmoji = this.add.text(0, 0, HEART_EMOJIS[dogCust.memory.state] || '', { font: '28px sans-serif' })
-        .setOrigin(0.5)
-        .setShadow(0, 0, '#000', 4);
-      dog.heartEmoji = dogCust.heartEmoji;
-    }
+    dogCust.heartEmoji = this.add.text(0, 0, HEART_EMOJIS[dogCust.memory.state] || '', { font: '28px sans-serif' })
+      .setOrigin(0.5)
+      .setShadow(0, 0, '#000', 4);
+    dog.heartEmoji = dogCust.heartEmoji;
   }
   const insideX = dir === 1 ? 480 - EDGE_TURN_BUFFER : EDGE_TURN_BUFFER;
   const firstTarget = c.loopsRemaining > 0 ? insideX : exitX;

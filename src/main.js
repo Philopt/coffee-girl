@@ -2292,6 +2292,11 @@ function dogsBarkAtFalcon(){
       callback: dogsBarkAtFalcon,
       callbackScope: scene
     });
+    const featherTrail = scene.time.addEvent({
+      delay: dur(120),
+      loop: true,
+      callback: () => burstFeathers(scene, falcon.x, falcon.y, 1)
+    });
     scene.tweens.add({
       targets:falcon,
       x:targetX,
@@ -2299,6 +2304,7 @@ function dogsBarkAtFalcon(){
       duration:dur(900),
       ease:'Cubic.easeIn',
       onComplete:()=>{
+        featherTrail.remove(false);
         panicCustomers(tryEnd);
         blinkAngry(scene);
         const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:tryEnd});
@@ -2308,15 +2314,17 @@ function dogsBarkAtFalcon(){
                    onStart:()=>{ girl.setTint(0xff0000); sprinkleBursts(scene); },
                    onYoyo:()=>{ girl.setTint(0xff0000); sprinkleBursts(scene); },
                    onComplete:()=>girl.clearTint()},'<');
-          const debris=createDebrisEmoji(scene, falcon.x, falcon.y);
-          tl.add({targets:debris,
-                  x:debris.x+Phaser.Math.Between(-60,60),
-                  y:debris.y+Phaser.Math.Between(-50,10),
-                  angle:Phaser.Math.Between(-360,360),
-                  alpha:0,
-                  duration:dur(400),
-                  onComplete:()=>debris.destroy()},'<');
-          scene.time.delayedCall(dur(450),()=>debris.destroy(),[],scene);
+          for(let f=0; f<3; f++){
+            const debris=createDebrisEmoji(scene, falcon.x, falcon.y);
+            tl.add({targets:debris,
+                    x:debris.x+Phaser.Math.Between(-60,60),
+                    y:debris.y+Phaser.Math.Between(-50,10),
+                    angle:Phaser.Math.Between(-360,360),
+                    alpha:0,
+                    duration:dur(400),
+                    onComplete:()=>debris.destroy()},'<');
+            scene.time.delayedCall(dur(450),()=>debris.destroy(),[],scene);
+          }
         }
         tl.play();
       }
@@ -2341,9 +2349,23 @@ function dogsBarkAtFalcon(){
       }
     }
 
+    function burstFeathers(s, x, y, count=1){
+      for(let i=0;i<count;i++){
+        const debris=createDebrisEmoji(s, x, y);
+        s.tweens.add({targets:debris,
+                    x:debris.x+Phaser.Math.Between(-60,60),
+                    y:debris.y+Phaser.Math.Between(-50,10),
+                    angle:Phaser.Math.Between(-360,360),
+                    alpha:0,
+                    duration:dur(400),
+                    onComplete:()=>debris.destroy()});
+        s.time.delayedCall(dur(450),()=>debris.destroy(),[],s);
+      }
+    }
+
     function createDebrisEmoji(s, x, y){
       return s.add.text(x,y,'🪶',{font:'24px sans-serif',fill:'#555'})
-        .setOrigin(0.5).setDepth(21);
+        .setOrigin(0.5).setDepth(21).setScale(0.5);
     }
   }
 

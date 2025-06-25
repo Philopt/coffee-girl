@@ -2549,7 +2549,7 @@ function dogsBarkAtFalcon(){
         btn.setVisible(false);
         const overlayG = this.add.graphics({x:btn.x,y:btn.y}).setDepth(23);
         overlayG.fillStyle(0xffffff,1);
-        overlayG.fillRoundedRect(-btn.width/2,-btn.height/2,btn.width,btn.height,20);
+        overlayG.fillRect(-btn.width/2,-btn.height/2,btn.width,btn.height);
         overlayG.setScale(1,1);
         overlayG.setAlpha(1);
         this.tweens.add({
@@ -2637,7 +2637,7 @@ function dogsBarkAtFalcon(){
         btn.setVisible(false);
         const overlayG = this.add.graphics({x:btn.x,y:btn.y}).setDepth(23);
         overlayG.fillStyle(0xffffff,1);
-        overlayG.fillRoundedRect(-btn.width/2,-btn.height/2,btn.width,btn.height,20);
+        overlayG.fillRect(-btn.width/2,-btn.height/2,btn.width,btn.height);
         this.tweens.add({targets:overlayG,x:240,y:320,scaleX:480/btn.width,scaleY:640/btn.height,duration:300,ease:'Cubic.easeOut',onComplete:()=>{
           bg.destroy(); txt.destroy(); btn.destroy(); if(titleText) titleText.destroy();
           if(endOverlay){ endOverlay.destroy(); endOverlay=null; }

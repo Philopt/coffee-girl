@@ -199,7 +199,10 @@ export function moveQueueForward() {
     let ty;
     if (idx === 0) {
       if (cust.atOrder || !busy) {
-        if (!cust.atOrder) GameState.orderInProgress = true;
+        if (!cust.atOrder) {
+          GameState.orderInProgress = true;
+          cust.atOrder = true; // mark as heading to the counter
+        }
         tx = ORDER_X;
         ty = ORDER_Y;
       } else {
@@ -266,6 +269,10 @@ export function checkQueueSpacing(scene) {
     let ty;
     if (idx === 0) {
       if (cust.atOrder || !busy) {
+        if (!cust.atOrder && !busy) {
+          GameState.orderInProgress = true;
+          cust.atOrder = true; // begin approaching counter
+        }
         tx = ORDER_X;
         ty = ORDER_Y;
       } else {

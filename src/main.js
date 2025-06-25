@@ -1567,6 +1567,8 @@ export function setupGame(){
         startDogWaitTimer(this, current);
         current.exitHandler = exit;
         GameState.activeCustomer = dogCust;
+        // Keep the order marked in progress until the dog finishes
+        GameState.orderInProgress = true;
         showDialog.call(this);
         return;
       }

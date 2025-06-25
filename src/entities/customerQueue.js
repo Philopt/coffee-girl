@@ -447,9 +447,17 @@ export function spawnCustomer() {
   }
   if (GameState.gameOver) return;
   const createOrder = () => {
-    const coins = Phaser.Math.Between(0, 20);
     const item = Phaser.Utils.Array.GetRandom(MENU);
     const qty = 1;
+    // 60% of customers can afford their drink. Give them enough coins for
+    // the item plus a small random tip. The remaining 40% have no money at
+    // all which will trigger an excuse when ordering.
+    let coins;
+    if (Math.random() < 0.6) {
+      coins = item.price + Phaser.Math.Between(0, 5);
+    } else {
+      coins = 0;
+    }
     return { coins, req: item.name, price: item.price, qty };
   };
 

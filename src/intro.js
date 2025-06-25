@@ -292,7 +292,14 @@ function showStartScreen(scene){
     phoneContainer.add(openingTitle);
   }
 
+  let numLocalX = null;
+  let numLocalY = null;
   if(openingNumber){
+    // Compute the final local coordinates assuming the container will end at scale 1
+    numLocalX = openingNumber.x - pcX;
+    numLocalY = openingNumber.y - pcY;
+
+    // Convert to the container's current scale so the graphic doesn't jump
     openingNumber
       .setPosition((openingNumber.x - pcX) / pcScale, (openingNumber.y - pcY) / pcScale)
       .setScale(openingNumber.scale / pcScale)
@@ -312,12 +319,20 @@ function showStartScreen(scene){
 
   // Zoom out from the white screen at the start
   if (scene.tweens && scene.tweens.add) {
+    const finalX = numLocalX;
+    const finalY = numLocalY;
     scene.tweens.add({
       targets: phoneContainer,
       scale: 1,
       duration: 800,
       delay: 200,
-      ease: 'Sine.easeOut'
+      ease: 'Sine.easeOut',
+      onComplete: () => {
+        // Adjust openingNumber to its final local position once scaling finishes
+        if (openingNumber && finalX !== null && finalY !== null) {
+          openingNumber.setPosition(finalX, finalY);
+        }
+      }
     });
   }
 

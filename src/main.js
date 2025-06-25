@@ -1240,10 +1240,7 @@ export function setupGame(){
     }
     if(type==='refuse' && current.dog){
       if(current.dog.followEvent) current.dog.followEvent.remove(false);
-      const dir = current.dog.x < ORDER_X ? -1 : 1;
-      const offX = dir===1 ? 520 : -40;
-      sendDogOffscreen.call(this, current.dog, offX, current.dog.y);
-      current.dog = null;
+      current.dog.followEvent = null;
     }
 
     const orderCount=current.orders.length;

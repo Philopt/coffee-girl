@@ -187,17 +187,21 @@ export function moveQueueForward() {
   }
   const scene = this;
   let willShow = false;
-  const busy = GameState.orderInProgress || GameState.saleInProgress || GameState.dialogActive;
+  const busy = GameState.orderInProgress || GameState.saleInProgress;
   GameState.queue.forEach((cust, idx) => {
     let tx;
     let ty;
-    if (idx === 0 && !busy) {
-      // Counter is free, send the first customer up and mark the order started
-      GameState.orderInProgress = true;
-      tx = ORDER_X;
-      ty = ORDER_Y;
+    if (idx === 0) {
+      if (cust.atOrder || !busy) {
+        if (!cust.atOrder) GameState.orderInProgress = true;
+        tx = ORDER_X;
+        ty = ORDER_Y;
+      } else {
+        tx = QUEUE_X;
+        ty = QUEUE_Y;
+      }
     } else {
-      const spot = idx - (busy ? 0 : 1);
+      const spot = idx - (GameState.orderInProgress ? 1 : 0);
       tx = QUEUE_X - QUEUE_SPACING * Math.max(spot, 0);
       ty = QUEUE_Y - QUEUE_OFFSET * Math.max(spot, 0);
     }
@@ -247,15 +251,20 @@ export function checkQueueSpacing(scene) {
     }
     return;
   }
-  const busy = GameState.orderInProgress || GameState.saleInProgress || GameState.dialogActive;
+  const busy = GameState.orderInProgress || GameState.saleInProgress;
   GameState.queue.forEach((cust, idx) => {
     let tx;
     let ty;
-    if (idx === 0 && !busy) {
-      tx = ORDER_X;
-      ty = ORDER_Y;
+    if (idx === 0) {
+      if (cust.atOrder || !busy) {
+        tx = ORDER_X;
+        ty = ORDER_Y;
+      } else {
+        tx = QUEUE_X;
+        ty = QUEUE_Y;
+      }
     } else {
-      const spot = idx - (busy ? 0 : 1);
+      const spot = idx - (GameState.orderInProgress ? 1 : 0);
       tx = QUEUE_X - QUEUE_SPACING * Math.max(spot, 0);
       ty = QUEUE_Y - QUEUE_OFFSET * Math.max(spot, 0);
     }
@@ -313,6 +322,7 @@ export function startDogWaitTimer(scene, owner) {
       if (owner.waitingForDog) {
         owner.waitingForDog = false;
         if (typeof checkQueueSpacing === 'function') checkQueueSpacing(scene);
+        if (owner.exitHandler) owner.exitHandler();
       }
     }
   });

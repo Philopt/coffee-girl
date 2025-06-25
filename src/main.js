@@ -1529,6 +1529,15 @@ export function setupGame(){
           current.dog.followEvent.remove(false);
           current.dog.followEvent = null;
         }
+        if(current.dog && current.dog.currentTween){
+          current.dog.currentTween.stop();
+          current.dog.currentTween = null;
+        }
+        if(dogCust.walkTween){
+          dogCust.walkTween.stop();
+          if(dogCust.walkTween.remove) dogCust.walkTween.remove();
+          dogCust.walkTween = null;
+        }
         if(dogCust.followEvent){ dogCust.followEvent.remove(false); dogCust.followEvent=null; }
         dogCust.atOrder = false;
         dogCust.arrived = true;

@@ -2042,15 +2042,23 @@ export function setupGame(){
           .setOrigin(0.5).setDepth(10);
       }
       this.time.delayedCall(dur(delay), () => {
-        h.setText(isPos ? '❤️' : '💔');
         const tl = this.tweens.createTimeline({callbackScope:this});
+        // spin the face into a heart
+        tl.add({
+          targets:h,
+          scaleX:0,
+          duration:dur(80),
+          onComplete:()=>{ h.setText(isPos ? '❤️' : '💔'); }
+        });
+        tl.add({targets:h, scaleX:1, duration:dur(80)});
+        // fling the heart toward the love counter
         tl.add({
           targets:h,
           x:destX(),
           y:destY(),
           scaleX:0,
           scaleY:1.2,
-          duration:dur(125),
+          duration:dur(200),
           onComplete:()=>{
             GameState.love += isPos?1:-1;
             loveText.setText('❤️ '+GameState.love);
@@ -2058,7 +2066,7 @@ export function setupGame(){
             animateStatChange(loveText, this, isPos?1:-1, true);
           }
         });
-        tl.add({targets:h,scaleX:1,alpha:0,duration:dur(125),onComplete:()=>{
+        tl.add({targets:h,scaleX:1,alpha:0,duration:dur(150),onComplete:()=>{
               if(!emojiObj || h!==emojiObj) h.destroy();
               popOne(idx+1);
         }});

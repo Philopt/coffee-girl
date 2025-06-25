@@ -1354,11 +1354,16 @@ export function setupGame(){
         current.dog.dogCustomer.memory.state = CustomerState.BROKEN;
       }
     }
+    if (!current.sprite || !current.sprite.scene) {
+      clearDialog.call(this, type!=='refuse');
+      return;
+    }
     if(!current.heartEmoji || !current.heartEmoji.scene || !current.heartEmoji.active){
       if(current.heartEmoji && current.heartEmoji.destroy){
         current.heartEmoji.destroy();
       }
-      current.heartEmoji = current.sprite.scene.add.text(current.sprite.x, current.sprite.y, '', { font: '28px sans-serif' })
+      const scene = current.sprite.scene || this;
+      current.heartEmoji = scene.add.text(current.sprite.x, current.sprite.y, '', { font: '28px sans-serif' })
         .setOrigin(0.5)
         .setShadow(0,0,'#000',4);
     }

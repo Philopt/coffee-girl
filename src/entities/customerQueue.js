@@ -198,8 +198,15 @@ export function moveQueueForward() {
   let willShow = false;
 
   // Safeguard against a stuck order flag if the prior customer vanished
-  if (GameState.orderInProgress && !GameState.saleInProgress && (!GameState.activeCustomer || !GameState.queue.includes(GameState.activeCustomer))) {
-    GameState.orderInProgress = false;
+  // or the lead customer is no longer moving toward the counter.
+  if (GameState.orderInProgress && !GameState.saleInProgress) {
+    const lead = GameState.queue[0];
+    if (!lead || !GameState.queue.includes(GameState.activeCustomer)) {
+      GameState.orderInProgress = false;
+    } else if (lead.walkTween && !lead.walkTween.isPlaying &&
+               (lead.sprite.x !== ORDER_X || lead.sprite.y !== ORDER_Y)) {
+      GameState.orderInProgress = false;
+    }
   }
 
   const busy = GameState.orderInProgress || GameState.saleInProgress;

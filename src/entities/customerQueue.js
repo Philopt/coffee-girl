@@ -168,9 +168,18 @@ export function lureNextWanderer(scene, specific) {
     GameState.activeCustomer = GameState.queue[0];
     let targetX;
     let targetY;
-    // Everyone lines up at the front of the queue first.
-    targetX = QUEUE_X - QUEUE_SPACING * queueIdx;
-    targetY = QUEUE_Y - QUEUE_OFFSET * queueIdx;
+    if (queueIdx === 0 && !GameState.orderInProgress && !GameState.saleInProgress) {
+      // When the queue is empty, walk straight to the counter instead of
+      // stopping at the front of the line first.
+      targetX = ORDER_X;
+      targetY = ORDER_Y;
+      GameState.orderInProgress = true;
+      c.atOrder = true;
+    } else {
+      // Everyone lines up at the front of the queue first.
+      targetX = QUEUE_X - QUEUE_SPACING * queueIdx;
+      targetY = QUEUE_Y - QUEUE_OFFSET * queueIdx;
+    }
     setDepthFromBottom(c.sprite, 5);
     const dir = c.dir || (c.sprite.x < targetX ? 1 : -1);
     const speed = queueIdx === 0 ? LURE_SPEED : LURE_SPEED * 0.75;

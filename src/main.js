@@ -23,7 +23,9 @@ const DART_MIN_DURATION = 300;
 const DART_MAX_SPEED = (560 / 6) * 3;
 // Offset for the drink emoji when the customer holds it
 // Raise it slightly so it appears near their hands instead of their feet
-const DRINK_HOLD_OFFSET = { x: 0, y: -20 };
+// Also determines where the drink lands when tossed to a customer
+// Lowered by 10px so the drink doesn't land on top of their head
+const DRINK_HOLD_OFFSET = { x: 0, y: -10 };
 const HEART_EMOJIS = {
   [CustomerState.NORMAL]: null,
   [CustomerState.BROKEN]: '💔',

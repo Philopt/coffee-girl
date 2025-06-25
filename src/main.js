@@ -1878,24 +1878,30 @@ export function setupGame(){
         if (dialogPriceValue && dialogPriceValue.setColor) {
           dialogPriceValue.setColor('#ff0000');
         }
-        // Keep the emoji in color and fly it over to the customer
-        if (dialogDrinkEmoji) {
-          if (dialogDrinkEmoji.parentContainer) {
-            const m = dialogDrinkEmoji.getWorldTransformMatrix();
-            dialogPriceContainer.remove(dialogDrinkEmoji);
-            this.add.existing(dialogDrinkEmoji);
-            dialogDrinkEmoji.setPosition(m.tx, m.ty);
-          }
-          dialogDrinkEmoji.setDepth(paidStamp.depth + 1);
-          this.tweens.add({
-            targets: dialogDrinkEmoji,
-            x: customer.x + DRINK_HOLD_OFFSET.x,
-            y: customer.y + DRINK_HOLD_OFFSET.y,
-            duration: dur(400),
-            ease: 'Cubic.easeOut',
-            onComplete: () => { dialogDrinkEmoji.attachedTo = customer; }
-          });
-        }
+        /*
+         * Removed emoji repositioning tween that flew the item over to the
+         * customer. The heart animation now appears consistently after giving
+         * an item.
+         *
+         * Original implementation:
+         * if (dialogDrinkEmoji) {
+         *   if (dialogDrinkEmoji.parentContainer) {
+         *     const m = dialogDrinkEmoji.getWorldTransformMatrix();
+         *     dialogPriceContainer.remove(dialogDrinkEmoji);
+         *     this.add.existing(dialogDrinkEmoji);
+         *     dialogDrinkEmoji.setPosition(m.tx, m.ty);
+         *   }
+         *   dialogDrinkEmoji.setDepth(paidStamp.depth + 1);
+         *   this.tweens.add({
+         *     targets: dialogDrinkEmoji,
+         *     x: customer.x + DRINK_HOLD_OFFSET.x,
+         *     y: customer.y + DRINK_HOLD_OFFSET.y,
+         *     duration: dur(400),
+         *     ease: 'Cubic.easeOut',
+         *     onComplete: () => { dialogDrinkEmoji.attachedTo = customer; }
+         *   });
+         * }
+         */
         // raise the price above the stamp after the stamp lands
         this.time.delayedCall(dur(300), () => {
           t.setDepth(lossStamp.depth + 1);

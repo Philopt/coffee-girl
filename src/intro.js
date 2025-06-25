@@ -283,9 +283,15 @@ function showStartScreen(scene){
   const pcX = phoneContainer.x;
   const pcY = phoneContainer.y;
 
+  let titleLocalX = null;
+  let titleLocalY = null;
   if(openingTitle){
+    titleLocalX = openingTitle.x - pcX;
+    titleLocalY = openingTitle.y - pcY;
+
+    // Maintain world position when the container scales
     openingTitle
-      .setPosition((openingTitle.x - pcX) / pcScale, (openingTitle.y - pcY) / pcScale)
+      .setPosition(titleLocalX / pcScale, titleLocalY / pcScale)
       .setScale(openingTitle.scale / pcScale)
       .setDepth(16)
       .setAlpha(1);
@@ -301,16 +307,21 @@ function showStartScreen(scene){
 
     // Convert to the container's current scale so the graphic doesn't jump
     openingNumber
-      .setPosition((openingNumber.x - pcX) / pcScale, (openingNumber.y - pcY) / pcScale)
+      .setPosition(numLocalX / pcScale, numLocalY / pcScale)
       .setScale(openingNumber.scale / pcScale)
       .setDepth(16)
       .setAlpha(1);
     phoneContainer.add(openingNumber);
   }
 
+  let dogLocalX = null;
+  let dogLocalY = null;
   if(openingDog){
+    dogLocalX = openingDog.x - pcX;
+    dogLocalY = openingDog.y - pcY;
+
     openingDog
-      .setPosition((openingDog.x - pcX) / pcScale, (openingDog.y - pcY) / pcScale)
+      .setPosition(dogLocalX / pcScale, dogLocalY / pcScale)
       .setScale(openingDog.scale / pcScale)
       .setDepth(15)
       .setAlpha(1);
@@ -319,18 +330,33 @@ function showStartScreen(scene){
 
   // Zoom out from the white screen at the start
   if (scene.tweens && scene.tweens.add) {
-    const finalX = numLocalX;
-    const finalY = numLocalY;
     scene.tweens.add({
       targets: phoneContainer,
       scale: 1,
       duration: 800,
       delay: 200,
       ease: 'Sine.easeOut',
+      onUpdate: () => {
+        const s = phoneContainer.scale || phoneContainer.scaleX || 1;
+        if(openingTitle && titleLocalX !== null && titleLocalY !== null){
+          openingTitle.setPosition(titleLocalX / s, titleLocalY / s);
+        }
+        if(openingNumber && numLocalX !== null && numLocalY !== null){
+          openingNumber.setPosition(numLocalX / s, numLocalY / s);
+        }
+        if(openingDog && dogLocalX !== null && dogLocalY !== null){
+          openingDog.setPosition(dogLocalX / s, dogLocalY / s);
+        }
+      },
       onComplete: () => {
-        // Adjust openingNumber to its final local position once scaling finishes
-        if (openingNumber && finalX !== null && finalY !== null) {
-          openingNumber.setPosition(finalX, finalY);
+        if(openingTitle && titleLocalX !== null && titleLocalY !== null){
+          openingTitle.setPosition(titleLocalX, titleLocalY);
+        }
+        if (openingNumber && numLocalX !== null && numLocalY !== null) {
+          openingNumber.setPosition(numLocalX, numLocalY);
+        }
+        if(openingDog && dogLocalX !== null && dogLocalY !== null){
+          openingDog.setPosition(dogLocalX, dogLocalY);
         }
       }
     });

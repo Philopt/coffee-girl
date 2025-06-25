@@ -9,8 +9,6 @@ export const GameState = {
   lureRetry: null,
   sparrowSpawnEvent: null,
   dogBarkEvent: null,
-  // Clears the dialog if the player doesn't respond in time
-  orderTimeoutEvent: null,
   falconActive: false,
   gameOver: false,
   loveLevel: 1,

@@ -386,7 +386,10 @@ function showStartScreen(scene){
       if(openingDog){ openingDog.destroy(); openingDog=null; }
       badgeIcons.forEach(i=>i.destroy());
       badgeIcons=[];
-      phoneContainer.destroy(); phoneContainer=null;
+      if (phoneContainer) {
+        phoneContainer.destroy();
+        phoneContainer = null;
+      }
       GameState.phoneContainer = null;
       playIntro.call(scene);
     }});

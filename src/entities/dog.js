@@ -39,6 +39,18 @@ export function animateDogGrowth(scene, dog, cb) {
   const tl = scene.tweens.createTimeline();
   const growX = baseX * 1.2;
   const growY = baseY * 1.2;
+  // show an up arrow while the dog grows
+  const arrow = scene.add.text(dog.x, dog.y - dog.displayHeight,
+                              '⬆️', {font:'24px sans-serif'})
+    .setOrigin(0.5)
+    .setDepth(dog.depth + 1)
+    .setScale(scaleForY(dog.y))
+    .setShadow(0,0,'#000',4);
+  const updateArrow = () => {
+    arrow.setPosition(dog.x, dog.y - dog.displayHeight)
+         .setScale(scaleForY(dog.y))
+         .setDepth(dog.depth + 1);
+  };
   for (let i = 0; i < 3; i++) {
     tl.add({
       targets: dog,
@@ -46,7 +58,7 @@ export function animateDogGrowth(scene, dog, cb) {
       scaleY: growY,
       duration: dur(120),
       yoyo: true,
-      onUpdate: () => setDepthFromBottom(dog, 5)
+      onUpdate: () => { setDepthFromBottom(dog, 5); updateArrow(); }
     });
   }
   tl.add({
@@ -54,11 +66,12 @@ export function animateDogGrowth(scene, dog, cb) {
     scaleX: growX,
     scaleY: growY,
     duration: dur(120),
-    onUpdate: () => setDepthFromBottom(dog, 5)
+    onUpdate: () => { setDepthFromBottom(dog, 5); updateArrow(); }
   });
   tl.setCallback('onComplete', () => {
     dog.setScale(baseX, baseY);
     setDepthFromBottom(dog, 5);
+    arrow.destroy();
     if(cb) cb();
   });
   tl.play();

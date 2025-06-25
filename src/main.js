@@ -1167,7 +1167,14 @@ export function setupGame(){
           showDrinkReaction.call(this, target, type, dialogDrinkEmoji, loveDelta, cb);
         };
         if(target.isDog && type==='give'){
-          animateDogPowerUp(this, target, react);
+          // shrink the treat into the dog before the power up
+          const tl = this.tweens.createTimeline();
+          tl.add({ targets: dialogDrinkEmoji, scale: 0, duration: dur(150), ease:'Cubic.easeIn' });
+          tl.add({ targets: dialogDrinkEmoji, alpha:0, duration: dur(80) });
+          tl.setCallback('onComplete', () => {
+            animateDogPowerUp(this, target, react);
+          });
+          tl.play();
         } else if (this.time) {
           this.time.delayedCall(dur(100), react, [], this);
         } else {
@@ -1198,6 +1205,8 @@ export function setupGame(){
     if(emo){
       if(emo.setText) emo.setText(face);
       if(emo.setPosition) emo.setPosition(rx, ry);
+      // reset scaling from any previous drink animations
+      emo.setScale(1);
       emo.setVisible(true).setAlpha(1).setScale(24/28);
       if(emo.base && emo.base.setScale) emo.base.setScale(1);
     }else{

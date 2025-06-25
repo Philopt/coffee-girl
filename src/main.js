@@ -1306,8 +1306,8 @@ export function setupGame(){
           const base = dogSprite.baseScaleFactor || dogSprite.scaleFactor || 0.6;
           dogSprite.baseScaleFactor = base;
           const max = base * 2;
-          dogSprite.scaleFactor = Math.min(dogSprite.scaleFactor * 1.2, max);
-          if(typeof scaleDog === 'function') scaleDog(dogSprite);
+          // defer applying the new scale until after the power-up animation
+          dogSprite.pendingScaleFactor = Math.min(dogSprite.scaleFactor * 1.2, max);
         }
       }
       if(type==='refuse') memory.state = CustomerState.BROKEN;

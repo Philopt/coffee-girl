@@ -1204,7 +1204,7 @@ export function setupGame(){
 
     this.time.delayedCall(dur(delay), () => {
       if(loveDelta){
-        animateLoveChange.call(this,loveDelta,target, () => {
+        animateLoveChange.call(this, loveDelta, target, () => {
           if(emojiObj){
             emo.attachedTo = null;
             emo.setVisible(false);
@@ -1214,8 +1214,8 @@ export function setupGame(){
             emo.destroy();
           }
           if(cb) cb();
-        }, emo.x, emo.y);
-      }else if(cb){
+        }, emo.x, emo.y, emo);
+      } else if(cb){
         if(emojiObj){
           emo.attachedTo = null;
           emo.setVisible(false);
@@ -2016,7 +2016,7 @@ export function setupGame(){
     if(pending===0) finish();
   }
 
-  function animateLoveChange(delta, customer, cb, startX=null, startY=null){
+  function animateLoveChange(delta, customer, cb, startX=null, startY=null, emojiObj=null){
     const sprite = customer.sprite || customer;
     const count = Math.max(1, Math.abs(delta));
     const isPos = delta > 0;
@@ -2033,9 +2033,14 @@ export function setupGame(){
 
     const popOne = (idx) => {
       if(idx >= count){ if(cb) cb(); return; }
-      const face = showFace();
-      const h = this.add.text(sx, sy, face, {font:'24px sans-serif', fill:'#fff'})
-        .setOrigin(0.5).setDepth(10);
+      let h;
+      if(idx===0 && emojiObj){
+        h = emojiObj;
+      } else {
+        const face = showFace();
+        h = this.add.text(sx, sy, face, {font:'24px sans-serif', fill:'#fff'})
+          .setOrigin(0.5).setDepth(10);
+      }
       this.time.delayedCall(dur(delay), () => {
         h.setText(isPos ? '❤️' : '💔');
         const tl = this.tweens.createTimeline({callbackScope:this});
@@ -2054,7 +2059,7 @@ export function setupGame(){
           }
         });
         tl.add({targets:h,scaleX:1,alpha:0,duration:dur(125),onComplete:()=>{
-              h.destroy();
+              if(!emojiObj || h!==emojiObj) h.destroy();
               popOne(idx+1);
         }});
         tl.play();

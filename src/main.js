@@ -2511,46 +2511,51 @@ function dogsBarkAtFalcon(){
     if(endOverlay){ endOverlay.destroy(); }
     endOverlay = this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
 
-    const titleGame = this.add.text(240,200,'GAME',{
+    const titleGame = this.add.text(240,170,'GAME',{
       font:'80px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
     }).setOrigin(0.5).setDepth(20).setAlpha(0);
-    const titleOver = this.add.text(240,280,'OVER',{
+    const titleOver = this.add.text(240,250,'OVER',{
       font:'80px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
     }).setOrigin(0.5).setDepth(20).setAlpha(0);
-    this.tweens.add({targets:[titleGame,titleOver],alpha:1,duration:dur(600)});
+    this.tweens.add({targets:[titleGame,titleOver],alpha:1,duration:dur(1200)});
 
-    const img = this.add.image(240,280,'falcon_end')
+    const img = this.add.image(240,250,'falcon_end')
       .setScale(1.2)
       .setDepth(20)
       .setAlpha(0);
-    this.tweens.add({targets:img,alpha:1,duration:dur(600),delay:dur(1000)});
+    this.tweens.add({targets:img,alpha:1,duration:dur(1200),delay:dur(1000)});
 
-    const line1 = this.add.text(240,480,"You've lost all the money",
+    const line1 = this.add.text(240,450,"You've lost all the money",
       {font:'28px sans-serif',fill:'#fff'})
       .setOrigin(0.5)
       .setDepth(21)
       .setAlpha(0);
     this.tweens.add({targets:line1,alpha:1,duration:dur(1200),delay:dur(1700)});
 
-    const line2 = this.add.text(240,520,'Lady Falcon reclaims her coffee truck',
-      {font:'24px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
+    const line2 = this.add.text(240,490,'Lady Falcon reclaims her coffee truck',
+      {font:'20px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
       .setOrigin(0.5)
       .setDepth(21)
       .setAlpha(0);
     this.tweens.add({targets:line2,alpha:1,duration:dur(600),delay:dur(2400)});
 
-    const btn = this.add.text(240,580,'Try Again',{font:'20px sans-serif',fill:'#000',backgroundColor:'#ffffff',padding:{x:14,y:8}})
+    const btn = this.add.text(240,550,'Try Again',{font:'20px sans-serif',fill:'#000',backgroundColor:'#ffffff',padding:{x:14,y:8}})
       .setOrigin(0.5)
       .setDepth(22);
-    const againZone = this.add.zone(240,580,btn.width,btn.height).setOrigin(0.5);
+    const againZone = this.add.zone(240,550,btn.width,btn.height).setOrigin(0.5);
     againZone.setInteractive({ useHandCursor:true });
     againZone.on('pointerdown',()=>{
         againZone.disableInteractive();
         btn.setVisible(false);
-        const overlay=this.add.rectangle(btn.x,btn.y,btn.width,btn.height,0xffffff)
-          .setDepth(23).setOrigin(0.5);
+        const overlayG = this.add.graphics({x:btn.x,y:btn.y}).setDepth(23);
+        overlayG.fillStyle(0xffffff,1);
+        overlayG.fillRoundedRect(-btn.width/2,-btn.height/2,btn.width,btn.height,20);
+        overlayG.setScale(1,1);
+        overlayG.setAlpha(1);
         this.tweens.add({
-          targets:overlay,
+          targets:overlayG,
+          x:240,
+          y:320,
           scaleX:480/btn.width,
           scaleY:640/btn.height,
           duration:300,
@@ -2563,7 +2568,7 @@ function dogsBarkAtFalcon(){
             line2.destroy();
             btn.destroy();
             if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
-            restartGame.call(this, overlay);
+            restartGame.call(this, overlayG);
             againZone.destroy();
           }
         });
@@ -2630,11 +2635,13 @@ function dogsBarkAtFalcon(){
         const glow = this.add.image(btn.x,btn.y,'tryagain_glow').setDepth(24).setAlpha(0.8).setScale(0.1);
         this.tweens.add({targets:glow,scale:3,alpha:0,duration:300,onComplete:()=>glow.destroy()});
         btn.setVisible(false);
-        const overlay=this.add.rectangle(btn.x,btn.y,btn.width,btn.height,0xffffff).setDepth(23).setOrigin(0.5);
-        this.tweens.add({targets:overlay,scaleX:480/btn.width,scaleY:640/btn.height,duration:300,ease:'Cubic.easeOut',onComplete:()=>{
+        const overlayG = this.add.graphics({x:btn.x,y:btn.y}).setDepth(23);
+        overlayG.fillStyle(0xffffff,1);
+        overlayG.fillRoundedRect(-btn.width/2,-btn.height/2,btn.width,btn.height,20);
+        this.tweens.add({targets:overlayG,x:240,y:320,scaleX:480/btn.width,scaleY:640/btn.height,duration:300,ease:'Cubic.easeOut',onComplete:()=>{
           bg.destroy(); txt.destroy(); btn.destroy(); if(titleText) titleText.destroy();
           if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
-          restartGame.call(this, overlay);
+          restartGame.call(this, overlayG);
           againZone.destroy();
         }});
       });

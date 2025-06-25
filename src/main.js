@@ -914,32 +914,35 @@ export function setupGame(){
       const canSell = !c.isDog && canAfford;
     let coinLine='';
     if(!c.isDog){
-      if (canAfford) {
-        coinLine = `I have $${c.orders[0].coins}`;
-      } else if (c.orders[0].coins === 0) {
-        const options = ['...but I have nothing', "...I'm poor", "I don't have money"];
+      if (!canAfford) {
+        const options = [
+          "I forgot my wallet",
+          "I'll pay you tomorrow",
+          "My card got declined",
+          "Can I Venmo you later?",
+          "I'm good for it, promise"
+        ];
         coinLine = Phaser.Utils.Array.GetRandom(options);
-      } else {
-        coinLine = `...but I only have $${c.orders[0].coins}`;
       }
     }
     dialogCoins
       .setOrigin(0.5)
       .setStyle({fontSize:'24px'})
       .setText(coinLine)
-      .setVisible(!c.isDog);
+      .setVisible(!c.isDog && !!coinLine);
 
-    const maxW=Math.max(dialogText.width, c.isDog?0:dialogCoins.width);
+    const coinW = (!c.isDog && coinLine) ? dialogCoins.width : 0;
+    const maxW = Math.max(dialogText.width, coinW);
     const hMargin = 20;
     const vMargin = 15;
     const lineGap = 10;
     dialogBg.width = Math.max(maxW + hMargin * 2, 160);
-    dialogBg.height = dialogText.height + (c.isDog?0:dialogCoins.height + lineGap) + vMargin * 2;
+    dialogBg.height = dialogText.height + (coinLine ? dialogCoins.height + lineGap : 0) + vMargin * 2;
 
     const bubbleTop=dialogBg.y - dialogBg.height/2;
     const textY=bubbleTop + vMargin + dialogText.height/2;
     dialogText.setPosition(dialogBg.x, textY);
-    if(!c.isDog){
+    if(!c.isDog && coinLine){
       dialogCoins.setPosition(
         dialogBg.x,
         textY + dialogText.height/2 + lineGap + dialogCoins.height/2
@@ -949,7 +952,11 @@ export function setupGame(){
     dialogBg.setScale(0).setVisible(true);
     GameState.dialogActive = true;
     dialogText.setScale(0);
-    dialogCoins.setScale(0);
+    if (coinLine) {
+      dialogCoins.setScale(0);
+    } else {
+      dialogCoins.setScale(1);
+    }
     // use a static bubble color to avoid expensive image analysis
     let bubbleColor = 0xffffff;
     drawDialogBubble(c.sprite.x, c.sprite.y, bubbleColor);

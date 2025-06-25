@@ -187,6 +187,12 @@ export function moveQueueForward() {
   }
   const scene = this;
   let willShow = false;
+
+  // Safeguard against a stuck order flag if the prior customer vanished
+  if (GameState.orderInProgress && !GameState.saleInProgress && (!GameState.activeCustomer || !GameState.queue.includes(GameState.activeCustomer))) {
+    GameState.orderInProgress = false;
+  }
+
   const busy = GameState.orderInProgress || GameState.saleInProgress;
   GameState.queue.forEach((cust, idx) => {
     let tx;
@@ -250,6 +256,9 @@ export function checkQueueSpacing(scene) {
       debugLog('checkQueueSpacing abort: waitingForDog');
     }
     return;
+  }
+  if (GameState.orderInProgress && !GameState.saleInProgress && (!GameState.activeCustomer || !GameState.queue.includes(GameState.activeCustomer))) {
+    GameState.orderInProgress = false;
   }
   const busy = GameState.orderInProgress || GameState.saleInProgress;
   GameState.queue.forEach((cust, idx) => {

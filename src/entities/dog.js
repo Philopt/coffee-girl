@@ -29,8 +29,8 @@ export function scaleDog(d) {
   setDepthFromBottom(d, 5);
 }
 
-export function animateDogGrowth(scene, dog) {
-  if (!scene || !dog) return;
+export function animateDogGrowth(scene, dog, cb) {
+  if (!scene || !dog) { if(cb) cb(); return; }
   const factor = dog.scaleFactor || 0.6;
   const s = scaleForY(dog.y) * factor;
   const dir = dog.dir || 1;
@@ -59,6 +59,20 @@ export function animateDogGrowth(scene, dog) {
   tl.setCallback('onComplete', () => {
     dog.setScale(baseX, baseY);
     setDepthFromBottom(dog, 5);
+    if(cb) cb();
+  });
+  tl.play();
+}
+
+export function animateDogPowerUp(scene, dog, cb){
+  if(!scene || !dog){ if(cb) cb(); return; }
+  const tl = scene.tweens.createTimeline();
+  for(let i=0;i<4;i++){
+    tl.add({ targets: dog, alpha: 0, duration: dur(60) });
+    tl.add({ targets: dog, alpha: 1, duration: dur(60) });
+  }
+  tl.setCallback('onComplete', () => {
+    animateDogGrowth(scene, dog, cb);
   });
   tl.play();
 }

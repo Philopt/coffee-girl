@@ -7,7 +7,7 @@ import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from
 import { CustomerState } from './constants.js';
 
 import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows } from './sparrow.js';
-import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog, dogTruckRuckus, dogRefuseJumpBark, animateDogGrowth } from './entities/dog.js';
+import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog, dogTruckRuckus, dogRefuseJumpBark, animateDogPowerUp } from './entities/dog.js';
 import { startWander } from './entities/wanderers.js';
 
 import { flashBorder, flashFill, blinkButton, applyRandomSkew, emphasizePrice, setDepthFromBottom, createGrayscaleTexture, createGlowTexture } from './ui/helpers.js';
@@ -1163,12 +1163,15 @@ export function setupGame(){
       ease: 'Cubic.easeIn',
       onComplete: () => {
         dialogDrinkEmoji.attachedTo = target;
-        if (this.time) {
-          this.time.delayedCall(dur(100), () => {
-            showDrinkReaction.call(this, target, type, dialogDrinkEmoji, loveDelta, cb);
-          }, [], this);
-        } else {
+        const react = () => {
           showDrinkReaction.call(this, target, type, dialogDrinkEmoji, loveDelta, cb);
+        };
+        if(target.isDog && type==='give'){
+          animateDogPowerUp(this, target, react);
+        } else if (this.time) {
+          this.time.delayedCall(dur(100), react, [], this);
+        } else {
+          react();
         }
       }
     });
@@ -1294,40 +1297,12 @@ export function setupGame(){
           const max = base * 2;
           dogSprite.scaleFactor = Math.min(dogSprite.scaleFactor * 1.2, max);
           if(typeof scaleDog === 'function') scaleDog(dogSprite);
-          if(typeof animateDogGrowth === 'function')
-            animateDogGrowth(this, dogSprite);
         }
       }
       if(type==='refuse') memory.state = CustomerState.BROKEN;
-    } else if(current.dog && current.dog.dogCustomer && current.dog.dogCustomer.memory){
-      const dogMem = current.dog.dogCustomer.memory;
-      if(type==='give') dogMem.state = nextMood(dogMem.state);
-      if(type==='refuse') dogMem.state = CustomerState.BROKEN;
-      const dogSprite = current.dog;
-      if(dogSprite){
-        if(!dogSprite.heartEmoji || !dogSprite.heartEmoji.scene || !dogSprite.heartEmoji.active){
-          if(dogSprite.heartEmoji && dogSprite.heartEmoji.destroy){
-            dogSprite.heartEmoji.destroy();
-          }
-          dogSprite.heartEmoji = dogSprite.scene.add.text(dogSprite.x, dogSprite.y, '', { font: '28px sans-serif' })
-            .setOrigin(0.5)
-            .setShadow(0, 0, '#000', 4);
-        }
-        const hy = dogSprite.y + dogSprite.displayHeight * 0.30;
-        const hs = scaleForY(dogSprite.y) * 0.8;
-        dogSprite.heartEmoji
-          .setText(HEART_EMOJIS[dogMem.state] || '')
-          .setPosition(dogSprite.x, hy)
-          .setScale(hs)
-          .setDepth(dogSprite.depth)
-          .setShadow(0, 0, '#000', 4);
-      }
     }
     if(type==='refuse'){
       memory.state = CustomerState.BROKEN;
-      if(current.dog && current.dog.dogCustomer && current.dog.dogCustomer.memory){
-        current.dog.dogCustomer.memory.state = CustomerState.BROKEN;
-      }
     }
     if (!current.sprite || !current.sprite.scene) {
       clearDialog.call(this, type!=='refuse');

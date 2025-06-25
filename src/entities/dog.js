@@ -31,11 +31,13 @@ export function scaleDog(d) {
 
 export function animateDogGrowth(scene, dog, cb) {
   if (!scene || !dog) { if(cb) cb(); return; }
-  const factor = dog.scaleFactor || 0.6;
-  const s = scaleForY(dog.y) * factor;
+  // apply any pending scale changes now that the power-up has started
+  const finalFactor = dog.pendingScaleFactor || dog.scaleFactor || 0.6;
+  dog.scaleFactor = finalFactor;
+  dog.pendingScaleFactor = null;
   const dir = dog.dir || 1;
-  const baseX = s * dir;
-  const baseY = s;
+  const baseX = scaleForY(dog.y) * finalFactor * dir;
+  const baseY = scaleForY(dog.y) * finalFactor;
   const tl = scene.tweens.createTimeline();
   const growX = baseX * 1.2;
   const growY = baseY * 1.2;
@@ -80,11 +82,19 @@ export function animateDogGrowth(scene, dog, cb) {
 export function animateDogPowerUp(scene, dog, cb){
   if(!scene || !dog){ if(cb) cb(); return; }
   const tl = scene.tweens.createTimeline();
-  for(let i=0;i<4;i++){
-    tl.add({ targets: dog, alpha: 0, duration: dur(60) });
+  const originalTint = dog.tintTopLeft || 0xffffff;
+  const colors = [0xffff66, 0xff66ff, 0x66ffff, 0xffffff];
+  colors.forEach(color => {
+    tl.add({
+      targets: dog,
+      alpha: 0,
+      duration: dur(60),
+      onStart: () => dog.setTint(color)
+    });
     tl.add({ targets: dog, alpha: 1, duration: dur(60) });
-  }
+  });
   tl.setCallback('onComplete', () => {
+    dog.setTint(originalTint);
     animateDogGrowth(scene, dog, cb);
   });
   tl.play();

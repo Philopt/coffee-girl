@@ -1212,13 +1212,16 @@ export function setupGame(){
       delay = loveDelta ? 250 : 500;
     }
     const face = faces[Phaser.Math.Between(0, faces.length-1)];
+    const rx = target.x + DRINK_HOLD_OFFSET.x;
+    const ry = target.y + DRINK_HOLD_OFFSET.y;
     let emo = emojiObj;
     if(emo){
       if(emo.setText) emo.setText(face);
-      if(emo.setPosition) emo.setPosition(target.x, target.y);
-      emo.setVisible(true).setAlpha(1).setScale(1);
+      if(emo.setPosition) emo.setPosition(rx, ry);
+      emo.setVisible(true).setAlpha(1).setScale(24/28);
+      if(emo.base && emo.base.setScale) emo.base.setScale(1);
     }else{
-      emo = this.add.text(target.x, target.y, face, {font:'24px sans-serif', fill:'#fff'})
+      emo = this.add.text(rx, ry, face, {font:'24px sans-serif', fill:'#fff'})
         .setOrigin(0.5).setDepth(11);
     }
 
@@ -1229,6 +1232,7 @@ export function setupGame(){
             emo.attachedTo = null;
             emo.setVisible(false);
             emo.setAlpha(1);
+            emo.setScale(1);
           } else {
             emo.destroy();
           }
@@ -1239,6 +1243,7 @@ export function setupGame(){
           emo.attachedTo = null;
           emo.setVisible(false);
           emo.setAlpha(1);
+          emo.setScale(1);
         } else {
           emo.destroy();
         }

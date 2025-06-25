@@ -1335,7 +1335,15 @@ export function setupGame(){
     const done = () => { if (--pending <= 0) finish(); };
 
     if(type==='refuse'){
-      showDrinkReaction.call(this, current.sprite, 'refuse', null, lD, done);
+      if(current.isDog){
+        dogRefuseJumpBark.call(this, current.sprite);
+        if(lD!==0){
+          animateLoveChange.call(this, lD, current.sprite, done,
+                                current.sprite.x, current.sprite.y-40);
+        }
+      }else{
+        showDrinkReaction.call(this, current.sprite, 'refuse', null, lD, done);
+      }
     }
 
     if(type==='refuse' && current.dog && current.dog.dogCustomer &&
@@ -1345,9 +1353,6 @@ export function setupGame(){
 
     if(type==='give' && current && current.isDog && dialogPupCup){
       dialogPupCup.setTexture('pupcup');
-    }
-    if(type==='refuse' && current && current.isDog){
-      dogRefuseJumpBark.call(this, current.sprite);
     }
     if ((type==='sell' || type==='give') && dialogDrinkEmoji && dialogPriceContainer && dialogPriceContainer.visible) {
       dialogDrinkEmoji.clearTint();

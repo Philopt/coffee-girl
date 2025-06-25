@@ -19,6 +19,9 @@ export const GameState = {
   // True while an order dialog is visible. Used to avoid overlapping dialogs
   // when the queue shifts during animations.
   dialogActive: false,
+  // True from the moment a customer heads to the counter until they exit
+  // so only one customer can approach the order spot at a time.
+  orderInProgress: false,
   heartWin: null,
   girlReady: false,
   truck: null,

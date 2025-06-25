@@ -25,9 +25,9 @@ import { setDepthFromBottom } from '../ui/helpers.js';
 
 function sparkleQueueSpot(scene){
   if(!scene) return;
-  const idx=GameState.queue.length;
-  const x=idx===0?ORDER_X:QUEUE_X-QUEUE_SPACING*(idx-1);
-  const y=idx===0?ORDER_Y:QUEUE_Y-QUEUE_OFFSET*(idx-1);
+  const idx = GameState.queue.length;
+  const x = QUEUE_X - QUEUE_SPACING * idx;
+  const y = QUEUE_Y - QUEUE_OFFSET * idx;
   const sp=scene.add.text(x,y,'✨',{font:'18px sans-serif',fill:'#fff'})
     .setOrigin(0.5).setDepth(20);
   scene.tweens.add({targets:sp,alpha:0,yoyo:true,repeat:1,duration:dur(300),onComplete:()=>sp.destroy()});
@@ -168,13 +168,9 @@ export function lureNextWanderer(scene, specific) {
     GameState.activeCustomer = GameState.queue[0];
     let targetX;
     let targetY;
-    if (queueIdx === 0) {
-      targetX = ORDER_X;
-      targetY = ORDER_Y;
-    } else {
-      targetX = QUEUE_X - QUEUE_SPACING * (queueIdx - 1);
-      targetY = QUEUE_Y - QUEUE_OFFSET * (queueIdx - 1);
-    }
+    // Everyone lines up at the front of the queue first.
+    targetX = QUEUE_X - QUEUE_SPACING * queueIdx;
+    targetY = QUEUE_Y - QUEUE_OFFSET * queueIdx;
     setDepthFromBottom(c.sprite, 5);
     const dir = c.dir || (c.sprite.x < targetX ? 1 : -1);
     const speed = queueIdx === 0 ? LURE_SPEED : LURE_SPEED * 0.75;
@@ -191,9 +187,20 @@ export function moveQueueForward() {
   }
   const scene = this;
   let willShow = false;
+  const busy = GameState.orderInProgress || GameState.saleInProgress || GameState.dialogActive;
   GameState.queue.forEach((cust, idx) => {
-    const tx = idx === 0 ? ORDER_X : QUEUE_X - QUEUE_SPACING * (idx - 1);
-    const ty = idx === 0 ? ORDER_Y : QUEUE_Y - QUEUE_OFFSET * (idx - 1);
+    let tx;
+    let ty;
+    if (idx === 0 && !busy) {
+      // Counter is free, send the first customer up and mark the order started
+      GameState.orderInProgress = true;
+      tx = ORDER_X;
+      ty = ORDER_Y;
+    } else {
+      const spot = idx - (busy ? 0 : 1);
+      tx = QUEUE_X - QUEUE_SPACING * Math.max(spot, 0);
+      ty = QUEUE_Y - QUEUE_OFFSET * Math.max(spot, 0);
+    }
     if (cust.sprite.y !== ty || cust.sprite.x !== tx) {
       const dir = cust.dir || (cust.sprite.x < tx ? 1 : -1);
       // Avoid restarting movement if the customer is already walking to
@@ -209,7 +216,7 @@ export function moveQueueForward() {
       }
       cust.walkTween = approachTarget(scene, cust.sprite, dir, tx, ty, () => {
         cust.walkTween = null;
-        if (idx === 0) {
+        if (idx === 0 && tx === ORDER_X && ty === ORDER_Y) {
           if (typeof debugLog === 'function') debugLog('customer reached order position');
           showDialog.call(scene);
         }
@@ -240,9 +247,18 @@ export function checkQueueSpacing(scene) {
     }
     return;
   }
+  const busy = GameState.orderInProgress || GameState.saleInProgress || GameState.dialogActive;
   GameState.queue.forEach((cust, idx) => {
-    const tx = idx === 0 ? ORDER_X : QUEUE_X - QUEUE_SPACING * (idx - 1);
-    const ty = idx === 0 ? ORDER_Y : QUEUE_Y - QUEUE_OFFSET * (idx - 1);
+    let tx;
+    let ty;
+    if (idx === 0 && !busy) {
+      tx = ORDER_X;
+      ty = ORDER_Y;
+    } else {
+      const spot = idx - (busy ? 0 : 1);
+      tx = QUEUE_X - QUEUE_SPACING * Math.max(spot, 0);
+      ty = QUEUE_Y - QUEUE_OFFSET * Math.max(spot, 0);
+    }
     const dist = Phaser.Math.Distance.Between(cust.sprite.x, cust.sprite.y, tx, ty);
     if (dist > 2) {
       if (cust.walkTween) {
@@ -264,7 +280,7 @@ export function checkQueueSpacing(scene) {
         tx,
         ty,
         () => {
-          if (idx === 0) {
+          if (idx === 0 && tx === ORDER_X && ty === ORDER_Y) {
             if (typeof debugLog === 'function') {
               debugLog('checkQueueSpacing complete: calling showDialog');
             }

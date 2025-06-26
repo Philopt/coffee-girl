@@ -2513,24 +2513,14 @@ function dogsBarkAtFalcon(){
                    onStart:()=>{girl.setTintFill(0xff0000);sprinkleBursts(scene);},
                    onYoyo:()=>{girl.setTintFill(0xff0000);sprinkleBursts(scene);},
                    onComplete:()=>girl.clearTint()},'<');
-          for(let f=0;f<3;f++){
-            const debris=createDebrisEmoji(scene,falcon.x,falcon.y);
-            tl.add({targets:debris,
-                    x:debris.x+Phaser.Math.Between(-60,60),
-                    y:debris.y+Phaser.Math.Between(-50,10),
-                    angle:Phaser.Math.Between(-360,360),
-                    alpha:0,
-                    duration:dur(400),
-                    onComplete:()=>debris.destroy()},'<');
-            scene.time.delayedCall(dur(450),()=>debris.destroy(),[],scene);
-          }
+          // No more feathers during the attack
           tl.setCallback('onComplete', () => {
             // stopTrail();
             if(firstAttack) firstAttack=false;
             if(GameState.girlHP<=0){
               endAttack();
             } else {
-              scene.time.delayedCall(dur(50),attackOnce,[],scene);
+              attackOnce();
             }
           });
           tl.play();

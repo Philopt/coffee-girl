@@ -305,6 +305,8 @@ export function updateDog(owner) {
 export function sendDogOffscreen(dog, x, y) {
   if (!dog) return;
   if (dog.followEvent) dog.followEvent.remove(false);
+  // ensure any previous tweens don't fight with the exit tween
+  this.tweens.killTweensOf(dog);
   const dist = Phaser.Math.Distance.Between(dog.x, dog.y, x, y);
   if (Math.abs(x - dog.x) > 3) {
     dog.dir = x > dog.x ? 1 : -1;

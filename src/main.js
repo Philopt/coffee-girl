@@ -600,16 +600,16 @@ export function setupGame(){
       .setOrigin(0.5);
     const baseEmoji = this.add.text(0,0,'',{font:'28px sans-serif'})
       .setOrigin(0.5)
-      .setShadow(0, 0, '#000', 4);
+      .setShadow(0, 0, '#000', 0);
     const extra1 = this.add.text(0,-18,'',{font:'16px sans-serif'})
       .setOrigin(0.5)
-      .setShadow(0, 0, '#000', 4);
+      .setShadow(0, 0, '#000', 0);
     const extra2 = this.add.text(0,-18,'',{font:'16px sans-serif'})
       .setOrigin(0.5)
-      .setShadow(0, 0, '#000', 4);
+      .setShadow(0, 0, '#000', 0);
     const extra3 = this.add.text(0,-18,'',{font:'16px sans-serif'})
       .setOrigin(0.5)
-      .setShadow(0, 0, '#000', 4);
+      .setShadow(0, 0, '#000', 0);
     // Add base first so extras render on top of the drink
     dialogDrinkEmoji=this.add.container(-30,-20,[baseEmoji, extra1, extra2, extra3]);
     dialogDrinkEmoji.base = baseEmoji;
@@ -1062,6 +1062,7 @@ export function setupGame(){
       dialogDrinkEmoji.base
         .setShadow(0, 0, '#000', 0)
         .setStyle({strokeThickness:0});
+      dialogDrinkEmoji.extras.forEach(e=>e.setShadow(0, 0, '#000', 0));
     }
 
     this.tweens.add({

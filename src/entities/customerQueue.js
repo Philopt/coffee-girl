@@ -97,7 +97,7 @@ export function lureNextWanderer(scene, specific) {
   // their dog. This prevents the queue from rechecking and pulling the dog
   // into line accidentally.
   if (GameState.queue.some(q => q.waitingForDog ||
-      (q.isDog && q.owner && q.owner.waitingForDog))) {
+      (q.isDog && q.owner && (q.owner.waitingForDog || q.owner.exitHandler)))) {
     if (typeof debugLog === 'function') {
       debugLog('lureNextWanderer abort: dog switching');
     }
@@ -270,7 +270,7 @@ export function checkQueueSpacing(scene) {
   // to order. This keeps the dog from being pulled into the queue by a
   // recheck triggered by a new arrival.
   if (GameState.queue.some(c => c.waitingForDog ||
-      (c.isDog && c.owner && c.owner.waitingForDog))) {
+      (c.isDog && c.owner && (c.owner.waitingForDog || c.owner.exitHandler)))) {
     if (typeof debugLog === 'function') {
       debugLog('checkQueueSpacing abort: waitingForDog');
     }

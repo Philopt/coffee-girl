@@ -2301,8 +2301,8 @@ function dogsBarkAtFalcon(){
       GameState.wanderers.forEach(gatherDog);
       gatherDog(GameState.activeCustomer);
       if(dogs.length===0) return;
-      dogs.forEach(dog=>{
-        const mood=dog.dogCustomer && dog.dogCustomer.memory ? dog.dogCustomer.memory.state : CustomerState.NORMAL;
+        dogs.forEach(dog=>{
+          const mood=dog.dogCustomer && dog.dogCustomer.memory ? dog.dogCustomer.memory.state : CustomerState.NORMAL;
         if(mood===CustomerState.BROKEN || mood===CustomerState.NORMAL){
           if(!dog.fled){
             if(dog.followEvent) dog.followEvent.remove(false);
@@ -2320,11 +2320,11 @@ function dogsBarkAtFalcon(){
           .setDepth(dog.depth+1)
           .setScale(Math.abs(dog.scaleX), Math.abs(dog.scaleY));
         scene.tweens.add({targets:bark,y:'-=20',alpha:0,duration:dur(600),onComplete:()=>bark.destroy()});
-        let loops=2;
-        if(mood===CustomerState.GROWING) loops=3;
-        if(mood===CustomerState.SPARKLING) loops=4;
-        if(mood===CustomerState.ARROW) loops=5;
-        const dTl=scene.tweens.createTimeline();
+          let loops=1;
+          if(mood===CustomerState.GROWING) loops=1;
+          if(mood===CustomerState.SPARKLING) loops=2;
+          if(mood===CustomerState.ARROW) loops=3;
+          const dTl=scene.tweens.createTimeline();
         for(let j=0;j<loops;j++){
           const ang=Phaser.Math.FloatBetween(0,Math.PI*2);
           const r=Phaser.Math.Between(30,50);
@@ -2341,7 +2341,14 @@ function dogsBarkAtFalcon(){
           const s=scaleForY(dog.y)*0.5;
           dog.setScale(s*(dog.dir||1), s);
         });
-        dTl.setCallback('onComplete',()=>{dog.setFrame(1);});
+          dTl.setCallback('onComplete',()=>{
+            dog.setFrame(1);
+            const dmgPer= (dog.scaleFactor||dog.baseScaleFactor||0.6) > (dog.baseScaleFactor||0.6) ? 1.5 : 1;
+            const total = loops * dmgPer;
+            GameState.falconHP=Math.max(0,GameState.falconHP-total);
+            falconHpText.setText(GameState.falconHP);
+            if(GameState.falconHP<=0){ endAttack(); }
+          });
         if(dog.anims && dog.play){ dog.play('dog_walk'); }
         dTl.play();
       });
@@ -2385,29 +2392,37 @@ function dogsBarkAtFalcon(){
     const targetX=girl.x;
     const targetY=girl.y-40;
     dogsBarkAtFalcon();
-    GameState.dogBarkEvent = scene.time.addEvent({
-      delay: dur(800),
-      loop: true,
-      callback: dogsBarkAtFalcon,
-      callbackScope: scene
-    });
-    featherTrail = scene.time.addEvent({
-      delay: dur(120),
-      loop: true,
-      callback: () => burstFeathers(scene, falcon.x, falcon.y, 1)
-    });
+      GameState.dogBarkEvent = scene.time.addEvent({
+        delay: dur(800),
+        loop: true,
+        callback: dogsBarkAtFalcon,
+        callbackScope: scene
+      });
+      featherTrail = scene.time.addEvent({
+        delay: dur(240),
+        loop: true,
+        callback: () => burstFeathers(scene, falcon.x, falcon.y, 1)
+      });
     panicCustomers();
-    const attackOnce=()=>{
-      const startX=Math.random()<0.5?girl.x-120:girl.x+120;
-      const startY=Phaser.Math.Between(girl.y-60,girl.y-40);
-      scene.tweens.add({targets:falcon,x:startX,y:startY,duration:dur(300),ease:'Sine.easeInOut',onComplete:()=>{
-        scene.tweens.add({targets:falcon,x:targetX,y:targetY,duration:dur(400),ease:'Cubic.easeIn',onComplete:()=>{
-          blinkAngry(scene);
-          GameState.girlHP=Math.max(0,GameState.girlHP-1);
-          girlHpText.setText(GameState.girlHP);
-          const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
-            if(GameState.girlHP<=0){endAttack();} else {scene.time.delayedCall(dur(400),attackOnce,[],scene);}
-          }});
+      const attackOnce=()=>{
+        const startX=Math.random()<0.5?girl.x-120:girl.x+120;
+        const startY=Phaser.Math.Between(girl.y-60,girl.y-40);
+        const fromX=falcon.x;
+        const fromY=falcon.y;
+        scene.tweens.addCounter({from:0,to:1,duration:dur(250),ease:'Sine.easeInOut',
+          onUpdate:tw=>{
+            const p=tw.getValue();
+            falcon.x=Phaser.Math.Linear(fromX,startX,p);
+            falcon.y=Phaser.Math.Linear(fromY,startY,p)+Math.sin(p*Math.PI*4)*6;
+          },
+          onComplete:()=>{
+          scene.tweens.add({targets:falcon,x:targetX,y:targetY,duration:dur(350),ease:'Cubic.easeIn',onComplete:()=>{
+            blinkAngry(scene);
+            GameState.girlHP=Math.max(0,GameState.girlHP-1);
+            girlHpText.setText(GameState.girlHP);
+            const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
+              if(GameState.girlHP<=0){endAttack();} else {scene.time.delayedCall(dur(200),attackOnce,[],scene);}
+            }});
           tl.add({targets:falcon,y:targetY+10,duration:dur(80),yoyo:true});
           tl.add({targets:girl,y:girl.y+5,duration:dur(80),yoyo:true,
                    onStart:()=>{girl.setTint(0xff0000);sprinkleBursts(scene);},

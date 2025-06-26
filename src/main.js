@@ -2366,6 +2366,7 @@ function dogsBarkAtFalcon(){
     let finished=false;
     let falcon=null;
     let featherTrail=null;
+    let firstAttack=true;
     const startTrail = () => {
       if (featherTrail) {
         featherTrail.paused = false;
@@ -2425,7 +2426,7 @@ function dogsBarkAtFalcon(){
         const startY=Phaser.Math.Between(girl.y-120,girl.y-40);
         const fromX=falcon.x;
         const fromY=falcon.y;
-        startTrail();
+        if(firstAttack) startTrail();
         scene.tweens.addCounter({from:0,to:1,duration:dur(250),ease:'Sine.easeInOut',
           onUpdate:tw=>{
             const p=tw.getValue();
@@ -2433,7 +2434,7 @@ function dogsBarkAtFalcon(){
             falcon.y=Phaser.Math.Linear(fromY,startY,p)+Math.sin(p*Math.PI*4)*6;
           },
           onComplete:()=>{
-          scene.tweens.add({targets:falcon,x:targetX,y:targetY,duration:dur(350),ease:'Cubic.easeIn',onStart:startTrail,onComplete:()=>{
+          scene.tweens.add({targets:falcon,x:targetX,y:targetY,duration:dur(350),ease:'Cubic.easeIn',onStart:()=>{if(firstAttack) startTrail();},onComplete:()=>{
             blinkAngry(scene);
             GameState.girlHP=Math.max(0,GameState.girlHP-1);
             girlHpText.setText(GameState.girlHP);
@@ -2456,6 +2457,7 @@ function dogsBarkAtFalcon(){
           }
           tl.setCallback('onComplete', () => {
             stopTrail();
+            if(firstAttack) firstAttack=false;
             if(GameState.girlHP<=0){
               endAttack();
             } else {
@@ -2510,7 +2512,9 @@ function dogsBarkAtFalcon(){
     }
 
     function createDebrisEmoji(s, x, y){
-      return s.add.text(x,y,'🪶',{font:'24px sans-serif',fill:'#555'})
+      const ox=Phaser.Math.Between(-3,3);
+      const oy=Phaser.Math.Between(-3,3);
+      return s.add.text(x+ox,y+oy,'🪶',{font:'24px sans-serif',fill:'#5a381e'})
         .setOrigin(0.5).setDepth(21).setScale(0.5);
     }
   }

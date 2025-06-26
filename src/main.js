@@ -2397,7 +2397,18 @@ function dogsBarkAtFalcon(){
           .setOrigin(0.5)
           .setDepth(dog.depth+1)
           .setScale(Math.abs(dog.scaleX), Math.abs(dog.scaleY));
-        scene.tweens.add({targets:bark,y:'-=20',alpha:0,duration:dur(600),onComplete:()=>bark.destroy()});
+        GameState.activeBarks.push(bark);
+        scene.tweens.add({
+          targets:bark,
+          y:'-=20',
+          alpha:0,
+          duration:dur(600),
+          onComplete:()=>{
+            const idx=GameState.activeBarks.indexOf(bark);
+            if(idx!==-1) GameState.activeBarks.splice(idx,1);
+            bark.destroy();
+          }
+        });
           let loops=1;
           if(mood===CustomerState.GROWING) loops=1;
           if(mood===CustomerState.SPARKLING) loops=2;
@@ -2440,6 +2451,7 @@ function dogsBarkAtFalcon(){
     let falcon=null;
     let featherTrail=null;
     let firstAttack=true;
+    let attackTween=null;
     const startTrail = () => {
       if (featherTrail) {
         featherTrail.paused = false;
@@ -2513,7 +2525,25 @@ function dogsBarkAtFalcon(){
             falcon.y=Phaser.Math.Linear(fromY,startY,p)+Math.sin(p*Math.PI*4)*6;
           },
           onComplete:()=>{
-          scene.tweens.add({targets:falcon,x:targetX,y:targetY,duration:dur(350),ease:'Cubic.easeIn',onStart:()=>{/*if(firstAttack) startTrail();*/},onComplete:()=>{
+          attackTween = scene.tweens.add({
+            targets:falcon,
+            x:targetX,
+            y:targetY,
+            duration:dur(350),
+            ease:'Cubic.easeIn',
+            onStart:()=>{/*if(firstAttack) startTrail();*/},
+            onUpdate:()=>{
+              GameState.activeBarks.forEach(b=>{
+                if(Phaser.Math.Distance.Between(falcon.x,falcon.y,b.x,b.y)<20){
+                  const idx=GameState.activeBarks.indexOf(b);
+                  if(idx!==-1) GameState.activeBarks.splice(idx,1);
+                  b.destroy();
+                  if(attackTween){ attackTween.stop(); attackTween=null; }
+                  scene.time.delayedCall(dur(300), attackOnce, [], scene);
+                }
+              });
+            },
+            onComplete:()=>{
             blinkAngry(scene);
             GameState.girlHP=Math.max(0,GameState.girlHP-1);
             girlHpText.setText(GameState.girlHP);
@@ -2738,7 +2768,8 @@ function dogsBarkAtFalcon(){
       const ang = (Math.PI * 2 * i) / attackers.length;
       const r = 40;
       const tx = girl.x + Math.cos(ang) * r;
-      const ty = girl.y + Math.sin(ang) * r;
+      let ty = girl.y + Math.sin(ang) * r;
+      if(ty < DOG_MIN_Y) ty = DOG_MIN_Y;
       const arrive = () => {
         if(!firstArrived){
           firstArrived = true;
@@ -2766,14 +2797,28 @@ function dogsBarkAtFalcon(){
         if(finished) return;
         const ang2 = Phaser.Math.FloatBetween(0, Math.PI*2);
         const dx = girl.x + Math.cos(ang2)*r;
-        const dy = girl.y + Math.sin(ang2)*r;
+        let dy = girl.y + Math.sin(ang2)*r;
+        if(dy < DOG_MIN_Y) dy = DOG_MIN_Y;
         scene.tweens.add({
           targets:dog,
           x:dx,
           y:dy,
           duration:dur(600),
           onUpdate:()=>{ const s=scaleForY(dog.y)*0.5; dog.setScale(s*(dog.dir||1),s); if(dog.heartEmoji) dog.heartEmoji.setPosition(dog.x,dog.y).setScale(scaleForY(dog.y)*0.8).setDepth(dog.depth); },
-          onComplete:()=>{ dogRefuseJumpBark.call(scene,dog,false); scene.time.delayedCall(dur(200), harass, [], scene); }
+          onComplete:()=>{ 
+            const bark=dogRefuseJumpBark.call(scene,dog,false);
+            if(bark){
+              GameState.activeBarks.push(bark);
+              scene.tweens.add({
+                targets:bark,
+                y:'-=20',
+                alpha:0,
+                duration:dur(600),
+                onComplete:()=>{ const idx=GameState.activeBarks.indexOf(bark); if(idx!==-1) GameState.activeBarks.splice(idx,1); bark.destroy(); }
+              });
+            }
+            scene.time.delayedCall(dur(200), harass, [], scene);
+          }
         });
       };
       scene.tweens.add({

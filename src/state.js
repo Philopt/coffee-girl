@@ -31,6 +31,7 @@ export const GameState = {
   ,carryPortrait: null
   ,lastEndKey: null
   ,phoneContainer: null
+  ,activeBarks: []
 };
 
 export const floatingEmojis = [];

@@ -1610,7 +1610,12 @@ export function setupGame(){
             }
           },
           onComplete:owner.exitHandler});
-        sendDogOffscreen.call(this,current.sprite,current.exitX,current.exitY);
+        if(current.followEvent) current.followEvent.remove(false);
+        current.followEvent = this.time.addEvent({
+          delay: dur(Phaser.Math.Between(800, 1200)),
+          loop: true,
+          callback: () => { if (typeof updateDog === 'function') updateDog.call(this, owner); }
+        });
         return;
       }
 

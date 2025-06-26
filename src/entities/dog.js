@@ -81,25 +81,57 @@ export function animateDogGrowth(scene, dog, cb) {
 
 export function animateDogPowerUp(scene, dog, cb){
   if(!scene || !dog){ if(cb) cb(); return; }
+<<<<<<< cslxqc-codex/add-pup-cup-animation-and-growth-effect
   const heart = dog.heartEmoji;
   if (heart && heart.setVisible) {
     heart.setVisible(false);
     if (heart.setAlpha) heart.setAlpha(0);
   }
+=======
+  dog.hideHeart = true;
+  if(dog.heartEmoji && dog.heartEmoji.scene){
+    dog.heartEmoji.setVisible(false);
+  }
+
+  const sparkle = scene.add.text(dog.x, dog.y - dog.displayHeight * 0.5,
+                                 '✨', {font:'24px sans-serif'})
+    .setOrigin(0.5)
+    .setDepth(dog.depth + 1)
+    .setScale(scaleForY(dog.y))
+    .setShadow(0,0,'#000',4);
+  scene.tweens.add({
+    targets: sparkle,
+    y: '-=10',
+    alpha: 0,
+    duration: dur(80),
+    yoyo: true,
+    repeat: 5,
+    onUpdate: () => {
+      sparkle.setPosition(dog.x, dog.y - dog.displayHeight * 0.5)
+             .setDepth(dog.depth + 1)
+             .setScale(scaleForY(dog.y));
+    },
+    onComplete: () => sparkle.destroy()
+  });
+
+>>>>>>> main
   const tl = scene.tweens.createTimeline();
   const originalTint = dog.tintTopLeft || 0xffffff;
   const colors = [0xffff66, 0xff66ff, 0x66ffff, 0xffffff];
-  colors.forEach(color => {
-    tl.add({
-      targets: dog,
-      alpha: 0,
-      duration: dur(60),
-      onStart: () => dog.setTint(color)
+  for(let j=0;j<3;j++){
+    colors.forEach(color => {
+      tl.add({
+        targets: dog,
+        alpha: 0,
+        duration: dur(60),
+        onStart: () => dog.setTint(color)
+      });
+      tl.add({ targets: dog, alpha: 1, duration: dur(60) });
     });
-    tl.add({ targets: dog, alpha: 1, duration: dur(60) });
-  });
+  }
   tl.setCallback('onComplete', () => {
     dog.setTint(originalTint);
+<<<<<<< cslxqc-codex/add-pup-cup-animation-and-growth-effect
     animateDogGrowth(scene, dog, () => {
       if (heart && heart.setVisible) {
         heart.setVisible(true);
@@ -107,6 +139,13 @@ export function animateDogPowerUp(scene, dog, cb){
       }
       if (cb) cb();
     });
+=======
+    dog.hideHeart = false;
+    if(dog.heartEmoji && dog.heartEmoji.scene){
+      dog.heartEmoji.setVisible(true);
+    }
+    animateDogGrowth(scene, dog, cb);
+>>>>>>> main
   });
   tl.play();
 }

@@ -2211,6 +2211,7 @@ export function setupGame(){
   function startHpBlink(scene, sprite, getHp, maxHp){
     if(!scene || !sprite) return null;
     const cycle = 500;
+    const minDur = 100; // ensure flashes are visible even at high HP
     return scene.time.addEvent({
       delay: dur(cycle),
       loop: true,
@@ -2221,8 +2222,8 @@ export function setupGame(){
           sprite.clearTint();
           return;
         }
-        const tintDur = dur(cycle * frac);
-        sprite.setTint(0xff0000);
+        const tintDur = dur(Math.max(minDur, cycle * frac));
+        sprite.setTintFill(0xff0000);
         scene.time.delayedCall(tintDur, () => { if(sprite) sprite.clearTint(); }, [], scene);
       }
     });

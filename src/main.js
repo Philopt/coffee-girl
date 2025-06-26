@@ -91,7 +91,7 @@ export function setupGame(){
       callback:()=>{
         obj.setColor(on?color:'#fff');
         if(isLove && !up){
-          obj.setText((on?'💔':'❤️')+' '+GameState.love);
+          obj.setText(String(GameState.love));
         }
         on=!on;
       }
@@ -99,7 +99,7 @@ export function setupGame(){
     scene.time.delayedCall(dur(flashDelay)*(flashes+1)+dur(10),()=>{
       obj.setColor('#fff');
       if(isLove && !up){
-        obj.setText('❤️ '+GameState.love);
+        obj.setText(String(GameState.love));
         // removed wobble animation for the love counter
       }
     },[],scene);
@@ -360,7 +360,7 @@ export function setupGame(){
 
 
 
-  let moneyText, loveText, queueLevelText;
+  let moneyText, loveText, heartHUD, queueLevelText;
   let dialogBg, dialogText, dialogCoins,
       dialogPriceLabel, dialogPriceValue, dialogPriceBox,
       dialogDrinkEmoji, dialogPriceContainer, dialogPriceTicket, dialogPupCup,
@@ -517,7 +517,17 @@ export function setupGame(){
 
     // HUD
     moneyText=this.add.text(20,20,'🪙 '+receipt(GameState.money),{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
-    loveText=this.add.text(20,50,'❤️ '+GameState.love,{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
+    heartHUD=this.add.image(this.scale.width-20,20,'heartHUD')
+      .setOrigin(1,0)
+      .setScale(0.35)
+      .setDepth(1);
+    loveText=this.add.text(0,0,GameState.love,{font:'26px sans-serif',fill:'#fff'})
+      .setOrigin(0.5)
+      .setDepth(2);
+    loveText.setPosition(
+      heartHUD.x - heartHUD.displayWidth/2,
+      heartHUD.y + heartHUD.displayHeight*0.75
+    );
     moneyText.setInteractive({ useHandCursor:true });
     loveText.setInteractive({ useHandCursor:true });
     moneyText.on('pointerdown',()=>{
@@ -527,7 +537,7 @@ export function setupGame(){
     });
     loveText.on('pointerdown',()=>{
       GameState.love += 10;
-      loveText.setText('❤️ '+GameState.love);
+      loveText.setText(GameState.love);
       updateLevelDisplay();
       animateStatChange(loveText, this, 1, true);
     });
@@ -2102,8 +2112,8 @@ export function setupGame(){
     const sx = startX !== null ? startX : sprite.x;
     const sy = startY !== null ? startY : sprite.y;
 
-    const destX = () => loveText.x + loveText.width + 6;
-    const destY = () => loveText.y + loveText.height;
+    const destX = () => loveText.x;
+    const destY = () => loveText.y;
 
     const showFace = () => isPos ? HAPPY_FACE_EMOJIS[Phaser.Math.Between(0, HAPPY_FACE_EMOJIS.length-1)]
                                 : UPSET_EMOJIS[Phaser.Math.Between(0, UPSET_EMOJIS.length-1)];
@@ -2142,7 +2152,7 @@ export function setupGame(){
           duration:dur(200),
           onComplete:()=>{
             GameState.love += isPos?1:-1;
-            loveText.setText('❤️ '+GameState.love);
+            loveText.setText(String(GameState.love));
             updateLevelDisplay();
             animateStatChange(loveText, this, isPos?1:-1, true);
           }
@@ -2167,8 +2177,8 @@ export function setupGame(){
   function animateBarkPenalty(dog, count, cb){
     const sprite = dog;
     if(!sprite || count<=0){ if(cb) cb(); return; }
-    const destX = () => loveText.x + loveText.width + 6;
-    const destY = () => loveText.y + loveText.height;
+    const destX = () => loveText.x;
+    const destY = () => loveText.y;
     const doOne = (idx) => {
       if(idx >= count){ if(cb) cb(); return; }
       const bark = dogRefuseJumpBark.call(this, sprite, idx===0);
@@ -2200,7 +2210,7 @@ export function setupGame(){
           onComplete: () => {
             bark.destroy();
             GameState.love -= 1;
-            loveText.setText('❤️ ' + GameState.love);
+            loveText.setText(String(GameState.love));
             updateLevelDisplay();
             animateStatChange(loveText, this, -1, true);
             this.time.delayedCall(dur(80), () => doOne(idx+1), [], this);
@@ -3046,7 +3056,7 @@ function dogsBarkAtFalcon(){
     }
     GameState.money=10.00; GameState.love=3;
     moneyText.setText('🪙 '+receipt(GameState.money));
-    loveText.setText('❤️ '+GameState.love);
+    loveText.setText(String(GameState.love));
     updateLevelDisplay();
     if(GameState.activeCustomer){
       if(GameState.activeCustomer.heartEmoji){ GameState.activeCustomer.heartEmoji.destroy(); GameState.activeCustomer.heartEmoji=null; }

@@ -305,6 +305,7 @@ export function updateDog(owner) {
 export function sendDogOffscreen(dog, x, y) {
   if (!dog) return;
   if (dog.followEvent) dog.followEvent.remove(false);
+  dog.dogCustomer = null;
   const dist = Phaser.Math.Distance.Between(dog.x, dog.y, x, y);
   if (Math.abs(x - dog.x) > 3) {
     dog.dir = x > dog.x ? 1 : -1;
@@ -356,6 +357,9 @@ export function cleanupDogs(scene){
     const targetX = dir===1 ? 520 : -40;
     sendDogOffscreen.call(scene, dog, targetX, dog.y);
     gs.activeCustomer.dog = null;
+    if (gs.activeCustomer.dogCustomer) {
+      gs.activeCustomer.dogCustomer = null;
+    }
   }
   [gs.queue, gs.wanderers].forEach(arr => {
     if(Array.isArray(arr)){
@@ -367,6 +371,9 @@ export function cleanupDogs(scene){
           const targetX = dir===1 ? 520 : -40;
           sendDogOffscreen.call(scene, dog, targetX, dog.y);
           c.dog = null;
+          if (c.dogCustomer) {
+            c.dogCustomer = null;
+          }
         }
       });
     }

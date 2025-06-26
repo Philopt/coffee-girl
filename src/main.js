@@ -2582,6 +2582,28 @@ function dogsBarkAtFalcon(){
       gather([GameState.activeCustomer]);
     }
 
+    const spawnReinforcements = () => {
+      const present = new Set(attackers.map(a => a.texture && a.texture.key));
+      Object.entries(GameState.customerMemory).forEach(([key, mem]) => {
+        if (mem && mem.state === CustomerState.BROKEN && !present.has(key)) {
+          const side = Phaser.Math.Between(0, 2);
+          let sx, sy;
+          if (side === 2) {
+            sx = Phaser.Math.Between(40, 440);
+            sy = scene.scale.height + 40;
+          } else {
+            sx = side === 0 ? -40 : 520;
+            sy = Phaser.Math.Between(gatherStartY, WANDER_BOTTOM);
+          }
+          const s = scene.add.sprite(sx, sy, key)
+            .setDepth(20)
+            .setScale(scaleForY(sy));
+          attackers.push(s);
+        }
+      });
+    };
+    spawnReinforcements();
+
 
 
     const loops=new Map();

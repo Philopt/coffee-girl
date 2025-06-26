@@ -83,17 +83,21 @@ function playOpening(scene){
   });
 
   // Shift the landing position slightly so the 2 settles a bit further
-  // to the right and lower on the title card.
-  const finalX =
+  // to the right and lower on the title card. Round the coordinates to
+  // avoid fractional positions that sometimes caused the sprite to land
+  // inconsistently relative to the phone container.
+  const finalX = Math.round(
     openingTitle.x +
     openingTitle.displayWidth / 2 -
     openingNumber.displayWidth / 2 +
-    25; // shift 15px further right
-  const finalY =
+    25
+  ); // shift further right
+  const finalY = Math.round(
     openingTitle.y +
     openingTitle.displayHeight / 2 -
     openingNumber.displayHeight / 2 +
-    10;
+    10
+  );
 
   const spawnThrust = (scale=2) => {
     const ang = Phaser.Math.DegToRad(Phaser.Math.Between(240, 300));

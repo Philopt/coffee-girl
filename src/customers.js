@@ -26,6 +26,8 @@ export const MENU = [
 
 export const SPAWN_DELAY = 2000;
 export const SPAWN_VARIANCE = 1500;
+// Minimum time (ms) before the same customer can appear again
+export const RESPAWN_COOLDOWN = 8000;
 export const QUEUE_SPACING = 36;
 export const ORDER_X = 230;
 export const ORDER_Y = 315;

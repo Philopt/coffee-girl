@@ -1,6 +1,6 @@
 import { debugLog, DEBUG } from './debug.js';
 import { dur, scaleForY, articleFor, flashMoney, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_Y, DIALOG_Y } from "./ui.js";
-import { ORDER_X, ORDER_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel, queueLimit } from "./customers.js";
+import { ORDER_X, ORDER_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel, queueLimit, RESPAWN_COOLDOWN } from "./customers.js";
 import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer, startDogWaitTimer, checkQueueSpacing } from './entities/customerQueue.js';
 import { baseConfig } from "./scene.js";
 import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from "./state.js";
@@ -1519,6 +1519,10 @@ export function setupGame(){
         }
         current.heartEmoji = null;
         const winSpriteKey = current.sprite.texture ? current.sprite.texture.key : current.spriteKey;
+        const mem = current.memory;
+        if (mem) {
+          mem.cooldownUntil = (this.time ? this.time.now : Date.now()) + RESPAWN_COOLDOWN;
+        }
         current.sprite.destroy();
         if(GameState.money<=0){
           showFalconAttack.call(this,()=>{

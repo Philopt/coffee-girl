@@ -96,9 +96,9 @@ export function animateDogPowerUp(scene, dog, cb){
     targets: sparkle,
     y: '-=10',
     alpha: 0,
-    duration: dur(80),
+    duration: dur(100),
     yoyo: true,
-    repeat: 5,
+    repeat: 4,
     onUpdate: () => {
       sparkle.setPosition(dog.x, dog.y - dog.displayHeight * 0.5)
              .setDepth(dog.depth + 1)
@@ -110,7 +110,7 @@ export function animateDogPowerUp(scene, dog, cb){
   const tl = scene.tweens.createTimeline();
   const originalTint = dog.tintTopLeft || 0xffffff;
   const colors = [0xffff66, 0xff66ff, 0x66ffff, 0xffffff];
-  for(let j=0;j<3;j++){
+  for(let j=0;j<2;j++){
     colors.forEach(color => {
       tl.add({
         targets: dog,
@@ -123,11 +123,13 @@ export function animateDogPowerUp(scene, dog, cb){
   }
   tl.setCallback('onComplete', () => {
     dog.setTint(originalTint);
-    dog.hideHeart = false;
-    if(dog.heartEmoji && dog.heartEmoji.scene){
-      dog.heartEmoji.setVisible(true);
-    }
-    animateDogGrowth(scene, dog, cb);
+    animateDogGrowth(scene, dog, () => {
+      dog.hideHeart = false;
+      if(dog.heartEmoji && dog.heartEmoji.scene){
+        dog.heartEmoji.setVisible(true);
+      }
+      if(cb) cb();
+    });
   });
   tl.play();
 }

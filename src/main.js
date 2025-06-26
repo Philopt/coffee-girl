@@ -519,7 +519,6 @@ export function setupGame(){
     moneyText=this.add.text(20,20,'🪙 '+receipt(GameState.money),{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
     heartHUD=this.add.image(this.scale.width-20,20,'heartHUD')
       .setOrigin(1,0)
-      .setScale(0.35)
       .setDepth(1);
     loveText=this.add.text(0,0,GameState.love,{font:'26px sans-serif',fill:'#fff'})
       .setOrigin(0.5)

@@ -2170,6 +2170,26 @@ export function setupGame(){
     doOne(0);
   }
 
+  function startHpBlink(scene, sprite, getHp, maxHp){
+    if(!scene || !sprite) return null;
+    const cycle = 500;
+    return scene.time.addEvent({
+      delay: dur(cycle),
+      loop: true,
+      callback: () => {
+        const hp = typeof getHp === 'function' ? getHp() : maxHp;
+        const frac = Phaser.Math.Clamp(1 - hp / maxHp, 0, 1);
+        if(frac <= 0){
+          sprite.clearTint();
+          return;
+        }
+        const tintDur = dur(cycle * frac);
+        sprite.setTint(0xff0000);
+        scene.time.delayedCall(tintDur, () => { if(sprite) sprite.clearTint(); }, [], scene);
+      }
+    });
+  }
+
   function showFalconAttack(cb){
     if (GameState.falconActive) return;
     const scene=this;
@@ -2390,6 +2410,10 @@ function dogsBarkAtFalcon(){
       if(featherTrail){ featherTrail.remove(false); featherTrail=null; }
       cleanupDogs(scene);
       GameState.falconActive = false;
+      if(falconBlinkEvent){ falconBlinkEvent.remove(false); falconBlinkEvent=null; }
+      if(girlBlinkEvent){ girlBlinkEvent.remove(false); girlBlinkEvent=null; }
+      if(falcon) falcon.clearTint();
+      if(girl) girl.clearTint();
       if(falcon) falcon.destroy();
       scene.events.off('update', updateHpPos);
       girlHpText.destroy();
@@ -2405,6 +2429,8 @@ function dogsBarkAtFalcon(){
       {font:'20px sans-serif',fill:'#fff'}).setOrigin(0.5).setDepth(21);
     const falconHpText = scene.add.text(falcon.x, falcon.y-60, GameState.falconHP,
       {font:'20px sans-serif',fill:'#fff'}).setOrigin(0.5).setDepth(21);
+    let girlBlinkEvent = startHpBlink(scene, girl, () => GameState.girlHP, 5);
+    let falconBlinkEvent = startHpBlink(scene, falcon, () => GameState.falconHP, 10);
     const updateHpPos = () => {
       girlHpText.setPosition(girl.x, girl.y-60);
       falconHpText.setPosition(falcon.x, falcon.y-60);

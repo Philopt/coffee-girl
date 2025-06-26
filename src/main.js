@@ -2342,14 +2342,16 @@ function dogsBarkAtFalcon(){
           const s=scaleForY(dog.y)*0.5;
           dog.setScale(s*(dog.dir||1), s);
         });
-          dTl.setCallback('onComplete',()=>{
-            dog.setFrame(1);
-            const dmgPer= (dog.scaleFactor||dog.baseScaleFactor||0.6) > (dog.baseScaleFactor||0.6) ? 1.5 : 1;
-            const total = loops * dmgPer;
-            GameState.falconHP=Math.max(0,GameState.falconHP-total);
-            falconHpText.setText(GameState.falconHP);
-            if(GameState.falconHP<=0){ endAttack(); }
-          });
+        dTl.setCallback('onComplete',()=>{
+          dog.setFrame(1);
+          const dmgPer= (dog.scaleFactor||dog.baseScaleFactor||0.6) > (dog.baseScaleFactor||0.6) ? 1.5 : 1;
+          const total = loops * dmgPer;
+          GameState.falconHP=Math.max(0,GameState.falconHP-total);
+          falconHpText.setText(GameState.falconHP);
+          burstFeathers(scene, falcon.x, falcon.y, total);
+          blinkFalcon();
+          if(GameState.falconHP<=0){ endAttack(); }
+        });
         if(dog.anims && dog.play){ dog.play('dog_walk'); }
         dTl.play();
       });
@@ -2360,6 +2362,20 @@ function dogsBarkAtFalcon(){
     let finished=false;
     let falcon=null;
     let featherTrail=null;
+    const startTrail = () => {
+      if (featherTrail) {
+        featherTrail.paused = false;
+        return;
+      }
+      featherTrail = scene.time.addEvent({
+        delay: dur(120),
+        loop: true,
+        callback: () => burstFeathers(scene, falcon.x, falcon.y, 1)
+      });
+    };
+    const stopTrail = () => {
+      if (featherTrail) featherTrail.paused = true;
+    };
     const endAttack=()=>{
       if(finished) return;
       finished=true;
@@ -2399,17 +2415,13 @@ function dogsBarkAtFalcon(){
         callback: dogsBarkAtFalcon,
         callbackScope: scene
       });
-      featherTrail = scene.time.addEvent({
-        delay: dur(240),
-        loop: true,
-        callback: () => burstFeathers(scene, falcon.x, falcon.y, 1)
-      });
     panicCustomers();
       const attackOnce=()=>{
         const startX=Math.random()<0.5?girl.x-120:girl.x+120;
-        const startY=Phaser.Math.Between(girl.y-60,girl.y-40);
+        const startY=Phaser.Math.Between(girl.y-120,girl.y-40);
         const fromX=falcon.x;
         const fromY=falcon.y;
+        startTrail();
         scene.tweens.addCounter({from:0,to:1,duration:dur(250),ease:'Sine.easeInOut',
           onUpdate:tw=>{
             const p=tw.getValue();
@@ -2417,12 +2429,12 @@ function dogsBarkAtFalcon(){
             falcon.y=Phaser.Math.Linear(fromY,startY,p)+Math.sin(p*Math.PI*4)*6;
           },
           onComplete:()=>{
-          scene.tweens.add({targets:falcon,x:targetX,y:targetY,duration:dur(350),ease:'Cubic.easeIn',onComplete:()=>{
+          scene.tweens.add({targets:falcon,x:targetX,y:targetY,duration:dur(350),ease:'Cubic.easeIn',onStart:startTrail,onComplete:()=>{
             blinkAngry(scene);
             GameState.girlHP=Math.max(0,GameState.girlHP-1);
             girlHpText.setText(GameState.girlHP);
             const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
-              if(GameState.girlHP<=0){endAttack();} else {scene.time.delayedCall(dur(200),attackOnce,[],scene);}
+              if(GameState.girlHP<=0){endAttack();} else {scene.time.delayedCall(dur(50),attackOnce,[],scene);}
             }});
           tl.add({targets:falcon,y:targetY+10,duration:dur(80),yoyo:true});
           tl.add({targets:girl,y:girl.y+5,duration:dur(80),yoyo:true,
@@ -2440,6 +2452,7 @@ function dogsBarkAtFalcon(){
                     onComplete:()=>debris.destroy()},'<');
             scene.time.delayedCall(dur(450),()=>debris.destroy(),[],scene);
           }
+          tl.setCallback('onComplete', () => stopTrail());
           tl.play();
         }});
       }});
@@ -2452,6 +2465,14 @@ function dogsBarkAtFalcon(){
         onYoyo:()=>girl.setTint(0xff0000),
         onRepeat:()=>girl.clearTint(),
         onComplete:()=>girl.clearTint()});
+    }
+
+    function blinkFalcon(){
+      scene.tweens.add({targets:falcon,duration:dur(100),repeat:2,yoyo:true,
+        onStart:()=>falcon.setTint(0xff0000),
+        onYoyo:()=>falcon.setTint(0xff0000),
+        onRepeat:()=>falcon.clearTint(),
+        onComplete:()=>falcon.clearTint()});
     }
 
     function sprinkleBursts(s){

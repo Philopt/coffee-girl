@@ -2691,17 +2691,15 @@ function dogsBarkAtFalcon(){
       .setDepth(21);
     const btn=this.add.text(240,560,'Try Again',{font:'20px sans-serif',fill:'#fff',backgroundColor:'#006400',padding:{x:14,y:8}})
       .setOrigin(0.5)
-      .setDepth(22);
-    const againZone=this.add.zone(240,560,btn.width,btn.height).setOrigin(0.5);
-    againZone.setInteractive({ useHandCursor:true });
-    againZone.on('pointerdown',()=>{
+      .setDepth(22)
+      .setInteractive({ useHandCursor:true });
+    btn.on('pointerdown',()=>{
         lover.destroy();
         bigGirl.destroy();
         txt.destroy();
         btn.destroy();
         if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
         restartGame.call(this);
-        againZone.destroy();
       });
     GameState.gameOver=true;
   }
@@ -2749,14 +2747,13 @@ function dogsBarkAtFalcon(){
     const btn = this.add.text(240,550,'Try Again',{font:'20px sans-serif',fill:'#000',backgroundColor:'#ffffff',padding:{x:14,y:8}})
       .setOrigin(0.5)
       .setDepth(22)
-      .setAlpha(0);
-    const againZone = this.add.zone(240,550,btn.displayWidth,btn.displayHeight).setOrigin(0.5);
+      .setAlpha(0)
+      .setInteractive({ useHandCursor:true });
 
     const showBtnDelay = dur(2400) + dur(600) + 1000;
     this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
-    againZone.setInteractive({ useHandCursor:true });
-    againZone.on('pointerdown',()=>{
-        againZone.disableInteractive();
+    btn.on('pointerdown',()=>{
+        btn.disableInteractive();
         const key = img ? img.texture.key : null;
         if(key){
           GameState.lastEndKey = key;
@@ -2787,7 +2784,6 @@ function dogsBarkAtFalcon(){
             btn.destroy();
             if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
             restartGame.call(this, overlayG);
-            againZone.destroy();
           }
         });
       });
@@ -2837,15 +2833,14 @@ function dogsBarkAtFalcon(){
     const btn = this.add.text(240,550,'Try Again',{font:'20px sans-serif',fill:'#000',backgroundColor:'#ffffff',padding:{x:14,y:8}})
       .setOrigin(0.5)
       .setDepth(22)
-      .setAlpha(0);
-    const againZone = this.add.zone(240,550,btn.displayWidth,btn.displayHeight).setOrigin(0.5);
+      .setAlpha(0)
+      .setInteractive({ useHandCursor:true });
 
     const showBtnDelay = dur(2400) + dur(600) + 1000;
     this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
-    againZone.setInteractive({ useHandCursor:true });
 
-    againZone.on('pointerdown',()=>{
-        againZone.disableInteractive();
+    btn.on('pointerdown',()=>{
+        btn.disableInteractive();
         const key = img ? img.texture.key : null;
         if(key){
           GameState.lastEndKey = key;
@@ -2876,7 +2871,6 @@ function dogsBarkAtFalcon(){
             btn.destroy();
             if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
             restartGame.call(this, overlayG);
-            againZone.destroy();
           }
         });
       });
@@ -2924,11 +2918,10 @@ function dogsBarkAtFalcon(){
     const txt=this.add.text(240,offset,lines.slice(startIdx).join('\n'),{font:'24px sans-serif',fill:'#000',align:'center',wordWrap:{width:440}})
       .setOrigin(0.5).setDepth(21);
     const btn=this.add.text(240,bgY+80,'Try Again',{font:'20px sans-serif',fill:'#000',backgroundColor:'#ffffff',padding:{x:14,y:8}})
-      .setOrigin(0.5).setDepth(22);
-    const againZone=this.add.zone(240,bgY+80,btn.displayWidth,btn.displayHeight).setOrigin(0.5);
-    againZone.setInteractive({ useHandCursor:true });
-    againZone.on('pointerdown',()=>{
-        againZone.disableInteractive();
+      .setOrigin(0.5).setDepth(22)
+      .setInteractive({ useHandCursor:true });
+    btn.on('pointerdown',()=>{
+        btn.disableInteractive();
         const key = img ? img.texture.key : null;
         if(key){
           GameState.lastEndKey = key;
@@ -2949,7 +2942,6 @@ function dogsBarkAtFalcon(){
           bg.destroy(); txt.destroy(); btn.destroy(); if(titleText) titleText.destroy();
           if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
           restartGame.call(this, overlayG);
-          againZone.destroy();
         }});
       });
     GameState.gameOver=true;

@@ -201,7 +201,7 @@ export function moveQueueForward() {
   // or the lead customer is no longer moving toward the counter.
   if (GameState.orderInProgress && !GameState.saleInProgress) {
     const lead = GameState.queue[0];
-    if (!lead || !GameState.queue.includes(GameState.activeCustomer)) {
+    if (!lead || GameState.activeCustomer !== lead) {
       GameState.orderInProgress = false;
     } else if (lead.walkTween && !lead.walkTween.isPlaying &&
                (lead.sprite.x !== ORDER_X || lead.sprite.y !== ORDER_Y)) {
@@ -276,8 +276,11 @@ export function checkQueueSpacing(scene) {
     }
     return;
   }
-  if (GameState.orderInProgress && !GameState.saleInProgress && (!GameState.activeCustomer || !GameState.queue.includes(GameState.activeCustomer))) {
-    GameState.orderInProgress = false;
+  if (GameState.orderInProgress && !GameState.saleInProgress) {
+    const lead = GameState.queue[0];
+    if (!lead || GameState.activeCustomer !== lead) {
+      GameState.orderInProgress = false;
+    }
   }
   const busy = GameState.orderInProgress || GameState.saleInProgress;
   GameState.queue.forEach((cust, idx) => {

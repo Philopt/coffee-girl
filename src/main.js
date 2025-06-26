@@ -1194,6 +1194,7 @@ export function setupGame(){
           tl.add({ targets: dialogDrinkEmoji, scale: 0, duration: dur(150), ease:'Cubic.easeIn' });
           tl.add({ targets: dialogDrinkEmoji, alpha:0, duration: dur(80) });
           tl.setCallback('onComplete', () => {
+            if (dialogDrinkEmoji.setVisible) dialogDrinkEmoji.setVisible(false);
             animateDogPowerUp(this, target, react);
           });
           tl.play();

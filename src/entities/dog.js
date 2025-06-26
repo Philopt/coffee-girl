@@ -45,13 +45,13 @@ export function animateDogGrowth(scene, dog, cb) {
   const arrow = scene.add.text(dog.x, dog.y - dog.displayHeight,
                               '⬆️', {font:'24px sans-serif'})
     .setOrigin(0.5)
-    .setDepth(dog.depth + 1)
-    .setScale(scaleForY(dog.y))
+    .setDepth(dog.depth + 2)
+    .setScale(scaleForY(dog.y) * 1.5)
     .setShadow(0,0,'#000',4);
   const updateArrow = () => {
     arrow.setPosition(dog.x, dog.y - dog.displayHeight)
-         .setScale(scaleForY(dog.y))
-         .setDepth(dog.depth + 1);
+         .setScale(scaleForY(dog.y) * 1.5)
+         .setDepth(dog.depth + 2);
   };
   for (let i = 0; i < 3; i++) {
     tl.add({
@@ -81,6 +81,13 @@ export function animateDogGrowth(scene, dog, cb) {
 
 export function animateDogPowerUp(scene, dog, cb){
   if(!scene || !dog){ if(cb) cb(); return; }
+<<<<<<< cslxqc-codex/add-pup-cup-animation-and-growth-effect
+  const heart = dog.heartEmoji;
+  if (heart && heart.setVisible) {
+    heart.setVisible(false);
+    if (heart.setAlpha) heart.setAlpha(0);
+  }
+=======
   dog.hideHeart = true;
   if(dog.heartEmoji && dog.heartEmoji.scene){
     dog.heartEmoji.setVisible(false);
@@ -107,6 +114,7 @@ export function animateDogPowerUp(scene, dog, cb){
     onComplete: () => sparkle.destroy()
   });
 
+>>>>>>> main
   const tl = scene.tweens.createTimeline();
   const originalTint = dog.tintTopLeft || 0xffffff;
   const colors = [0xffff66, 0xff66ff, 0x66ffff, 0xffffff];
@@ -123,11 +131,21 @@ export function animateDogPowerUp(scene, dog, cb){
   }
   tl.setCallback('onComplete', () => {
     dog.setTint(originalTint);
+<<<<<<< cslxqc-codex/add-pup-cup-animation-and-growth-effect
+    animateDogGrowth(scene, dog, () => {
+      if (heart && heart.setVisible) {
+        heart.setVisible(true);
+        if (heart.setAlpha) heart.setAlpha(1);
+      }
+      if (cb) cb();
+    });
+=======
     dog.hideHeart = false;
     if(dog.heartEmoji && dog.heartEmoji.scene){
       dog.heartEmoji.setVisible(true);
     }
     animateDogGrowth(scene, dog, cb);
+>>>>>>> main
   });
   tl.play();
 }

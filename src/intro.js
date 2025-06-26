@@ -243,11 +243,18 @@ function showStartScreen(scene){
     const grayKey = `${key}_gray`;
     if(!scene.textures.exists(grayKey)) createGrayscaleTexture(scene, key, grayKey);
     const slot = badgeSlots[key] || { x: iconStartX + idx*36, y: offsetY + bh/2 + 20 };
-    const icon = scene.add.image(slot.x, slot.y, grayKey)
-      .setScale(badgeScale)
+    const iconImg = scene.add.image(0, 0, grayKey)
+      .setScale(badgeScale);
+    const container = scene.add.container(slot.x, slot.y, [iconImg])
       .setDepth(16);
-    phoneContainer.add(icon);
-    badgeIcons.push(icon);
+    if(GameState.badgeCounts[key] > 1){
+      const txt = scene.add.text(0, 0, String(GameState.badgeCounts[key]), {
+        font: '16px sans-serif', fill: '#fff'
+      }).setOrigin(0.5);
+      container.add(txt);
+    }
+    phoneContainer.add(container);
+    badgeIcons.push(container);
   });
 
   if(GameState.carryPortrait && GameState.lastEndKey){

@@ -2433,9 +2433,7 @@ function dogsBarkAtFalcon(){
             blinkAngry(scene);
             GameState.girlHP=Math.max(0,GameState.girlHP-1);
             girlHpText.setText(GameState.girlHP);
-            const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
-              if(GameState.girlHP<=0){endAttack();} else {scene.time.delayedCall(dur(50),attackOnce,[],scene);}
-            }});
+            const tl=scene.tweens.createTimeline({callbackScope:scene});
           tl.add({targets:falcon,y:targetY+10,duration:dur(80),yoyo:true});
           tl.add({targets:girl,y:girl.y+5,duration:dur(80),yoyo:true,
                    onStart:()=>{girl.setTint(0xff0000);sprinkleBursts(scene);},
@@ -2452,7 +2450,14 @@ function dogsBarkAtFalcon(){
                     onComplete:()=>debris.destroy()},'<');
             scene.time.delayedCall(dur(450),()=>debris.destroy(),[],scene);
           }
-          tl.setCallback('onComplete', () => stopTrail());
+          tl.setCallback('onComplete', () => {
+            stopTrail();
+            if(GameState.girlHP<=0){
+              endAttack();
+            } else {
+              scene.time.delayedCall(dur(50),attackOnce,[],scene);
+            }
+          });
           tl.play();
         }});
       }});

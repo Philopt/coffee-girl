@@ -869,6 +869,10 @@ export function setupGame(){
     GameState.activeCustomer=GameState.queue[0]||null;
     if(!GameState.activeCustomer) return;
     const c=GameState.activeCustomer;
+    if(c.isDog && c.owner && c.owner.dogWaitEvent){
+      c.owner.dogWaitEvent.remove(false);
+      c.owner.dogWaitEvent=null;
+    }
     if(!c.isDog && c.dog && c.dog.followEvent){
       const dist = Phaser.Math.Distance.Between(c.dog.x, c.dog.y,
                                                 c.sprite.x, c.sprite.y);

@@ -1441,7 +1441,7 @@ export function setupGame(){
       const ticket = typeof dialogPriceContainer!=='undefined' ? dialogPriceContainer : null;
       if(this.tweens && (bubbleObjs.length || ticket)){
         if(type==='refuse'){
-          if(dialogBg.setTint) dialogBg.setTint(0xff0000);
+          if(dialogBg.setTint) dialogBg.setTintFill(0xff0000);
           if(dialogText.setColor) dialogText.setColor('#f00');
           if(dialogCoins.setColor) dialogCoins.setColor('#f00');
           if(ticket){
@@ -2180,8 +2180,8 @@ export function setupGame(){
         duration: dur(80),
         repeat: 2,
         yoyo: true,
-        onStart: () => bark.setTint(0xff0000),
-        onYoyo: () => bark.setTint(0xff0000),
+        onStart: () => bark.setTintFill(0xff0000),
+        onYoyo: () => bark.setTintFill(0xff0000),
         onRepeat: () => bark.clearTint(),
         onComplete: () => bark.clearTint()
       });
@@ -2506,8 +2506,8 @@ function dogsBarkAtFalcon(){
             const tl=scene.tweens.createTimeline({callbackScope:scene});
           tl.add({targets:falcon,y:targetY+10,duration:dur(80),yoyo:true});
           tl.add({targets:girl,y:girl.y+5,duration:dur(80),yoyo:true,
-                   onStart:()=>{girl.setTint(0xff0000);sprinkleBursts(scene);},
-                   onYoyo:()=>{girl.setTint(0xff0000);sprinkleBursts(scene);},
+                   onStart:()=>{girl.setTintFill(0xff0000);sprinkleBursts(scene);},
+                   onYoyo:()=>{girl.setTintFill(0xff0000);sprinkleBursts(scene);},
                    onComplete:()=>girl.clearTint()},'<');
           for(let f=0;f<3;f++){
             const debris=createDebrisEmoji(scene,falcon.x,falcon.y);
@@ -2537,16 +2537,16 @@ function dogsBarkAtFalcon(){
 
     function blinkAngry(s){
       s.tweens.add({targets:girl,duration:dur(100),repeat:2,yoyo:true,
-        onStart:()=>girl.setTint(0xff0000),
-        onYoyo:()=>girl.setTint(0xff0000),
+        onStart:()=>girl.setTintFill(0xff0000),
+        onYoyo:()=>girl.setTintFill(0xff0000),
         onRepeat:()=>girl.clearTint(),
         onComplete:()=>girl.clearTint()});
     }
 
     function blinkFalcon(){
       scene.tweens.add({targets:falcon,duration:dur(100),repeat:2,yoyo:true,
-        onStart:()=>falcon.setTint(0xff0000),
-        onYoyo:()=>falcon.setTint(0xff0000),
+        onStart:()=>falcon.setTintFill(0xff0000),
+        onYoyo:()=>falcon.setTintFill(0xff0000),
         onRepeat:()=>falcon.clearTint(),
         onComplete:()=>falcon.clearTint()});
     }
@@ -2651,8 +2651,8 @@ function dogsBarkAtFalcon(){
 
     function blinkGirl(){
       scene.tweens.add({targets:girl,duration:dur(60),repeat:2,yoyo:true,x:'+=4',
-        onStart:()=>girl.setTint(0xff0000),
-        onYoyo:()=>girl.setTint(0xff0000),
+        onStart:()=>girl.setTintFill(0xff0000),
+        onYoyo:()=>girl.setTintFill(0xff0000),
         onRepeat:()=>girl.clearTint(),
         onComplete:()=>girl.clearTint()});
     }

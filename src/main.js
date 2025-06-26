@@ -1278,46 +1278,84 @@ export function setupGame(){
       current.dog.followEvent = null;
     }
 
-    const orderCount=current.orders.length;
     const totalCost=current.orders.reduce((s,o)=>s+o.price*o.qty,0);
 
     let mD=0, lD=0, tip=0;
     if(type==='sell'){
-      lD=Phaser.Math.Between(0,2)*orderCount;
       mD=totalCost;
     } else if(type==='give'){
-      lD=Phaser.Math.Between(2,4)*orderCount;
       mD=-totalCost;
-    } else {
-      lD=-Phaser.Math.Between(1,3)*orderCount;
     }
 
     const memory = current.memory || {state: CustomerState.NORMAL};
     const prevMood = memory.state;
-    const baseL = lD;
+
     switch(memory.state){
       case CustomerState.BROKEN:
-        lD = Math.max(baseL - 1, 0);
-        if(type==='sell') memory.state = CustomerState.MENDING;
-        if(type==='give') memory.state = CustomerState.NORMAL;
+        if(type==='refuse') {
+          lD = -3;
+        } else if(type==='sell') {
+          lD = 0;
+          memory.state = CustomerState.MENDING;
+        } else if(type==='give') {
+          lD = 0;
+          memory.state = CustomerState.NORMAL;
+        }
         break;
       case CustomerState.MENDING:
-        if(type==='sell') memory.state = CustomerState.NORMAL;
+        if(type==='refuse') {
+          lD = -2;
+          memory.state = CustomerState.BROKEN;
+        } else if(type==='sell') {
+          lD = 0;
+          memory.state = CustomerState.NORMAL;
+        } else if(type==='give') {
+          lD = 1;
+          memory.state = CustomerState.NORMAL;
+        }
         break;
       case CustomerState.GROWING:
-        lD = Math.max(baseL,1) + 1;
-        if(type==='give') memory.state = CustomerState.SPARKLING;
+        if(type==='refuse') {
+          lD = -2;
+          memory.state = CustomerState.BROKEN;
+        } else if(type==='sell') {
+          lD = 1;
+        } else if(type==='give') {
+          lD = 2;
+          memory.state = CustomerState.SPARKLING;
+        }
         break;
       case CustomerState.SPARKLING:
-        lD = Math.max(baseL,2) + 2;
-        if(type==='give') memory.state = CustomerState.ARROW;
+        if(type==='refuse') {
+          lD = -3;
+          memory.state = CustomerState.BROKEN;
+        } else if(type==='sell') {
+          lD = 2;
+        } else if(type==='give') {
+          lD = 3;
+          memory.state = CustomerState.ARROW;
+        }
         break;
       case CustomerState.ARROW:
-        lD = baseL + 3;
-        if(type==='give') GameState.heartWin = HEART_EMOJIS[CustomerState.ARROW];
+        if(type==='refuse') {
+          lD = -5;
+          memory.state = CustomerState.BROKEN;
+        } else if(type==='sell') {
+          lD = 3;
+        } else if(type==='give') {
+          lD = 5;
+        }
         break;
-      default:
-        if(type==='give') memory.state = CustomerState.GROWING;
+      default: // NORMAL
+        if(type==='refuse') {
+          lD = -1;
+          memory.state = CustomerState.BROKEN;
+        } else if(type==='sell') {
+          lD = 0;
+        } else if(type==='give') {
+          lD = 1;
+          memory.state = CustomerState.GROWING;
+        }
     }
 
     if(current.isDog){

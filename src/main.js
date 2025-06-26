@@ -1521,7 +1521,7 @@ export function setupGame(){
         }
         if(GameState.love<=0){
           showCustomerRevolt.call(this,()=>{
-            showEnd.call(this,'Game Over\nThe Customers Revolt!\n(and they stole your truck)');
+            showCustomerRevoltLoss.call(this);
           });
           return;
         }
@@ -2667,17 +2667,96 @@ function dogsBarkAtFalcon(){
           GameState.carryPortrait = img.setDepth(25);
         }
         btn.setVisible(false);
-        const overlayG = this.add.graphics({x:btn.x,y:btn.y}).setDepth(23);
-        overlayG.fillStyle(0xffffff,1);
-        overlayG.fillRect(-btn.width/2,-btn.height/2,btn.width,btn.height);
-        overlayG.setScale(1,1);
-        overlayG.setAlpha(1);
+        const flashTex = createGlowTexture(this,0xffffff,'screen_flash',256);
+        const overlayG = this.add.image(btn.x,btn.y,'screen_flash').setDepth(23);
+        overlayG.setDisplaySize(btn.width,btn.height);
         this.tweens.add({
           targets:overlayG,
           x:240,
           y:320,
-          scaleX:480/btn.width,
-          scaleY:640/btn.height,
+          scaleX:Math.max(480/btn.width,640/btn.height)*2,
+          scaleY:Math.max(480/btn.width,640/btn.height)*2,
+          duration:300,
+          ease:'Cubic.easeOut',
+          onComplete:()=>{
+            titleGame.destroy();
+            titleOver.destroy();
+            img.destroy();
+            line1.destroy();
+            line2.destroy();
+            btn.destroy();
+            if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
+            restartGame.call(this, overlayG);
+            againZone.destroy();
+          }
+        });
+      });
+    GameState.gameOver=true;
+  }
+
+  function showCustomerRevoltLoss(){
+    const scene = this;
+    scene.tweens.killAll();
+    scene.time.removeAllEvents();
+    cleanupFloatingEmojis();
+    cleanupHeartEmojis(scene);
+    hideOverlayTexts();
+    if (GameState.spawnTimer) { GameState.spawnTimer.remove(false); GameState.spawnTimer = null; }
+    clearDialog.call(scene);
+    if(endOverlay){ endOverlay.destroy(); }
+    endOverlay = this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
+
+    const titleGame = this.add.text(240,170,'GAME',{
+      font:'80px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
+    }).setOrigin(0.5).setDepth(20).setAlpha(0);
+    const titleOver = this.add.text(240,250,'OVER',{
+      font:'80px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
+    }).setOrigin(0.5).setDepth(20).setAlpha(0);
+    this.tweens.add({targets:[titleGame,titleOver],alpha:1,duration:dur(1200)});
+
+    const img = this.add.image(240,250,'revolt_end')
+      .setScale(1.2)
+      .setDepth(20)
+      .setAlpha(0);
+    this.tweens.add({targets:img,alpha:1,duration:dur(1200),delay:dur(1000)});
+
+    const line1 = this.add.text(240,450,'The customers revolt!',
+      {font:'28px sans-serif',fill:'#fff'})
+      .setOrigin(0.5)
+      .setDepth(21)
+      .setAlpha(0);
+    this.tweens.add({targets:line1,alpha:1,duration:dur(1200),delay:dur(1700)});
+
+    const line2 = this.add.text(240,490,'They stole your coffee truck!',
+      {font:'20px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
+      .setOrigin(0.5)
+      .setDepth(21)
+      .setAlpha(0);
+    this.tweens.add({targets:line2,alpha:1,duration:dur(600),delay:dur(2400)});
+
+    const btn = this.add.text(240,550,'Try Again',{font:'20px sans-serif',fill:'#000',backgroundColor:'#ffffff',padding:{x:14,y:8}})
+      .setOrigin(0.5)
+      .setDepth(22)
+      .setAlpha(0);
+    const againZone = this.add.zone(240,550,btn.width,btn.height).setOrigin(0.5);
+    againZone.disableInteractive();
+
+    const showBtnDelay = dur(2400) + dur(600) + 1000;
+    this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
+    this.time.delayedCall(showBtnDelay,()=>againZone.setInteractive({useHandCursor:true}),[],this);
+
+    againZone.on('pointerdown',()=>{
+        againZone.disableInteractive();
+        btn.setVisible(false);
+        const flashTex = createGlowTexture(this,0xffffff,'screen_flash',256);
+        const overlayG = this.add.image(btn.x,btn.y,'screen_flash').setDepth(23);
+        overlayG.setDisplaySize(btn.width,btn.height);
+        this.tweens.add({
+          targets:overlayG,
+          x:240,
+          y:320,
+          scaleX:Math.max(480/btn.width,640/btn.height)*2,
+          scaleY:Math.max(480/btn.width,640/btn.height)*2,
           duration:300,
           ease:'Cubic.easeOut',
           onComplete:()=>{
@@ -2756,10 +2835,10 @@ function dogsBarkAtFalcon(){
         const glow = this.add.image(btn.x,btn.y,'tryagain_glow').setDepth(24).setAlpha(0.8).setScale(0.1);
         this.tweens.add({targets:glow,scale:3,alpha:0,duration:300,onComplete:()=>glow.destroy()});
         btn.setVisible(false);
-        const overlayG = this.add.graphics({x:btn.x,y:btn.y}).setDepth(23);
-        overlayG.fillStyle(0xffffff,1);
-        overlayG.fillRect(-btn.width/2,-btn.height/2,btn.width,btn.height);
-        this.tweens.add({targets:overlayG,x:240,y:320,scaleX:480/btn.width,scaleY:640/btn.height,duration:300,ease:'Cubic.easeOut',onComplete:()=>{
+        const flashTex = createGlowTexture(this,0xffffff,'screen_flash',256);
+        const overlayG = this.add.image(btn.x,btn.y,'screen_flash').setDepth(23);
+        overlayG.setDisplaySize(btn.width,btn.height);
+        this.tweens.add({targets:overlayG,x:240,y:320,scaleX:Math.max(480/btn.width,640/btn.height)*2,scaleY:Math.max(480/btn.width,640/btn.height)*2,duration:300,ease:'Cubic.easeOut',onComplete:()=>{
           bg.destroy(); txt.destroy(); btn.destroy(); if(titleText) titleText.destroy();
           if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
           restartGame.call(this, overlayG);
@@ -2835,7 +2914,7 @@ function dogsBarkAtFalcon(){
    Scene = { create, showStartScreen, playIntro };
    Customers = { spawnCustomer, lureNextWanderer, moveQueueForward, scheduleNextSpawn,
                       showDialog, clearDialog, handleAction, showFalconAttack,
-                      showCustomerRevolt, restartGame };
+                      showCustomerRevolt, showCustomerRevoltLoss, restartGame };
 
    config={ ...baseConfig, scene:{ preload: Assets.preload, create: Scene.create } };
 

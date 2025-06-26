@@ -2120,12 +2120,16 @@ export function setupGame(){
       }
       this.time.delayedCall(dur(delay), () => {
         const tl = this.tweens.createTimeline({callbackScope:this});
-        // spin the face into a heart
+        // spin the face into a heart (or keep the upset face)
         tl.add({
           targets:h,
           scaleX:0,
           duration:dur(80),
-          onComplete:()=>{ h.setText(isPos ? '❤️' : '💔'); }
+          onComplete:()=>{
+            if(isPos){
+              h.setText('❤️');
+            }
+          }
         });
         tl.add({targets:h, scaleX:1, duration:dur(80)});
         // fling the heart toward the love counter

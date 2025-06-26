@@ -204,7 +204,8 @@ function testSpawnCustomer() {
     dur: v => v,
     fn: null,
     floatingEmojis: [],
-    setDepthFromBottom: () => {}
+    setDepthFromBottom: () => {},
+    HEART_EMOJIS: { 0: '' }
   };
   loadGameState(context);
   loadCustomerState(context);
@@ -218,6 +219,14 @@ function testSpawnCustomer() {
           setScale() { return this; },
           setDepth() { return this; },
           setAngle() { return this; },
+          destroy() {}
+        };
+      },
+      text() {
+        return {
+          setOrigin() { return this; },
+          setShadow() { return this; },
+          setDepth() { return this; },
           destroy() {}
         };
       }
@@ -262,7 +271,8 @@ function testSpawnCustomerQueuesWhenEmpty() {
     dur: v => v,
     fn: null,
     floatingEmojis: [],
-    setDepthFromBottom: () => {}
+    setDepthFromBottom: () => {},
+    HEART_EMOJIS: { 0: '' }
   };
   context.lureNextWanderer = function(){ context.queue.push(context.wanderers.shift()); };
   loadGameState(context);
@@ -274,6 +284,9 @@ function testSpawnCustomerQueuesWhenEmpty() {
     add: {
       sprite() {
         return { setScale() { return this; }, setDepth() { return this; }, setAngle() { return this; }, destroy() {} };
+      },
+      text() {
+        return { setOrigin() { return this; }, setShadow() { return this; }, setDepth() { return this; }, destroy() {} };
       }
     },
     tweens: { add(cfg) { if (cfg.onComplete) cfg.onComplete(); return { progress: 0 }; } },

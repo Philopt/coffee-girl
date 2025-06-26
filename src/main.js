@@ -39,6 +39,9 @@ const HEART_EMOJIS = {
 const HAPPY_FACE_EMOJIS = ['🙂','😊','😃','😄','😆'];
 const LOVE_FACE_EMOJIS = ['😍','🥰','😘','😻','🤩'];
 
+// A single neutral face used when no love is gained
+const NEUTRAL_FACE_EMOJIS = ['🙂'];
+
 
 const UPSET_EMOJIS = ['😠','🤬','😡','😤','😭','😢','😱','😖','😫'];
 
@@ -1204,7 +1207,7 @@ export function setupGame(){
       faces = LOVE_FACE_EMOJIS;
       delay = loveDelta ? 250 : 500;
     }else{
-      faces = HAPPY_FACE_EMOJIS;
+      faces = loveDelta ? HAPPY_FACE_EMOJIS : NEUTRAL_FACE_EMOJIS;
       delay = loveDelta ? 250 : 500;
     }
     const face = faces[Phaser.Math.Between(0, faces.length-1)];
@@ -2078,7 +2081,13 @@ export function setupGame(){
         });
         tl.add({targets:h,scaleX:1,alpha:0,duration:dur(150),onComplete:()=>{
               if(!emojiObj || h!==emojiObj) h.destroy();
-              popOne(idx+1);
+              if(idx < count-1){
+                const n = this.add.text(sx, sy, NEUTRAL_FACE_EMOJIS[0], {font:'24px sans-serif', fill:'#fff'})
+                  .setOrigin(0.5).setDepth(10);
+                this.time.delayedCall(dur(80), () => { n.destroy(); popOne(idx+1); }, [], this);
+              } else {
+                popOne(idx+1);
+              }
         }});
         tl.play();
       }, [], this);

@@ -2656,6 +2656,16 @@ function dogsBarkAtFalcon(){
     againZone.setInteractive({ useHandCursor:true });
     againZone.on('pointerdown',()=>{
         againZone.disableInteractive();
+        const key = img ? img.texture.key : null;
+        if(key){
+          GameState.lastEndKey = key;
+          if(!GameState.badges.includes(key)) GameState.badges.push(key);
+          GameState.badgeCounts[key] = (GameState.badgeCounts[key] || 0) + 1;
+          const grayKey = `${key}_gray`;
+          createGrayscaleTexture(this,key,grayKey);
+          img.setTexture(grayKey);
+          GameState.carryPortrait = img.setDepth(25);
+        }
         btn.setVisible(false);
         const overlayG = this.add.graphics({x:btn.x,y:btn.y}).setDepth(23);
         overlayG.fillStyle(0xffffff,1);
@@ -2736,6 +2746,7 @@ function dogsBarkAtFalcon(){
         if(key){
           GameState.lastEndKey = key;
           if(!GameState.badges.includes(key)) GameState.badges.push(key);
+          GameState.badgeCounts[key] = (GameState.badgeCounts[key] || 0) + 1;
           const grayKey = `${key}_gray`;
           createGrayscaleTexture(this,key,grayKey);
           img.setTexture(grayKey);

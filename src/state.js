@@ -25,6 +25,7 @@ export const GameState = {
   truck: null,
   girl: null
   ,badges: []
+  ,badgeCounts: {}
   ,carryPortrait: null
   ,lastEndKey: null
   ,phoneContainer: null

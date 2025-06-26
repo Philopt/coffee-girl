@@ -2593,15 +2593,28 @@ function dogsBarkAtFalcon(){
     hideOverlayTexts();
     clearDialog.call(scene);
     if (GameState.spawnTimer) { GameState.spawnTimer.remove(false); GameState.spawnTimer = null; }
+    GameState.girlHP = 5;
+    const girlHpText = scene.add.text(girl.x, girl.y - 60, GameState.girlHP.toFixed(1), {font:'20px sans-serif',fill:'#fff'}).setOrigin(0.5).setDepth(21);
+    let girlBlinkEvent = startHpBlink(scene, girl, () => GameState.girlHP, 5);
+    const updateHpPos = () => { girlHpText.setPosition(girl.x, girl.y-60); };
+    scene.events.on('update', updateHpPos);
+
     const attackers=[];
+    const attackerDogs=[];
     const gatherStartY = Math.max(WANDER_TOP, girl.y + 60);
     const gather=(arr)=>{
       arr.forEach(c=>{
+        if(!c.memory || c.memory.state !== CustomerState.BROKEN) {
+          if(c.walkTween){ c.walkTween.stop(); if(c.walkTween.remove) c.walkTween.remove(); c.walkTween=null; }
+          if(c.sprite) c.sprite.destroy();
+          if(c.dog){ if(c.dog.followEvent) c.dog.followEvent.remove(false); c.dog.destroy(); }
+          return;
+        }
         if(c.walkTween){ c.walkTween.stop(); if(c.walkTween.remove) c.walkTween.remove(); c.walkTween=null; }
         if(c.dog){
           if(c.dog.followEvent) c.dog.followEvent.remove(false);
-          c.dog.destroy();
-          c.dog=null;
+          c.dog.setDepth(20);
+          attackerDogs.push(c.dog);
         }
         if(c.sprite){
           c.sprite.setDepth(20); // keep attackers above the girl
@@ -2625,19 +2638,34 @@ function dogsBarkAtFalcon(){
       const present = new Set(attackers.map(a => a.texture && a.texture.key));
       Object.entries(GameState.customerMemory).forEach(([key, mem]) => {
         if (mem && mem.state === CustomerState.BROKEN && !present.has(key)) {
-          const side = Phaser.Math.Between(0, 2);
-          let sx, sy;
-          if (side === 2) {
-            sx = Phaser.Math.Between(40, 440);
-            sy = scene.scale.height + 40;
-          } else {
-            sx = side === 0 ? -40 : 520;
-            sy = Phaser.Math.Between(gatherStartY, WANDER_BOTTOM);
-          }
+          const sx = Phaser.Math.Between(40, 440);
+          const sy = scene.scale.height + 40;
           const s = scene.add.sprite(sx, sy, key)
             .setDepth(20)
             .setScale(scaleForY(sy));
           attackers.push(s);
+          const heart = scene.add.text(sx, sy, HEART_EMOJIS[CustomerState.BROKEN], {font:'28px sans-serif'})
+            .setOrigin(0.5)
+            .setDepth(21)
+            .setShadow(0,0,'#000',4);
+          s.heartEmoji = heart;
+        }
+        if (mem && mem.dogMemory && mem.dogMemory.state === CustomerState.BROKEN && mem.dogMemory.hasDog) {
+          const dx = Phaser.Math.Between(40, 440);
+          const dy = scene.scale.height + 60;
+          const dog = scene.add.sprite(dx, dy, 'dog1',1)
+            .setOrigin(0.5)
+            .setTint(0xffffff)
+            .setDepth(20);
+          dog.baseScaleFactor = 0.4;
+          dog.scaleFactor = 0.4;
+          scaleDog(dog);
+          attackerDogs.push(dog);
+          const h = scene.add.text(dx, dy, HEART_EMOJIS[CustomerState.BROKEN], {font:'28px sans-serif'})
+            .setOrigin(0.5)
+            .setDepth(21)
+            .setShadow(0,0,'#000',4);
+          dog.heartEmoji = h;
         }
       });
     };
@@ -2646,7 +2674,6 @@ function dogsBarkAtFalcon(){
 
 
     const loops=new Map();
-    let hits=0;
     let finished=false;
 
     function blinkGirl(){
@@ -2673,6 +2700,9 @@ function dogsBarkAtFalcon(){
         });
         scene.tweens.add({targets:driver,x:truck.x-40,y:truck.y,duration:dur(300),onComplete:()=>driver.destroy()});
         scene.tweens.add({targets:truck,x:-200,duration:dur(800),delay:dur(300),onComplete:()=>{if(cb) cb();}});
+        scene.events.off('update', updateHpPos);
+        if(girlBlinkEvent) girlBlinkEvent.remove(false);
+        girlHpText.destroy();
       }
 
     function attack(a){
@@ -2686,30 +2716,69 @@ function dogsBarkAtFalcon(){
         yoyo:true,
         onComplete:()=>{
           if(finished) return;
-          hits++;
+          GameState.girlHP = Math.max(0, GameState.girlHP - 0.5);
+          girlHpText.setText(GameState.girlHP.toFixed(1));
           blinkGirl();
-          if(hits>=10){
+          if(GameState.girlHP<=0){
             finished=true;
             sendDriver(a);
           } else {
-            loops.set(a, scene.time.delayedCall(dur(Phaser.Math.Between(200,400)),()=>attack(a),[],scene));
+            loops.set(a, scene.time.delayedCall(dur(Phaser.Math.Between(400,600)),()=>attack(a),[],scene));
           }
         }
       });
     }
 
-    attackers.forEach(a=>{
-      const tx = Phaser.Math.Between(girl.x - 30, girl.x + 30);
-      const ty = Math.max(gatherStartY, girl.y + 20);
+    let firstArrived = false;
+    attackers.forEach((a,i)=>{
+      const ang = (Math.PI * 2 * i) / attackers.length;
+      const r = 40;
+      const tx = girl.x + Math.cos(ang) * r;
+      const ty = girl.y + Math.sin(ang) * r;
+      const arrive = () => {
+        if(!firstArrived){
+          firstArrived = true;
+          scene.time.delayedCall(dur(1000), ()=>attack(a), [], scene);
+        } else {
+          attack(a);
+        }
+      };
       scene.tweens.add({
         targets:a,
         x:tx,
         y:ty,
         scale:scaleForY(ty),
-        duration:dur(400),
-        onComplete:()=>{
-          loops.set(a, scene.time.delayedCall(dur(Phaser.Math.Between(100,300)),()=>attack(a),[],scene));
-        }
+        duration:dur(800),
+        onComplete:arrive
+      });
+    });
+
+    attackerDogs.forEach((dog,i)=>{
+      const ang = (Math.PI * 2 * (attackers.length + i)) / (attackers.length + attackerDogs.length);
+      const r = 60;
+      const tx = girl.x + Math.cos(ang) * r;
+      const ty = girl.y + Math.sin(ang) * r;
+      const harass = ()=>{
+        if(finished) return;
+        const ang2 = Phaser.Math.FloatBetween(0, Math.PI*2);
+        const dx = girl.x + Math.cos(ang2)*r;
+        const dy = girl.y + Math.sin(ang2)*r;
+        scene.tweens.add({
+          targets:dog,
+          x:dx,
+          y:dy,
+          duration:dur(600),
+          onUpdate:()=>{ const s=scaleForY(dog.y)*0.5; dog.setScale(s*(dog.dir||1),s); if(dog.heartEmoji) dog.heartEmoji.setPosition(dog.x,dog.y).setScale(scaleForY(dog.y)*0.8).setDepth(dog.depth); },
+          onComplete:()=>{ dogRefuseJumpBark.call(scene,dog,false); scene.time.delayedCall(dur(200), harass, [], scene); }
+        });
+      };
+      scene.tweens.add({
+        targets:dog,
+        x:tx,
+        y:ty,
+        duration:dur(800),
+        onUpdate:()=>{ const s=scaleForY(dog.y)*0.5; dog.setScale(s*(dog.dir||1), s); },
+        onComplete:harass
       });
     });
   }

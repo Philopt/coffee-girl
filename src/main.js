@@ -380,6 +380,12 @@ export function setupGame(){
       const updateHeart = c => {
         if(!c.sprite || !c.sprite.scene) return;
         const state = c.memory && c.memory.state || CustomerState.NORMAL;
+        if(c.hideHeart){
+          if(c.heartEmoji && c.heartEmoji.scene){
+            c.heartEmoji.setVisible(false);
+          }
+          return;
+        }
         if(!c.heartEmoji || !c.heartEmoji.scene || !c.heartEmoji.active){
           if (c.heartEmoji && c.heartEmoji.destroy) {
             c.heartEmoji.destroy();
@@ -1323,7 +1329,7 @@ export function setupGame(){
           dogSprite.baseScaleFactor = base;
           const max = base * 2;
           // defer applying the new scale until after the power-up animation
-          dogSprite.pendingScaleFactor = Math.min(dogSprite.scaleFactor * 1.2, max);
+          dogSprite.pendingScaleFactor = Math.min(dogSprite.scaleFactor * 1.5, max);
         }
       }
       if(type==='refuse') memory.state = CustomerState.BROKEN;

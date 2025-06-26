@@ -4,6 +4,7 @@ import {
   MENU,
   SPAWN_DELAY,
   SPAWN_VARIANCE,
+  RESPAWN_COOLDOWN,
   QUEUE_SPACING,
   ORDER_X,
   ORDER_Y,
@@ -480,12 +481,21 @@ export function spawnCustomer() {
     if (cust.spriteKey) used.add(cust.spriteKey);
   });
   const spriteKeys = (this && this.assets && this.assets.keys) || (Assets && Assets.keys) || (typeof keys !== 'undefined' ? keys : []);
-  let available = spriteKeys.filter(k => !used.has(k));
+  let now = this.time ? this.time.now : Date.now();
+  let available = spriteKeys.filter(k => {
+    if (used.has(k)) return false;
+    const mem = GameState.customerMemory[k];
+    return !(mem && mem.cooldownUntil && mem.cooldownUntil > now);
+  });
+  if (available.length === 0) {
+    available = spriteKeys.filter(k => !used.has(k));
+  }
   if (available.length === 0) available = spriteKeys.slice();
   const k = Phaser.Utils.Array.GetRandom(available);
   c.spriteKey = k;
 
   const memory = GameState.customerMemory[k] || { state: CustomerState.NORMAL };
+  if (memory.cooldownUntil === undefined) memory.cooldownUntil = 0;
   GameState.customerMemory[k] = memory;
   if (!memory.dogMemory) {
     // Leave hasDog undefined so spawn logic can randomize on first encounter

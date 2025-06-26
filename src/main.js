@@ -6,7 +6,7 @@ import { baseConfig } from "./scene.js";
 import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from "./state.js";
 import { CustomerState } from './constants.js';
 
-import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows } from './sparrow.js';
+import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows, scatterSparrows } from './sparrow.js';
 import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog, dogTruckRuckus, dogRefuseJumpBark, animateDogPowerUp } from './entities/dog.js';
 import { startWander } from './entities/wanderers.js';
 
@@ -1287,6 +1287,7 @@ export function setupGame(){
     }
 
     const memory = current.memory || {state: CustomerState.NORMAL};
+    const prevMood = memory.state;
     const baseL = lD;
     switch(memory.state){
       case CustomerState.BROKEN:
@@ -1330,6 +1331,14 @@ export function setupGame(){
     if(type==='refuse'){
       memory.state = CustomerState.BROKEN;
     }
+
+    let barkCount = 0;
+    if(type==='refuse' && current.isDog){
+      if(prevMood === CustomerState.MENDING) barkCount = 2;
+      else if(prevMood === CustomerState.BROKEN) barkCount = 3;
+      else barkCount = 1;
+      lD = -barkCount;
+    }
     if (!current.sprite || !current.sprite.scene) {
       clearDialog.call(this, type!=='refuse');
       return;
@@ -1362,11 +1371,7 @@ export function setupGame(){
 
     if(type==='refuse'){
       if(current.isDog){
-        dogRefuseJumpBark.call(this, current.sprite);
-        if(lD!==0){
-          animateLoveChange.call(this, lD, current.sprite, done,
-                                current.sprite.x, current.sprite.y-40);
-        }
+        animateBarkPenalty.call(this, current.sprite, barkCount, done);
       }else{
         showDrinkReaction.call(this, current.sprite, 'refuse', null, lD, done);
       }
@@ -2104,6 +2109,54 @@ export function setupGame(){
     };
 
     popOne(0);
+  }
+
+  function animateBarkPenalty(dog, count, cb){
+    const sprite = dog;
+    if(!sprite || count<=0){ if(cb) cb(); return; }
+    const destX = () => loveText.x + loveText.width + 6;
+    const destY = () => loveText.y + loveText.height;
+    const doOne = (idx) => {
+      if(idx >= count){ if(cb) cb(); return; }
+      const bark = dogRefuseJumpBark.call(this, sprite, idx===0);
+      if(!bark){ doOne(idx+1); return; }
+      this.tweens.add({
+        targets: bark,
+        y: '-=20',
+        duration: dur(100),
+        yoyo: true
+      });
+      this.tweens.add({
+        targets: bark,
+        duration: dur(80),
+        repeat: 2,
+        yoyo: true,
+        onStart: () => bark.setTint(0xff0000),
+        onYoyo: () => bark.setTint(0xff0000),
+        onRepeat: () => bark.clearTint(),
+        onComplete: () => bark.clearTint()
+      });
+      this.time.delayedCall(dur(200), () => {
+        this.tweens.add({
+          targets: bark,
+          x: destX(),
+          y: destY(),
+          scale: 0,
+          alpha: 0,
+          duration: dur(300),
+          onComplete: () => {
+            bark.destroy();
+            GameState.love -= 1;
+            loveText.setText('❤️ ' + GameState.love);
+            updateLevelDisplay();
+            animateStatChange(loveText, this, -1, true);
+            this.time.delayedCall(dur(80), () => doOne(idx+1), [], this);
+          }
+        });
+      }, [], this);
+    };
+    scatterSparrows(this);
+    doOne(0);
   }
 
   function showFalconAttack(cb){

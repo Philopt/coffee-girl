@@ -410,9 +410,9 @@ export function dogTruckRuckus(scene, dog){
   tl.play();
 }
 
-export function dogRefuseJumpBark(dog){
+export function dogRefuseJumpBark(dog, scatter=true){
   const scene = this;
-  if(!scene || !dog) return;
+  if(!scene || !dog) return null;
   if(dog.currentTween){
     dog.currentTween.stop();
     dog.currentTween = null;
@@ -421,13 +421,6 @@ export function dogRefuseJumpBark(dog){
     .setOrigin(0.5)
     .setDepth(dog.depth + 1)
     .setScale(Math.abs(dog.scaleX), Math.abs(dog.scaleY));
-  scene.tweens.add({
-    targets: bark,
-    y: '-=20',
-    alpha: 0,
-    duration: dur(600),
-    onComplete: () => bark.destroy()
-  });
   if (dog.anims && dog.play) {
     dog.play('dog_bark');
   }
@@ -443,5 +436,6 @@ export function dogRefuseJumpBark(dog){
     },
     onComplete: () => { dog.setFrame(1); }
   });
-  scatterSparrows(scene);
+  if(scatter) scatterSparrows(scene);
+  return bark;
 }

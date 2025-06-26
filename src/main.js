@@ -1188,6 +1188,7 @@ export function setupGame(){
           tl.add({ targets: dialogDrinkEmoji, scale: 0, duration: dur(150), ease:'Cubic.easeIn' });
           tl.add({ targets: dialogDrinkEmoji, alpha:0, duration: dur(80) });
           tl.setCallback('onComplete', () => {
+            if (dialogDrinkEmoji.setVisible) dialogDrinkEmoji.setVisible(false);
             animateDogPowerUp(this, target, react);
           });
           tl.play();
@@ -1323,7 +1324,7 @@ export function setupGame(){
           dogSprite.baseScaleFactor = base;
           const max = base * 2;
           // defer applying the new scale until after the power-up animation
-          dogSprite.pendingScaleFactor = Math.min(dogSprite.scaleFactor * 1.2, max);
+          dogSprite.pendingScaleFactor = Math.min(dogSprite.scaleFactor * 1.5, max);
         }
       }
       if(type==='refuse') memory.state = CustomerState.BROKEN;

@@ -2410,7 +2410,7 @@ function dogsBarkAtFalcon(){
           const total = loops * dmgPer;
           GameState.falconHP=Math.max(0,GameState.falconHP-total);
           falconHpText.setText(GameState.falconHP);
-          burstFeathers(scene, falcon.x, falcon.y, total);
+          // burstFeathers(scene, falcon.x, falcon.y, total);
           blinkFalcon();
           if(GameState.falconHP<=0){ endAttack(); }
         });
@@ -2433,7 +2433,7 @@ function dogsBarkAtFalcon(){
       featherTrail = scene.time.addEvent({
         delay: dur(120),
         loop: true,
-        callback: () => burstFeathers(scene, falcon.x, falcon.y, 1)
+        // callback: () => burstFeathers(scene, falcon.x, falcon.y, 1)
       });
     };
     const stopTrail = () => {
@@ -2490,7 +2490,7 @@ function dogsBarkAtFalcon(){
         const startY=Phaser.Math.Between(girl.y-120,girl.y-40);
         const fromX=falcon.x;
         const fromY=falcon.y;
-        if(firstAttack) startTrail();
+        // if(firstAttack) startTrail();
         scene.tweens.addCounter({from:0,to:1,duration:dur(250),ease:'Sine.easeInOut',
           onUpdate:tw=>{
             const p=tw.getValue();
@@ -2498,7 +2498,7 @@ function dogsBarkAtFalcon(){
             falcon.y=Phaser.Math.Linear(fromY,startY,p)+Math.sin(p*Math.PI*4)*6;
           },
           onComplete:()=>{
-          scene.tweens.add({targets:falcon,x:targetX,y:targetY,duration:dur(350),ease:'Cubic.easeIn',onStart:()=>{if(firstAttack) startTrail();},onComplete:()=>{
+          scene.tweens.add({targets:falcon,x:targetX,y:targetY,duration:dur(350),ease:'Cubic.easeIn',onStart:()=>{/*if(firstAttack) startTrail();*/},onComplete:()=>{
             blinkAngry(scene);
             GameState.girlHP=Math.max(0,GameState.girlHP-1);
             girlHpText.setText(GameState.girlHP);
@@ -2520,7 +2520,7 @@ function dogsBarkAtFalcon(){
             scene.time.delayedCall(dur(450),()=>debris.destroy(),[],scene);
           }
           tl.setCallback('onComplete', () => {
-            stopTrail();
+            // stopTrail();
             if(firstAttack) firstAttack=false;
             if(GameState.girlHP<=0){
               endAttack();

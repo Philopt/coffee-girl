@@ -2690,12 +2690,11 @@ function dogsBarkAtFalcon(){
       .setOrigin(0.5)
       .setDepth(22)
       .setAlpha(0);
-    const againZone = this.add.zone(240,550,btn.width,btn.height).setOrigin(0.5);
-    againZone.disableInteractive();
+    const againZone = this.add.zone(240,550,btn.displayWidth,btn.displayHeight).setOrigin(0.5);
 
     const showBtnDelay = dur(2400) + dur(600) + 1000;
     this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
-    this.time.delayedCall(showBtnDelay,()=>againZone.setInteractive({useHandCursor:true}),[],this);
+    againZone.setInteractive({ useHandCursor:true });
     againZone.on('pointerdown',()=>{
         againZone.disableInteractive();
         const key = img ? img.texture.key : null;
@@ -2779,12 +2778,11 @@ function dogsBarkAtFalcon(){
       .setOrigin(0.5)
       .setDepth(22)
       .setAlpha(0);
-    const againZone = this.add.zone(240,550,btn.width,btn.height).setOrigin(0.5);
-    againZone.disableInteractive();
+    const againZone = this.add.zone(240,550,btn.displayWidth,btn.displayHeight).setOrigin(0.5);
 
     const showBtnDelay = dur(2400) + dur(600) + 1000;
     this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
-    this.time.delayedCall(showBtnDelay,()=>againZone.setInteractive({useHandCursor:true}),[],this);
+    againZone.setInteractive({ useHandCursor:true });
 
     againZone.on('pointerdown',()=>{
         againZone.disableInteractive();
@@ -2867,7 +2865,7 @@ function dogsBarkAtFalcon(){
       .setOrigin(0.5).setDepth(21);
     const btn=this.add.text(240,bgY+80,'Try Again',{font:'20px sans-serif',fill:'#000',backgroundColor:'#ffffff',padding:{x:14,y:8}})
       .setOrigin(0.5).setDepth(22);
-    const againZone=this.add.zone(240,bgY+80,btn.width,btn.height).setOrigin(0.5);
+    const againZone=this.add.zone(240,bgY+80,btn.displayWidth,btn.displayHeight).setOrigin(0.5);
     againZone.setInteractive({ useHandCursor:true });
     againZone.on('pointerdown',()=>{
         againZone.disableInteractive();

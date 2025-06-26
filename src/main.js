@@ -2651,9 +2651,14 @@ function dogsBarkAtFalcon(){
 
     const btn = this.add.text(240,550,'Try Again',{font:'20px sans-serif',fill:'#000',backgroundColor:'#ffffff',padding:{x:14,y:8}})
       .setOrigin(0.5)
-      .setDepth(22);
+      .setDepth(22)
+      .setAlpha(0);
     const againZone = this.add.zone(240,550,btn.width,btn.height).setOrigin(0.5);
-    againZone.setInteractive({ useHandCursor:true });
+    againZone.disableInteractive();
+
+    const showBtnDelay = dur(2400) + dur(600) + 1000;
+    this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
+    this.time.delayedCall(showBtnDelay,()=>againZone.setInteractive({useHandCursor:true}),[],this);
     againZone.on('pointerdown',()=>{
         againZone.disableInteractive();
         const key = img ? img.texture.key : null;
@@ -2663,7 +2668,6 @@ function dogsBarkAtFalcon(){
           GameState.badgeCounts[key] = (GameState.badgeCounts[key] || 0) + 1;
           const grayKey = `${key}_gray`;
           createGrayscaleTexture(this,key,grayKey);
-          img.setTexture(grayKey);
           GameState.carryPortrait = img.setDepth(25);
         }
         btn.setVisible(false);
@@ -2747,6 +2751,15 @@ function dogsBarkAtFalcon(){
 
     againZone.on('pointerdown',()=>{
         againZone.disableInteractive();
+        const key = img ? img.texture.key : null;
+        if(key){
+          GameState.lastEndKey = key;
+          if(!GameState.badges.includes(key)) GameState.badges.push(key);
+          GameState.badgeCounts[key] = (GameState.badgeCounts[key] || 0) + 1;
+          const grayKey = `${key}_gray`;
+          createGrayscaleTexture(this,key,grayKey);
+          GameState.carryPortrait = img.setDepth(25);
+        }
         btn.setVisible(false);
         const flashTex = createGlowTexture(this,0xffffff,'screen_flash',256);
         const overlayG = this.add.image(btn.x,btn.y,'screen_flash').setDepth(23);
@@ -2828,7 +2841,6 @@ function dogsBarkAtFalcon(){
           GameState.badgeCounts[key] = (GameState.badgeCounts[key] || 0) + 1;
           const grayKey = `${key}_gray`;
           createGrayscaleTexture(this,key,grayKey);
-          img.setTexture(grayKey);
           GameState.carryPortrait = img.setDepth(25);
         }
         const glowTex = createGlowTexture(this,0xffffff,'tryagain_glow');

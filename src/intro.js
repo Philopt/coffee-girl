@@ -265,19 +265,26 @@ function showStartScreen(scene){
       const destX = phoneContainer.x + slot.x;
       const destY = phoneContainer.y + slot.y;
       const p = GameState.carryPortrait;
+      const icon = badgeIcons[idx];
       scene.children.bringToTop(p);
       scene.tweens.add({
         targets:p,
         x:destX,
         y:destY,
         scale:badgeScale,
+        alpha:0,
         duration:600,
         ease:'Sine.easeIn',
         onComplete:()=>{
-          badgeIcons[idx].setAlpha(1);
           p.destroy();
           GameState.carryPortrait=null;
         }
+      });
+      scene.tweens.add({
+        targets:icon,
+        alpha:1,
+        duration:600,
+        ease:'Sine.easeIn'
       });
     } else {
       GameState.carryPortrait.destroy();

@@ -1,6 +1,6 @@
 export const GameState = {
   money: 10.00,
-  love: 10,
+  love: 3,
   queue: [],
   activeCustomer: null,
   wanderers: [],

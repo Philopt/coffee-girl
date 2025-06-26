@@ -357,7 +357,11 @@ export function startDogWaitTimer(scene, owner) {
       if (owner.waitingForDog) {
         owner.waitingForDog = false;
         if (typeof checkQueueSpacing === 'function') checkQueueSpacing(scene);
-        if (owner.exitHandler) owner.exitHandler();
+        if (owner.exitHandler) {
+          const fn = owner.exitHandler;
+          owner.exitHandler = null;
+          fn();
+        }
       }
     }
   });

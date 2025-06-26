@@ -1473,6 +1473,7 @@ export function setupGame(){
       GameState.saleInProgress = false;
       const exit=()=>{
         GameState.orderInProgress = false;
+        current.exitHandler = null;
         if(dialogDrinkEmoji && dialogDrinkEmoji.attachedTo === current.sprite){
           dialogDrinkEmoji.attachedTo = null;
           dialogDrinkEmoji.setVisible(false);

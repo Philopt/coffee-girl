@@ -3040,7 +3040,7 @@ function dogsBarkAtFalcon(){
       truck.setPosition(startX, 245);
       girl.setPosition(startX, 245).setVisible(false);
     }
-    GameState.money=10.00; GameState.love=10;
+    GameState.money=10.00; GameState.love=3;
     moneyText.setText('🪙 '+receipt(GameState.money));
     loveText.setText('❤️ '+GameState.love);
     updateLevelDisplay();

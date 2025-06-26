@@ -305,7 +305,7 @@ function testHandleActionSell() {
   if (!actMatch || !recMatch) throw new Error('handleAction or receipt not found');
   const context = {
     money: 20,
-    love: 10,
+    love: 3,
     queue: [],
     activeCustomer: null,
     MAX_M: 100,
@@ -362,7 +362,7 @@ function testHandleActionSell() {
   context.queue = [cust];
   handleAction.call(scene, 'sell');
   assert.strictEqual(context.money, 25.75, 'money not updated correctly');
-  assert.strictEqual(context.love, 11, 'love not updated correctly');
+  assert.strictEqual(context.love, 4, 'love not updated correctly');
   console.log('handleAction("sell") update test passed');
 }
 
@@ -913,7 +913,7 @@ function testShowEndRestart() {
     paidStamp: { setVisible() { return this; } },
     lossStamp: { setVisible() { return this; } },
     money: 10,
-    love: 10,
+    love: 3,
     moneyText: { setText() { return this; } },
     loveText: { setText() { return this; } },
     updateLevelDisplay() {},

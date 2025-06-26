@@ -1228,6 +1228,7 @@ export function setupGame(){
 
     this.time.delayedCall(dur(delay), () => {
       if(loveDelta){
+        if(emojiObj) emojiObj.attachedTo = null;
         animateLoveChange.call(this, loveDelta, target, () => {
           if(emojiObj){
             emo.attachedTo = null;

@@ -103,6 +103,7 @@ export function setDepthFromBottom(sprite, base = 5){
 
 export function createGrayscaleTexture(scene, key, destKey){
   if(!scene || !scene.textures || !scene.textures.exists(key)) return;
+  if(scene.textures.exists(destKey)) return scene.textures.get(destKey);
   const srcImg = scene.textures.get(key).getSourceImage();
   if(!srcImg) return;
   const w = srcImg.width;

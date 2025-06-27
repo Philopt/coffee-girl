@@ -103,6 +103,36 @@ export function setupGame(){
         // removed wobble animation for the love counter
       }
     },[],scene);
+    updateCloudStatus(scene);
+  }
+
+  function frameForStat(val){
+    if(val<=0) return 4;
+    if(val===1) return 3;
+    if(val===2) return 2;
+    if(val===3) return 1;
+    return 0;
+  }
+
+  function updateCloudStatus(scene){
+    if(!scene) return;
+    if(cloudHeart && cloudHeart.setFrame){
+      cloudHeart.setFrame(frameForStat(GameState.love));
+    }
+    if(cloudDollar && cloudDollar.setFrame){
+      cloudDollar.setFrame(frameForStat(Math.floor(GameState.money)));
+    }
+    const amps=[1,3,5,7,10];
+    const durs=[6000,5000,4000,3000,2000];
+    const loveIdx=frameForStat(GameState.love);
+    const moneyIdx=frameForStat(Math.floor(GameState.money));
+    const makeTween=(existing,targets,amp,dur)=>{
+      if(existing){ if(existing.remove) existing.remove(); else if(existing.stop) existing.stop(); }
+      if(!scene.tweens) return null;
+      return scene.tweens.add({targets,x:`+=${amp}`,duration:dur,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
+    };
+    cloudHeartTween=makeTween(cloudHeartTween,[cloudHeart,loveText],amps[loveIdx],durs[loveIdx]);
+    cloudDollarTween=makeTween(cloudDollarTween,[cloudDollar,moneyText],amps[moneyIdx],durs[moneyIdx]);
   }
 
   function countPrice(text, scene, from, to, baseLeft, baseY=15){
@@ -438,6 +468,7 @@ export function setupGame(){
   let sideCText;
   let sideCAlpha=0;
   let sideCFadeTween=null;
+  let cloudHeartTween=null, cloudDollarTween=null;
   let endOverlay=null;
   // hearts or anger symbols currently animating
 
@@ -603,8 +634,7 @@ export function setupGame(){
       .setScale(2.4)
       // Use additive blend to remove dark areas
       .setBlendMode(Phaser.BlendModes.ADD)
-      .setAlpha(0.9)
-      .play('cloudDollar_anim');
+      .setAlpha(0.9);
     cloudDollar.x = 160 - cloudDollar.displayWidth/2;
     moneyText=this.add.text(0,0,receipt(GameState.money),{font:'26px sans-serif',fill:'#fff'})
       .setOrigin(0.5)
@@ -621,8 +651,7 @@ export function setupGame(){
       .setScale(2.4)
       // Use additive blend to remove dark areas
       .setBlendMode(Phaser.BlendModes.ADD)
-      .setAlpha(0.9)
-      .play('cloudHeart_anim');
+      .setAlpha(0.9);
     cloudHeart.x = 320 + cloudHeart.displayWidth/2;
     loveText=this.add.text(0,0,GameState.love,{font:'26px sans-serif',fill:'#fff'})
       .setOrigin(0.5)
@@ -646,9 +675,8 @@ export function setupGame(){
       updateLevelDisplay();
       animateStatChange(loveText, this, 1, true);
     });
-    // gentle cloud animations
-    this.tweens.add({targets:[cloudHeart,loveText],x:'+=3',duration:3000,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
-    this.tweens.add({targets:[cloudDollar,moneyText],x:'+=3',duration:3000,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
+    // gentle cloud animations handled by updateCloudStatus
+    updateCloudStatus(this);
     // Indicator for available queue slots
     queueLevelText=this.add.text(156,316,'',{font:'16px sans-serif',fill:'#000'})
       .setOrigin(0.5).setDepth(1).setVisible(false);
@@ -3329,6 +3357,7 @@ function dogsBarkAtFalcon(){
     moneyText.setText(receipt(GameState.money));
     loveText.setText(String(GameState.love));
     updateLevelDisplay();
+    updateCloudStatus(scene);
     if(GameState.activeCustomer){
       if(GameState.activeCustomer.heartEmoji){ GameState.activeCustomer.heartEmoji.destroy(); GameState.activeCustomer.heartEmoji=null; }
       GameState.activeCustomer.sprite.destroy();

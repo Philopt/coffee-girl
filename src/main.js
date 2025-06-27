@@ -14,6 +14,7 @@ import { flashBorder, flashFill, blinkButton, applyRandomSkew, emphasizePrice, s
 
 import { keys, requiredAssets, preload as preloadAssets, receipt, emojiFor } from './assets.js';
 import { playOpening, showStartScreen, playIntro } from './intro.js';
+import DesaturatePipeline from './desaturatePipeline.js';
 
 export let Assets, Scene, Customers, config;
 export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;
@@ -609,6 +610,9 @@ export function setupGame(){
       return;
     }
 
+    // Register a simple desaturation post-processing pipeline
+    this.renderer.pipelines.addPostPipeline('desaturate', DesaturatePipeline);
+
     this.anims.create({
       key:'cloudHeart_anim',
       frames:this.anims.generateFrameNumbers('cloudHeart',{start:0,end:4}),
@@ -636,7 +640,10 @@ export function setupGame(){
       .setBlendMode(Phaser.BlendModes.ADD)
 
       .setAlpha(0.5)
-      .play('cloudDollar_anim');
+      .play('cloudDollar_anim')
+      .setPostPipeline('desaturate');
+
+    cloudDollar.getPostPipeline('desaturate').amount = 0.5;
 
     cloudDollar.x = 160 - cloudDollar.displayWidth/2;
     moneyText=this.add.text(0,0,receipt(GameState.money),{font:'26px sans-serif',fill:'#fff'})
@@ -656,7 +663,10 @@ export function setupGame(){
       .setBlendMode(Phaser.BlendModes.ADD)
 
       .setAlpha(0.5)
-      .play('cloudHeart_anim');
+      .play('cloudHeart_anim')
+      .setPostPipeline('desaturate');
+
+    cloudHeart.getPostPipeline('desaturate').amount = 0.5;
 
     cloudHeart.x = 320 + cloudHeart.displayWidth/2;
     loveText=this.add.text(0,0,GameState.love,{font:'26px sans-serif',fill:'#fff'})

@@ -336,7 +336,7 @@ export function setupGame(){
       alpha: {from:0.7, to:0.2},
       x: {from:-3, to:3},
       y: {from:-3, to:3},
-      duration: dur(200),
+      duration: dur(120),
       yoyo: true,
       repeat: -1
     });
@@ -351,7 +351,7 @@ export function setupGame(){
         targets: btnGive.glow,
         alpha: 0,
         scale: 2,
-        duration: dur(300),
+        duration: dur(150),
         ease: 'Cubic.easeOut',
         onComplete: () => btnGive.glow.setVisible(false).setScale(1)
       });
@@ -369,9 +369,7 @@ export function setupGame(){
         targets: sp,
         y: sy - 10,
         alpha: 0,
-        duration: dur(300),
-        yoyo: true,
-        repeat: 1,
+        duration: dur(150),
         onComplete: () => sp.destroy()
       });
     }
@@ -390,11 +388,11 @@ export function setupGame(){
       btnSell.sparkleTween=null;
     }
     const glow = btnSell.glow;
-    this.tweens.add({
+    const glowTween = this.tweens.add({
       targets: glow,
       scale: 0,
       alpha: 0,
-      duration: dur(200),
+      duration: dur(150),
       ease: 'Cubic.easeOut',
       onComplete: () => {
         glow.setVisible(false).setScale(1).setPosition(0,0);
@@ -410,7 +408,6 @@ export function setupGame(){
           btnSell.setVisible(false);
           btnSell.image.clearTint();
           btnSell.image.setAlpha(1);
-          if(cb) cb();
         }
       });
     } else {
@@ -418,8 +415,11 @@ export function setupGame(){
         targets: btnSell,
         alpha: 0,
         duration: dur(150),
-        onComplete: () => { btnSell.setVisible(false); if(cb) cb(); }
+        onComplete: () => { btnSell.setVisible(false); }
       });
+    }
+    if(cb){
+      glowTween.setCallback('onComplete', () => cb());
     }
   }
 

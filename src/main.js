@@ -360,7 +360,7 @@ export function setupGame(){
 
 
 
-  let moneyText, loveText, heartHUD, queueLevelText;
+  let moneyText, loveText, cloudHeart, cloudDollar, queueLevelText;
   let dialogBg, dialogText, dialogCoins,
       dialogPriceLabel, dialogPriceValue, dialogPriceBox,
       dialogDrinkEmoji, dialogPriceContainer, dialogPriceTicket, dialogPupCup,
@@ -516,22 +516,31 @@ export function setupGame(){
     bg.setDisplaySize(this.scale.width,this.scale.height);
 
     // HUD
-    moneyText=this.add.text(20,20,'🪙 '+receipt(GameState.money),{font:'26px sans-serif',fill:'#fff'}).setDepth(1);
-    heartHUD=this.add.image(this.scale.width-20,20,'heartHUD')
+    cloudDollar=this.add.image(20,20,'cloudDollar')
+      .setOrigin(0,0)
+      .setDepth(1);
+    moneyText=this.add.text(0,0,receipt(GameState.money),{font:'26px sans-serif',fill:'#fff'})
+      .setOrigin(0.5)
+      .setDepth(2);
+    moneyText.setPosition(
+      cloudDollar.x + cloudDollar.displayWidth/2,
+      cloudDollar.y + cloudDollar.displayHeight/2
+    );
+    cloudHeart=this.add.image(this.scale.width-20,20,'cloudHeart')
       .setOrigin(1,0)
       .setDepth(1);
     loveText=this.add.text(0,0,GameState.love,{font:'26px sans-serif',fill:'#fff'})
       .setOrigin(0.5)
       .setDepth(2);
     loveText.setPosition(
-      heartHUD.x - heartHUD.displayWidth/2,
-      heartHUD.y + heartHUD.displayHeight*0.75
+      cloudHeart.x - cloudHeart.displayWidth/2,
+      cloudHeart.y + cloudHeart.displayHeight/2
     );
     moneyText.setInteractive({ useHandCursor:true });
     loveText.setInteractive({ useHandCursor:true });
     moneyText.on('pointerdown',()=>{
       GameState.money = +(GameState.money + 20).toFixed(2);
-      moneyText.setText('🪙 '+receipt(GameState.money));
+      moneyText.setText(receipt(GameState.money));
       animateStatChange(moneyText, this, 1);
     });
     loveText.on('pointerdown',()=>{
@@ -540,6 +549,11 @@ export function setupGame(){
       updateLevelDisplay();
       animateStatChange(loveText, this, 1, true);
     });
+    // gentle cloud animations
+    this.tweens.add({targets:[cloudHeart,loveText],y:'+=3',duration:1000,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
+    this.tweens.add({targets:[cloudHeart,loveText],alpha:{from:1,to:0.8},duration:1000,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
+    this.tweens.add({targets:[cloudDollar,moneyText],y:'+=3',duration:1000,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
+    this.tweens.add({targets:[cloudDollar,moneyText],alpha:{from:1,to:0.8},duration:1000,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
     // Indicator for available queue slots
     queueLevelText=this.add.text(156,316,'',{font:'16px sans-serif',fill:'#000'})
       .setOrigin(0.5).setDepth(1).setVisible(false);
@@ -1878,7 +1892,7 @@ export function setupGame(){
             clearDialog.call(this);
             ticket.setVisible(false);
             GameState.money=+(GameState.money+mD).toFixed(2);
-            moneyText.setText('🪙 '+receipt(GameState.money));
+            moneyText.setText(receipt(GameState.money));
             animateStatChange(moneyText, this, mD);
             stopSellGlowSparkle.call(this);
             done();
@@ -1918,7 +1932,7 @@ export function setupGame(){
               clearDialog.call(this);
               ticket.setVisible(false);
               GameState.money = +(GameState.money + mD).toFixed(2);
-              moneyText.setText('🪙 ' + receipt(GameState.money));
+              moneyText.setText(receipt(GameState.money));
               animateStatChange(moneyText, this, mD);
               done();
             }
@@ -2010,7 +2024,7 @@ export function setupGame(){
               clearDialog.call(this);
               ticket.setVisible(false);
               GameState.money=+(GameState.money+mD).toFixed(2);
-              moneyText.setText('🪙 '+receipt(GameState.money));
+              moneyText.setText(receipt(GameState.money));
               animateStatChange(moneyText, this, mD);
               done();
           }});
@@ -2063,7 +2077,7 @@ export function setupGame(){
           reportLine2.setVisible(false).alpha=1;
           reportLine3.setVisible(false).alpha=1;
           GameState.money=+(GameState.money+mD).toFixed(2);
-          moneyText.setText('🪙 '+receipt(GameState.money));
+          moneyText.setText(receipt(GameState.money));
           animateStatChange(moneyText, this, mD);
           done();
           
@@ -3159,7 +3173,7 @@ function dogsBarkAtFalcon(){
       girl.setPosition(startX, 245).setVisible(false);
     }
     GameState.money=10.00; GameState.love=3;
-    moneyText.setText('🪙 '+receipt(GameState.money));
+    moneyText.setText(receipt(GameState.money));
     loveText.setText(String(GameState.love));
     updateLevelDisplay();
     if(GameState.activeCustomer){

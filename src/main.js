@@ -494,7 +494,6 @@ export function setupGame(){
   let sideCFadeTween=null;
   let cloudHeartTween=null, cloudDollarTween=null;
   let endOverlay=null;
-  let blendBtn, opacityIncreaseBtn, opacityDecreaseBtn, opacityLabel;
   // hearts or anger symbols currently animating
 
 
@@ -649,10 +648,10 @@ export function setupGame(){
       .setOrigin(0,0)
       .setDepth(1)
       .setScale(2.4)
-      // Use additive blend to remove dark areas
-      .setBlendMode(Phaser.BlendModes.ADD)
+      // Use screen blend for lighter overlay
+      .setBlendMode(Phaser.BlendModes.SCREEN)
 
-      .setAlpha(0.5)
+      .setAlpha(0.6)
       .setPostPipeline('desaturate');
 
     const dollarPipeline = cloudDollar.getPostPipeline(DesaturatePipeline);
@@ -672,10 +671,10 @@ export function setupGame(){
       .setOrigin(1,0)
       .setDepth(1)
       .setScale(2.4)
-      // Use additive blend to remove dark areas
-      .setBlendMode(Phaser.BlendModes.ADD)
+      // Use screen blend for lighter overlay
+      .setBlendMode(Phaser.BlendModes.SCREEN)
 
-      .setAlpha(0.5)
+      .setAlpha(0.6)
       .setPostPipeline('desaturate');
 
     const heartPipeline = cloudHeart.getPostPipeline(DesaturatePipeline);
@@ -708,51 +707,6 @@ export function setupGame(){
     // gentle cloud animations handled by updateCloudStatus
     updateCloudStatus(this);
 
-    const blendModeEntries = Object.entries(Phaser.BlendModes)
-      .filter(([k,v]) => typeof v === 'number' && isNaN(Number(k)) && k.toUpperCase() === k)
-      .sort((a,b) => a[1]-b[1]);
-    let blendIndex = 0;
-    const applyBlend = () => {
-      const mode = blendModeEntries[blendIndex];
-      cloudHeart.setBlendMode(mode[1]);
-      cloudDollar.setBlendMode(mode[1]);
-      blendBtn.setText(`Blend: ${mode[0]}`);
-    };
-    blendBtn = this.add.text(470, 8, '', {font:'12px sans-serif',fill:'#fff',backgroundColor:'#000',padding:{x:4,y:2}})
-      .setOrigin(1,0)
-      .setDepth(5)
-      .setInteractive({ useHandCursor:true })
-      .on('pointerdown',()=>{
-        blendIndex = (blendIndex + 1) % blendModeEntries.length;
-        applyBlend();
-      });
-    applyBlend();
-
-    let opacity = cloudHeart.alpha;
-    opacityLabel = this.add.text(470, 26, `Opacity: ${opacity.toFixed(2)}`,
-      {font:'12px sans-serif',fill:'#fff'})
-      .setOrigin(1,0)
-      .setDepth(5);
-    opacityIncreaseBtn = this.add.text(470, 42, 'Opacity +', {font:'12px sans-serif',fill:'#0f0',backgroundColor:'#000',padding:{x:4,y:2}})
-      .setOrigin(1,0)
-      .setDepth(5)
-      .setInteractive({ useHandCursor:true })
-      .on('pointerdown',()=>{
-        opacity = Math.min(1, opacity + 0.1);
-        cloudHeart.setAlpha(opacity);
-        cloudDollar.setAlpha(opacity);
-        opacityLabel.setText(`Opacity: ${opacity.toFixed(2)}`);
-      });
-    opacityDecreaseBtn = this.add.text(470, 58, 'Opacity -', {font:'12px sans-serif',fill:'#f00',backgroundColor:'#000',padding:{x:4,y:2}})
-      .setOrigin(1,0)
-      .setDepth(5)
-      .setInteractive({ useHandCursor:true })
-      .on('pointerdown',()=>{
-        opacity = Math.max(0, opacity - 0.1);
-        cloudHeart.setAlpha(opacity);
-        cloudDollar.setAlpha(opacity);
-        opacityLabel.setText(`Opacity: ${opacity.toFixed(2)}`);
-      });
     // Indicator for available queue slots
     queueLevelText=this.add.text(156,316,'',{font:'16px sans-serif',fill:'#000'})
       .setOrigin(0.5).setDepth(1).setVisible(false);

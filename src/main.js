@@ -2434,6 +2434,14 @@ export function setupGame(){
     });
   }
 
+  function flashRed(scene, sprite, duration=250){
+    if(!scene || !sprite) return;
+    sprite.setTintFill(0xff0000);
+    scene.time.delayedCall(dur(duration), ()=>{
+      if(sprite && sprite.clearTint) sprite.clearTint();
+    }, [], scene);
+  }
+
   function showFalconAttack(cb){
     if (GameState.falconActive) return;
     const scene=this;
@@ -2741,9 +2749,8 @@ function dogsBarkAtFalcon(){
             const tl=scene.tweens.createTimeline({callbackScope:scene});
           tl.add({targets:falcon,y:targetY+10,duration:dur(80),yoyo:true});
           tl.add({targets:girl,y:girl.y+5,duration:dur(80),yoyo:true,
-                   onStart:()=>{girl.setTintFill(0xff0000);sprinkleBursts(scene);},
-                   onYoyo:()=>{girl.setTintFill(0xff0000);sprinkleBursts(scene);},
-                   onComplete:()=>girl.clearTint()},'<');
+                   onStart:()=>sprinkleBursts(scene),
+                   onYoyo:()=>sprinkleBursts(scene)},'<');
           // No more feathers during the attack
           tl.setCallback('onComplete', () => {
             // stopTrail();
@@ -2761,19 +2768,11 @@ function dogsBarkAtFalcon(){
     attackOnce();
 
     function blinkAngry(s){
-      s.tweens.add({targets:girl,duration:dur(100),repeat:2,yoyo:true,
-        onStart:()=>girl.setTintFill(0xff0000),
-        onYoyo:()=>girl.setTintFill(0xff0000),
-        onRepeat:()=>girl.clearTint(),
-        onComplete:()=>girl.clearTint()});
+      flashRed(s, girl);
     }
 
     function blinkFalcon(){
-      scene.tweens.add({targets:falcon,duration:dur(100),repeat:2,yoyo:true,
-        onStart:()=>falcon.setTintFill(0xff0000),
-        onYoyo:()=>falcon.setTintFill(0xff0000),
-        onRepeat:()=>falcon.clearTint(),
-        onComplete:()=>falcon.clearTint()});
+      flashRed(scene, falcon);
     }
 
     function sprinkleBursts(s){
@@ -2928,11 +2927,8 @@ function dogsBarkAtFalcon(){
     let finished=false;
 
     function blinkGirl(){
-      scene.tweens.add({targets:girl,duration:dur(60),repeat:2,yoyo:true,x:'+=4',
-        onStart:()=>girl.setTintFill(0xff0000),
-        onYoyo:()=>girl.setTintFill(0xff0000),
-        onRepeat:()=>girl.clearTint(),
-        onComplete:()=>girl.clearTint()});
+      flashRed(scene, girl);
+      scene.tweens.add({targets:girl,duration:dur(60),repeat:2,yoyo:true,x:'+=4'});
     }
 
       function sendDriver(driver){

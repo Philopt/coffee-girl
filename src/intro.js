@@ -98,6 +98,8 @@ function playOpening(scene){
     openingNumber.displayHeight / 2 +
     10
   );
+  // Save for later so we can reposition the number after the phone zooms out
+  openingNumber.finalPos = { x: finalX, y: finalY };
 
   const spawnThrust = (scale=2) => {
     const ang = Phaser.Math.DegToRad(Phaser.Math.Between(240, 300));
@@ -345,9 +347,11 @@ function showStartScreen(scene){
       duration: 800,
       delay: 200,
       ease: 'Sine.easeOut',
+
       onComplete: () => {
         if (openingNumber && numLocalX !== null && numLocalY !== null) {
           openingNumber.setPosition(numLocalX, numLocalY);
+
         }
       }
     });

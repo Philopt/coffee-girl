@@ -43,7 +43,11 @@ const LOVE_FACE_EMOJIS = ['😍','🥰','😘','😻','🤩'];
 const NEUTRAL_FACE_EMOJIS = ['🙂'];
 
 
-const UPSET_EMOJIS = ['😠','🤬','😡','😤','😭','😢','😱','😖','😫'];
+const UPSET_EMOJIS = [
+  '😠','🤬','😡','😤','😭','😢','😱','😖','😫','💢','😨','😰','😥','😓','🤯','😵‍💫','🤮','🤢','😩'
+];
+const HAPPY_FACE_EMOJIS = ['🙂','😊','😋','😄','☺️'];
+const LOVE_FACE_EMOJIS = ['😍','🥰','🤩','😘','😻'];
 
 function nextMood(state){
   switch(state){

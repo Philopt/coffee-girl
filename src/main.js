@@ -3212,6 +3212,8 @@ function dogsBarkAtFalcon(){
     }).setOrigin(0.5).setDepth(22).setAlpha(0)
       .setInteractive({ useHandCursor:true });
 
+    // Align the interactive zone with the button text
+    btnZone.setPosition(btnText.x, btnText.y);
     const showBtnDelay = dur(2400) + dur(600) + 1000;
     this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
     btn.on('pointerdown',()=>{
@@ -3300,6 +3302,8 @@ function dogsBarkAtFalcon(){
     }).setOrigin(0.5).setDepth(22).setAlpha(0)
       .setInteractive({ useHandCursor:true });
 
+    // Align the interactive zone with the button text
+    btnZone.setPosition(btnText.x, btnText.y);
     const showBtnDelay = dur(2400) + dur(600) + 1000;
     this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
 

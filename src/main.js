@@ -515,25 +515,27 @@ export function setupGame(){
     this.anims.create({
       key:'cloudHeart_anim',
       frames:this.anims.generateFrameNumbers('cloudHeart',{start:0,end:4}),
-      frameRate:1,
-      repeat:-1
+      frameRate:0.5,
+      repeat:-1,
+      yoyo:true
     });
     this.anims.create({
       key:'cloudDollar_anim',
       frames:this.anims.generateFrameNumbers('cloudDollar',{start:0,end:4}),
-      frameRate:1,
-      repeat:-1
+      frameRate:0.5,
+      repeat:-1,
+      yoyo:true
     });
     // background
     let bg=this.add.image(0,0,'bg').setOrigin(0).setDepth(0);
     bg.setDisplaySize(this.scale.width,this.scale.height);
 
     // HUD
-    cloudDollar=this.add.sprite(0,20,'cloudDollar')
+    cloudDollar=this.add.sprite(0,35,'cloudDollar')
       .setOrigin(0,0)
       .setDepth(1)
-      .setScale(2)
-      .setBlendMode(Phaser.BlendModes.LIGHTEN)
+      .setScale(2.4)
+      .setBlendMode(Phaser.BlendModes.SCREEN)
       .setAlpha(0.5)
       .play('cloudDollar_anim');
     cloudDollar.x = 160 - cloudDollar.displayWidth/2;
@@ -546,11 +548,11 @@ export function setupGame(){
       cloudDollar.x + cloudDollar.displayWidth/2,
       cloudDollar.y + cloudDollar.displayHeight/2
     );
-    cloudHeart=this.add.sprite(0,20,'cloudHeart')
+    cloudHeart=this.add.sprite(0,35,'cloudHeart')
       .setOrigin(1,0)
       .setDepth(1)
-      .setScale(2)
-      .setBlendMode(Phaser.BlendModes.LIGHTEN)
+      .setScale(2.4)
+      .setBlendMode(Phaser.BlendModes.SCREEN)
       .setAlpha(0.5)
       .play('cloudHeart_anim');
     cloudHeart.x = 320 + cloudHeart.displayWidth/2;

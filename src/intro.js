@@ -98,6 +98,8 @@ function playOpening(scene){
     openingNumber.displayHeight / 2 +
     10
   );
+  // Save for later so we can reposition the number after the phone zooms out
+  openingNumber.finalPos = { x: finalX, y: finalY };
 
   const spawnThrust = (scale=2) => {
     const ang = Phaser.Math.DegToRad(Phaser.Math.Between(240, 300));
@@ -341,7 +343,23 @@ function showStartScreen(scene){
       scale: 1,
       duration: 800,
       delay: 200,
-      ease: 'Sine.easeOut'
+      ease: 'Sine.easeOut',
+      onUpdate: () => {
+        if (openingNumber && openingNumber.finalPos) {
+          const s = phoneContainer.scale || 1;
+          const lx = (openingNumber.finalPos.x - phoneContainer.x) / s;
+          const ly = (openingNumber.finalPos.y - phoneContainer.y) / s;
+          openingNumber.setPosition(lx, ly);
+        }
+      },
+      onComplete: () => {
+        if (openingNumber && openingNumber.finalPos) {
+          const s = phoneContainer.scale || 1;
+          const lx = (openingNumber.finalPos.x - phoneContainer.x) / s;
+          const ly = (openingNumber.finalPos.y - phoneContainer.y) / s;
+          openingNumber.setPosition(lx, ly);
+        }
+      }
     });
   }
 

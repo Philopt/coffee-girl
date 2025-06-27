@@ -1,14 +1,11 @@
 const canvas = document.createElement('canvas');
-const context = canvas.getContext('2d', { willReadFrequently: true });
 
 export const baseConfig = {
-  // Explicitly use the Canvas renderer when providing a custom canvas/context.
-  // Phaser throws "Must set explicit renderType in custom environment" if
-  // `Phaser.AUTO` is used with a predefined canvas or context.
-  type: Phaser.CANVAS,
+  // Use WebGL so sprite tinting effects like damage flashes work correctly.
+  // Phaser requires an explicit renderer type when providing a custom canvas.
+  type: Phaser.WEBGL,
   parent: 'game-container',
   canvas,
-  context,
   backgroundColor: '#f2e5d7',
   scale: {
     mode: Phaser.Scale.FIT,

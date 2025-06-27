@@ -639,20 +639,6 @@ export function setupGame(){
       this.renderer.pipelines.addPostPipeline('desaturate', DesaturatePipeline);
     }
 
-    this.anims.create({
-      key:'cloudHeart_anim',
-      frames:this.anims.generateFrameNumbers('cloudHeart',{start:0,end:4}),
-      frameRate:0.5,
-      repeat:-1,
-      yoyo:true
-    });
-    this.anims.create({
-      key:'cloudDollar_anim',
-      frames:this.anims.generateFrameNumbers('cloudDollar',{start:0,end:4}),
-      frameRate:0.5,
-      repeat:-1,
-      yoyo:true
-    });
     // background
     let bg=this.add.image(0,0,'bg').setOrigin(0).setDepth(0);
     bg.setDisplaySize(this.scale.width,this.scale.height);
@@ -666,7 +652,6 @@ export function setupGame(){
       .setBlendMode(Phaser.BlendModes.ADD)
 
       .setAlpha(0.5)
-      .play('cloudDollar_anim')
       .setPostPipeline('desaturate');
 
     const dollarPipeline = cloudDollar.getPostPipeline('desaturate');
@@ -690,7 +675,6 @@ export function setupGame(){
       .setBlendMode(Phaser.BlendModes.ADD)
 
       .setAlpha(0.5)
-      .play('cloudHeart_anim')
       .setPostPipeline('desaturate');
 
     const heartPipeline = cloudHeart.getPostPipeline('desaturate');
@@ -3152,7 +3136,10 @@ function dogsBarkAtFalcon(){
     }).setOrigin(0.5).setDepth(22).setAlpha(0)
       .setInteractive({ useHandCursor:true });
 
-    // Align the interactive zone with the button itself
+
+    // Align the interactive zone with the button text
+    // Removed outdated reference to btnZone/btnText which are no longer defined
+
     const showBtnDelay = dur(2400) + dur(600) + 1000;
     this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
     btn.on('pointerdown',()=>{
@@ -3241,7 +3228,10 @@ function dogsBarkAtFalcon(){
     }).setOrigin(0.5).setDepth(22).setAlpha(0)
       .setInteractive({ useHandCursor:true });
 
-    // Align the interactive zone with the button itself
+
+    // Align the interactive zone with the button text
+    // Removed outdated reference to btnZone/btnText which are no longer defined
+
     const showBtnDelay = dur(2400) + dur(600) + 1000;
     this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
 

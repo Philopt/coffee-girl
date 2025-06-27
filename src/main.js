@@ -2778,8 +2778,11 @@ function dogsBarkAtFalcon(){
       });
     panicCustomers();
       const attackOnce=()=>{
-        const startX=Math.random()<0.5?girl.x-120:girl.x+120;
-        const startY=Phaser.Math.Between(girl.y-120,girl.y-40);
+        const dir=Math.random()<0.5?-1:1;
+        const angle=Phaser.Math.FloatBetween(Phaser.Math.DegToRad(55),Phaser.Math.DegToRad(80));
+        const radius=Phaser.Math.Between(140,200);
+        const startX=girl.x+dir*Math.cos(angle)*radius;
+        const startY=girl.y-Math.sin(angle)*radius;
         const fromX=falcon.x;
         const fromY=falcon.y;
         // if(firstAttack) startTrail();

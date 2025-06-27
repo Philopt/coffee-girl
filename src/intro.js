@@ -303,6 +303,9 @@ function showStartScreen(scene){
   const pcX = phoneContainer.x;
   const pcY = phoneContainer.y;
 
+  // store the opening number's target coords relative to the phone
+  let numLocalX = null, numLocalY = null;
+
   if(openingTitle){
     const localX = (openingTitle.x - pcX) / pcScale;
     const localY = (openingTitle.y - pcY) / pcScale;
@@ -315,10 +318,10 @@ function showStartScreen(scene){
   }
 
   if(openingNumber){
-    const localX = (openingNumber.x - pcX) / pcScale;
-    const localY = (openingNumber.y - pcY) / pcScale;
+    numLocalX = openingNumber.x - pcX;
+    numLocalY = openingNumber.y - pcY;
     openingNumber
-      .setPosition(localX, localY)
+      .setPosition(numLocalX / pcScale, numLocalY / pcScale)
       .setScale(openingNumber.scale / pcScale)
       .setDepth(16)
       .setAlpha(1);
@@ -344,20 +347,11 @@ function showStartScreen(scene){
       duration: 800,
       delay: 200,
       ease: 'Sine.easeOut',
-      onUpdate: () => {
-        if (openingNumber && openingNumber.finalPos) {
-          const s = phoneContainer.scale || 1;
-          const lx = (openingNumber.finalPos.x - phoneContainer.x) / s;
-          const ly = (openingNumber.finalPos.y - phoneContainer.y) / s;
-          openingNumber.setPosition(lx, ly);
-        }
-      },
+
       onComplete: () => {
-        if (openingNumber && openingNumber.finalPos) {
-          const s = phoneContainer.scale || 1;
-          const lx = (openingNumber.finalPos.x - phoneContainer.x) / s;
-          const ly = (openingNumber.finalPos.y - phoneContainer.y) / s;
-          openingNumber.setPosition(lx, ly);
+        if (openingNumber && numLocalX !== null && numLocalY !== null) {
+          openingNumber.setPosition(numLocalX, numLocalY);
+
         }
       }
     });
@@ -413,6 +407,14 @@ function showStartScreen(scene){
     }
   }
   startZone.on('pointerdown',()=>{
+    // Disable further clicks as soon as the intro begins
+    startZone.disableInteractive();
+    if (phoneContainer && phoneContainer.disableInteractive) {
+      phoneContainer.disableInteractive();
+    }
+    if (phoneContainer && phoneContainer.off) {
+      phoneContainer.off('pointerdown');
+    }
     if (typeof debugLog === 'function') debugLog('start button clicked');
     startMsgTimers.forEach(t=>t.remove(false));
     startMsgTimers=[];

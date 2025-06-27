@@ -3137,25 +3137,18 @@ function dogsBarkAtFalcon(){
       .setAlpha(0);
     this.tweens.add({targets:line2,alpha:1,duration:dur(600),delay:dur(2400)});
 
-    const btnText = this.add.text(0,0,'Try Again',{
+    const btn = this.add.text(240,550,'Try Again',{
       font:'20px sans-serif',
       fill:'#000',
       backgroundColor:'#ffffff',
       padding:{x:14,y:8}
-    }).setOrigin(0.5);
-
-    const btn = this.add.container(240,550,[btnText])
-      .setSize(btnText.width, btnText.height)
-      .setDepth(22)
-      .setAlpha(0);
-    const btnZone = this.add.zone(0,0,btnText.width,btnText.height).setOrigin(0.5);
-    btnZone.setInteractive({ useHandCursor:true });
-    btn.add(btnZone);
+    }).setOrigin(0.5).setDepth(22).setAlpha(0)
+      .setInteractive({ useHandCursor:true });
 
     const showBtnDelay = dur(2400) + dur(600) + 1000;
     this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
-    btnZone.on('pointerdown',()=>{
-        btnZone.disableInteractive();
+    btn.on('pointerdown',()=>{
+        btn.disableInteractive();
         const key = img ? img.texture.key : null;
         if(key){
           GameState.lastEndKey = key;
@@ -3232,26 +3225,19 @@ function dogsBarkAtFalcon(){
       .setAlpha(0);
     this.tweens.add({targets:line2,alpha:1,duration:dur(600),delay:dur(2400)});
 
-    const btnText = this.add.text(0,0,'Try Again',{
+    const btn = this.add.text(240,550,'Try Again',{
       font:'20px sans-serif',
       fill:'#000',
       backgroundColor:'#ffffff',
       padding:{x:14,y:8}
-    }).setOrigin(0.5);
-
-    const btn = this.add.container(240,550,[btnText])
-      .setSize(btnText.width, btnText.height)
-      .setDepth(22)
-      .setAlpha(0);
-    const btnZone = this.add.zone(0,0,btnText.width,btnText.height).setOrigin(0.5);
-    btnZone.setInteractive({ useHandCursor:true });
-    btn.add(btnZone);
+    }).setOrigin(0.5).setDepth(22).setAlpha(0)
+      .setInteractive({ useHandCursor:true });
 
     const showBtnDelay = dur(2400) + dur(600) + 1000;
     this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
 
-    btnZone.on('pointerdown',()=>{
-        btnZone.disableInteractive();
+    btn.on('pointerdown',()=>{
+        btn.disableInteractive();
         const key = img ? img.texture.key : null;
         if(key){
           GameState.lastEndKey = key;

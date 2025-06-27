@@ -418,7 +418,10 @@ function showStartScreen(scene){
       playIntro.call(scene);
     }});
     tl.add({targets:phoneContainer,y:-320,duration:600,ease:'Sine.easeIn'});
-    tl.add({targets:[startOverlay,openingTitle,openingNumber,openingDog],alpha:0,duration:600});
+    const fadeTargets = [startOverlay, openingTitle, openingNumber, openingDog].filter(Boolean);
+    if (fadeTargets.length) {
+      tl.add({targets:fadeTargets,alpha:0,duration:600});
+    }
     tl.play();
   });
 

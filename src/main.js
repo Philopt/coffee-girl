@@ -342,19 +342,85 @@ export function setupGame(){
     });
   }
 
+  function startGiveSparkle(){
+    if(!btnGive) return;
+    if(btnGive.glow){
+      if(btnGive.glowTween && btnGive.glowTween.remove) btnGive.glowTween.remove();
+      btnGive.glow.setVisible(true).setAlpha(0.6).setScale(1);
+      btnGive.glowTween = this.tweens.add({
+        targets: btnGive.glow,
+        alpha: 0,
+        scale: 2,
+        duration: dur(300),
+        ease: 'Cubic.easeOut',
+        onComplete: () => btnGive.glow.setVisible(false).setScale(1)
+      });
+    }
+    const count = 6;
+    const radius = Math.max(btnGive.width, btnGive.height) / 2 + 4;
+    for(let i=0;i<count;i++){
+      const angle = Phaser.Math.FloatBetween(0, Math.PI*2);
+      const sx = btnGive.x + radius * Math.cos(angle);
+      const sy = btnGive.y + radius * Math.sin(angle);
+      const sp = this.add.text(sx, sy, '✨', {font:'18px sans-serif',fill:'#fff'})
+        .setOrigin(0.5)
+        .setDepth(btnGive.depth+1);
+      this.tweens.add({
+        targets: sp,
+        y: sy - 10,
+        alpha: 0,
+        duration: dur(300),
+        yoyo: true,
+        repeat: 1,
+        onComplete: () => sp.destroy()
+      });
+    }
+  }
+
   function growSellGlow(tipped){
     if(!btnSell || !btnSell.glow) return;
     const target=tipped?3:2;
     this.tweens.add({targets:btnSell.glow, scale: target, duration: dur(300)});
   }
 
-  function stopSellGlowSparkle(){
+  function stopSellGlowSparkle(cb){
     if(!btnSell || !btnSell.glow) return;
     if(btnSell.sparkleTween && btnSell.sparkleTween.remove){
       btnSell.sparkleTween.remove();
       btnSell.sparkleTween=null;
     }
-    btnSell.glow.setVisible(false).setScale(1).setPosition(0,0);
+    const glow = btnSell.glow;
+    this.tweens.add({
+      targets: glow,
+      scale: 0,
+      alpha: 0,
+      duration: dur(200),
+      ease: 'Cubic.easeOut',
+      onComplete: () => {
+        glow.setVisible(false).setScale(1).setPosition(0,0);
+      }
+    });
+    if(btnSell.image){
+      btnSell.image.setTintFill(0xffd700);
+      this.tweens.add({
+        targets: btnSell.image,
+        alpha: 0,
+        duration: dur(150),
+        onComplete: () => {
+          btnSell.setVisible(false);
+          btnSell.image.clearTint();
+          btnSell.image.setAlpha(1);
+          if(cb) cb();
+        }
+      });
+    } else {
+      this.tweens.add({
+        targets: btnSell,
+        alpha: 0,
+        duration: dur(150),
+        onComplete: () => { btnSell.setVisible(false); if(cb) cb(); }
+      });
+    }
   }
 
 
@@ -765,13 +831,13 @@ export function setupGame(){
         const key = `glow_${glowColor.toString(16)}_${Math.round(radius)}`;
         createGlowTexture(this, glowColor, key, radius);
         const glow=this.add.image(0,0,key).setVisible(false);
-        c.add(glow);
         glow.setBlendMode(Phaser.BlendModes.ADD);
         c.glow=glow;
       }
 
       c.add(shadow);
       c.add(img);
+      if(c.glow) c.add(c.glow); // place glow on top of image
       c.image = img; // store reference for easy access
 
       const zone=this.add.zone(0,0,width,height).setOrigin(0.5);
@@ -779,6 +845,7 @@ export function setupGame(){
       zone.on('pointerdown',()=>{
         blowButtonsAway.call(this,c);
         if(c===btnSell) startSellGlowSparkle.call(this);
+        if(c===btnGive) startGiveSparkle.call(this);
         blinkButton.call(this,c,handler,zone);
       });
       c.add(zone);
@@ -1500,6 +1567,15 @@ export function setupGame(){
           }
           // Move each dialog element downward together rather than
           // converging on a single absolute Y position.
+          if(btnRef){
+            this.tweens.add({
+              targets: btnRef,
+              y: btnRef.y + 80,
+              alpha: 0,
+              duration: dur(300),
+              ease: 'Cubic.easeIn'
+            });
+          }
           this.tweens.add({targets:bubbleObjs, y:'+=80', scale:1.5, alpha:0,
                           duration:dur(300), ease:'Cubic.easeIn', onComplete:()=>{
             if(dialogBg.clearTint) dialogBg.clearTint();
@@ -1915,13 +1991,14 @@ export function setupGame(){
         paidStamp.setVisible(false);
         tipText.setVisible(false);
         const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
-            clearDialog.call(this);
-            ticket.setVisible(false);
-            GameState.money=+(GameState.money+mD).toFixed(2);
-            moneyText.setText(receipt(GameState.money));
-            animateStatChange(moneyText, this, mD);
-            stopSellGlowSparkle.call(this);
-            done();
+            stopSellGlowSparkle.call(this, () => {
+              clearDialog.call(this);
+              ticket.setVisible(false);
+              GameState.money=+(GameState.money+mD).toFixed(2);
+              moneyText.setText(receipt(GameState.money));
+              animateStatChange(moneyText, this, mD);
+              done();
+            });
           }});
         tl.add({targets:ticket,x:destX,y:destY,scale:0,duration:dur(400),
           onStart:()=>{

@@ -631,8 +631,11 @@ export function setupGame(){
       return;
     }
 
-    // Register a simple desaturation post-processing pipeline
-    this.renderer.pipelines.addPostPipeline('desaturate', DesaturatePipeline);
+    // Register a simple desaturation post-processing pipeline if WebGL is available
+    if (this.renderer && this.renderer.pipelines &&
+        typeof this.renderer.pipelines.addPostPipeline === 'function') {
+      this.renderer.pipelines.addPostPipeline('desaturate', DesaturatePipeline);
+    }
 
     this.anims.create({
       key:'cloudHeart_anim',
@@ -664,7 +667,8 @@ export function setupGame(){
       .play('cloudDollar_anim')
       .setPostPipeline('desaturate');
 
-    cloudDollar.getPostPipeline('desaturate').amount = 0.5;
+    const dollarPipeline = cloudDollar.getPostPipeline('desaturate');
+    if (dollarPipeline) dollarPipeline.amount = 0.5;
 
     cloudDollar.x = 160 - cloudDollar.displayWidth/2;
     moneyText=this.add.text(0,0,receipt(GameState.money),{font:'26px sans-serif',fill:'#fff'})
@@ -687,7 +691,8 @@ export function setupGame(){
       .play('cloudHeart_anim')
       .setPostPipeline('desaturate');
 
-    cloudHeart.getPostPipeline('desaturate').amount = 0.5;
+    const heartPipeline = cloudHeart.getPostPipeline('desaturate');
+    if (heartPipeline) heartPipeline.amount = 0.5;
 
     cloudHeart.x = 320 + cloudHeart.displayWidth/2;
     loveText=this.add.text(0,0,GameState.love,{font:'26px sans-serif',fill:'#fff'})

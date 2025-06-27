@@ -602,7 +602,7 @@ export function setupGame(){
       .setDepth(1)
       .setScale(2.4)
       .setBlendMode(Phaser.BlendModes.SCREEN)
-      .setAlpha(0.5)
+      .setAlpha(0.9)
       .play('cloudDollar_anim');
     cloudDollar.x = 160 - cloudDollar.displayWidth/2;
     moneyText=this.add.text(0,0,receipt(GameState.money),{font:'26px sans-serif',fill:'#fff'})
@@ -619,7 +619,7 @@ export function setupGame(){
       .setDepth(1)
       .setScale(2.4)
       .setBlendMode(Phaser.BlendModes.SCREEN)
-      .setAlpha(0.5)
+      .setAlpha(0.9)
       .play('cloudHeart_anim');
     cloudHeart.x = 320 + cloudHeart.displayWidth/2;
     loveText=this.add.text(0,0,GameState.love,{font:'26px sans-serif',fill:'#fff'})

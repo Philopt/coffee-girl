@@ -533,15 +533,15 @@ export function setupGame(){
       .setOrigin(0,0)
       .setDepth(1)
       .setScale(2)
-      .setBlendMode(Phaser.BlendModes.ADD)
-      .setAlpha(0.52)
+      .setBlendMode(Phaser.BlendModes.LIGHTEN)
+      .setAlpha(0.5)
       .play('cloudDollar_anim');
     cloudDollar.x = 160 - cloudDollar.displayWidth/2;
     moneyText=this.add.text(0,0,receipt(GameState.money),{font:'26px sans-serif',fill:'#fff'})
       .setOrigin(0.5)
       .setDepth(2)
-      .setBlendMode(Phaser.BlendModes.ADD)
-      .setAlpha(0.52);
+      .setBlendMode(Phaser.BlendModes.LIGHTEN)
+      .setAlpha(0.5);
     moneyText.setPosition(
       cloudDollar.x + cloudDollar.displayWidth/2,
       cloudDollar.y + cloudDollar.displayHeight/2
@@ -550,15 +550,15 @@ export function setupGame(){
       .setOrigin(1,0)
       .setDepth(1)
       .setScale(2)
-      .setBlendMode(Phaser.BlendModes.ADD)
-      .setAlpha(0.52)
+      .setBlendMode(Phaser.BlendModes.LIGHTEN)
+      .setAlpha(0.5)
       .play('cloudHeart_anim');
     cloudHeart.x = 320 + cloudHeart.displayWidth/2;
     loveText=this.add.text(0,0,GameState.love,{font:'26px sans-serif',fill:'#fff'})
       .setOrigin(0.5)
       .setDepth(2)
-      .setBlendMode(Phaser.BlendModes.ADD)
-      .setAlpha(0.52);
+      .setBlendMode(Phaser.BlendModes.LIGHTEN)
+      .setAlpha(0.5);
     loveText.setPosition(
       cloudHeart.x - cloudHeart.displayWidth/2,
       cloudHeart.y + cloudHeart.displayHeight/2

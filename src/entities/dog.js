@@ -341,7 +341,8 @@ export function sendDogOffscreen(dog, x, y) {
   if (dog.followEvent) dog.followEvent.remove(false);
   // ensure any previous tweens don't fight with the exit tween
   this.tweens.killTweensOf(dog);
-  const dist = Phaser.Math.Distance.Between(dog.x, dog.y, x, y);
+  const targetY = Math.max(DOG_MIN_Y, y);
+  const dist = Phaser.Math.Distance.Between(dog.x, dog.y, x, targetY);
   if (Math.abs(x - dog.x) > 3) {
     dog.dir = x > dog.x ? 1 : -1;
   }
@@ -351,7 +352,7 @@ export function sendDogOffscreen(dog, x, y) {
   this.tweens.add({
     targets: dog,
     x,
-    y,
+    y: targetY,
     duration: dur((dist / DOG_SPEED) * 1000),
     onUpdate: (tw, t) => {
       if (t.prevX === undefined) t.prevX = t.x;

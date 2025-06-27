@@ -1,6 +1,7 @@
 import { GameState } from '../state.js';
 import { dur, scaleForY } from '../ui.js';
 import { sendDogOffscreen } from './dog.js';
+import { ORDER_X } from '../customers.js';
 
 const EDGE_TURN_BUFFER = 40;
 const EDGE_PAUSE_DURATION = 500; // ms pause before turning around at edges
@@ -20,7 +21,9 @@ export function removeWanderer(scene, c){
   if(idx >= 0) GameState.wanderers.splice(idx,1);
   const ex = c.sprite.x, ey = c.sprite.y;
   if(c.dog){
-    sendDogOffscreen.call(scene,c.dog,ex,ey);
+    const dir = c.sprite.x < ORDER_X ? -1 : 1;
+    const exitX = dir === 1 ? 520 : -40;
+    sendDogOffscreen.call(scene,c.dog,exitX,ey);
     c.dog = null;
   }
   if(c.heartEmoji){ c.heartEmoji.destroy(); c.heartEmoji = null; }

@@ -29,7 +29,8 @@ function randomTarget(scene){
     // top of the truck
     (() => {
       const truck = GameState.truck;
-      if (truck && truck.getTopCenter) {
+      const moving = truck && scene.tweens && scene.tweens.isTweening && scene.tweens.isTweening(truck);
+      if (truck && !moving && truck.getTopCenter) {
         const top = truck.getTopCenter();
         const y = top.y + 25 * truck.scaleY;
         const left = truck.x - truck.displayWidth / 2 + 40 * truck.scaleX;
@@ -75,7 +76,8 @@ export class Sparrow {
     this.hopCooldown = 0;
 
     const truck = GameState.truck;
-    if (truck && truck.getTopCenter) {
+    const moving = truck && scene.tweens && scene.tweens.isTweening && scene.tweens.isTweening(truck);
+    if (truck && !moving && truck.getTopCenter) {
       const top = truck.getTopCenter();
       const y = top.y + 25 * truck.scaleY;
       const left = truck.x - truck.displayWidth / 2 + 40 * truck.scaleX;
@@ -198,7 +200,8 @@ export class Sparrow {
         this.state = BirdState.WANDER_GROUND;
         let targetX = this.sprite.x + Phaser.Math.Between(-30,30);
         const truck = GameState.truck;
-        if(truck && truck.getTopCenter){
+        const moving = truck && this.scene.tweens && this.scene.tweens.isTweening && this.scene.tweens.isTweening(truck);
+        if(truck && !moving && truck.getTopCenter){
           const top = truck.getTopCenter();
           const roofY = top.y + 25 * truck.scaleY;
           if(Math.abs(this.sprite.y - roofY) < 3){
@@ -223,7 +226,8 @@ export class Sparrow {
     this.sprite.x += Math.cos(angle)*step;
     this.sprite.y += Math.sin(angle)*step;
     const truck = GameState.truck;
-    if(truck && truck.getTopCenter){
+    const moving = truck && this.scene.tweens && this.scene.tweens.isTweening && this.scene.tweens.isTweening(truck);
+    if(truck && !moving && truck.getTopCenter){
       const top = truck.getTopCenter();
       const roofY = top.y + 25 * truck.scaleY;
       if(Math.abs(this.sprite.y - roofY) < 5){
@@ -298,6 +302,11 @@ export function scheduleSparrowSpawn(scene){
   const gs = scene.gameState || GameState;
   if(gs.sparrowSpawnEvent){
     gs.sparrowSpawnEvent.remove(false);
+  }
+  const truck = gs.truck;
+  if(truck && scene.tweens && scene.tweens.isTweening && scene.tweens.isTweening(truck)){
+    gs.sparrowSpawnEvent = scene.time.delayedCall(200, () => scheduleSparrowSpawn(scene), [], scene);
+    return;
   }
   const delay = sparrowSpawnDelay(gs.love);
   gs.sparrowSpawnEvent = scene.time.delayedCall(delay, () => {

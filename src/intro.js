@@ -395,6 +395,14 @@ function showStartScreen(scene){
     }
   }
   startZone.on('pointerdown',()=>{
+    // Disable further clicks as soon as the intro begins
+    startZone.disableInteractive();
+    if (phoneContainer && phoneContainer.disableInteractive) {
+      phoneContainer.disableInteractive();
+    }
+    if (phoneContainer && phoneContainer.off) {
+      phoneContainer.off('pointerdown');
+    }
     if (typeof debugLog === 'function') debugLog('start button clicked');
     startMsgTimers.forEach(t=>t.remove(false));
     startMsgTimers=[];

@@ -217,59 +217,7 @@ export function setupGame(){
     }
   }
 
-  function spawnDebugDogs(scene){
-    if(!scene) return;
-    const states=[CustomerState.BROKEN, CustomerState.MENDING,
-                  CustomerState.GROWING, CustomerState.SPARKLING,
-                  CustomerState.ARROW];
-    const startX=80;
-    const spacing=80;
-    states.forEach((state,idx)=>{
-      const x=startX+idx*spacing;
-      const y=WANDER_BOTTOM;
-      const dog=scene.add.sprite(x,y,'dog1',1)
-        .setOrigin(0.5)
-        .setDepth(5);
-      const s=scaleForY(y)*0.5;
-      dog.setScale(s);
-      const emoji=HEART_EMOJIS[state];
-      if(emoji){
-        scene.add.text(x,y,emoji,{font:'28px sans-serif'})
-          .setOrigin(0.5)
-          .setScale(scaleForY(y)*0.8)
-          .setDepth(5)
-          .setShadow(0,0,'#000',4);
-      }
-    });
-  }
 
-  function spawnDebugCustomers(scene){
-    if(!scene) return;
-    const states=[CustomerState.BROKEN, CustomerState.MENDING,
-                  CustomerState.GROWING, CustomerState.SPARKLING,
-                  CustomerState.ARROW];
-    const startX=80;
-    const spacing=80;
-    const spriteKeys=(scene.assets && scene.assets.keys)||keys;
-    states.forEach((state,idx)=>{
-      const key=Phaser.Utils.Array.GetRandom(spriteKeys);
-      const x=startX+idx*spacing;
-      const y=WANDER_BOTTOM;
-      const cust=scene.add.sprite(x,y,key)
-        .setOrigin(0.5)
-        .setDepth(5);
-      const s=scaleForY(y);
-      cust.setScale(s);
-      const emoji=HEART_EMOJIS[state];
-      if(emoji){
-        scene.add.text(x,y,emoji,{font:'28px sans-serif'})
-          .setOrigin(0.5)
-          .setScale(scaleForY(y)*0.8)
-          .setDepth(5)
-          .setShadow(0,0,'#000',4);
-      }
-    });
-  }
 
 
   function hideOverlayTexts(){
@@ -772,17 +720,6 @@ export function setupGame(){
       animateStatChange(loveText, this, 1, true);
     });
 
-    const dogBtn=this.add.sprite(240,80,'dog1',1)
-      .setScale(0.3)
-      .setDepth(2)
-      .setInteractive({useHandCursor:true});
-    dogBtn.on('pointerdown',()=>spawnDebugDogs(this));
-
-    const custBtn=this.add.image(240,110,'new_kid_0_0')
-      .setScale(0.3)
-      .setDepth(2)
-      .setInteractive({useHandCursor:true});
-    custBtn.on('pointerdown',()=>spawnDebugCustomers(this));
     // gentle cloud animations handled by updateCloudStatus
     updateCloudStatus(this);
     // Indicator for available queue slots

@@ -2635,6 +2635,19 @@ function dogsBarkAtFalcon(){
 
     const attackers=[];
     const attackerDogs=[];
+    const updateHeart = s => {
+      if(s && s.heartEmoji && s.heartEmoji.scene){
+        const hy = s.y + (s.displayHeight || 0) * 0.30;
+        s.heartEmoji
+          .setPosition(s.x, hy)
+          .setScale(scaleForY(s.y) * 0.8)
+          .setDepth(s.depth);
+      }
+    };
+    const updateAttackerHearts = () => {
+      attackers.forEach(updateHeart);
+      attackerDogs.forEach(updateHeart);
+    };
     const gatherStartY = Math.max(WANDER_TOP, girl.y + 60);
     const gather=(arr)=>{
       arr.forEach(c=>{
@@ -2649,6 +2662,12 @@ function dogsBarkAtFalcon(){
           if(c.dog.followEvent) c.dog.followEvent.remove(false);
           c.dog.setDepth(20);
           attackerDogs.push(c.dog);
+          if(!c.dog.heartEmoji){
+            c.dog.heartEmoji = scene.add.text(c.dog.x, c.dog.y, HEART_EMOJIS[CustomerState.BROKEN], {font:'28px sans-serif'})
+              .setOrigin(0.5)
+              .setDepth(21)
+              .setShadow(0,0,'#000',4);
+          }
         }
         if(c.sprite){
           c.sprite.setDepth(20); // keep attackers above the girl
@@ -2657,6 +2676,12 @@ function dogsBarkAtFalcon(){
             c.sprite.setScale(scaleForY(gatherStartY));
           }
           attackers.push(c.sprite);
+          if(!c.sprite.heartEmoji){
+            c.sprite.heartEmoji = scene.add.text(c.sprite.x, c.sprite.y, HEART_EMOJIS[CustomerState.BROKEN], {font:'28px sans-serif'})
+              .setOrigin(0.5)
+              .setDepth(21)
+              .setShadow(0,0,'#000',4);
+          }
         }
       });
     };
@@ -2704,6 +2729,7 @@ function dogsBarkAtFalcon(){
       });
     };
     spawnReinforcements();
+    scene.events.on('update', updateAttackerHearts);
 
 
 
@@ -2728,13 +2754,15 @@ function dogsBarkAtFalcon(){
               targets:a,
               x:targetX,
               duration:dur(WALK_OFF_BASE/1.5),
-              onComplete:()=>a.destroy()
+              onUpdate:()=>updateHeart(a),
+              onComplete:()=>{ if(a.heartEmoji) a.heartEmoji.destroy(); a.destroy(); }
             });
           }
         });
-        scene.tweens.add({targets:driver,x:truck.x-40,y:truck.y,duration:dur(300),onComplete:()=>driver.destroy()});
+        scene.tweens.add({targets:driver,x:truck.x-40,y:truck.y,duration:dur(300),onUpdate:()=>updateHeart(driver),onComplete:()=>{ if(driver.heartEmoji) driver.heartEmoji.destroy(); driver.destroy(); }});
         scene.tweens.add({targets:truck,x:-200,duration:dur(800),delay:dur(300),onComplete:()=>{if(cb) cb();}});
         scene.events.off('update', updateHpPos);
+        scene.events.off('update', updateAttackerHearts);
         if(girlBlinkEvent) girlBlinkEvent.remove(false);
         girlHpText.destroy();
       }

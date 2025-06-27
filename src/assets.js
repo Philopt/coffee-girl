@@ -80,8 +80,12 @@ export function preload(){
   loader.image('give','assets/give.png');
   loader.image('refuse','assets/refuse.png');
   loader.image('sell','assets/sell.png');
-  loader.image('cloudHeart','assets/cloudheart.png');
-  loader.image('cloudDollar','assets/clouddollar.png');
+  loader.spritesheet('cloudHeart','assets/cloudheart.png',{
+    frameWidth:35,frameHeight:29
+  });
+  loader.spritesheet('cloudDollar','assets/clouddollar.png',{
+    frameWidth:30,frameHeight:25
+  });
   loader.spritesheet('sparrow','assets/sparrow3x1.png',{frameWidth:22,frameHeight:28});
   loader.spritesheet('dog1','assets/dog1.png',{frameWidth:100,frameHeight:100});
   for(const k of genzSprites){

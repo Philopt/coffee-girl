@@ -511,27 +511,46 @@ export function setupGame(){
       retryZone.on('pointerdown',()=>window.location.reload());
       return;
     }
+
+    this.anims.create({
+      key:'cloudHeart_anim',
+      frames:this.anims.generateFrameNumbers('cloudHeart',{start:0,end:4}),
+      frameRate:1,
+      repeat:-1
+    });
+    this.anims.create({
+      key:'cloudDollar_anim',
+      frames:this.anims.generateFrameNumbers('cloudDollar',{start:0,end:4}),
+      frameRate:1,
+      repeat:-1
+    });
     // background
     let bg=this.add.image(0,0,'bg').setOrigin(0).setDepth(0);
     bg.setDisplaySize(this.scale.width,this.scale.height);
 
     // HUD
-    cloudDollar=this.add.image(20,20,'cloudDollar')
+    cloudDollar=this.add.sprite(20,20,'cloudDollar')
       .setOrigin(0,0)
-      .setDepth(1);
+      .setDepth(1)
+      .setAlpha(0.4)
+      .play('cloudDollar_anim');
     moneyText=this.add.text(0,0,receipt(GameState.money),{font:'26px sans-serif',fill:'#fff'})
       .setOrigin(0.5)
-      .setDepth(2);
+      .setDepth(2)
+      .setAlpha(0.4);
     moneyText.setPosition(
       cloudDollar.x + cloudDollar.displayWidth/2,
       cloudDollar.y + cloudDollar.displayHeight/2
     );
-    cloudHeart=this.add.image(this.scale.width-20,20,'cloudHeart')
+    cloudHeart=this.add.sprite(this.scale.width-20,20,'cloudHeart')
       .setOrigin(1,0)
-      .setDepth(1);
+      .setDepth(1)
+      .setAlpha(0.4)
+      .play('cloudHeart_anim');
     loveText=this.add.text(0,0,GameState.love,{font:'26px sans-serif',fill:'#fff'})
       .setOrigin(0.5)
-      .setDepth(2);
+      .setDepth(2)
+      .setAlpha(0.4);
     loveText.setPosition(
       cloudHeart.x - cloudHeart.displayWidth/2,
       cloudHeart.y + cloudHeart.displayHeight/2
@@ -550,10 +569,8 @@ export function setupGame(){
       animateStatChange(loveText, this, 1, true);
     });
     // gentle cloud animations
-    this.tweens.add({targets:[cloudHeart,loveText],y:'+=3',duration:1000,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
-    this.tweens.add({targets:[cloudHeart,loveText],alpha:{from:1,to:0.8},duration:1000,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
-    this.tweens.add({targets:[cloudDollar,moneyText],y:'+=3',duration:1000,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
-    this.tweens.add({targets:[cloudDollar,moneyText],alpha:{from:1,to:0.8},duration:1000,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
+    this.tweens.add({targets:[cloudHeart,loveText],x:'+=3',duration:3000,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
+    this.tweens.add({targets:[cloudDollar,moneyText],x:'+=3',duration:3000,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
     // Indicator for available queue slots
     queueLevelText=this.add.text(156,316,'',{font:'16px sans-serif',fill:'#000'})
       .setOrigin(0.5).setDepth(1).setVisible(false);
@@ -594,6 +611,7 @@ export function setupGame(){
       repeat:-1
     });
     this.anims.create({ key:'dog_bark', frames:[{key:'dog1',frame:2}], frameRate:1 });
+
 
     // dialog
     dialogBg=this.add.graphics()

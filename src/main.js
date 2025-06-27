@@ -82,6 +82,12 @@ export function setupGame(){
     const originalY = obj.y;
     const moveDur = isLove && !up ? 160 : 120;
     scene.tweens.add({targets:obj, y:originalY+by, duration:dur(moveDur), yoyo:true});
+
+    const cloud = isLove ? cloudHeart : cloudDollar;
+    if(cloud){
+      const cOrigY = cloud.y;
+      scene.tweens.add({targets:cloud, y:cOrigY+by, duration:dur(moveDur), yoyo:true});
+    }
     let on=true;
     const flashes = isLove && !up ? 4 : 2;
     const flashDelay = isLove && !up ? 120 : 80;
@@ -96,6 +102,21 @@ export function setupGame(){
         on=!on;
       }
     });
+    if(cloud){
+      const tint = up ? 0x00ff00 : 0xff0000;
+      let cOn=true;
+      scene.time.addEvent({
+        repeat:flashes,
+        delay:dur(flashDelay),
+        callback:()=>{
+          if(cOn) cloud.setTintFill(tint); else cloud.clearTint();
+          cOn=!cOn;
+        }
+      });
+      scene.time.delayedCall(dur(flashDelay)*(flashes+1)+dur(10),()=>{
+        cloud.clearTint();
+      },[],scene);
+    }
     scene.time.delayedCall(dur(flashDelay)*(flashes+1)+dur(10),()=>{
       obj.setColor('#fff');
       if(isLove && !up){

@@ -601,7 +601,8 @@ export function setupGame(){
       .setOrigin(0,0)
       .setDepth(1)
       .setScale(2.4)
-      .setBlendMode(Phaser.BlendModes.SCREEN)
+      // Use additive blend to remove dark areas
+      .setBlendMode(Phaser.BlendModes.ADD)
       .setAlpha(0.9)
       .play('cloudDollar_anim');
     cloudDollar.x = 160 - cloudDollar.displayWidth/2;
@@ -618,7 +619,8 @@ export function setupGame(){
       .setOrigin(1,0)
       .setDepth(1)
       .setScale(2.4)
-      .setBlendMode(Phaser.BlendModes.SCREEN)
+      // Use additive blend to remove dark areas
+      .setBlendMode(Phaser.BlendModes.ADD)
       .setAlpha(0.9)
       .play('cloudHeart_anim');
     cloudHeart.x = 320 + cloudHeart.displayWidth/2;

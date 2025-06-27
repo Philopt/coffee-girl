@@ -654,7 +654,7 @@ export function setupGame(){
       .setAlpha(0.5)
       .setPostPipeline('desaturate');
 
-    const dollarPipeline = cloudDollar.getPostPipeline('desaturate');
+    const dollarPipeline = cloudDollar.getPostPipeline(DesaturatePipeline);
     if (dollarPipeline) dollarPipeline.amount = 0.5;
 
     cloudDollar.x = 160 - cloudDollar.displayWidth/2;
@@ -677,7 +677,7 @@ export function setupGame(){
       .setAlpha(0.5)
       .setPostPipeline('desaturate');
 
-    const heartPipeline = cloudHeart.getPostPipeline('desaturate');
+    const heartPipeline = cloudHeart.getPostPipeline(DesaturatePipeline);
     if (heartPipeline) heartPipeline.amount = 0.5;
 
     cloudHeart.x = 320 + cloudHeart.displayWidth/2;

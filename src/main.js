@@ -366,7 +366,7 @@ export function setupGame(){
       alpha: {from:0.7, to:0.2},
       x: {from:-3, to:3},
       y: {from:-3, to:3},
-      duration: dur(200),
+      duration: dur(120),
       yoyo: true,
       repeat: -1
     });
@@ -381,7 +381,7 @@ export function setupGame(){
         targets: btnGive.glow,
         alpha: 0,
         scale: 2,
-        duration: dur(300),
+        duration: dur(150),
         ease: 'Cubic.easeOut',
         onComplete: () => btnGive.glow.setVisible(false).setScale(1)
       });
@@ -399,9 +399,7 @@ export function setupGame(){
         targets: sp,
         y: sy - 10,
         alpha: 0,
-        duration: dur(300),
-        yoyo: true,
-        repeat: 1,
+        duration: dur(150),
         onComplete: () => sp.destroy()
       });
     }
@@ -420,11 +418,11 @@ export function setupGame(){
       btnSell.sparkleTween=null;
     }
     const glow = btnSell.glow;
-    this.tweens.add({
+    const glowTween = this.tweens.add({
       targets: glow,
       scale: 0,
       alpha: 0,
-      duration: dur(200),
+      duration: dur(150),
       ease: 'Cubic.easeOut',
       onComplete: () => {
         glow.setVisible(false).setScale(1).setPosition(0,0);
@@ -440,7 +438,6 @@ export function setupGame(){
           btnSell.setVisible(false);
           btnSell.image.clearTint();
           btnSell.image.setAlpha(1);
-          if(cb) cb();
         }
       });
     } else {
@@ -448,8 +445,11 @@ export function setupGame(){
         targets: btnSell,
         alpha: 0,
         duration: dur(150),
-        onComplete: () => { btnSell.setVisible(false); if(cb) cb(); }
+        onComplete: () => { btnSell.setVisible(false); }
       });
+    }
+    if(cb){
+      glowTween.setCallback('onComplete', () => cb());
     }
   }
 
@@ -634,13 +634,16 @@ export function setupGame(){
       .setScale(2.4)
       // Use additive blend to remove dark areas
       .setBlendMode(Phaser.BlendModes.ADD)
-      .setAlpha(0.9);
+
+      .setAlpha(0.5)
+      .play('cloudDollar_anim');
+
     cloudDollar.x = 160 - cloudDollar.displayWidth/2;
     moneyText=this.add.text(0,0,receipt(GameState.money),{font:'26px sans-serif',fill:'#fff'})
       .setOrigin(0.5)
       .setDepth(2)
-      .setBlendMode(Phaser.BlendModes.LIGHTEN)
-      .setAlpha(0.5);
+      .setBlendMode(Phaser.BlendModes.NEGATIVE)
+      .setAlpha(1);
     moneyText.setPosition(
       cloudDollar.x + cloudDollar.displayWidth/2,
       cloudDollar.y + cloudDollar.displayHeight/2
@@ -651,13 +654,16 @@ export function setupGame(){
       .setScale(2.4)
       // Use additive blend to remove dark areas
       .setBlendMode(Phaser.BlendModes.ADD)
-      .setAlpha(0.9);
+
+      .setAlpha(0.5)
+      .play('cloudHeart_anim');
+
     cloudHeart.x = 320 + cloudHeart.displayWidth/2;
     loveText=this.add.text(0,0,GameState.love,{font:'26px sans-serif',fill:'#fff'})
       .setOrigin(0.5)
       .setDepth(2)
-      .setBlendMode(Phaser.BlendModes.LIGHTEN)
-      .setAlpha(0.5);
+      .setBlendMode(Phaser.BlendModes.NEGATIVE)
+      .setAlpha(1);
     loveText.setPosition(
       cloudHeart.x - cloudHeart.displayWidth/2,
       cloudHeart.y + cloudHeart.displayHeight/2

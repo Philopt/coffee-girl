@@ -492,6 +492,13 @@ export function spawnCustomer() {
   }
   if (available.length === 0) available = spriteKeys.slice();
   const k = Phaser.Utils.Array.GetRandom(available);
+  if (!k) {
+    if (typeof debugLog === 'function') {
+      debugLog('spawnCustomer abort: no sprite key');
+    }
+    scheduleNextSpawn(this);
+    return;
+  }
   c.spriteKey = k;
 
   const memory = GameState.customerMemory[k] || { state: CustomerState.NORMAL };

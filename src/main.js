@@ -2622,10 +2622,11 @@ function dogsBarkAtFalcon(){
         });
         dTl.setCallback('onComplete',()=>{
           dog.setFrame(1);
-          const dmgPer= (dog.scaleFactor||dog.baseScaleFactor||0.6) > (dog.baseScaleFactor||0.6) ? 1.5 : 1;
+          const grown = (dog.scaleFactor||dog.baseScaleFactor||0.6) > (dog.baseScaleFactor||0.6);
+          const dmgPer = 0.5 + (grown ? 0.5 : 0);
           const total = loops * dmgPer;
-          GameState.falconHP=Math.max(0,GameState.falconHP-total);
-          falconHpText.setText(GameState.falconHP);
+          GameState.falconHP = Math.max(0, GameState.falconHP - total);
+          falconHpText.setText(GameState.falconHP.toFixed(1));
           // burstFeathers(scene, falcon.x, falcon.y, total);
           blinkFalcon();
           if(GameState.falconHP<=0){ endAttack(); }
@@ -2683,7 +2684,8 @@ function dogsBarkAtFalcon(){
     falcon.anims.play('falcon_fly');
     const girlHpText = scene.add.text(girl.x, girl.y-60, GameState.girlHP,
       {font:'20px sans-serif',fill:'#fff'}).setOrigin(0.5).setDepth(21);
-    const falconHpText = scene.add.text(falcon.x, falcon.y-60, GameState.falconHP,
+    const falconHpText = scene.add.text(falcon.x, falcon.y-60,
+      GameState.falconHP.toFixed(1),
       {font:'20px sans-serif',fill:'#fff'}).setOrigin(0.5).setDepth(21);
     let girlBlinkEvent = startHpBlink(scene, girl, () => GameState.girlHP, 5);
     let falconBlinkEvent = startHpBlink(scene, falcon, () => GameState.falconHP, 10);

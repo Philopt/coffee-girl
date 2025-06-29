@@ -14,10 +14,11 @@ export const DOG_PAUSE_DISTANCE = 30; // distance from owner to pause following
 export const DOG_TYPES = [
   // scale represents relative size compared to a customer sprite
   // all dogs are smaller; the largest is now the old "service" size
-  { type: 'standard', emoji: '🐶', tint: 0xff3333, scale: 0.4 },
-  { type: 'poodle',   emoji: '🐩', tint: 0x33ff99, scale: 0.37 },
-  { type: 'guide',    emoji: '🦮', tint: 0x3366ff, scale: 0.34 },
-  { type: 'service',  emoji: '🐕‍🦺', tint: 0xffff33, scale: 0.31 }
+  // tints use more subdued dog-like colors
+  { type: 'standard', emoji: '🐶', tint: 0x996633, scale: 0.4 }, // brown
+  { type: 'poodle',   emoji: '🐩', tint: 0xdddddd, scale: 0.37 }, // white/gray
+  { type: 'guide',    emoji: '🦮', tint: 0x444444, scale: 0.34 }, // dark
+  { type: 'service',  emoji: '🐕‍🦺', tint: 0xbb8844, scale: 0.31 } // tan
 ];
 
 export function scaleDog(d) {

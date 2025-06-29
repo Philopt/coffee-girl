@@ -70,7 +70,7 @@ function playOpening(scene){
         onComplete:()=>cup.destroy()
       });
     }
-  });
+  }, [], scene);
 
   tl.add({
     targets: openingDog,

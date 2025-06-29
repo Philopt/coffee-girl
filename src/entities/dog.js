@@ -75,7 +75,7 @@ export function animateDogGrowth(scene, dog, cb) {
     setDepthFromBottom(dog, 5);
     arrow.destroy();
     if(cb) cb();
-  });
+  }, [], scene);
   tl.play();
 }
 
@@ -105,7 +105,7 @@ export function animateDogPowerUp(scene, dog, cb){
              .setScale(scaleForY(dog.y));
     },
     onComplete: () => sparkle.destroy()
-  });
+  }, [], scene);
 
   const tl = scene.tweens.createTimeline();
   const originalTint = dog.tintTopLeft || 0xffffff;
@@ -130,7 +130,7 @@ export function animateDogPowerUp(scene, dog, cb){
       }
       if(cb) cb();
     });
-  });
+  }, [], scene);
   tl.play();
 }
 
@@ -239,8 +239,8 @@ export function updateDog(owner) {
           .setDepth(dog.depth)
           .setShadow(0, 0, '#000', 4);
         }
-      });
-      tl.setCallback('onComplete', () => { dog.excited = false; dog.currentTween = null; dog.setFrame(1); });
+      }, [], this);
+      tl.setCallback('onComplete', () => { dog.excited = false; dog.currentTween = null; dog.setFrame(1); }, [], this);
       dog.currentTween = tl;
       if (dog.anims && dog.play) {
         dog.play('dog_walk');
@@ -333,7 +333,7 @@ export function updateDog(owner) {
       dog.currentTween = null;
       dog.setFrame(1);
     }
-  });
+  }, [], scene);
 }
 
 export function sendDogOffscreen(dog, x, y) {
@@ -442,7 +442,7 @@ export function dogTruckRuckus(scene, dog){
         callback: () => { if(typeof updateDog==='function') updateDog.call(scene, owner); }
       });
     }
-  });
+  }, [], scene);
   if (dog.anims && dog.play) { dog.play('dog_walk'); }
   tl.play();
 }

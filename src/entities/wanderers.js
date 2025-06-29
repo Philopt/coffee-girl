@@ -49,7 +49,13 @@ export function handleWanderComplete(scene, c){
 }
 
 export function startWander(scene, c, targetX, exitAfter){
-  if(c.walkTween){ c.walkTween.stop(); c.walkTween.remove(); c.walkTween=null; }
+  if (c.walkTween) {
+    if (c.walkTween.isPlaying) {
+      c.walkTween.stop();
+    }
+    if (c.walkTween.remove) c.walkTween.remove();
+    c.walkTween = null;
+  }
   if(c.pauseEvent){ c.pauseEvent.remove(); c.pauseEvent=null; }
   const startX=c.sprite.x;
   const startY=c.sprite.y;

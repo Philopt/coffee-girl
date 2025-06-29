@@ -152,8 +152,10 @@ export function lureNextWanderer(scene, specific) {
 
     const queueIdx = GameState.queue.length;
     if (c.walkTween) {
-      c.walkTween.stop();
-      c.walkTween.remove();
+      if (c.walkTween.isPlaying) {
+        c.walkTween.stop();
+      }
+      if (c.walkTween.remove) c.walkTween.remove();
       c.walkTween = null;
     }
     if (c.pauseEvent) { c.pauseEvent.remove(); c.pauseEvent = null; }
@@ -240,8 +242,8 @@ export function moveQueueForward() {
         if (cust.walkTween.isPlaying) {
           return;
         }
-        cust.walkTween.stop();
-        cust.walkTween.remove();
+        if (cust.walkTween.stop) cust.walkTween.stop();
+        if (cust.walkTween.remove) cust.walkTween.remove();
         cust.walkTween = null;
       }
       cust.walkTween = approachTarget(scene, cust.sprite, dir, tx, ty, () => {
@@ -313,8 +315,8 @@ export function checkQueueSpacing(scene) {
           // never fill beyond two customers.
           return;
         }
-        cust.walkTween.stop();
-        cust.walkTween.remove();
+        if (cust.walkTween.stop) cust.walkTween.stop();
+        if (cust.walkTween.remove) cust.walkTween.remove();
         cust.walkTween = null;
       }
       const dir = cust.dir || (cust.sprite.x < tx ? 1 : -1);

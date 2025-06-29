@@ -3126,7 +3126,7 @@ function dogsBarkAtFalcon(){
       .setAlpha(0);
     this.tweens.add({targets:img,alpha:1,duration:dur(1200),delay:dur(1000)});
 
-    const line1 = this.add.text(240,450,"You've lost all the money",
+    const line1 = this.add.text(240,450,'YOU LOST ALL THE MONEY',
       {font:'28px sans-serif',fill:'#fff'})
       .setOrigin(0.5)
       .setDepth(21)
@@ -3218,7 +3218,7 @@ function dogsBarkAtFalcon(){
       .setAlpha(0);
     this.tweens.add({targets:img,alpha:1,duration:dur(1200),delay:dur(1000)});
 
-    const line1 = this.add.text(240,450,'The customers revolt!',
+    const line1 = this.add.text(240,450,'THE CUSTOMERS REVOLT!',
       {font:'28px sans-serif',fill:'#fff'})
       .setOrigin(0.5)
       .setDepth(21)

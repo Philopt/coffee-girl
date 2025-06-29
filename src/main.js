@@ -658,7 +658,7 @@ export function setupGame(){
     if (dollarPipeline) dollarPipeline.amount = 0.5;
 
     cloudDollar.x = 160 - cloudDollar.displayWidth/2;
-    moneyText=this.add.text(0,0,receipt(GameState.money),{font:'26px sans-serif',fill:'#fff'})
+    moneyText=this.add.text(0,0,receipt(GameState.money),{font:'26px Arial, sans-serif',fill:'#fff'})
       .setOrigin(0.5)
       .setDepth(2)
       .setBlendMode(Phaser.BlendModes.NEGATIVE)
@@ -681,7 +681,7 @@ export function setupGame(){
     if (heartPipeline) heartPipeline.amount = 0.5;
 
     cloudHeart.x = 320 + cloudHeart.displayWidth/2;
-    loveText=this.add.text(0,0,GameState.love,{font:'26px sans-serif',fill:'#fff'})
+    loveText=this.add.text(0,0,GameState.love,{font:'26px Arial, sans-serif',fill:'#fff'})
       .setOrigin(0.5)
       .setDepth(2)
       .setBlendMode(Phaser.BlendModes.NEGATIVE)

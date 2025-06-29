@@ -317,11 +317,19 @@ function showStartScreen(scene){
     phoneContainer.add(openingTitle);
   }
 
-  if(openingNumber){
-    numLocalX = openingNumber.x - pcX;
-    numLocalY = openingNumber.y - pcY;
+  if (openingNumber) {
+    if (scene.tweens && scene.tweens.killTweensOf) {
+      scene.tweens.killTweensOf(openingNumber);
+    }
+    const m = phoneContainer.getWorldTransformMatrix();
+    const worldX = openingNumber.finalPos ? openingNumber.finalPos.x : openingNumber.x;
+    const worldY = openingNumber.finalPos ? openingNumber.finalPos.y : openingNumber.y;
+    const localX = (worldX - m.tx) / m.a;
+    const localY = (worldY - m.ty) / m.d;
+    numLocalX = localX;
+    numLocalY = localY;
     openingNumber
-      .setPosition(numLocalX / pcScale, numLocalY / pcScale)
+      .setPosition(localX, localY)
       .setScale(openingNumber.scale / pcScale)
       .setDepth(16)
       .setAlpha(1);
@@ -346,14 +354,7 @@ function showStartScreen(scene){
       scale: 1,
       duration: 800,
       delay: 200,
-      ease: 'Sine.easeOut',
-
-      onComplete: () => {
-        if (openingNumber && numLocalX !== null && numLocalY !== null) {
-          openingNumber.setPosition(numLocalX, numLocalY);
-
-        }
-      }
+      ease: 'Sine.easeOut'
     });
   }
 

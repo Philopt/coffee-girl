@@ -1791,7 +1791,7 @@ export function setupGame(){
           current.dog.currentTween = null;
         }
         if(dogCust.walkTween){
-          dogCust.walkTween.stop();
+          if(dogCust.walkTween.isPlaying && dogCust.walkTween.stop) dogCust.walkTween.stop();
           if(dogCust.walkTween.remove) dogCust.walkTween.remove();
           dogCust.walkTween = null;
         }
@@ -2477,7 +2477,10 @@ export function setupGame(){
       fleeing.forEach(c=>{
         const state=c.memory && c.memory.state || CustomerState.NORMAL;
         if(c.heartEmoji){ c.heartEmoji.destroy(); c.heartEmoji=null; }
-        if(c.walkTween){ c.walkTween.stop(); c.walkTween=null; }
+        if(c.walkTween){
+          if(c.walkTween.isPlaying && c.walkTween.stop) c.walkTween.stop();
+          c.walkTween=null;
+        }
         const dir=c.sprite.x<ORDER_X?-1:1;
         const targetX=dir===1?520:-40;
 
@@ -2833,12 +2836,20 @@ function dogsBarkAtFalcon(){
     const gather=(arr)=>{
       arr.forEach(c=>{
         if(!c.memory || c.memory.state !== CustomerState.BROKEN) {
-          if(c.walkTween){ c.walkTween.stop(); if(c.walkTween.remove) c.walkTween.remove(); c.walkTween=null; }
+          if(c.walkTween){
+            if(c.walkTween.isPlaying && c.walkTween.stop) c.walkTween.stop();
+            if(c.walkTween.remove) c.walkTween.remove();
+            c.walkTween=null;
+          }
           if(c.sprite) c.sprite.destroy();
           if(c.dog){ if(c.dog.followEvent) c.dog.followEvent.remove(false); c.dog.destroy(); }
           return;
         }
-        if(c.walkTween){ c.walkTween.stop(); if(c.walkTween.remove) c.walkTween.remove(); c.walkTween=null; }
+        if(c.walkTween){
+          if(c.walkTween.isPlaying && c.walkTween.stop) c.walkTween.stop();
+          if(c.walkTween.remove) c.walkTween.remove();
+          c.walkTween=null;
+        }
         if(c.dog){
           if(c.dog.followEvent) c.dog.followEvent.remove(false);
           c.dog.setDepth(20);
@@ -3387,8 +3398,8 @@ function dogsBarkAtFalcon(){
     }
     GameState.activeCustomer=null;
     cleanupDogs(scene);
-    GameState.queue.forEach(c => { if(c.walkTween){ c.walkTween.stop(); if(c.walkTween.remove) c.walkTween.remove(); c.walkTween=null; } });
-    GameState.wanderers.forEach(c => { if(c.walkTween){ c.walkTween.stop(); if(c.walkTween.remove) c.walkTween.remove(); c.walkTween=null; } });
+    GameState.queue.forEach(c => { if(c.walkTween){ if(c.walkTween.isPlaying && c.walkTween.stop) c.walkTween.stop(); if(c.walkTween.remove) c.walkTween.remove(); c.walkTween=null; } });
+    GameState.wanderers.forEach(c => { if(c.walkTween){ if(c.walkTween.isPlaying && c.walkTween.stop) c.walkTween.stop(); if(c.walkTween.remove) c.walkTween.remove(); c.walkTween=null; } });
     GameState.queue=[];
     GameState.wanderers=[];
     Object.keys(GameState.customerMemory).forEach(k=>{ delete GameState.customerMemory[k]; });

@@ -59,10 +59,27 @@ export function emojiFor(name){
   return base;
 }
 
+let loadErrorShown = false;
+
 export function preload(){
   const loader=this.load;
   loader.on('loaderror', file=>{
     if (DEBUG) console.error('Asset failed to load:', file.key || file.src);
+    if (!loadErrorShown && typeof document !== 'undefined') {
+      loadErrorShown = true;
+      const div = document.createElement('div');
+      div.textContent = 'Asset failed to load. Make sure you started the game with `npm start`.';
+      div.style.position = 'fixed';
+      div.style.top = '50%';
+      div.style.left = '50%';
+      div.style.transform = 'translate(-50%, -50%)';
+      div.style.background = 'rgba(0,0,0,0.85)';
+      div.style.color = '#fff';
+      div.style.padding = '1em';
+      div.style.fontFamily = 'sans-serif';
+      div.style.zIndex = 1000;
+      document.body.appendChild(div);
+    }
   });
   loader.image('bg','assets/bg.png');
   loader.image('truck','assets/truck.png');

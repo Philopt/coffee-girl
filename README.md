@@ -50,6 +50,8 @@ The game uses [Phaser](https://phaser.io/). It will load `lib/phaser.min.js` by 
 2. If the truck never moves or "Clock In" does nothing, open the browser's developer console (usually F12).
 3. With debug logging enabled (see step 5), look for messages like
    "Asset failed to load" or "init() did not execute."
+   When an asset fails to load, a message now appears on the page reminding
+   you to start the game with `npm start`.
 4. If customers reach the counter but never order, check for
    `showDialog early exit` warnings. This usually means initialization
    failed and some UI elements were never created.

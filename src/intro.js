@@ -7,19 +7,20 @@ import { dur } from './ui.js';
 import { spawnSparrow, scatterSparrows } from './sparrow.js';
 import { createGrayscaleTexture } from './ui/helpers.js';
 
-let startOverlay=null;
-let startButton=null;
-let phoneContainer=null;
-let startMsgTimers=[];
-let startMsgBubbles=[];
-let openingTitle=null;
-let openingNumber=null;
-let openingDog=null;
-let badgeIcons=[];
+let startOverlay = null;
+let startButton = null;
+let phoneContainer = null;
+let startWhite = null;
+let startMsgTimers = [];
+let startMsgBubbles = [];
+let openingTitle = null;
+let openingNumber = null;
+let openingDog = null;
+let badgeIcons = [];
 
 function playOpening(scene){
   scene = scene || this;
-  const white = scene.add.rectangle(240,320,480,640,0xffffff,1)
+  startWhite = scene.add.rectangle(240,320,480,640,0xffffff,1)
     .setDepth(14);
 
   // Title card image starts large so it can shrink with the phone later
@@ -47,7 +48,7 @@ function playOpening(scene){
     .setAngle(-45);
 
   const tl = scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
-    white.destroy();
+    if (startWhite) { startWhite.destroy(); startWhite = null; }
   }});
 
   // Reveal the title card with a burst of coffee cups
@@ -149,13 +150,13 @@ function playOpening(scene){
     }
   });
   tl.add({
-    targets: white,
+    targets: startWhite,
     alpha: 0,
     duration: 600,
     onStart: () => {
       showStartScreen.call(scene);
       if (scene.children && scene.children.bringToTop) {
-        scene.children.bringToTop(white);
+        scene.children.bringToTop(startWhite);
       }
     }
   });
@@ -174,6 +175,7 @@ function showStartScreen(scene){
     phoneContainer = null;
   }
   if(startOverlay){ startOverlay.destroy(); startOverlay = null; }
+  if(startWhite){ startWhite.destroy(); startWhite = null; }
   startMsgTimers.forEach(t => t.remove(false));
   startMsgTimers = [];
   startMsgBubbles.forEach(b => b.destroy());
@@ -426,6 +428,7 @@ function showStartScreen(scene){
     const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
       if(startButton) startButton.destroy();
       if(startOverlay){startOverlay.destroy(); startOverlay=null;}
+      if(startWhite){startWhite.destroy(); startWhite=null;}
       if(openingTitle){ openingTitle.destroy(); openingTitle=null; }
       if(openingNumber){ openingNumber.destroy(); openingNumber=null; }
       if(openingDog){ openingDog.destroy(); openingDog=null; }

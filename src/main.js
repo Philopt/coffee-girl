@@ -436,7 +436,10 @@ export function setupGame(){
   }
 
   function stopSellGlowSparkle(cb){
-    if(!btnSell || !btnSell.glow) return;
+    if(!btnSell || !btnSell.glow){
+      if(cb) cb();
+      return;
+    }
     if(btnSell.sparkleTween && btnSell.sparkleTween.remove){
       btnSell.sparkleTween.remove();
       btnSell.sparkleTween=null;

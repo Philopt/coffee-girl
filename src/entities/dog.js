@@ -21,6 +21,26 @@ export const DOG_TYPES = [
   { type: 'service',  emoji: '🐕‍🦺', tint: 0xbb8844, scale: 0.31 } // tan
 ];
 
+export function barkLevel(dog){
+  const mood = dog && dog.dogCustomer && dog.dogCustomer.memory
+    ? dog.dogCustomer.memory.state
+    : CustomerState.NORMAL;
+  switch(mood){
+    case CustomerState.GROWING: return 1;
+    case CustomerState.SPARKLING: return 2;
+    case CustomerState.ARROW: return 3;
+    default: return 0;
+  }
+}
+
+export function barkProps(dog){
+  const level = barkLevel(dog);
+  return {
+    scale: 1 + level * 0.25,
+    rise: 20 + level * 8
+  };
+}
+
 export function scaleDog(d) {
   if (!d) return;
   const factor = d.scaleFactor || 0.6;
@@ -205,13 +225,14 @@ export function updateDog(owner) {
     if (seen && Math.random() < chance) {
       dog.excited = true;
       const s = seen.sprite;
+      const { scale, rise } = barkProps(dog);
       const bark = this.add.sprite(dog.x, dog.y - 20, 'dog1', 3)
         .setOrigin(0.5)
         .setDepth(dog.depth + 1)
-        .setScale(Math.abs(dog.scaleX), Math.abs(dog.scaleY));
+        .setScale(Math.abs(dog.scaleX) * scale, Math.abs(dog.scaleY) * scale);
       this.tweens.add({
         targets: bark,
-        y: '-=20',
+        y: `-=${rise}`,
         alpha: 0,
         duration: dur(600),
         onComplete: () => bark.destroy()
@@ -280,13 +301,14 @@ export function updateDog(owner) {
     const nearby = birds.find(b => Phaser.Math.Distance.Between(dog.x, dog.y, b.sprite.x, b.sprite.y) < 80);
     if(nearby){
       dog.hasBarked = true;
+      const { scale, rise } = barkProps(dog);
       const bark = this.add.sprite(dog.x, dog.y - 20, 'dog1', 3)
         .setOrigin(0.5)
         .setDepth(dog.depth + 1)
-        .setScale(Math.abs(dog.scaleX), Math.abs(dog.scaleY));
+        .setScale(Math.abs(dog.scaleX) * scale, Math.abs(dog.scaleY) * scale);
       this.tweens.add({
         targets: bark,
-        y: '-=20',
+        y: `-=${rise}`,
         alpha: 0,
         duration: dur(600),
         onComplete: () => bark.destroy()
@@ -455,16 +477,17 @@ export function dogRefuseJumpBark(dog, scatter=true){
     dog.currentTween.stop();
     dog.currentTween = null;
   }
+  const { scale, rise } = barkProps(dog);
   const bark = scene.add.sprite(dog.x, dog.y - 20, 'dog1', 3)
     .setOrigin(0.5)
     .setDepth(dog.depth + 1)
-    .setScale(Math.abs(dog.scaleX), Math.abs(dog.scaleY));
+    .setScale(Math.abs(dog.scaleX) * scale, Math.abs(dog.scaleY) * scale);
   if (dog.anims && dog.play) {
     dog.play('dog_bark');
   }
   scene.tweens.add({
     targets: dog,
-    y: '-=20',
+    y: `-=${rise}`,
     duration: dur(150),
     yoyo: true,
     onUpdate: (tw, t) => {

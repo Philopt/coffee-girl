@@ -24,7 +24,7 @@ export const GameState = {
   girlReady: false,
   truck: null,
   girl: null
-  ,girlHP: 5
+  ,girlHP: 10
   ,falconHP: 10
   ,badges: []
   ,badgeCounts: {}

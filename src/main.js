@@ -3133,6 +3133,7 @@ function dogsBarkAtFalcon(){
 
     function falconDies(){
       if(!falcon) return;
+      setSpeedMultiplier(0.25);
       scene.tweens.killAll();
       scene.time.removeAllEvents();
       reinHumanEvents.forEach(ev=>{ if(ev) ev.remove(false); });
@@ -3155,7 +3156,12 @@ function dogsBarkAtFalcon(){
         y:'+=100',
         duration:dur(1500),
         ease:'Cubic.easeIn',
-        onComplete:endAttack
+        onComplete:()=>{
+          scene.time.delayedCall(2000,()=>{
+            setSpeedMultiplier(1);
+            endAttack();
+          });
+        }
       });
     }
 

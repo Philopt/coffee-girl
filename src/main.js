@@ -2763,6 +2763,7 @@ function dogsBarkAtFalcon(){
       const dy = falcon.y - h.baseY;
       const tx = h.baseX + dx * factor;
       const ty = h.baseY + dy * factor;
+      const dir = Math.sign(dx) || 1;
       let hit = false;
       scene.tweens.add({
         targets:h,
@@ -2792,19 +2793,35 @@ function dogsBarkAtFalcon(){
           } else {
             scene.tweens.add({
               targets:h,
-              y:ty+20,
-              duration:dur(150),
+              x:tx + dir*20,
+              y:ty + 40,
+              angle: dir>0 ? 90 : -90,
+              duration:dur(250),
               ease:'Sine.easeIn',
               onComplete:()=>{
                 scene.time.delayedCall(dur(1000),()=>{
                   if(!h.active) return;
                   scene.tweens.add({
                     targets:h,
-                    x:h.baseX,
-                    y:h.baseY,
-                    duration:dur(300),
-                    ease:'Sine.easeOut',
-                    onComplete:()=>{ h.attacking=false; }
+                    angle:0,
+                    duration:dur(150),
+                    onComplete:()=>{
+                      const newX = Phaser.Math.Between(girl.x-80, girl.x+80);
+                      const newY = Phaser.Math.Between(girl.y+30, girl.y+60);
+                      scene.tweens.add({
+                        targets:h,
+                        x:newX,
+                        y:newY,
+                        scale:scaleForY(newY),
+                        duration:dur(300),
+                        ease:'Sine.easeOut',
+                        onComplete:()=>{
+                          h.baseX = newX;
+                          h.baseY = newY;
+                          h.attacking=false;
+                        }
+                      });
+                    }
                   });
                 },[],scene);
               }

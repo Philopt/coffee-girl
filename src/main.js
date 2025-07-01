@@ -217,6 +217,16 @@ export function setupGame(){
     }
   }
 
+  function cleanupBarks(){
+    GameState.activeBarks.slice().forEach(b=>{ if(b && b.destroy) b.destroy(); });
+    GameState.activeBarks.length = 0;
+  }
+
+  function cleanupBursts(){
+    GameState.activeBursts.slice().forEach(b=>{ if(b && b.destroy) b.destroy(); });
+    GameState.activeBursts.length = 0;
+  }
+
 
 
 
@@ -2430,6 +2440,8 @@ export function setupGame(){
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
     cleanupHeartEmojis(scene);
+    cleanupBarks();
+    cleanupBursts();
     // Keep dogs around so they can defend the girl
     cleanupSparrows(scene);
     hideOverlayTexts();
@@ -2671,6 +2683,8 @@ function dogsBarkAtFalcon(){
       if(falcon) falcon.clearTint();
       if(girl) girl.clearTint();
       if(falcon) falcon.destroy();
+      cleanupBarks();
+      cleanupBursts();
       scene.events.off('update', updateHpPos);
       girlHpText.destroy();
       falconHpText.destroy();
@@ -2828,7 +2842,8 @@ function dogsBarkAtFalcon(){
         const line=s.add.rectangle(bx,by,Phaser.Math.Between(2,4),18,0xff0000)
           .setOrigin(0.5).setDepth(21)
           .setAngle(Phaser.Math.Between(-45,45));
-        s.tweens.add({targets:line,alpha:0,scaleY:1.5,y:by-10,duration:dur(200),onComplete:()=>line.destroy()});
+        GameState.activeBursts.push(line);
+        s.tweens.add({targets:line,alpha:0,scaleY:1.5,y:by-10,duration:dur(200),onComplete:()=>{ const i=GameState.activeBursts.indexOf(line); if(i!==-1) GameState.activeBursts.splice(i,1); line.destroy(); }});
       }
     }
 
@@ -2841,6 +2856,8 @@ function dogsBarkAtFalcon(){
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
     cleanupHeartEmojis(scene);
+    cleanupBarks();
+    cleanupBursts();
     hideOverlayTexts();
     clearDialog.call(scene);
     if (GameState.spawnTimer) { GameState.spawnTimer.remove(false); GameState.spawnTimer = null; }
@@ -3088,6 +3105,8 @@ function dogsBarkAtFalcon(){
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
     cleanupHeartEmojis(scene);
+    cleanupBarks();
+    cleanupBursts();
     hideOverlayTexts();
     if (GameState.spawnTimer) {
       GameState.spawnTimer.remove(false);
@@ -3139,6 +3158,8 @@ function dogsBarkAtFalcon(){
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
     cleanupHeartEmojis(scene);
+    cleanupBarks();
+    cleanupBursts();
     hideOverlayTexts();
     if (GameState.spawnTimer) { GameState.spawnTimer.remove(false); GameState.spawnTimer = null; }
     clearDialog.call(scene);
@@ -3231,6 +3252,8 @@ function dogsBarkAtFalcon(){
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
     cleanupHeartEmojis(scene);
+    cleanupBarks();
+    cleanupBursts();
     hideOverlayTexts();
     if (GameState.spawnTimer) { GameState.spawnTimer.remove(false); GameState.spawnTimer = null; }
     clearDialog.call(scene);
@@ -3327,6 +3350,8 @@ function dogsBarkAtFalcon(){
     }
     cleanupFloatingEmojis();
     cleanupHeartEmojis(scene);
+    cleanupBarks();
+    cleanupBursts();
     hideOverlayTexts();
     if (GameState.spawnTimer) { GameState.spawnTimer.remove(false); GameState.spawnTimer=null; }
     clearDialog.call(scene);
@@ -3394,6 +3419,8 @@ function dogsBarkAtFalcon(){
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
     cleanupHeartEmojis(scene);
+    cleanupBarks();
+    cleanupBursts();
     cleanupSparrows(scene);
     if (GameState.spawnTimer) {
       GameState.spawnTimer.remove(false);
@@ -3431,8 +3458,18 @@ function dogsBarkAtFalcon(){
     }
     GameState.activeCustomer=null;
     cleanupDogs(scene);
-    GameState.queue.forEach(c => { if(c.walkTween){ if(c.walkTween.isPlaying && c.walkTween.stop) c.walkTween.stop(); if(c.walkTween.remove) c.walkTween.remove(); c.walkTween=null; } });
-    GameState.wanderers.forEach(c => { if(c.walkTween){ if(c.walkTween.isPlaying && c.walkTween.stop) c.walkTween.stop(); if(c.walkTween.remove) c.walkTween.remove(); c.walkTween=null; } });
+    GameState.queue.forEach(c => {
+      if(c.walkTween){ if(c.walkTween.isPlaying && c.walkTween.stop) c.walkTween.stop(); if(c.walkTween.remove) c.walkTween.remove(); c.walkTween=null; }
+      if(c.heartEmoji){ c.heartEmoji.destroy(); c.heartEmoji=null; }
+      if(c.dog){ if(c.dog.followEvent) c.dog.followEvent.remove(false); c.dog.destroy(); c.dog=null; }
+      if(c.sprite) c.sprite.destroy();
+    });
+    GameState.wanderers.forEach(c => {
+      if(c.walkTween){ if(c.walkTween.isPlaying && c.walkTween.stop) c.walkTween.stop(); if(c.walkTween.remove) c.walkTween.remove(); c.walkTween=null; }
+      if(c.heartEmoji){ c.heartEmoji.destroy(); c.heartEmoji=null; }
+      if(c.dog){ if(c.dog.followEvent) c.dog.followEvent.remove(false); c.dog.destroy(); c.dog=null; }
+      if(c.sprite) c.sprite.destroy();
+    });
     GameState.queue=[];
     GameState.wanderers=[];
     Object.keys(GameState.customerMemory).forEach(k=>{ delete GameState.customerMemory[k]; });

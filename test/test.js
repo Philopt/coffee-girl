@@ -1033,6 +1033,22 @@ function testEmojiFor() {
   console.log('emojiFor test passed');
 }
 
+function testNextMoodProgression() {
+  const src = extractFunction(['main.js'], 'nextMood');
+  if (!src) throw new Error('nextMood not found');
+  const context = {};
+  loadCustomerState(context);
+  vm.createContext(context);
+  vm.runInContext(src + '\nfn=nextMood;', context);
+  const nextMood = context.fn;
+  const CS = context.CustomerState;
+  assert.strictEqual(nextMood(CS.NORMAL), CS.GROWING, 'NORMAL -> GROWING');
+  assert.strictEqual(nextMood(CS.GROWING), CS.SPARKLING, 'GROWING -> SPARKLING');
+  assert.strictEqual(nextMood(CS.SPARKLING), CS.ARROW, 'SPARKLING -> ARROW');
+  assert.strictEqual(nextMood(CS.ARROW), CS.ARROW, 'ARROW stays ARROW');
+  console.log('nextMood progression test passed');
+}
+
 async function testIntroSequence() {
   const puppeteer = require('puppeteer');
   const { PNG } = require('pngjs');
@@ -1177,6 +1193,7 @@ async function run() {
     testSparrowRemovalOffscreen();
     testLureNextWandererQueueLimit();
     testShowEndRestart();
+    testNextMoodProgression();
     testEmojiFor();
     if (!SKIP_PUPPETEER) {
       await testIntroSequence();

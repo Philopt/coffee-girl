@@ -61,7 +61,7 @@ export function animateDogGrowth(scene, dog, cb) {
       scaleY: growY,
       duration: dur(120),
       yoyo: true,
-      onUpdate: () => { setDepthFromBottom(dog, 5); updateArrow(); }
+      onUpdate: () => { setDepthFromBottom(dog, 100); updateArrow(); }
     });
   }
   tl.add({
@@ -69,7 +69,7 @@ export function animateDogGrowth(scene, dog, cb) {
     scaleX: growX,
     scaleY: growY,
     duration: dur(120),
-    onUpdate: () => { setDepthFromBottom(dog, 5); updateArrow(); }
+    onUpdate: () => { setDepthFromBottom(dog, 100); updateArrow(); }
   });
   tl.setCallback('onComplete', () => {
     dog.setScale(baseX, baseY);

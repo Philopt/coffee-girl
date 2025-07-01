@@ -3711,10 +3711,10 @@ function dogsBarkAtFalcon(){
     let startIdx=0;
     if(lines[0].toLowerCase().startsWith('game over')){
       titleText=this.add.text(240,offset,lines[0].toUpperCase(),{
-        font:'48px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:4
+        font:'58px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:4
       }).setOrigin(0.5).setDepth(21);
       startIdx=1;
-      offset+=60;
+      offset+=72;
     }
     const txt=this.add.text(240,offset,lines.slice(startIdx).join('\n'),{font:'24px sans-serif',fill:'#000',align:'center',wordWrap:{width:440}})
       .setOrigin(0.5).setDepth(21);

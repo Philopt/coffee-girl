@@ -3016,22 +3016,14 @@ function dogsBarkAtFalcon(){
                 if(Phaser.Math.Distance.Between(falcon.x,falcon.y,b.x,b.y)<30){
                   const idx=GameState.activeBarks.indexOf(b);
                   if(idx!==-1) GameState.activeBarks.splice(idx,1);
-                  b.destroy();
+                  b.setTintFill(0xffffff);
+                  scene.tweens.add({targets:b,alpha:0,duration:dur(100),onComplete:()=>b.destroy()});
                   if(attackTween){ attackTween.stop(); attackTween=null; }
                   GameState.falconHP = Math.max(0, GameState.falconHP - 0.1);
                   falconHpBar.setHp(GameState.falconHP);
                   featherExplosion(scene, falcon.x, falcon.y, 4, 1);
-                  stunFalcon();
                   if(GameState.falconHP<=0){ falconDies(); return; }
-                  scene.tweens.add({
-                    targets:falcon,
-                    y:'+=20',
-                    duration:dur(100),
-                    ease:'Sine.easeInOut',
-                    yoyo:true,
-                    hold:dur(1000),
-                    onComplete:()=>scene.time.delayedCall(0, attackOnce, [], scene)
-                  });
+                  stunFalcon(()=>scene.time.delayedCall(0, attackOnce, [], scene));
                 }
               });
             },
@@ -3071,12 +3063,22 @@ function dogsBarkAtFalcon(){
       if(GameState.falconHP<=0){ falcon.setTintFill(0xff0000); }
     }
 
-    function stunFalcon(){
-      if(!falcon) return;
+    function stunFalcon(done){
+      if(!falcon) { if(done) done(); return; }
       falcon.setTintFill(0x3399ff);
-      scene.time.delayedCall(dur(1000), () => {
-        if(falcon && falcon.clearTint) falcon.clearTint();
-      }, [], scene);
+      scene.tweens.add({
+        targets:falcon,
+        x:girl.x,
+        y:girl.y-20,
+        duration:dur(200),
+        ease:'Sine.easeOut',
+        onComplete:()=>{
+          scene.time.delayedCall(dur(1500), () => {
+            if(falcon && falcon.clearTint) falcon.clearTint();
+            if(done) done();
+          }, [], scene);
+        }
+      });
     }
 
     function sprinkleBursts(s){

@@ -2443,6 +2443,7 @@ export function setupGame(){
     if (GameState.spawnTimer) { GameState.spawnTimer.remove(false); GameState.spawnTimer = null; }
     const reinDogs=[];
     const reinHumans=[];
+    const reinHumanEvents=[];
 
 
         function panicCustomers(done){
@@ -2667,6 +2668,8 @@ function dogsBarkAtFalcon(){
       if(featherTrail){ featherTrail.remove(false); featherTrail=null; }
       cleanupDogs(scene);
       GameState.falconActive = false;
+      reinHumanEvents.forEach(ev=>{ if(ev) ev.remove(false); });
+      reinHumanEvents.length = 0;
       // clear any lingering blink timers
       if(falcon) falcon.clearTint();
       if(girl) girl.clearTint();
@@ -2701,6 +2704,53 @@ function dogsBarkAtFalcon(){
         callbackScope: scene
       });
     panicCustomers();
+    const ATTACK_FREQ = {
+      [CustomerState.GROWING]: 1200,
+      [CustomerState.SPARKLING]: 900,
+      [CustomerState.ARROW]: 700
+    };
+    const ATTACK_RANGE = {
+      [CustomerState.GROWING]: 1.1,
+      [CustomerState.SPARKLING]: 1.43,
+      [CustomerState.ARROW]: 1.7
+    };
+    function startDefender(h){
+      const delay = ATTACK_FREQ[h.loveState] || 1200;
+      const ev = scene.time.addEvent({
+        delay: dur(delay),
+        loop: true,
+        callback: () => defenderAttack(h),
+        callbackScope: scene
+      });
+      reinHumanEvents.push(ev);
+      h.attackEvent = ev;
+    }
+    function defenderAttack(h){
+      if(!falcon || finished || !h.active) return;
+      const factor = ATTACK_RANGE[h.loveState] || 1.1;
+      const dx = falcon.x - h.baseX;
+      const dy = falcon.y - h.baseY;
+      const tx = h.baseX + dx * factor;
+      const ty = h.baseY + dy * factor;
+      let hit = false;
+      scene.tweens.add({
+        targets:h,
+        x:tx,
+        y:ty,
+        duration:dur(300),
+        ease:'Sine.easeOut',
+        yoyo:true,
+        onUpdate:()=>{
+          if(!hit && Phaser.Math.Distance.Between(h.x,h.y,falcon.x,falcon.y)<20){
+            hit=true;
+            GameState.falconHP = Math.max(0, GameState.falconHP - 0.5);
+            falconHpText.setText(GameState.falconHP.toFixed(1));
+            blinkFalcon();
+            if(GameState.falconHP<=0){ falcon.setTintFill(0xff0000); endAttack(); }
+          }
+        }
+      });
+    }
     const spawnReinforcements = () => {
       const positive = [CustomerState.MENDING, CustomerState.GROWING, CustomerState.SPARKLING, CustomerState.ARROW];
       const present = new Set(GameState.queue.map(c=>c.spriteKey));
@@ -2715,8 +2765,21 @@ function dogsBarkAtFalcon(){
             const h = scene.add.sprite(sx, sy, key)
               .setDepth(20)
               .setScale(scaleForY(sy));
+            h.loveState = mem.state;
             reinHumans.push(h);
-            scene.tweens.add({targets:h,x:girl.x+Phaser.Math.Between(-60,60),y:girl.y+Phaser.Math.Between(30,50),scale:scaleForY(girl.y+40),duration:dur(800),onComplete:()=>{h.ready=true;}});
+            scene.tweens.add({
+              targets:h,
+              x:girl.x+Phaser.Math.Between(-60,60),
+              y:girl.y+Phaser.Math.Between(30,50),
+              scale:scaleForY(girl.y+40),
+              duration:dur(800),
+              onComplete:()=>{
+                h.ready=true;
+                h.baseX=h.x;
+                h.baseY=h.y;
+                startDefender(h);
+              }
+            });
           },[],scene);
           delay += 500;
         }
@@ -2739,18 +2802,6 @@ function dogsBarkAtFalcon(){
       });
     };
     spawnReinforcements();
-    const defendersStrike = () => {
-      const ready = reinHumans.filter(h=>h.ready && h.active);
-      if(ready.length===0) return;
-      ready.forEach(h=>{
-        scene.tweens.add({targets:h,y:h.y-20,duration:dur(80),yoyo:true});
-      });
-      const dmg = ready.length * 0.5;
-      GameState.falconHP = Math.max(0, GameState.falconHP - dmg);
-      falconHpText.setText(GameState.falconHP.toFixed(1));
-      blinkFalcon();
-      if(GameState.falconHP<=0){ falcon.setTintFill(0xff0000); endAttack(); }
-    };
     const attackOnce=()=>{
         const dir=Math.random()<0.5?-1:1;
         const angle=Phaser.Math.FloatBetween(Phaser.Math.DegToRad(55),Phaser.Math.DegToRad(80));
@@ -2794,7 +2845,6 @@ function dogsBarkAtFalcon(){
           tl.add({targets:girl,y:girl.y+5,duration:dur(80),yoyo:true,
                    onStart:()=>sprinkleBursts(scene),
                    onYoyo:()=>sprinkleBursts(scene)},'<');
-          tl.add({targets:{},duration:0,onComplete:defendersStrike});
           // No more feathers during the attack
           tl.setCallback('onComplete', () => {
             // stopTrail();

@@ -47,6 +47,13 @@ The game uses [Phaser](https://phaser.io/). It will load `lib/phaser.min.js` by 
 
 ## Debugging
 
+Append `?debug=1` to the game URL or set `localStorage.DEBUG = '1'` in the
+browser console to enable verbose logging. For example:
+
+```
+http://localhost:8080/?debug=1
+```
+
 1. Run `npm start` and open the game in a browser.
 2. If the truck never moves or "Clock In" does nothing, open the browser's developer console (usually F12).
 3. With debug logging enabled (see step 5), look for messages like

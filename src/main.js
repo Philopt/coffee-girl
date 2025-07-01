@@ -3093,18 +3093,18 @@ function dogsBarkAtFalcon(){
       }
     }
 
-    function coffeeExplosion(s, x, y){
-      const startX = (typeof x === 'number') ? x
-                    : girl.x + (girl.displayWidth || 0) * 0.3;
-      const startY = (typeof y === 'number') ? y
-                    : girl.y - (girl.displayHeight || 0) * 0.2;
+      function coffeeExplosion(s, x, y){
+        const startX = (typeof x === 'number') ? x
+                      : girl.x + (girl.displayWidth || 0) * 0.1;
+        const startY = (typeof y === 'number') ? y
+                      : girl.y - (girl.displayHeight || 0) * 0.2;
       for(let i=0;i<5;i++){
         const ang = Phaser.Math.FloatBetween(-Math.PI/2, Math.PI/2);
         const dist = Phaser.Math.Between(10,40);
         const cup = s.add.image(startX,startY,'coffeecup2')
           .setOrigin(0.5)
           .setDepth(21)
-          .setScale(0.6);
+          .setScale(0.36);
         GameState.activeBursts.push(cup);
         s.tweens.add({
           targets:cup,
@@ -3112,7 +3112,7 @@ function dogsBarkAtFalcon(){
           y:startY+Math.sin(ang)*dist,
           angle:Phaser.Math.Between(-180,180),
           alpha:0,
-          duration:dur(400),
+          duration:dur(800),
           ease:'Cubic.easeOut',
           onComplete:()=>{ const i=GameState.activeBursts.indexOf(cup); if(i!==-1) GameState.activeBursts.splice(i,1); cup.destroy(); }
         });

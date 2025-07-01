@@ -3029,7 +3029,7 @@ function dogsBarkAtFalcon(){
                   b.destroy();
                   if(attackTween){ attackTween.stop(); attackTween=null; }
                   GameState.falconHP = Math.max(0, GameState.falconHP - 0.1);
-                  falconHpText.setText(GameState.falconHP.toFixed(1));
+                  falconHpBar.setHp(GameState.falconHP);
                   featherExplosion(scene, falcon.x, falcon.y, 4, 1);
                   blinkFalcon();
                   if(GameState.falconHP<=0){ falconDies(); return; }

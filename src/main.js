@@ -7,7 +7,7 @@ import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from
 import { CustomerState } from './constants.js';
 
 import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows, scatterSparrows } from './sparrow.js';
-import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog, dogTruckRuckus, dogRefuseJumpBark, animateDogPowerUp } from './entities/dog.js';
+import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog, dogTruckRuckus, dogRefuseJumpBark, animateDogPowerUp, barkProps } from './entities/dog.js';
 import { startWander } from './entities/wanderers.js';
 
 import { flashBorder, flashFill, blinkButton, applyRandomSkew, setDepthFromBottom, createGrayscaleTexture, createGlowTexture } from './ui/helpers.js';
@@ -2458,6 +2458,20 @@ export function setupGame(){
     const reinDogs=[];
     const reinHumans=[];
     const reinHumanEvents=[];
+    const latchedDogs=[];
+    const updateLatchedDogs=()=>{
+      if(!falcon) return;
+      latchedDogs.forEach(d=>{
+        d.setPosition(falcon.x + d.offsetX, falcon.y + d.offsetY);
+        const s=scaleForY(d.y)*0.5;
+        d.setScale(s*(d.dir||1), s);
+        if(d.heartEmoji){
+          d.heartEmoji.setPosition(d.x,d.y)
+            .setScale(scaleForY(d.y)*0.8)
+            .setDepth(d.depth);
+        }
+      });
+    };
     const updateHeart = s => {
       if(s && s.heartEmoji && s.heartEmoji.scene){
         const hy = s.y + (s.displayHeight || 0) * 0.30;
@@ -2532,8 +2546,9 @@ export function setupGame(){
             const dog=c.dog;
             if(!dog) { return; }
             if(dog.followEvent) dog.followEvent.remove(false);
-            const bark=scene.add.sprite(dog.x,dog.y-20,'dog1',3).setOrigin(0.5).setDepth(dog.depth+1).setScale(Math.abs(dog.scaleX),Math.abs(dog.scaleY));
-            scene.tweens.add({targets:bark,y:'-=20',alpha:0,duration:dur(600),onComplete:()=>bark.destroy()});
+            const { scale, rise } = barkProps(dog);
+            const bark=scene.add.sprite(dog.x,dog.y-20,'dog1',3).setOrigin(0.5).setDepth(dog.depth+1).setScale(Math.abs(dog.scaleX)*scale,Math.abs(dog.scaleY)*scale);
+            scene.tweens.add({targets:bark,y:`-=${rise}`,alpha:0,duration:dur(600),onComplete:()=>bark.destroy()});
             const dTl=scene.tweens.createTimeline();
             for(let j=0;j<4;j++){
               const ang=Phaser.Math.FloatBetween(0,Math.PI*2);
@@ -2605,14 +2620,15 @@ function dogsBarkAtFalcon(){
         }
         if(dog.followEvent) dog.followEvent.remove(false);
         scene.tweens.killTweensOf(dog);
+        const { scale, rise } = barkProps(dog);
         const bark=scene.add.sprite(dog.x,dog.y-20,'dog1',3)
           .setOrigin(0.5)
           .setDepth(dog.depth+1)
-          .setScale(Math.abs(dog.scaleX), Math.abs(dog.scaleY));
+          .setScale(Math.abs(dog.scaleX)*scale, Math.abs(dog.scaleY)*scale);
         GameState.activeBarks.push(bark);
         scene.tweens.add({
           targets:bark,
-          y:'-=20',
+          y:`-=${rise}`,
           alpha:0,
           duration:dur(600),
           onComplete:()=>{
@@ -2621,10 +2637,13 @@ function dogsBarkAtFalcon(){
             bark.destroy();
           }
         });
+        if(mood===CustomerState.ARROW){
+          arrowDogAttack(dog);
+          return;
+        }
           let loops=1;
           if(mood===CustomerState.GROWING) loops=1;
           if(mood===CustomerState.SPARKLING) loops=2;
-          if(mood===CustomerState.ARROW) loops=3;
           const dTl=scene.tweens.createTimeline();
         for(let j=0;j<loops;j++){
           const ang=Phaser.Math.FloatBetween(0,Math.PI*2);
@@ -2672,6 +2691,12 @@ function dogsBarkAtFalcon(){
         GameState.dogBarkEvent.remove(false);
         GameState.dogBarkEvent = null;
       }
+      latchedDogs.forEach(d=>{
+        if(d.chewEvent) d.chewEvent.remove(false);
+        if(d.wiggleTween) d.wiggleTween.stop();
+        d.attacking=false;
+      });
+      latchedDogs.length=0;
       if(featherTrail){ featherTrail.remove(false); featherTrail=null; }
       cleanupDogs(scene);
       GameState.falconActive = false;
@@ -2689,6 +2714,7 @@ function dogsBarkAtFalcon(){
       cleanupBarks();
       cleanupBursts();
       scene.events.off('update', updateHpPos);
+      scene.events.off('update', updateLatchedDogs);
       girlHpText.destroy();
       falconHpText.destroy();
       if(GameState.falconHP<=0){
@@ -2712,6 +2738,7 @@ function dogsBarkAtFalcon(){
       falconHpText.setPosition(falcon.x, falcon.y-60);
     };
     scene.events.on('update', updateHpPos);
+    scene.events.on('update', updateLatchedDogs);
     const targetX=girl.x;
     const targetY=girl.y-40;
     dogsBarkAtFalcon();
@@ -2821,6 +2848,58 @@ function dogsBarkAtFalcon(){
                       });
                     }
                   });
+                },[],scene);
+              }
+            });
+          }
+        }
+      });
+    }
+
+    function arrowDogAttack(dog){
+      if(!falcon || finished || !dog || dog.attacking) return;
+      dog.attacking=true;
+      const dx=falcon.x-dog.x;
+      const dy=falcon.y-dog.y;
+      const tx=dog.x+dx*0.85;
+      const ty=dog.y+dy*0.85;
+      const dir=Math.sign(dx)||1;
+      let hit=false;
+      scene.tweens.add({
+        targets:dog,
+        x:tx,
+        y:ty,
+        duration:dur(300),
+        ease:'Sine.easeOut',
+        onUpdate:()=>{ if(!hit && Phaser.Math.Distance.Between(dog.x,dog.y,falcon.x,falcon.y)<20){ hit=true; } },
+        onComplete:()=>{
+          if(hit){
+            dog.offsetX=dog.x-falcon.x;
+            dog.offsetY=dog.y-falcon.y;
+            latchedDogs.push(dog);
+            dog.chewEvent=scene.time.addEvent({
+              delay:dur(250),
+              loop:true,
+              callback:()=>{
+                GameState.falconHP=Math.max(0,GameState.falconHP-0.25);
+                falconHpText.setText(GameState.falconHP.toFixed(1));
+                featherExplosion(scene,falcon.x,falcon.y,2,1);
+                blinkFalcon();
+                if(GameState.falconHP<=0){ falconDies(); }
+              }
+            });
+            dog.wiggleTween=scene.tweens.add({targets:dog,angle:10,duration:dur(100),yoyo:true,repeat:-1});
+          }else{
+            scene.tweens.add({
+              targets:dog,
+              x:tx+dir*20,
+              y:ty+40,
+              angle:dir>0?90:-90,
+              duration:dur(250),
+              ease:'Sine.easeIn',
+              onComplete:()=>{
+                scene.time.delayedCall(dur(1000),()=>{
+                  scene.tweens.add({targets:dog,angle:0,duration:dur(150),onComplete:()=>{ dog.attacking=false; }});
                 },[],scene);
               }
             });

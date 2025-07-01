@@ -500,3 +500,27 @@ export function dogRefuseJumpBark(dog, scatter=true){
   if(scatter) scatterSparrows(scene);
   return bark;
 }
+
+export function dogBarkAt(dog, targetX, targetY, scatter=true, cb){
+  const scene = this;
+  if(!scene || !dog) return null;
+  const { scale } = barkProps(dog);
+  const bark = scene.add.sprite(dog.x, dog.y - 20, 'dog1', 3)
+    .setOrigin(0.5)
+    .setDepth(dog.depth + 1)
+    .setScale(Math.abs(dog.scaleX) * scale, Math.abs(dog.scaleY) * scale);
+  if (dog.anims && dog.play) {
+    dog.play('dog_bark');
+  }
+  scene.tweens.add({
+    targets: bark,
+    x: targetX,
+    y: targetY,
+    alpha: 0,
+    duration: dur(400),
+    onUpdate: () => setDepthFromBottom(bark, 5),
+    onComplete: () => { bark.destroy(); if(cb) cb(); }
+  });
+  if(scatter) scatterSparrows(scene);
+  return bark;
+}

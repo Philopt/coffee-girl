@@ -7,7 +7,7 @@ import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from
 import { CustomerState } from './constants.js';
 
 import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows, scatterSparrows } from './sparrow.js';
-import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog, dogTruckRuckus, dogRefuseJumpBark, animateDogPowerUp, barkProps } from './entities/dog.js';
+import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog, dogTruckRuckus, dogRefuseJumpBark, dogBarkAt, animateDogPowerUp, barkProps } from './entities/dog.js';
 import { startWander } from './entities/wanderers.js';
 
 import { flashBorder, flashFill, blinkButton, applyRandomSkew, setDepthFromBottom, createGrayscaleTexture, createGlowTexture, createHpBar } from './ui/helpers.js';
@@ -2655,23 +2655,13 @@ function dogsBarkAtFalcon(){
         }
         if(dog.followEvent) dog.followEvent.remove(false);
         scene.tweens.killTweensOf(dog);
-        const { scale, rise } = barkProps(dog);
-        const bark=scene.add.sprite(dog.x,dog.y-20,'dog1',3)
-          .setOrigin(0.5)
-          .setDepth(dog.depth+1)
-          .setScale(Math.abs(dog.scaleX)*scale, Math.abs(dog.scaleY)*scale);
-        GameState.activeBarks.push(bark);
-        scene.tweens.add({
-          targets:bark,
-          y:`-=${rise}`,
-          alpha:0,
-          duration:dur(600),
-          onComplete:()=>{
-            const idx=GameState.activeBarks.indexOf(bark);
-            if(idx!==-1) GameState.activeBarks.splice(idx,1);
-            bark.destroy();
-          }
+        const bark = dogBarkAt.call(scene, dog, falcon.x, falcon.y, true, () => {
+          const idx = GameState.activeBarks.indexOf(bark);
+          if(idx !== -1) GameState.activeBarks.splice(idx,1);
         });
+        if(bark){
+          GameState.activeBarks.push(bark);
+        }
         if(mood===CustomerState.ARROW){
           arrowDogAttack(dog);
           return;

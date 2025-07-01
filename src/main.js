@@ -2448,7 +2448,7 @@ export function setupGame(){
     clearDialog.call(scene);
     GameState.falconActive = true;
     GameState.gameOver = true;
-    GameState.girlHP = 5;
+    GameState.girlHP = 10;
     GameState.falconHP = 10;
     if (GameState.dogBarkEvent) { GameState.dogBarkEvent.remove(false); }
     GameState.dogBarkEvent = null;
@@ -3029,9 +3029,9 @@ function dogsBarkAtFalcon(){
     hideOverlayTexts();
     clearDialog.call(scene);
     if (GameState.spawnTimer) { GameState.spawnTimer.remove(false); GameState.spawnTimer = null; }
-    GameState.girlHP = 5;
+    GameState.girlHP = 10;
     const girlHpText = scene.add.text(girl.x, girl.y - 60, GameState.girlHP.toFixed(1), {font:'20px sans-serif',fill:'#fff'}).setOrigin(0.5).setDepth(21);
-    let girlBlinkEvent = startHpBlink(scene, girl, () => GameState.girlHP, 5);
+    let girlBlinkEvent = startHpBlink(scene, girl, () => GameState.girlHP, 10);
     const updateHpPos = () => { girlHpText.setPosition(girl.x, girl.y-60); };
     scene.events.on('update', updateHpPos);
 

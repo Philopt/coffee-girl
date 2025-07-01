@@ -2442,6 +2442,8 @@ export function setupGame(){
     cleanupHeartEmojis(scene);
     cleanupBarks();
     cleanupBursts();
+    cleanupDogs(scene);
+    cleanupSparrows(scene);
     // Keep dogs around so they can defend the girl
     cleanupSparrows(scene);
     hideOverlayTexts();
@@ -2555,47 +2557,26 @@ export function setupGame(){
           return;
         }
 
-        if(state===CustomerState.GROWING){
-          const tl=scene.tweens.createTimeline();
-          tl.add({targets:c.sprite,x:Phaser.Math.Between(40,440),y:Phaser.Math.Between(WANDER_TOP,WANDER_BOTTOM),duration:dur(400)});
-          tl.add({targets:c.sprite,x:girl.x+Phaser.Math.Between(-60,60),y:girl.y+Phaser.Math.Between(-40,40),duration:dur(300)});
-          tl.add({targets:c.sprite,duration:dur(300)});
-          tl.add({targets:c.sprite,x:targetX,duration:dur(WALK_OFF_BASE/1.2),onComplete:()=>{c.sprite.destroy();remaining--;if(remaining===0&&done)done();}});
-          tl.play();
-          return;
-        }
-
-        if(state===CustomerState.SPARKLING||state===CustomerState.ARROW){
-          const loops=state===CustomerState.ARROW?5:3;
-          const persistent=state===CustomerState.ARROW;
-          const attack=a=>{
-            scene.tweens.add({
-              targets:a,
-              x:falcon.x+Phaser.Math.Between(-5,5),
-              y:falcon.y+Phaser.Math.Between(-5,5),
-              duration:dur(80),
-              yoyo:true,
-              onComplete:()=>{
-                GameState.falconHP = Math.max(0, GameState.falconHP - 0.5);
-                falconHpText.setText(GameState.falconHP.toFixed(1));
-                featherExplosion(scene, falcon.x, falcon.y);
-                blinkFalcon();
-                if(GameState.falconHP<=0){ falconDies(); return; }
-                if(persistent){
-                  scene.time.delayedCall(dur(Phaser.Math.Between(200,400)),()=>attack(a),[],scene);
-                } else if(--a.atkLoops>0){
-                  scene.time.delayedCall(dur(Phaser.Math.Between(200,400)),()=>attack(a),[],scene);
-                }
-              }
-            });
-          };
-          c.sprite.atkLoops=loops;
-          attack(c.sprite);
-          if(!persistent){
-            scene.time.delayedCall(dur(2000),runOff,[],scene);
-          } else {
-            remaining--; if(remaining===0&&done)done();
-          }
+        if(state===CustomerState.GROWING || state===CustomerState.SPARKLING || state===CustomerState.ARROW){
+          const sx = girl.x + Phaser.Math.Between(-60,60);
+          const sy = girl.y + Phaser.Math.Between(30,50);
+          c.sprite.loveState = state;
+          reinHumans.push(c.sprite);
+          scene.tweens.add({
+            targets:c.sprite,
+            x:sx,
+            y:sy,
+            scale:scaleForY(sy),
+            duration:dur(500),
+            onComplete:()=>{
+              c.sprite.baseX = c.sprite.x;
+              c.sprite.baseY = c.sprite.y;
+              c.sprite.ready = true;
+              c.sprite.active = true;
+              startDefender(c.sprite);
+              remaining--; if(remaining===0&&done)done();
+            }
+          });
           return;
         }
 
@@ -2697,8 +2678,10 @@ function dogsBarkAtFalcon(){
       reinHumanEvents.forEach(ev=>{ if(ev) ev.remove(false); });
       reinHumanEvents.length = 0;
       scene.events.off('update', updateReinforcementHearts);
-      reinHumans.forEach(h=>{ if(h.heartEmoji) h.heartEmoji.destroy(); });
-      reinDogs.forEach(d=>{ if(d.heartEmoji) d.heartEmoji.destroy(); });
+      reinHumans.forEach(h=>{ if(h.heartEmoji) h.heartEmoji.destroy(); h.destroy(); });
+      reinDogs.forEach(d=>{ if(d.heartEmoji) d.heartEmoji.destroy(); d.destroy(); });
+      reinHumans.length = 0;
+      reinDogs.length = 0;
       // clear any lingering blink timers
       if(falcon) falcon.clearTint();
       if(girl) girl.clearTint();
@@ -2805,6 +2788,14 @@ function dogsBarkAtFalcon(){
               duration:dur(250),
               ease:'Sine.easeIn',
               onComplete:()=>{
+                h.fallCount = (h.fallCount || 0) + 1;
+                const limit = h.loveState === CustomerState.GROWING ? 2 :
+                              h.loveState === CustomerState.SPARKLING ? 4 : Infinity;
+                if(h.fallCount >= limit){
+                  h.active = false;
+                  h.attacking = false;
+                  return;
+                }
                 scene.time.delayedCall(dur(1000),()=>{
                   if(!h.active) return;
                   scene.tweens.add({
@@ -3026,6 +3017,8 @@ function dogsBarkAtFalcon(){
     cleanupHeartEmojis(scene);
     cleanupBarks();
     cleanupBursts();
+    cleanupDogs(scene);
+    cleanupSparrows(scene);
     hideOverlayTexts();
     clearDialog.call(scene);
     if (GameState.spawnTimer) { GameState.spawnTimer.remove(false); GameState.spawnTimer = null; }
@@ -3275,6 +3268,8 @@ function dogsBarkAtFalcon(){
     cleanupHeartEmojis(scene);
     cleanupBarks();
     cleanupBursts();
+    cleanupDogs(scene);
+    cleanupSparrows(scene);
     hideOverlayTexts();
     if (GameState.spawnTimer) {
       GameState.spawnTimer.remove(false);
@@ -3328,6 +3323,8 @@ function dogsBarkAtFalcon(){
     cleanupHeartEmojis(scene);
     cleanupBarks();
     cleanupBursts();
+    cleanupDogs(scene);
+    cleanupSparrows(scene);
     hideOverlayTexts();
     if (GameState.spawnTimer) { GameState.spawnTimer.remove(false); GameState.spawnTimer = null; }
     clearDialog.call(scene);
@@ -3426,6 +3423,8 @@ function dogsBarkAtFalcon(){
     cleanupHeartEmojis(scene);
     cleanupBarks();
     cleanupBursts();
+    cleanupDogs(scene);
+    cleanupSparrows(scene);
     hideOverlayTexts();
     if (GameState.spawnTimer) { GameState.spawnTimer.remove(false); GameState.spawnTimer = null; }
     clearDialog.call(scene);
@@ -3524,6 +3523,8 @@ function dogsBarkAtFalcon(){
     cleanupHeartEmojis(scene);
     cleanupBarks();
     cleanupBursts();
+    cleanupDogs(scene);
+    cleanupSparrows(scene);
     hideOverlayTexts();
     if (GameState.spawnTimer) { GameState.spawnTimer.remove(false); GameState.spawnTimer=null; }
     clearDialog.call(scene);

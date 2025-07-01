@@ -341,7 +341,7 @@ export function setupGame(){
           repeat: -1
         });
       }
-    });
+    }, []);
     timeline.play();
   }
 
@@ -466,7 +466,7 @@ export function setupGame(){
       });
     }
     if(cb){
-      glowTween.setCallback('onComplete', () => cb());
+      glowTween.setCallback('onComplete', () => cb(), []);
     }
   }
 
@@ -1367,7 +1367,7 @@ export function setupGame(){
           tl.add({ targets: dialogDrinkEmoji, alpha:0, duration: dur(80) });
           tl.setCallback('onComplete', () => {
             animateDogPowerUp(this, target, react);
-          });
+          }, []);
           tl.play();
         } else if (this.time) {
           this.time.delayedCall(dur(100), react, [], this);
@@ -2518,8 +2518,8 @@ export function setupGame(){
               dog.prevX=dog.x;
               const s=scaleForY(dog.y)*0.5;
               dog.setScale(s*(dog.dir||1), s);
-            });
-            dTl.setCallback('onComplete',()=>{ if(dog) dog.setFrame(1); });
+            }, []);
+            dTl.setCallback('onComplete',()=>{ if(dog) dog.setFrame(1); }, []);
             if(dog && dog.anims && dog.play){ dog.play('dog_walk'); }
             dTl.play();
           }
@@ -2612,7 +2612,7 @@ function dogsBarkAtFalcon(){
           dog.prevX=dog.x;
           const s=scaleForY(dog.y)*0.5;
           dog.setScale(s*(dog.dir||1), s);
-        });
+        }, []);
         dTl.setCallback('onComplete',()=>{
           dog.setFrame(1);
           const grown = (dog.scaleFactor||dog.baseScaleFactor||0.6) > (dog.baseScaleFactor||0.6);
@@ -2623,7 +2623,7 @@ function dogsBarkAtFalcon(){
           // burstFeathers(scene, falcon.x, falcon.y, total);
           blinkFalcon();
           if(GameState.falconHP<=0){ endAttack(); }
-        });
+        }, []);
         if(dog.anims && dog.play){ dog.play('dog_walk'); }
         dTl.play();
       });
@@ -2735,7 +2735,7 @@ function dogsBarkAtFalcon(){
             } else {
               attackOnce();
             }
-          });
+          }, []);
           tl.play();
         }});
       }});

@@ -493,7 +493,6 @@ function testStartButtonPlaysIntro() {
   vm.runInContext('var startOverlay,startButton,startMsgTimers=[],startMsgBubbles=[]; const dur=v=>v;\n' +
     introMatch[0] + '\n' + startMatch[0] + '\nfnStart=showStartScreen; fnIntro=playIntro;', context);
   const showStartScreen = context.fnStart;
-  const realPlayIntro = context.fnIntro;
 
   const truck = { x: 0, y: 0, setPosition(x, y) { this.x = x; this.y = y; return this; }, setScale() { return this; }, setDepth() { return this; } };
   const girl = { x: 0, y: 0, visible: true, setPosition(x, y) { this.x = x; this.y = y; return this; }, setVisible(v) { this.visible = v; return this; }, setScale() { return this; }, setDepth() { return this; } };
@@ -850,8 +849,8 @@ function testSparrowRemovalOffscreen() {
   const context = {
     Phaser: {
       Math: {
-        Between: (min, max) => min,
-        FloatBetween: (min, max) => min,
+        Between: min => min,
+        FloatBetween: min => min,
         Clamp: (v, l, h) => Math.max(l, Math.min(h, v)),
         Linear: (a, b, t) => a + (b - a) * t,
         Vector2: class Vector2 {

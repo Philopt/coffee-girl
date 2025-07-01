@@ -10,7 +10,7 @@ import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows, scatterSparrows 
 import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog, dogTruckRuckus, dogRefuseJumpBark, animateDogPowerUp, barkProps } from './entities/dog.js';
 import { startWander } from './entities/wanderers.js';
 
-import { flashBorder, flashFill, blinkButton, applyRandomSkew, setDepthFromBottom, createGrayscaleTexture, createGlowTexture } from './ui/helpers.js';
+import { flashBorder, flashFill, blinkButton, applyRandomSkew, setDepthFromBottom, createGrayscaleTexture, createGlowTexture, createHpBar } from './ui/helpers.js';
 
 import { keys, requiredAssets, preload as preloadAssets, receipt, emojiFor } from './assets.js';
 import { playOpening, showStartScreen, playIntro } from './intro.js';
@@ -2702,7 +2702,7 @@ function dogsBarkAtFalcon(){
           const dmgPer = 0.5 + (grown ? 0.5 : 0);
           const total = loops * dmgPer;
           GameState.falconHP = Math.max(0, GameState.falconHP - total);
-          falconHpText.setText(GameState.falconHP.toFixed(1));
+          falconHpBar.setHp(GameState.falconHP);
           featherExplosion(scene, falcon.x, falcon.y, 8, 1.2);
           blinkFalcon();
           if(GameState.falconHP<=0){ falconDies(); }
@@ -2750,8 +2750,8 @@ function dogsBarkAtFalcon(){
       cleanupBursts();
       scene.events.off('update', updateHpPos);
       scene.events.off('update', updateLatchedDogs);
-      girlHpText.destroy();
-      falconHpText.destroy();
+      girlHpBar.destroy();
+      falconHpBar.destroy();
       if(GameState.falconHP<=0){
         showFalconDefeat.call(scene);
       } else if(cb){
@@ -2763,14 +2763,13 @@ function dogsBarkAtFalcon(){
       .setScale(1.4,1.68)
       .setDepth(20);
     falcon.anims.play('falcon_fly');
-    const girlHpText = scene.add.text(girl.x, girl.y-60, GameState.girlHP,
-      {font:'20px sans-serif',fill:'#fff'}).setOrigin(0.5).setDepth(21);
-    const falconHpText = scene.add.text(falcon.x, falcon.y-60,
-      GameState.falconHP.toFixed(1),
-      {font:'20px sans-serif',fill:'#fff'}).setOrigin(0.5).setDepth(21);
+    const girlHpBar = createHpBar(scene, 40, 6, 10);
+    girlHpBar.setPosition(girl.x, girl.y-60);
+    const falconHpBar = createHpBar(scene, 40, 6, 10);
+    falconHpBar.setPosition(falcon.x, falcon.y-60);
     const updateHpPos = () => {
-      girlHpText.setPosition(girl.x, girl.y-60);
-      falconHpText.setPosition(falcon.x, falcon.y-60);
+      girlHpBar.setPosition(girl.x, girl.y-60);
+      falconHpBar.setPosition(falcon.x, falcon.y-60);
     };
     scene.events.on('update', updateHpPos);
     scene.events.on('update', updateLatchedDogs);
@@ -2825,7 +2824,7 @@ function dogsBarkAtFalcon(){
           if(!hit && Phaser.Math.Distance.Between(h.x,h.y,falcon.x,falcon.y)<20){
             hit=true;
             GameState.falconHP = Math.max(0, GameState.falconHP - 0.5);
-            falconHpText.setText(GameState.falconHP.toFixed(1));
+            falconHpBar.setHp(GameState.falconHP);
             featherExplosion(scene, falcon.x, falcon.y, 8, 1.2);
             blinkFalcon();
             if(GameState.falconHP<=0){ falconDies(); }
@@ -2919,7 +2918,7 @@ function dogsBarkAtFalcon(){
               loop:true,
               callback:()=>{
                 GameState.falconHP=Math.max(0,GameState.falconHP-0.25);
-                falconHpText.setText(GameState.falconHP.toFixed(1));
+                falconHpBar.setHp(GameState.falconHP);
                 featherExplosion(scene,falcon.x,falcon.y,2,1);
                 blinkFalcon();
                 if(GameState.falconHP<=0){ falconDies(); }
@@ -3043,7 +3042,7 @@ function dogsBarkAtFalcon(){
             onComplete:()=>{
             blinkAngry(scene);
             GameState.girlHP=Math.max(0,GameState.girlHP-1);
-            girlHpText.setText(GameState.girlHP);
+            girlHpBar.setHp(GameState.girlHP);
             coffeeExplosion(scene);
             const tl=scene.tweens.createTimeline({callbackScope:scene});
           tl.add({targets:falcon,y:targetY+10,duration:dur(80),yoyo:true});
@@ -3139,9 +3138,10 @@ function dogsBarkAtFalcon(){
     clearDialog.call(scene);
     if (GameState.spawnTimer) { GameState.spawnTimer.remove(false); GameState.spawnTimer = null; }
     GameState.girlHP = 10;
-    const girlHpText = scene.add.text(girl.x, girl.y - 60, GameState.girlHP.toFixed(1), {font:'20px sans-serif',fill:'#fff'}).setOrigin(0.5).setDepth(21);
+    const girlHpBar = createHpBar(scene, 40, 6, 10);
+    girlHpBar.setPosition(girl.x, girl.y - 60);
     let girlBlinkEvent = startHpBlink(scene, girl, () => GameState.girlHP, 10);
-    const updateHpPos = () => { girlHpText.setPosition(girl.x, girl.y-60); };
+    const updateHpPos = () => { girlHpBar.setPosition(girl.x, girl.y-60); };
     scene.events.on('update', updateHpPos);
 
     const attackers=[];
@@ -3280,7 +3280,7 @@ function dogsBarkAtFalcon(){
         scene.events.off('update', updateHpPos);
         scene.events.off('update', updateAttackerHearts);
         if(girlBlinkEvent) girlBlinkEvent.remove(false);
-        girlHpText.destroy();
+        girlHpBar.destroy();
       }
 
     function attack(a){
@@ -3295,7 +3295,7 @@ function dogsBarkAtFalcon(){
         onComplete:()=>{
           if(finished) return;
           GameState.girlHP = Math.max(0, GameState.girlHP - 0.5);
-          girlHpText.setText(GameState.girlHP.toFixed(1));
+          girlHpBar.setHp(GameState.girlHP);
           blinkGirl();
           if(GameState.girlHP<=0){
             finished=true;

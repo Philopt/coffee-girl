@@ -1,4 +1,4 @@
-import { debugLog } from '../debug.js';
+import { debugLog, DEBUG } from '../debug.js';
 import { dur, scaleForY } from '../ui.js';
 import {
   MENU,
@@ -50,6 +50,18 @@ const HEART_EMOJIS = {
   [CustomerState.SPARKLING]: '💖',
   [CustomerState.ARROW]: '💘'
 };
+
+function cycleMood(state){
+  switch(state){
+    case CustomerState.BROKEN: return CustomerState.MENDING;
+    case CustomerState.MENDING: return CustomerState.NORMAL;
+    case CustomerState.NORMAL: return CustomerState.GROWING;
+    case CustomerState.GROWING: return CustomerState.SPARKLING;
+    case CustomerState.SPARKLING: return CustomerState.ARROW;
+    case CustomerState.ARROW: return CustomerState.BROKEN;
+    default: return CustomerState.NORMAL;
+  }
+}
 
 export function maxWanderers() {
   return customersMaxWanderers();
@@ -547,6 +559,12 @@ export function spawnCustomer() {
   c.orders.push(order);
   c.atOrder = false;
   c.sprite = this.add.sprite(startX, startY, k).setScale(distScale);
+  if (DEBUG && c.sprite.setInteractive) {
+    c.sprite.setInteractive({ useHandCursor: true });
+    c.sprite.on('pointerdown', () => {
+      if (c.memory) c.memory.state = cycleMood(c.memory.state);
+    });
+  }
   setDepthFromBottom(c.sprite, 5);
   const hy = startY + c.sprite.displayHeight * 0.30;
   const hs = scaleForY(startY) * 0.8;
@@ -575,6 +593,12 @@ export function spawnCustomer() {
     const dog = this.add.sprite(startX + offsetX, startY + offsetY, 'dog1', 1)
       .setOrigin(0.5)
       .setTint(dogType.tint || 0xffffff);
+    if (DEBUG && dog.setInteractive) {
+      dog.setInteractive({ useHandCursor: true });
+      dog.on('pointerdown', () => {
+        if (memory.dogMemory) memory.dogMemory.state = cycleMood(memory.dogMemory.state);
+      });
+    }
     dog.baseScaleFactor = dogType.scale || 0.6;
     dog.scaleFactor = dog.baseScaleFactor;
     dog.dir = 1;

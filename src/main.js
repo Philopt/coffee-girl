@@ -3065,7 +3065,13 @@ function dogsBarkAtFalcon(){
             // stopTrail();
             if(firstAttack) firstAttack=false;
             if(GameState.girlHP<=0){
-              endAttack();
+              finished = true;
+              setSpeedMultiplier(0.25);
+              bigCoffeeExplosion(scene);
+              scene.time.delayedCall(2000, ()=>{
+                setSpeedMultiplier(1);
+                endAttack();
+              }, [], scene);
             } else {
               attackOnce();
             }
@@ -3118,7 +3124,7 @@ function dogsBarkAtFalcon(){
       }
     }
 
-      function coffeeExplosion(s, x, y){
+    function coffeeExplosion(s, x, y){
         const startX = (typeof x === 'number') ? x
                       : girl.x + (girl.displayWidth || 0) * 0.1;
         const startY = (typeof y === 'number') ? y
@@ -3138,6 +3144,30 @@ function dogsBarkAtFalcon(){
           angle:Phaser.Math.Between(-180,180),
           alpha:0,
           duration:dur(800),
+          ease:'Cubic.easeOut',
+          onComplete:()=>{ const i=GameState.activeBursts.indexOf(cup); if(i!==-1) GameState.activeBursts.splice(i,1); cup.destroy(); }
+        });
+      }
+    }
+
+    function bigCoffeeExplosion(s){
+      const startX = girl.x + (girl.displayWidth || 0) * 0.1;
+      const startY = girl.y - (girl.displayHeight || 0) * 0.2;
+      for(let i=0;i<12;i++){
+        const ang = Phaser.Math.FloatBetween(-Math.PI/2, Math.PI/2);
+        const dist = Phaser.Math.Between(20,80);
+        const cup = s.add.image(startX,startY,'coffeecup2')
+          .setOrigin(0.5)
+          .setDepth(21)
+          .setScale(0.5);
+        GameState.activeBursts.push(cup);
+        s.tweens.add({
+          targets:cup,
+          x:startX+Math.cos(ang)*dist,
+          y:startY+Math.sin(ang)*dist,
+          angle:Phaser.Math.Between(-180,180),
+          alpha:0,
+          duration:dur(500),
           ease:'Cubic.easeOut',
           onComplete:()=>{ const i=GameState.activeBursts.indexOf(cup); if(i!==-1) GameState.activeBursts.splice(i,1); cup.destroy(); }
         });

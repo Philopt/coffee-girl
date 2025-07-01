@@ -2578,8 +2578,9 @@ export function setupGame(){
               onComplete:()=>{
                 GameState.falconHP = Math.max(0, GameState.falconHP - 0.5);
                 falconHpText.setText(GameState.falconHP.toFixed(1));
+                featherExplosion(scene, falcon.x, falcon.y);
                 blinkFalcon();
-                if(GameState.falconHP<=0){ endAttack(); return; }
+                if(GameState.falconHP<=0){ falconDies(); return; }
                 if(persistent){
                   scene.time.delayedCall(dur(Phaser.Math.Between(200,400)),()=>attack(a),[],scene);
                 } else if(--a.atkLoops>0){
@@ -2667,9 +2668,9 @@ function dogsBarkAtFalcon(){
           const total = loops * dmgPer;
           GameState.falconHP = Math.max(0, GameState.falconHP - total);
           falconHpText.setText(GameState.falconHP.toFixed(1));
-          // burstFeathers(scene, falcon.x, falcon.y, total);
+          featherExplosion(scene, falcon.x, falcon.y);
           blinkFalcon();
-          if(GameState.falconHP<=0){ endAttack(); }
+          if(GameState.falconHP<=0){ falconDies(); }
         }, []);
         if(dog.anims && dog.play){ dog.play('dog_walk'); }
         dTl.play();
@@ -2707,7 +2708,11 @@ function dogsBarkAtFalcon(){
       scene.events.off('update', updateHpPos);
       girlHpText.destroy();
       falconHpText.destroy();
-      if(cb) cb();
+      if(GameState.falconHP<=0){
+        showFalconDefeat.call(scene);
+      } else if(cb){
+        cb();
+      }
     };
 
     falcon=scene.add.sprite(-40,-40,'lady_falcon',0)
@@ -2776,8 +2781,9 @@ function dogsBarkAtFalcon(){
             hit=true;
             GameState.falconHP = Math.max(0, GameState.falconHP - 0.5);
             falconHpText.setText(GameState.falconHP.toFixed(1));
+            featherExplosion(scene, falcon.x, falcon.y);
             blinkFalcon();
-            if(GameState.falconHP<=0){ falcon.setTintFill(0xff0000); endAttack(); }
+            if(GameState.falconHP<=0){ falconDies(); }
           }
         },
         onComplete:()=>{
@@ -2930,6 +2936,7 @@ function dogsBarkAtFalcon(){
             blinkAngry(scene);
             GameState.girlHP=Math.max(0,GameState.girlHP-1);
             girlHpText.setText(GameState.girlHP);
+            coffeeExplosion(scene);
             const tl=scene.tweens.createTimeline({callbackScope:scene});
           tl.add({targets:falcon,y:targetY+10,duration:dur(80),yoyo:true});
           tl.add({targets:girl,y:girl.y+5,duration:dur(80),yoyo:true,
@@ -2971,6 +2978,40 @@ function dogsBarkAtFalcon(){
         GameState.activeBursts.push(line);
         s.tweens.add({targets:line,alpha:0,scaleY:1.5,y:by-10,duration:dur(200),onComplete:()=>{ const i=GameState.activeBursts.indexOf(line); if(i!==-1) GameState.activeBursts.splice(i,1); line.destroy(); }});
       }
+    }
+
+    function coffeeExplosion(s){
+      const startX = girl.x + (girl.displayWidth || 0) * 0.3;
+      const startY = girl.y - (girl.displayHeight || 0) * 0.2;
+      for(let i=0;i<5;i++){
+        const ang = Phaser.Math.FloatBetween(-Math.PI/2, Math.PI/2);
+        const dist = Phaser.Math.Between(10,40);
+        const cup = s.add.image(startX,startY,'coffeecup2')
+          .setOrigin(0.5)
+          .setDepth(21)
+          .setScale(0.6);
+        GameState.activeBursts.push(cup);
+        s.tweens.add({targets:cup,x:startX+Math.cos(ang)*dist,y:startY+Math.sin(ang)*dist,angle:Phaser.Math.Between(-180,180),alpha:0,duration:dur(400),ease:'Cubic.easeOut',onComplete:()=>{ const i=GameState.activeBursts.indexOf(cup); if(i!==-1) GameState.activeBursts.splice(i,1); cup.destroy(); }});
+      }
+    }
+
+    function featherExplosion(s,x,y,count=6,scale=1){
+      for(let i=0;i<count;i++){
+        const ang = Phaser.Math.FloatBetween(0,Math.PI*2);
+        const dist = Phaser.Math.Between(20,40)*scale;
+        const line = s.add.rectangle(x,y,Phaser.Math.Between(2,3)*scale,Phaser.Math.Between(12,20)*scale,0xffffff)
+          .setOrigin(0.5).setDepth(21)
+          .setAngle(Phaser.Math.RadToDeg(ang));
+        GameState.activeBursts.push(line);
+        s.tweens.add({targets:line,x:x+Math.cos(ang)*dist,y:y+Math.sin(ang)*dist,alpha:0,duration:dur(300),onComplete:()=>{ const i=GameState.activeBursts.indexOf(line); if(i!==-1) GameState.activeBursts.splice(i,1); line.destroy(); }});
+      }
+    }
+
+    function falconDies(){
+      if(!falcon) return;
+      featherExplosion(scene,falcon.x,falcon.y,12,1.5);
+      falcon.setTintFill(0xff0000);
+      scene.tweens.add({targets:falcon,angle:180,y:'+=60',duration:dur(800),ease:'Cubic.easeIn',onComplete:endAttack});
     }
 
 
@@ -3370,6 +3411,10 @@ function dogsBarkAtFalcon(){
         });
       });
     GameState.gameOver=true;
+  }
+
+  function showFalconDefeat(){
+    showEnd.call(this,'You defeated Lady Falcon! \uD83C\uDF89');
   }
 
   function showCustomerRevoltLoss(){

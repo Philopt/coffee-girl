@@ -2456,6 +2456,19 @@ export function setupGame(){
     const reinDogs=[];
     const reinHumans=[];
     const reinHumanEvents=[];
+    const updateHeart = s => {
+      if(s && s.heartEmoji && s.heartEmoji.scene){
+        const hy = s.y + (s.displayHeight || 0) * 0.30;
+        s.heartEmoji
+          .setPosition(s.x, hy)
+          .setScale(scaleForY(s.y) * 0.8)
+          .setDepth(s.depth);
+      }
+    };
+    const updateReinforcementHearts = () => {
+      reinHumans.forEach(updateHeart);
+      reinDogs.forEach(updateHeart);
+    };
 
 
         function panicCustomers(done){
@@ -2682,6 +2695,9 @@ function dogsBarkAtFalcon(){
       GameState.falconActive = false;
       reinHumanEvents.forEach(ev=>{ if(ev) ev.remove(false); });
       reinHumanEvents.length = 0;
+      scene.events.off('update', updateReinforcementHearts);
+      reinHumans.forEach(h=>{ if(h.heartEmoji) h.heartEmoji.destroy(); });
+      reinDogs.forEach(d=>{ if(d.heartEmoji) d.heartEmoji.destroy(); });
       // clear any lingering blink timers
       if(falcon) falcon.clearTint();
       if(girl) girl.clearTint();
@@ -2781,6 +2797,11 @@ function dogsBarkAtFalcon(){
               .setScale(scaleForY(sy));
             h.loveState = mem.state;
             reinHumans.push(h);
+            h.heartEmoji = scene.add.text(sx, sy,
+              HEART_EMOJIS[mem.state] || '', {font:'28px sans-serif'})
+              .setOrigin(0.5)
+              .setDepth(21)
+              .setShadow(0,0,'#000',4);
             scene.tweens.add({
               targets:h,
               x:girl.x+Phaser.Math.Between(-60,60),
@@ -2809,6 +2830,11 @@ function dogsBarkAtFalcon(){
             scaleDog(dog);
             dog.dogCustomer={memory:mem.dogMemory};
             reinDogs.push(dog);
+            dog.heartEmoji = scene.add.text(dx, dy,
+              HEART_EMOJIS[mem.dogMemory.state] || '', {font:'28px sans-serif'})
+              .setOrigin(0.5)
+              .setDepth(21)
+              .setShadow(0,0,'#000',4);
             scene.tweens.add({targets:dog,x:girl.x+Phaser.Math.Between(-80,80),y:girl.y+Phaser.Math.Between(40,60),duration:dur(800),onUpdate:()=>{const s=scaleForY(dog.y)*0.5;dog.setScale(s*(dog.dir||1),s);}});
           },[],scene);
           delay += 500;
@@ -2816,6 +2842,7 @@ function dogsBarkAtFalcon(){
       });
     };
     spawnReinforcements();
+    scene.events.on('update', updateReinforcementHearts);
     const attackOnce=()=>{
         const dir=Math.random()<0.5?-1:1;
         const angle=Phaser.Math.FloatBetween(Phaser.Math.DegToRad(55),Phaser.Math.DegToRad(80));

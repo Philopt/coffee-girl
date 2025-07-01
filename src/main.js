@@ -3180,6 +3180,7 @@ function dogsBarkAtFalcon(){
         duration:dur(1500),
         ease:'Cubic.easeIn',
         onComplete:()=>{
+          if(falcon && falcon.anims) falcon.anims.stop();
           scene.time.delayedCall(2000,()=>{
             setSpeedMultiplier(1);
             endAttack();

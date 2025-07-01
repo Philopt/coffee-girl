@@ -71,7 +71,7 @@ function playOpening(scene){
         onComplete:()=>cup.destroy()
       });
     }
-  });
+  }, []);
 
   tl.add({
     targets: openingDog,

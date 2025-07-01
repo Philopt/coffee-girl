@@ -2814,7 +2814,7 @@ function dogsBarkAtFalcon(){
         duration:dur(300),
         ease:'Sine.easeOut',
         onUpdate:()=>{
-          if(!hit && Phaser.Math.Distance.Between(h.x,h.y,falcon.x,falcon.y)<20){
+          if(!hit && Phaser.Math.Distance.Between(h.x,h.y,falcon.x,falcon.y)<30){
             hit=true;
             GameState.falconHP = Math.max(0, GameState.falconHP - 0.5);
             falconHpBar.setHp(GameState.falconHP);
@@ -2899,7 +2899,7 @@ function dogsBarkAtFalcon(){
         y:ty,
         duration:dur(300),
         ease:'Sine.easeOut',
-        onUpdate:()=>{ if(!hit && Phaser.Math.Distance.Between(dog.x,dog.y,falcon.x,falcon.y)<20){ hit=true; } },
+        onUpdate:()=>{ if(!hit && Phaser.Math.Distance.Between(dog.x,dog.y,falcon.x,falcon.y)<30){ hit=true; } },
         onComplete:()=>{
           if(hit){
             featherExplosion(scene, falcon.x, falcon.y, 8, 1.2);
@@ -3023,13 +3023,13 @@ function dogsBarkAtFalcon(){
             onStart:()=>{/*if(firstAttack) startTrail();*/},
             onUpdate:()=>{
               GameState.activeBarks.forEach(b=>{
-                if(Phaser.Math.Distance.Between(falcon.x,falcon.y,b.x,b.y)<20){
+                if(Phaser.Math.Distance.Between(falcon.x,falcon.y,b.x,b.y)<30){
                   const idx=GameState.activeBarks.indexOf(b);
                   if(idx!==-1) GameState.activeBarks.splice(idx,1);
                   b.destroy();
                   if(attackTween){ attackTween.stop(); attackTween=null; }
                   GameState.falconHP = Math.max(0, GameState.falconHP - 0.1);
-                  falconHpText.setText(GameState.falconHP.toFixed(1));
+                  falconHpBar.setHp(GameState.falconHP);
                   featherExplosion(scene, falcon.x, falcon.y, 4, 1);
                   blinkFalcon();
                   if(GameState.falconHP<=0){ falconDies(); return; }

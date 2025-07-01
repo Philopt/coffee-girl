@@ -3088,9 +3088,11 @@ function dogsBarkAtFalcon(){
       }
     }
 
-    function coffeeExplosion(s){
-      const startX = girl.x + (girl.displayWidth || 0) * 0.3;
-      const startY = girl.y - (girl.displayHeight || 0) * 0.2;
+    function coffeeExplosion(s, x, y){
+      const startX = (typeof x === 'number') ? x
+                    : girl.x + (girl.displayWidth || 0) * 0.3;
+      const startY = (typeof y === 'number') ? y
+                    : girl.y - (girl.displayHeight || 0) * 0.2;
       for(let i=0;i<5;i++){
         const ang = Phaser.Math.FloatBetween(-Math.PI/2, Math.PI/2);
         const dist = Phaser.Math.Between(10,40);
@@ -3099,7 +3101,16 @@ function dogsBarkAtFalcon(){
           .setDepth(21)
           .setScale(0.6);
         GameState.activeBursts.push(cup);
-        s.tweens.add({targets:cup,x:startX+Math.cos(ang)*dist,y:startY+Math.sin(ang)*dist,angle:Phaser.Math.Between(-180,180),alpha:0,duration:dur(400),ease:'Cubic.easeOut',onComplete:()=>{ const i=GameState.activeBursts.indexOf(cup); if(i!==-1) GameState.activeBursts.splice(i,1); cup.destroy(); }});
+        s.tweens.add({
+          targets:cup,
+          x:startX+Math.cos(ang)*dist,
+          y:startY+Math.sin(ang)*dist,
+          angle:Phaser.Math.Between(-180,180),
+          alpha:0,
+          duration:dur(400),
+          ease:'Cubic.easeOut',
+          onComplete:()=>{ const i=GameState.activeBursts.indexOf(cup); if(i!==-1) GameState.activeBursts.splice(i,1); cup.destroy(); }
+        });
       }
     }
 
@@ -3117,9 +3128,30 @@ function dogsBarkAtFalcon(){
 
     function falconDies(){
       if(!falcon) return;
-      featherExplosion(scene,falcon.x,falcon.y,12,1.5);
+      scene.tweens.killAll();
+      scene.time.removeAllEvents();
+      reinHumanEvents.forEach(ev=>{ if(ev) ev.remove(false); });
+      reinHumanEvents.length = 0;
+      scene.events.off('update', updateHpPos);
+      scene.events.off('update', updateLatchedDogs);
+      scene.events.off('update', updateReinforcementHearts);
+      latchedDogs.forEach(d=>{
+        if(d.chewEvent) d.chewEvent.remove(false);
+        if(d.wiggleTween) d.wiggleTween.stop();
+        d.attacking=false;
+      });
+      latchedDogs.length=0;
+      featherExplosion(scene,falcon.x,falcon.y,20,2.5);
+      coffeeExplosion(scene,falcon.x,falcon.y);
       falcon.setTintFill(0xff0000);
-      scene.tweens.add({targets:falcon,angle:180,y:'+=60',duration:dur(800),ease:'Cubic.easeIn',onComplete:endAttack});
+      scene.tweens.add({
+        targets:falcon,
+        angle:180,
+        y:'+=100',
+        duration:dur(1500),
+        ease:'Cubic.easeIn',
+        onComplete:endAttack
+      });
     }
 
 

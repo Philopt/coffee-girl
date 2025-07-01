@@ -520,14 +520,20 @@ export function spawnCustomer() {
   const startW = typeof startWander === 'function' ? startWander : function(scene, cust, targetX, exitAfter) {
     const duration = (typeof dur === 'function') ? dur(1000) : 1000;
     cust.walkData = { startX: cust.sprite.x, startY: cust.sprite.y, targetX, amp: 0, freq: 0, duration, exitAfter };
-    if (scene && scene.tweens && scene.tweens.add) {
-      scene.tweens.add({ targets: cust.sprite, x: targetX, duration, onComplete: () => {
-        if (exitAfter) {
-          const idx = (GameState.wanderers || scene.wanderers || []).indexOf(cust);
-          if (idx >= 0) (GameState.wanderers || scene.wanderers).splice(idx, 1);
-          if (cust.sprite.destroy) cust.sprite.destroy();
+    if (scene && scene.tweens && scene.tweens.add && cust.sprite) {
+      scene.tweens.add({
+        targets: cust.sprite,
+        x: targetX,
+        duration,
+        callbackScope: scene,
+        onComplete: () => {
+          if (exitAfter) {
+            const idx = (GameState.wanderers || scene.wanderers || []).indexOf(cust);
+            if (idx >= 0) (GameState.wanderers || scene.wanderers).splice(idx, 1);
+            if (cust.sprite.destroy) cust.sprite.destroy();
+          }
         }
-      }});
+      });
     }
   };
 

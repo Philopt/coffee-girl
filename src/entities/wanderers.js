@@ -64,14 +64,20 @@ export function startWander(scene, c, targetX, exitAfter){
   // Slower wander speed now that the line is working
   const walkDuration = Phaser.Math.Between(10000,14000);
   c.walkData={startX,startY,targetX,amp,freq,duration:walkDuration,exitAfter};
-  c.walkTween = scene.tweens.add({targets:c.sprite,x:targetX,duration:dur(walkDuration),
-    onUpdate:(tw,t)=>{
-      const p=tw.progress;
-      t.y=startY+Math.sin(p*Math.PI*freq)*amp;
-      t.setScale(scaleForY(t.y));
-    },
-    onComplete:()=>{ exitAfter ? removeWanderer(scene,c) : handleWanderComplete(scene,c); }
-  });
+  if(scene && scene.tweens && scene.tweens.add && c.sprite){
+    c.walkTween = scene.tweens.add({
+      targets:c.sprite,
+      x:targetX,
+      duration:dur(walkDuration),
+      callbackScope: scene,
+      onUpdate:(tw,t)=>{
+        const p=tw.progress;
+        t.y=startY+Math.sin(p*Math.PI*freq)*amp;
+        t.setScale(scaleForY(t.y));
+      },
+      onComplete:()=>{ exitAfter ? removeWanderer(scene,c) : handleWanderComplete(scene,c); }
+    });
+  }
 }
 
 export function resumeWanderer(scene, c){
@@ -81,15 +87,18 @@ export function resumeWanderer(scene, c){
   const totalDist = Math.abs(targetX - startX);
   const remaining = Math.abs(targetX - c.sprite.x);
   const walkDuration = totalDist>0 ? duration * (remaining/totalDist) : duration;
-  c.walkTween = scene.tweens.add({
-    targets:c.sprite,
-    x:targetX,
-    duration:dur(walkDuration),
-    onUpdate:(tw,t)=>{
-      const p=tw.progress;
-      t.y=startY+Math.sin(p*Math.PI*freq)*amp;
-      t.setScale(scaleForY(t.y));
-    },
-    onComplete:()=>{ exitAfter ? removeWanderer(scene,c) : handleWanderComplete(scene,c); }
-  });
+  if(scene && scene.tweens && scene.tweens.add && c.sprite){
+    c.walkTween = scene.tweens.add({
+      targets:c.sprite,
+      x:targetX,
+      duration:dur(walkDuration),
+      callbackScope: scene,
+      onUpdate:(tw,t)=>{
+        const p=tw.progress;
+        t.y=startY+Math.sin(p*Math.PI*freq)*amp;
+        t.setScale(scaleForY(t.y));
+      },
+      onComplete:()=>{ exitAfter ? removeWanderer(scene,c) : handleWanderComplete(scene,c); }
+    });
+  }
 }

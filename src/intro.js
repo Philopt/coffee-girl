@@ -306,7 +306,6 @@ function showStartScreen(scene){
   const pcY = phoneContainer.y;
 
   // store the opening number's target coords relative to the phone
-  let numLocalX = null, numLocalY = null;
 
   if(openingTitle){
     const localX = (openingTitle.x - pcX) / pcScale;
@@ -328,8 +327,6 @@ function showStartScreen(scene){
     const worldY = openingNumber.finalPos ? openingNumber.finalPos.y : openingNumber.y;
     const localX = (worldX - m.tx) / m.a;
     const localY = (worldY - m.ty) / m.d;
-    numLocalX = localX;
-    numLocalY = localY;
     openingNumber
       .setPosition(localX, localY)
       .setScale(openingNumber.scale / pcScale)

@@ -1,7 +1,7 @@
 import { debugLog, DEBUG } from './debug.js';
-import { dur, scaleForY, articleFor, flashMoney, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_Y, DIALOG_Y } from "./ui.js";
-import { ORDER_X, ORDER_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, calcLoveLevel, queueLimit, RESPAWN_COOLDOWN } from "./customers.js";
-import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer, startDogWaitTimer, checkQueueSpacing } from './entities/customerQueue.js';
+import { dur, scaleForY, articleFor, flashMoney, BUTTON_Y, DIALOG_Y } from "./ui.js";
+import { ORDER_X, ORDER_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, queueLimit, RESPAWN_COOLDOWN } from "./customers.js";
+import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer, startDogWaitTimer } from './entities/customerQueue.js';
 import { baseConfig } from "./scene.js";
 import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from "./state.js";
 import { CustomerState } from './constants.js';
@@ -10,7 +10,7 @@ import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows, scatterSparrows 
 import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog, dogTruckRuckus, dogRefuseJumpBark, animateDogPowerUp } from './entities/dog.js';
 import { startWander } from './entities/wanderers.js';
 
-import { flashBorder, flashFill, blinkButton, applyRandomSkew, emphasizePrice, setDepthFromBottom, createGrayscaleTexture, createGlowTexture } from './ui/helpers.js';
+import { flashBorder, flashFill, blinkButton, applyRandomSkew, setDepthFromBottom, createGrayscaleTexture, createGlowTexture } from './ui/helpers.js';
 
 import { keys, requiredAssets, preload as preloadAssets, receipt, emojiFor } from './assets.js';
 import { playOpening, showStartScreen, playIntro } from './intro.js';
@@ -255,7 +255,7 @@ export function setupGame(){
 
     const resetBtn = (btn, info)=>{
       if(!btn) return;
-      const img = buttonImage(btn);
+      buttonImage(btn);
       btn.setPosition(SELL_X, startY);
 
       if(btn.image){
@@ -345,17 +345,7 @@ export function setupGame(){
     timeline.play();
   }
 
-  function fadeOutOtherButtons(selected){
-    const others=[btnSell,btnGive,btnRef].filter(b=>b&&b!==selected);
-    others.forEach(btn=>{
-      if(btn.input) btn.input.enabled=false;
-      if(this.tweens){
-        this.tweens.add({targets:btn,alpha:0,duration:dur(150),onComplete:()=>{btn.setVisible(false);}});
-      }else{
-        btn.setVisible(false);
-      }
-    });
-  }
+
 
   function blowButtonsAway(except){
     const buttons=[btnSell,btnGive,btnRef].filter(b=>b&&b!==except);
@@ -2646,20 +2636,6 @@ function dogsBarkAtFalcon(){
     let featherTrail=null;
     let firstAttack=true;
     let attackTween=null;
-    const startTrail = () => {
-      if (featherTrail) {
-        featherTrail.paused = false;
-        return;
-      }
-      featherTrail = scene.time.addEvent({
-        delay: dur(120),
-        loop: true,
-        // callback: () => burstFeathers(scene, falcon.x, falcon.y, 1)
-      });
-    };
-    const stopTrail = () => {
-      if (featherTrail) featherTrail.paused = true;
-    };
     const endAttack=()=>{
       if(finished) return;
       finished=true;
@@ -2785,26 +2761,7 @@ function dogsBarkAtFalcon(){
       }
     }
 
-    function burstFeathers(s, x, y, count=1){
-      for(let i=0;i<count;i++){
-        const debris=createDebrisEmoji(s, x, y);
-        s.tweens.add({targets:debris,
-                    x:debris.x+Phaser.Math.Between(-60,60),
-                    y:debris.y+Phaser.Math.Between(-50,10),
-                    angle:Phaser.Math.Between(-360,360),
-                    alpha:0,
-                    duration:dur(400),
-                    onComplete:()=>debris.destroy()});
-        s.time.delayedCall(dur(450),()=>debris.destroy(),[],s);
-      }
-    }
 
-    function createDebrisEmoji(s, x, y){
-      const ox=Phaser.Math.Between(-3,3);
-      const oy=Phaser.Math.Between(-3,3);
-      return s.add.text(x+ox,y+oy,'🪶',{font:'24px sans-serif',fill:'#5a381e'})
-        .setOrigin(0.5).setDepth(21).setScale(0.5);
-    }
   }
 
   function showCustomerRevolt(cb){
@@ -3171,7 +3128,7 @@ function dogsBarkAtFalcon(){
           GameState.carryPortrait = img.setDepth(25);
         }
         btn.setVisible(false);
-        const flashTex = createGlowTexture(this,0xffffff,'screen_flash',256);
+        createGlowTexture(this,0xffffff,'screen_flash',256);
         const overlayG = this.add.image(btn.x,btn.y,'screen_flash').setDepth(23);
         overlayG.setDisplaySize(btn.width,btn.height);
         this.tweens.add({
@@ -3264,7 +3221,7 @@ function dogsBarkAtFalcon(){
           GameState.carryPortrait = img.setDepth(25);
         }
         btn.setVisible(false);
-        const flashTex = createGlowTexture(this,0xffffff,'screen_flash',256);
+        createGlowTexture(this,0xffffff,'screen_flash',256);
         const overlayG = this.add.image(btn.x,btn.y,'screen_flash').setDepth(23);
         overlayG.setDisplaySize(btn.width,btn.height);
         this.tweens.add({
@@ -3344,11 +3301,11 @@ function dogsBarkAtFalcon(){
           createGrayscaleTexture(this,key,grayKey);
           GameState.carryPortrait = img.setDepth(25);
         }
-        const glowTex = createGlowTexture(this,0xffffff,'tryagain_glow');
+        createGlowTexture(this,0xffffff,'tryagain_glow');
         const glow = this.add.image(btn.x,btn.y,'tryagain_glow').setDepth(24).setAlpha(0.8).setScale(0.1);
         this.tweens.add({targets:glow,scale:3,alpha:0,duration:300,onComplete:()=>glow.destroy()});
         btn.setVisible(false);
-        const flashTex = createGlowTexture(this,0xffffff,'screen_flash',256);
+        createGlowTexture(this,0xffffff,'screen_flash',256);
         const overlayG = this.add.image(btn.x,btn.y,'screen_flash').setDepth(23);
         overlayG.setDisplaySize(btn.width,btn.height);
         this.tweens.add({targets:overlayG,x:240,y:320,scaleX:Math.max(480/btn.width,640/btn.height)*2,scaleY:Math.max(480/btn.width,640/btn.height)*2,duration:300,ease:'Cubic.easeOut',onComplete:()=>{

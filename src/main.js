@@ -2696,16 +2696,8 @@ function dogsBarkAtFalcon(){
           const s=scaleForY(dog.y)*0.5;
           dog.setScale(s*(dog.dir||1), s);
         }, []);
-        dTl.setCallback('onComplete',()=>{
+          dTl.setCallback('onComplete',()=>{
           dog.setFrame(1);
-          const grown = (dog.scaleFactor||dog.baseScaleFactor||0.6) > (dog.baseScaleFactor||0.6);
-          const dmgPer = 0.5 + (grown ? 0.5 : 0);
-          const total = loops * dmgPer;
-          GameState.falconHP = Math.max(0, GameState.falconHP - total);
-          falconHpText.setText(GameState.falconHP.toFixed(1));
-          featherExplosion(scene, falcon.x, falcon.y, 8, 1.2);
-          blinkFalcon();
-          if(GameState.falconHP<=0){ falconDies(); }
         }, []);
         if(dog.anims && dog.play){ dog.play('dog_walk'); }
         dTl.play();
@@ -3036,7 +3028,20 @@ function dogsBarkAtFalcon(){
                   if(idx!==-1) GameState.activeBarks.splice(idx,1);
                   b.destroy();
                   if(attackTween){ attackTween.stop(); attackTween=null; }
-                  scene.time.delayedCall(dur(300), attackOnce, [], scene);
+                  GameState.falconHP = Math.max(0, GameState.falconHP - 0.1);
+                  falconHpText.setText(GameState.falconHP.toFixed(1));
+                  featherExplosion(scene, falcon.x, falcon.y, 4, 1);
+                  blinkFalcon();
+                  if(GameState.falconHP<=0){ falconDies(); return; }
+                  scene.tweens.add({
+                    targets:falcon,
+                    y:'+=20',
+                    duration:dur(100),
+                    ease:'Sine.easeInOut',
+                    yoyo:true,
+                    hold:dur(1000),
+                    onComplete:()=>scene.time.delayedCall(0, attackOnce, [], scene)
+                  });
                 }
               });
             },

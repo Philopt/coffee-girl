@@ -548,8 +548,12 @@ export function spawnCustomer() {
   c.atOrder = false;
   c.sprite = this.add.sprite(startX, startY, k).setScale(distScale);
   setDepthFromBottom(c.sprite, 5);
-  c.heartEmoji = this.add.text(0, 0, HEART_EMOJIS[c.memory.state] || '', { font: '28px sans-serif' })
+  const hy = startY + c.sprite.displayHeight * 0.30;
+  const hs = scaleForY(startY) * 0.8;
+  c.heartEmoji = this.add.text(startX, hy, HEART_EMOJIS[c.memory.state] || '', { font: '28px sans-serif' })
     .setOrigin(0.5)
+    .setScale(hs)
+    .setDepth(c.sprite.depth)
     .setShadow(0, 0, '#000', 4);
 
   let spawnDog = memory.dogMemory.hasDog;
@@ -601,8 +605,12 @@ export function spawnCustomer() {
     dog.dogCustomer = dogCust;
     c.dogCustomer = dogCust;
 
-    dogCust.heartEmoji = this.add.text(0, 0, HEART_EMOJIS[dogCust.memory.state] || '', { font: '28px sans-serif' })
+    const dhy = dog.y + dog.displayHeight * 0.30;
+    const dhs = scaleForY(dog.y) * 0.8;
+    dogCust.heartEmoji = this.add.text(dog.x, dhy, HEART_EMOJIS[dogCust.memory.state] || '', { font: '28px sans-serif' })
       .setOrigin(0.5)
+      .setScale(dhs)
+      .setDepth(dog.depth)
       .setShadow(0, 0, '#000', 4);
     dog.heartEmoji = dogCust.heartEmoji;
   }

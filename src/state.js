@@ -26,6 +26,7 @@ export const GameState = {
   girl: null
   ,girlHP: 10
   ,falconHP: 10
+  ,falconStunned: false
   ,badges: []
   ,badgeCounts: {}
   ,carryPortrait: null

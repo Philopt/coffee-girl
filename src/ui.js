@@ -11,7 +11,16 @@ export const BUTTON_Y = 545;
 export const DIALOG_Y = 400;
 
 // Wraps timing values so any global speed adjustments can be made here
-export const dur = v => v;
+let speedMultiplier = 1;
+export function setSpeedMultiplier(m = 1) {
+  speedMultiplier = m || 1;
+}
+export function getSpeedMultiplier() {
+  return speedMultiplier;
+}
+export function dur(v) {
+  return v / speedMultiplier;
+}
 
 export function scaleForY(y) {
   const minY = ORDER_Y;

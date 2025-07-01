@@ -1,5 +1,5 @@
 import { debugLog, DEBUG } from './debug.js';
-import { dur, scaleForY, articleFor, flashMoney, BUTTON_Y, DIALOG_Y } from "./ui.js";
+import { dur, scaleForY, articleFor, flashMoney, BUTTON_Y, DIALOG_Y, setSpeedMultiplier } from "./ui.js";
 import { ORDER_X, ORDER_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, queueLimit, RESPAWN_COOLDOWN } from "./customers.js";
 import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer, startDogWaitTimer } from './entities/customerQueue.js';
 import { baseConfig } from "./scene.js";
@@ -611,6 +611,23 @@ export function setupGame(){
     }
   }
 
+  function addSpeedControl(scene){
+    const speeds=[1,2,5,10];
+    let idx=0;
+    const label=scene.add.text(scene.scale.width-10,10,'1x',{
+      font:'16px sans-serif',fill:'#fff',backgroundColor:'#000'
+    })
+      .setOrigin(1,0)
+      .setPadding(4)
+      .setDepth(30)
+      .setInteractive({useHandCursor:true});
+    label.on('pointerdown',()=>{
+      idx=(idx+1)%speeds.length;
+      setSpeedMultiplier(speeds[idx]);
+      label.setText(`${speeds[idx]}x`);
+    });
+  }
+
 
 
 
@@ -622,6 +639,9 @@ export function setupGame(){
     this.assets = Assets;
     this.customers = Customers;
     this.gameState = GameState;
+    this.dur = dur;
+    setSpeedMultiplier(1);
+    if (DEBUG) addSpeedControl(this);
     const missing=requiredAssets.filter(key=>!this.textures.exists(key));
     if(missing.length){
       const msg='Missing assets: '+missing.join(', ');

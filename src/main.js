@@ -3031,7 +3031,7 @@ function dogsBarkAtFalcon(){
                   GameState.falconHP = Math.max(0, GameState.falconHP - 0.1);
                   falconHpBar.setHp(GameState.falconHP);
                   featherExplosion(scene, falcon.x, falcon.y, 4, 1);
-                  blinkFalcon();
+                  stunFalcon();
                   if(GameState.falconHP<=0){ falconDies(); return; }
                   scene.tweens.add({
                     targets:falcon,
@@ -3079,6 +3079,14 @@ function dogsBarkAtFalcon(){
     function blinkFalcon(){
       flashRed(scene, falcon, 400);
       if(GameState.falconHP<=0){ falcon.setTintFill(0xff0000); }
+    }
+
+    function stunFalcon(){
+      if(!falcon) return;
+      falcon.setTintFill(0x3399ff);
+      scene.time.delayedCall(dur(1000), () => {
+        if(falcon && falcon.clearTint) falcon.clearTint();
+      }, [], scene);
     }
 
     function sprinkleBursts(s){

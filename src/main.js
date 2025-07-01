@@ -2832,41 +2832,51 @@ function dogsBarkAtFalcon(){
               duration:dur(250),
               ease:'Sine.easeIn',
               onComplete:()=>{
-                ensureOnGround(h);
-                h.fallCount = (h.fallCount || 0) + 1;
-                const limit = h.loveState === CustomerState.GROWING ? 2 :
-                              h.loveState === CustomerState.SPARKLING ? 4 : Infinity;
-                if(h.fallCount >= limit){
-                  h.active = false;
-                  h.attacking = false;
-                  return;
-                }
-                scene.time.delayedCall(dur(1000),()=>{
-                  if(!h.active) return;
-                  scene.tweens.add({
-                    targets:h,
-                    angle:0,
-                    duration:dur(150),
-                    onComplete:()=>{
-                      const newX = Phaser.Math.Between(girl.x-80, girl.x+80);
-                      const groundY = Math.max(WANDER_TOP, girl.y + 60);
-                      const newY = Phaser.Math.Between(groundY, groundY + 20);
+                const gY = Math.max(WANDER_TOP, girl.y + 60);
+                scene.tweens.add({
+                  targets:h,
+                  y:gY,
+                  scale:scaleForY(gY),
+                  duration:dur(300),
+                  ease:'Sine.easeIn',
+                  onComplete:()=>{
+                    ensureOnGround(h);
+                    h.fallCount = (h.fallCount || 0) + 1;
+                    const limit = h.loveState === CustomerState.GROWING ? 2 :
+                                  h.loveState === CustomerState.SPARKLING ? 4 : Infinity;
+                    if(h.fallCount >= limit){
+                      h.active = false;
+                      h.attacking = false;
+                      return;
+                    }
+                    scene.time.delayedCall(dur(1000),()=>{
+                      if(!h.active) return;
                       scene.tweens.add({
                         targets:h,
-                        x:newX,
-                        y:newY,
-                        scale:scaleForY(newY),
-                        duration:dur(300),
-                        ease:'Sine.easeOut',
+                        angle:0,
+                        duration:dur(150),
                         onComplete:()=>{
-                          h.baseX = newX;
-                          h.baseY = newY;
-                          h.attacking=false;
+                          const newX = Phaser.Math.Between(girl.x-80, girl.x+80);
+                          const groundY = Math.max(WANDER_TOP, girl.y + 60);
+                          const newY = Phaser.Math.Between(groundY, groundY + 20);
+                          scene.tweens.add({
+                            targets:h,
+                            x:newX,
+                            y:newY,
+                            scale:scaleForY(newY),
+                            duration:dur(300),
+                            ease:'Sine.easeOut',
+                            onComplete:()=>{
+                              h.baseX = newX;
+                              h.baseY = newY;
+                              h.attacking=false;
+                            }
+                          });
                         }
                       });
-                    }
-                  });
-                },[],scene);
+                    },[],scene);
+                  }
+                });
               }
             });
           }
@@ -2917,9 +2927,18 @@ function dogsBarkAtFalcon(){
               duration:dur(250),
               ease:'Sine.easeIn',
               onComplete:()=>{
-                scene.time.delayedCall(dur(1000),()=>{
-                  scene.tweens.add({targets:dog,angle:0,duration:dur(150),onComplete:()=>{ ensureOnGround(dog); dog.attacking=false; }});
-                },[],scene);
+                scene.tweens.add({
+                  targets:dog,
+                  y:DOG_MIN_Y,
+                  duration:dur(300),
+                  ease:'Sine.easeIn',
+                  onUpdate:()=>{ const s=scaleForY(dog.y)*0.5; dog.setScale(s*(dog.dir||1),s); },
+                  onComplete:()=>{
+                    scene.time.delayedCall(dur(1000),()=>{
+                      scene.tweens.add({targets:dog,angle:0,duration:dur(150),onComplete:()=>{ ensureOnGround(dog); dog.attacking=false; }});
+                    },[],scene);
+                  }
+                });
               }
             });
           }

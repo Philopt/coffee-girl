@@ -23,6 +23,7 @@ export const GameState = {
   heartWin: null,
   girlReady: false,
   truck: null,
+  falcon: null,
   girl: null
   ,girlHP: 10
   ,falconHP: 10

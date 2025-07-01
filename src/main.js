@@ -2449,7 +2449,13 @@ export function setupGame(){
     if(!scene || !sprite) return;
     sprite.setTintFill(0xff0000);
     scene.time.delayedCall(dur(duration), ()=>{
-      if(sprite && sprite.clearTint) sprite.clearTint();
+      if(sprite && sprite.clearTint){
+        if(sprite === GameState.falcon && GameState.falconStunned){
+          sprite.setTint(0x3399ff);
+        } else {
+          sprite.clearTint();
+        }
+      }
     }, [], scene);
   }
 
@@ -2729,6 +2735,7 @@ function dogsBarkAtFalcon(){
       if(falcon) falcon.clearTint();
       if(girl) girl.clearTint();
       if(falcon) falcon.destroy();
+      GameState.falcon = null;
       cleanupBarks();
       cleanupBursts();
       scene.events.off('update', updateHpPos);
@@ -2745,6 +2752,7 @@ function dogsBarkAtFalcon(){
     falcon=scene.add.sprite(-40,-40,'lady_falcon',0)
       .setScale(1.4,1.68)
       .setDepth(20);
+    GameState.falcon = falcon;
     falcon.anims.play('falcon_fly');
     const girlHpBar = createHpBar(scene, 40, 6, 10);
     girlHpBar.setPosition(girl.x, girl.y-60);
@@ -3086,10 +3094,10 @@ function dogsBarkAtFalcon(){
       if(GameState.falconHP<=0){ falcon.setTintFill(0xff0000); }
     }
 
-    function stunFalcon(done){
-      if(!falcon) { if(done) done(); return; }
-      GameState.falconStunned = true;
-      falcon.setTintFill(0x3399ff);
+      function stunFalcon(done){
+        if(!falcon) { if(done) done(); return; }
+        GameState.falconStunned = true;
+        falcon.setTint(0x3399ff);
       scene.tweens.add({
         targets:falcon,
         x:girl.x,

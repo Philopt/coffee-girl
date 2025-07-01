@@ -3042,7 +3042,9 @@ function dogsBarkAtFalcon(){
                   falconHpBar.setHp(GameState.falconHP);
                   featherExplosion(scene, falcon.x, falcon.y, 4, 1);
                   if(GameState.falconHP<=0){ falconDies(); return; }
-                  stunFalcon(()=>scene.time.delayedCall(0, attackOnce, [], scene));
+                  if(!GameState.falconStunned){
+                    stunFalcon(()=>scene.time.delayedCall(0, attackOnce, [], scene));
+                  }
                 }
               });
             },
@@ -3084,6 +3086,7 @@ function dogsBarkAtFalcon(){
 
     function stunFalcon(done){
       if(!falcon) { if(done) done(); return; }
+      GameState.falconStunned = true;
       falcon.setTintFill(0x3399ff);
       scene.tweens.add({
         targets:falcon,
@@ -3094,6 +3097,7 @@ function dogsBarkAtFalcon(){
         onComplete:()=>{
           scene.time.delayedCall(dur(1500), () => {
             if(falcon && falcon.clearTint) falcon.clearTint();
+            GameState.falconStunned = false;
             if(done) done();
           }, [], scene);
         }

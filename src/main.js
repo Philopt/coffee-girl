@@ -2740,7 +2740,8 @@ function dogsBarkAtFalcon(){
       h.attackEvent = ev;
     }
     function defenderAttack(h){
-      if(!falcon || finished || !h.active) return;
+      if(!falcon || finished || !h.active || h.attacking) return;
+      h.attacking = true;
       const factor = ATTACK_RANGE[h.loveState] || 1.1;
       const dx = falcon.x - h.baseX;
       const dy = falcon.y - h.baseY;
@@ -2753,7 +2754,6 @@ function dogsBarkAtFalcon(){
         y:ty,
         duration:dur(300),
         ease:'Sine.easeOut',
-        yoyo:true,
         onUpdate:()=>{
           if(!hit && Phaser.Math.Distance.Between(h.x,h.y,falcon.x,falcon.y)<20){
             hit=true;
@@ -2761,6 +2761,38 @@ function dogsBarkAtFalcon(){
             falconHpText.setText(GameState.falconHP.toFixed(1));
             blinkFalcon();
             if(GameState.falconHP<=0){ falcon.setTintFill(0xff0000); endAttack(); }
+          }
+        },
+        onComplete:()=>{
+          if(hit){
+            scene.tweens.add({
+              targets:h,
+              x:h.baseX,
+              y:h.baseY,
+              duration:dur(200),
+              ease:'Sine.easeIn',
+              onComplete:()=>{ h.attacking=false; }
+            });
+          } else {
+            scene.tweens.add({
+              targets:h,
+              y:ty+20,
+              duration:dur(150),
+              ease:'Sine.easeIn',
+              onComplete:()=>{
+                scene.time.delayedCall(dur(1000),()=>{
+                  if(!h.active) return;
+                  scene.tweens.add({
+                    targets:h,
+                    x:h.baseX,
+                    y:h.baseY,
+                    duration:dur(300),
+                    ease:'Sine.easeOut',
+                    onComplete:()=>{ h.attacking=false; }
+                  });
+                },[],scene);
+              }
+            });
           }
         }
       });

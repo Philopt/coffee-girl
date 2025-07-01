@@ -2724,9 +2724,9 @@ function dogsBarkAtFalcon(){
       [CustomerState.ARROW]: 700
     };
     const ATTACK_RANGE = {
-      [CustomerState.GROWING]: 1.1,
-      [CustomerState.SPARKLING]: 1.43,
-      [CustomerState.ARROW]: 1.7
+      [CustomerState.GROWING]: 0.55,
+      [CustomerState.SPARKLING]: 0.715,
+      [CustomerState.ARROW]: 0.85
     };
     function startDefender(h){
       const delay = ATTACK_FREQ[h.loveState] || 1200;

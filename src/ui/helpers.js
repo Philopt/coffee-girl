@@ -139,4 +139,23 @@ export function createGlowTexture(scene, color, key, radius=64){
   return canvas;
 }
 
+export function createHpBar(scene, width=40, height=6, maxHp=10){
+  if(!scene || !scene.add) return null;
+  const container = scene.add.container(0, 0).setDepth(21);
+  const bg = scene.add.rectangle(0, 0, width, height, 0x000000).setOrigin(0.5);
+  const bar = scene.add.rectangle(-width/2, 0, width, height, 0x00ff00)
+    .setOrigin(0, 0.5);
+  container.add([bg, bar]);
+  container.maxHp = maxHp;
+  container.setHp = hp => {
+    const frac = Phaser.Math.Clamp(hp / maxHp, 0, 1);
+    bar.width = width * frac;
+    const r = Math.round(255 * (1 - frac));
+    const g = Math.round(255 * frac);
+    bar.fillColor = (r << 16) | (g << 8);
+  };
+  container.setHp(maxHp);
+  return container;
+}
+
 export { blinkButton as default };

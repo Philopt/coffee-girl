@@ -2903,8 +2903,10 @@ function dogsBarkAtFalcon(){
         onComplete:()=>{
           if(hit){
             featherExplosion(scene, falcon.x, falcon.y, 8, 1.2);
-            dog.offsetX=dog.x-falcon.x;
-            dog.offsetY=dog.y-falcon.y;
+            // Center the dog on the falcon once it latches on
+            // This avoids it appearing offset to the top-left
+            dog.offsetX = 0;
+            dog.offsetY = 0;
             latchedDogs.push(dog);
             dog.chewEvent=scene.time.addEvent({
               delay:dur(250),

@@ -4,7 +4,7 @@ set -e
 
 # Ensure supported Node.js version
 DIR="$(cd "$(dirname "$0")" && pwd)"
-"$DIR/check-node-version.sh"
+node "$DIR/check-node-version.mjs"
 
 if command -v npm >/dev/null 2>&1; then
   npm ci

@@ -2481,9 +2481,24 @@ export function setupGame(){
           .setDepth(s.depth);
       }
     };
-    const updateReinforcementHearts = () => {
+   const updateReinforcementHearts = () => {
       reinHumans.forEach(updateHeart);
       reinDogs.forEach(updateHeart);
+    };
+
+    const groundLevel = () => Math.max(WANDER_TOP, girl.y + 60);
+    const ensureOnGround = obj => {
+      if(!obj || !obj.y) return;
+      const isDog = obj.texture && obj.texture.key === 'dog1';
+      const gY = isDog ? DOG_MIN_Y : groundLevel();
+      if(obj.y < gY){
+        obj.y = gY;
+        if(isDog){
+          scaleDog(obj);
+        }else if(obj.setScale){
+          obj.setScale(scaleForY(obj.y));
+        }
+      }
     };
 
 
@@ -2668,7 +2683,7 @@ function dogsBarkAtFalcon(){
           const total = loops * dmgPer;
           GameState.falconHP = Math.max(0, GameState.falconHP - total);
           falconHpText.setText(GameState.falconHP.toFixed(1));
-          featherExplosion(scene, falcon.x, falcon.y);
+          featherExplosion(scene, falcon.x, falcon.y, 8, 1.2);
           blinkFalcon();
           if(GameState.falconHP<=0){ falconDies(); }
         }, []);
@@ -2773,7 +2788,7 @@ function dogsBarkAtFalcon(){
     function defenderAttack(h){
       if(!falcon || finished || !h.active || h.attacking) return;
       h.attacking = true;
-      const factor = ATTACK_RANGE[h.loveState] || 1.1;
+      const factor = (ATTACK_RANGE[h.loveState] || 1.1) * 1.2;
       const dx = falcon.x - h.baseX;
       const dy = falcon.y - h.baseY;
       const tx = h.baseX + dx * factor;
@@ -2791,7 +2806,7 @@ function dogsBarkAtFalcon(){
             hit=true;
             GameState.falconHP = Math.max(0, GameState.falconHP - 0.5);
             falconHpText.setText(GameState.falconHP.toFixed(1));
-            featherExplosion(scene, falcon.x, falcon.y);
+            featherExplosion(scene, falcon.x, falcon.y, 8, 1.2);
             blinkFalcon();
             if(GameState.falconHP<=0){ falconDies(); }
           }
@@ -2815,6 +2830,7 @@ function dogsBarkAtFalcon(){
               duration:dur(250),
               ease:'Sine.easeIn',
               onComplete:()=>{
+                ensureOnGround(h);
                 h.fallCount = (h.fallCount || 0) + 1;
                 const limit = h.loveState === CustomerState.GROWING ? 2 :
                               h.loveState === CustomerState.SPARKLING ? 4 : Infinity;
@@ -2861,8 +2877,8 @@ function dogsBarkAtFalcon(){
       dog.attacking=true;
       const dx=falcon.x-dog.x;
       const dy=falcon.y-dog.y;
-      const tx=dog.x+dx*0.85;
-      const ty=dog.y+dy*0.85;
+      const tx=dog.x+dx*0.85*1.2;
+      const ty=dog.y+dy*0.85*1.2;
       const dir=Math.sign(dx)||1;
       let hit=false;
       scene.tweens.add({
@@ -2874,6 +2890,7 @@ function dogsBarkAtFalcon(){
         onUpdate:()=>{ if(!hit && Phaser.Math.Distance.Between(dog.x,dog.y,falcon.x,falcon.y)<20){ hit=true; } },
         onComplete:()=>{
           if(hit){
+            featherExplosion(scene, falcon.x, falcon.y, 8, 1.2);
             dog.offsetX=dog.x-falcon.x;
             dog.offsetY=dog.y-falcon.y;
             latchedDogs.push(dog);
@@ -2899,7 +2916,7 @@ function dogsBarkAtFalcon(){
               ease:'Sine.easeIn',
               onComplete:()=>{
                 scene.time.delayedCall(dur(1000),()=>{
-                  scene.tweens.add({targets:dog,angle:0,duration:dur(150),onComplete:()=>{ dog.attacking=false; }});
+                  scene.tweens.add({targets:dog,angle:0,duration:dur(150),onComplete:()=>{ ensureOnGround(dog); dog.attacking=false; }});
                 },[],scene);
               }
             });
@@ -3035,7 +3052,7 @@ function dogsBarkAtFalcon(){
     }
 
     function blinkFalcon(){
-      flashRed(scene, falcon, 250);
+      flashRed(scene, falcon, 400);
       if(GameState.falconHP<=0){ falcon.setTintFill(0xff0000); }
     }
 

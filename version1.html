@@ -37,6 +37,8 @@ window.onload = function() {
     parent: 'game-container',
 
     backgroundColor: '#ffffff',
+    // Render with pixelArt mode so scaled sprites keep crisp edges
+    pixelArt: true,
 
     scale: {
       mode: Phaser.Scale.FIT,
@@ -129,7 +131,11 @@ window.onload = function() {
     currentCoins = Phaser.Math.Between(1,10);
     currentRequest = currentCoins < COFFEE_COST ? 'water':'coffee';
     const key = Phaser.Utils.Array.GetRandom(['genz1','genz2','genz3']);
-    currentCustomer = this.add.sprite(240,640,key).setOrigin(0.5,1).setScale(1.5).setDepth(1);
+    // Customer sprites are small so scale them up for visibility
+    currentCustomer = this.add.sprite(240,640,key)
+      .setOrigin(0.5,1)
+      .setScale(4.5)
+      .setDepth(1);
     this.tweens.add({ targets: currentCustomer, y:300, duration:1000,
       onComplete: showDialog, callbackScope: this });
   }

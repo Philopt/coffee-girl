@@ -227,6 +227,15 @@ export function setupGame(){
     GameState.activeBursts.length = 0;
   }
 
+  function cleanupSparkles(scene){
+    if(!scene || !scene.children) return;
+    scene.children.list.slice().forEach(child=>{
+      if(child instanceof Phaser.GameObjects.Text && child.text === '✨'){
+        child.destroy();
+      }
+    });
+  }
+
 
 
 
@@ -2477,6 +2486,7 @@ export function setupGame(){
     cleanupHeartEmojis(scene);
     cleanupBarks();
     cleanupBursts();
+    cleanupSparkles(scene);
     cleanupDogs(scene);
     cleanupSparrows(scene);
     // Keep dogs around so they can defend the girl
@@ -2805,10 +2815,12 @@ function dogsBarkAtFalcon(){
       reinHumanEvents.push(ev);
       h.attackEvent = ev;
     }
-    function defenderAttack(h){
+   function defenderAttack(h){
       if(!falcon || finished || !h.active || h.attacking) return;
       h.attacking = true;
-      const factor = (ATTACK_RANGE[h.loveState] || 1.1) * 1.2;
+      const heightBoost = (h.loveState === CustomerState.GROWING ||
+                           h.loveState === CustomerState.SPARKLING) ? 1.1 : 1;
+      const factor = (ATTACK_RANGE[h.loveState] || 1.1) * 1.2 * heightBoost;
       const dx = falcon.x - h.baseX;
       const dy = falcon.y - h.baseY;
       const tx = h.baseX + dx * factor;
@@ -2865,6 +2877,13 @@ function dogsBarkAtFalcon(){
                     if(h.fallCount >= limit){
                       h.active = false;
                       h.attacking = false;
+                      h.loveState = CustomerState.BROKEN;
+                      if(h.heartEmoji){
+                        h.heartEmoji.setText(HEART_EMOJIS[CustomerState.BROKEN] || '');
+                      }
+                      h.setPostPipeline('desaturate');
+                      const pl = h.getPostPipeline(DesaturatePipeline);
+                      if(pl) pl.amount = 1;
                       return;
                     }
                     scene.time.delayedCall(dur(1000),()=>{
@@ -3301,6 +3320,7 @@ function dogsBarkAtFalcon(){
     cleanupHeartEmojis(scene);
     cleanupBarks();
     cleanupBursts();
+    cleanupSparkles(scene);
     cleanupDogs(scene);
     cleanupSparrows(scene);
     hideOverlayTexts();
@@ -3580,6 +3600,7 @@ function dogsBarkAtFalcon(){
     cleanupHeartEmojis(scene);
     cleanupBarks();
     cleanupBursts();
+    cleanupSparkles(scene);
     cleanupDogs(scene);
     cleanupSparrows(scene);
     hideOverlayTexts();
@@ -3635,6 +3656,7 @@ function dogsBarkAtFalcon(){
     cleanupHeartEmojis(scene);
     cleanupBarks();
     cleanupBursts();
+    cleanupSparkles(scene);
     cleanupDogs(scene);
     cleanupSparrows(scene);
     hideOverlayTexts();
@@ -3731,6 +3753,7 @@ function dogsBarkAtFalcon(){
     cleanupHeartEmojis(scene);
     cleanupBarks();
     cleanupBursts();
+    cleanupSparkles(scene);
     cleanupDogs(scene);
     cleanupSparrows(scene);
     hideOverlayTexts();
@@ -3837,6 +3860,7 @@ function dogsBarkAtFalcon(){
     cleanupHeartEmojis(scene);
     cleanupBarks();
     cleanupBursts();
+    cleanupSparkles(scene);
     cleanupDogs(scene);
     cleanupSparrows(scene);
     hideOverlayTexts();
@@ -4008,6 +4032,7 @@ function dogsBarkAtFalcon(){
     cleanupHeartEmojis(scene);
     cleanupBarks();
     cleanupBursts();
+    cleanupSparkles(scene);
     cleanupSparrows(scene);
     if (GameState.spawnTimer) {
       GameState.spawnTimer.remove(false);

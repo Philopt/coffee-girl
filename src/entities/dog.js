@@ -431,6 +431,21 @@ export function cleanupDogs(scene){
       });
     }
   });
+
+  if(scene && scene.children){
+    const known = new Set();
+    if(gs.activeCustomer && gs.activeCustomer.dog) known.add(gs.activeCustomer.dog);
+    gs.queue.forEach(c=>{ if(c.dog) known.add(c.dog); });
+    gs.wanderers.forEach(c=>{ if(c.dog) known.add(c.dog); });
+    scene.children.list.slice().forEach(child=>{
+      if(child.texture && child.texture.key==='dog1' && !known.has(child)){
+        if(child.followEvent) child.followEvent.remove(false);
+        const dir = child.x < ORDER_X ? -1 : 1;
+        const targetX = dir===1 ? 520 : -40;
+        sendDogOffscreen.call(scene, child, targetX, child.y);
+      }
+    });
+  }
 }
 
 export function dogTruckRuckus(scene, dog){

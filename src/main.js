@@ -3390,6 +3390,11 @@ function dogsBarkAtFalcon(){
         }
         if(c.dog){
           if(c.dog.followEvent) c.dog.followEvent.remove(false);
+          if(c.dog.currentTween){ c.dog.currentTween.stop(); c.dog.currentTween = null; }
+          if(c.dog.chewEvent){ c.dog.chewEvent.remove(false); c.dog.chewEvent = null; }
+          if(c.dog.wiggleTween){ c.dog.wiggleTween.stop(); c.dog.wiggleTween = null; }
+          scene.tweens.killTweensOf(c.dog);
+          c.dog.attacking = false;
           c.dog.setDepth(20);
           attackerDogs.push(c.dog);
           if(!c.dog.heartEmoji){

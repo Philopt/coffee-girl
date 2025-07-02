@@ -131,9 +131,16 @@ window.onload = function() {
     currentCoins = Phaser.Math.Between(1,10);
     currentRequest = currentCoins < COFFEE_COST ? 'water':'coffee';
     const key = Phaser.Utils.Array.GetRandom(['genz1','genz2','genz3']);
-    // Customer sprites are small so scale them up for visibility (slightly reduced)
-    // GenZ2 should appear twice as large as the others
-    const scale = key === 'genz2' ? 6.3 : 3.15;
+    // Customer sprites are small so scale them up for visibility
+    // Adjust each sprite size individually
+    let scale = 3.15; // default scale
+    if(key === 'genz2') {
+      scale = 6.3 * 0.5;        // half the previous size
+    } else if(key === 'genz3') {
+      scale = 3.15 * 0.7;       // 30% smaller
+    } else if(key === 'genz1') {
+      scale = 3.15 * 0.8;       // 20% smaller
+    }
     currentCustomer = this.add.sprite(240,640,key)
       .setOrigin(0.5,1)
       .setScale(scale)

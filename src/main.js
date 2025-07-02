@@ -3252,16 +3252,17 @@ function dogsBarkAtFalcon(){
         d.attacking=false;
       });
       latchedDogs.length=0;
-      featherExplosion(scene,falcon.x,falcon.y,20,2.5);
-      coffeeExplosion(scene,falcon.x,falcon.y);
       falcon.setTintFill(0xff0000);
       scene.tweens.add({
         targets:falcon,
         angle:180,
-        y:'+=100',
+        x: truck.x,
+        y: truck.y,
         duration:dur(1500),
         ease:'Cubic.easeIn',
         onComplete:()=>{
+          featherExplosion(scene,falcon.x,falcon.y,30,3);
+          bigCoffeeExplosion(scene);
           if(falcon && falcon.anims) falcon.anims.stop();
           scene.time.delayedCall(2000,()=>{
             setSpeedMultiplier(1);

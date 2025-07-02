@@ -3428,6 +3428,10 @@ function dogsBarkAtFalcon(){
         });
         scene.tweens.add({targets:driver,x:truck.x-40,y:truck.y,duration:dur(300),onUpdate:()=>updateHeart(driver),onComplete:()=>{ if(driver.heartEmoji) driver.heartEmoji.destroy(); driver.destroy(); }});
         scene.tweens.add({targets:truck,x:-200,duration:dur(800),delay:dur(300),onComplete:()=>{if(cb) cb();}});
+        attackerDogs.forEach(dog=>{
+          dogRefuseJumpBark.call(scene,dog,false);
+          sendDogOffscreen.call(scene,dog,-200,dog.y);
+        });
         scene.events.off('update', updateHpPos);
         scene.events.off('update', updateAttackerHearts);
         if(girlBlinkEvent) girlBlinkEvent.remove(false);
@@ -3448,7 +3452,7 @@ function dogsBarkAtFalcon(){
           GameState.girlHP = Math.max(0, GameState.girlHP - 0.5);
           girlHpBar.setHp(GameState.girlHP);
           blinkGirl();
-          if(GameState.girlHP<=0){
+          if(GameState.girlHP<=5){
             finished=true;
             sendDriver(a);
           } else {
@@ -3463,8 +3467,7 @@ function dogsBarkAtFalcon(){
       const ang = (Math.PI * 2 * i) / attackers.length;
       const r = 40;
       const tx = girl.x + Math.cos(ang) * r;
-      let ty = girl.y + Math.sin(ang) * r;
-      if(ty < DOG_MIN_Y) ty = DOG_MIN_Y;
+      let ty = Math.max(girl.y + Math.sin(ang) * r, gatherStartY);
       const arrive = () => {
         if(!firstArrived){
           firstArrived = true;
@@ -3487,13 +3490,12 @@ function dogsBarkAtFalcon(){
       const ang = (Math.PI * 2 * (attackers.length + i)) / (attackers.length + attackerDogs.length);
       const r = 60;
       const tx = girl.x + Math.cos(ang) * r;
-      const ty = girl.y + Math.sin(ang) * r;
+      const ty = Math.max(girl.y + Math.sin(ang) * r, gatherStartY);
       const harass = ()=>{
         if(finished) return;
         const ang2 = Phaser.Math.FloatBetween(0, Math.PI*2);
         const dx = girl.x + Math.cos(ang2)*r;
-        let dy = girl.y + Math.sin(ang2)*r;
-        if(dy < DOG_MIN_Y) dy = DOG_MIN_Y;
+        let dy = Math.max(girl.y + Math.sin(ang2)*r, gatherStartY);
         scene.tweens.add({
           targets:dog,
           x:dx,

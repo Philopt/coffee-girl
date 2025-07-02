@@ -1803,7 +1803,10 @@ export function setupGame(){
           });
           return;
         }
-        if(GameState.money>=MAX_M){showEnd.call(this,'Congrats! 💰');return;}
+        if(GameState.money>=MAX_M){
+          showHighMoneyLoss.call(this);
+          return;
+        }
         if(GameState.love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
         if(GameState.heartWin){
           showTrueLoveVictory.call(this, winSpriteKey);
@@ -3688,6 +3691,83 @@ function dogsBarkAtFalcon(){
         btn.destroy();
         if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
         restartGame.call(this);
+      });
+    GameState.gameOver=true;
+  }
+
+  function showHighMoneyLoss(){
+    const scene = this;
+    scene.tweens.killAll();
+    scene.time.removeAllEvents();
+    cleanupFloatingEmojis();
+    cleanupHeartEmojis(scene);
+    cleanupBarks();
+    cleanupBursts();
+    cleanupSparkles(scene);
+    cleanupDogs(scene);
+    cleanupSparrows(scene);
+    hideOverlayTexts();
+    if (GameState.spawnTimer) { GameState.spawnTimer.remove(false); GameState.spawnTimer = null; }
+    clearDialog.call(scene);
+    if(endOverlay){ endOverlay.destroy(); }
+    endOverlay = this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
+
+    const titleGame = this.add.text(240,170,'GAME',{
+      font:'80px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
+    }).setOrigin(0.5).setDepth(20).setAlpha(0);
+    const titleOver = this.add.text(240,250,'OVER',{
+      font:'80px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
+    }).setOrigin(0.5).setDepth(20).setAlpha(0);
+    this.tweens.add({targets:[titleGame,titleOver],alpha:1,duration:dur(1200)});
+
+    const line1 = this.add.text(240,450,'LADY FALCON COFFEE SUCCEEDS.',
+      {font:'28px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
+      .setOrigin(0.5)
+      .setDepth(21)
+      .setAlpha(0);
+    this.tweens.add({targets:line1,alpha:1,duration:dur(1200),delay:dur(1700)});
+
+    const line2 = this.add.text(240,490,'You are fired.',
+      {font:'20px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
+      .setOrigin(0.5)
+      .setDepth(21)
+      .setAlpha(0);
+    this.tweens.add({targets:line2,alpha:1,duration:dur(600),delay:dur(2400)});
+
+    const btn = this.add.text(240,550,'Try Again',{
+      font:'20px sans-serif',
+      fill:'#000',
+      backgroundColor:'#ffffff',
+      padding:{x:14,y:8}
+    }).setOrigin(0.5).setDepth(22).setAlpha(0)
+      .setInteractive({ useHandCursor:true });
+
+    const showBtnDelay = dur(2400) + dur(600) + 1000;
+    this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
+    btn.on('pointerdown',()=>{
+        btn.disableInteractive();
+        btn.setVisible(false);
+        createGlowTexture(this,0xffffff,'screen_flash',256);
+        const overlayG = this.add.image(btn.x,btn.y,'screen_flash').setDepth(23);
+        overlayG.setDisplaySize(btn.width,btn.height);
+        this.tweens.add({
+          targets:overlayG,
+          x:240,
+          y:320,
+          scaleX:Math.max(480/btn.width,640/btn.height)*2,
+          scaleY:Math.max(480/btn.width,640/btn.height)*2,
+          duration:300,
+          ease:'Cubic.easeOut',
+          onComplete:()=>{
+            titleGame.destroy();
+            titleOver.destroy();
+            line1.destroy();
+            line2.destroy();
+            btn.destroy();
+            if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
+            restartGame.call(this, overlayG);
+          }
+        });
       });
     GameState.gameOver=true;
   }

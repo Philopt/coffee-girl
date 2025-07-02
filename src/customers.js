@@ -40,7 +40,7 @@ export const WANDER_BOTTOM = 580;
 // fixed rather than scaling with the player's love.
 export const MAX_WANDERERS = 5;
 export const WALK_OFF_BASE = 800;
-export const MAX_M = 100;
+export const MAX_M = 200;
 export const MAX_L = 100;
 
 // Queue capacity is determined directly from the player's heart count in

@@ -2718,8 +2718,8 @@ function dogsBarkAtFalcon(){
     let featherTrail=null;
     let firstAttack=true;
     let attackTween=null;
-    const endAttack=()=>{
-      if(finished) return;
+    const endAttack=(force=false)=>{
+      if(finished && !force) return;
       finished=true;
       if(GameState.dogBarkEvent){
         GameState.dogBarkEvent.remove(false);
@@ -3130,7 +3130,7 @@ function dogsBarkAtFalcon(){
               bigCoffeeExplosion(scene);
               scene.time.delayedCall(2000, ()=>{
                 setSpeedMultiplier(1);
-                endAttack();
+                endAttack(true);
               }, [], scene);
             } else {
               attackOnce();

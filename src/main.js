@@ -2506,6 +2506,9 @@ export function setupGame(){
     const latchedDogs=[];
     const updateLatchedDogs=()=>{
       if(!falcon) return;
+      if(!GameState.falconStunned && latchedDogs.length>0){
+        [...latchedDogs].forEach(d=>dropLatchedDog(d));
+      }
       latchedDogs.forEach(d=>{
         const wiggle = d.wiggleOffset || 0;
         d.setPosition(falcon.x + d.offsetX, falcon.y + d.offsetY + wiggle);
@@ -2683,21 +2686,10 @@ function dogsBarkAtFalcon(){
         }
         if(dog.followEvent) dog.followEvent.remove(false);
         scene.tweens.killTweensOf(dog);
-        const bark = dogBarkAt.call(scene, dog, falcon.x, falcon.y, true, () => {
-          const idx = GameState.activeBarks.indexOf(bark);
-          if(idx !== -1) GameState.activeBarks.splice(idx,1);
-        });
-        if(bark){
-          GameState.activeBarks.push(bark);
-        }
-        if(mood===CustomerState.ARROW){
-          arrowDogAttack(dog);
-          return;
-        }
-          let loops=1;
-          if(mood===CustomerState.GROWING) loops=1;
-          if(mood===CustomerState.SPARKLING) loops=2;
-          const dTl=scene.tweens.createTimeline();
+        let loops=1;
+        if(mood===CustomerState.GROWING) loops=1;
+        if(mood===CustomerState.SPARKLING) loops=2;
+        const dTl=scene.tweens.createTimeline();
         for(let j=0;j<loops;j++){
           const ang=Phaser.Math.FloatBetween(0,Math.PI*2);
           const r=Phaser.Math.Between(30,50);
@@ -2714,9 +2706,19 @@ function dogsBarkAtFalcon(){
           const s=scaleForY(dog.y)*0.5;
           dog.setScale(s*(dog.dir||1), s);
         }, []);
-          dTl.setCallback('onComplete',()=>{
+        dTl.setCallback('onComplete',()=>{
           dog.setFrame(1);
-
+          if(mood===CustomerState.ARROW && GameState.falconStunned){
+            arrowDogAttack(dog);
+          }else{
+            const bark = dogBarkAt.call(scene, dog, falcon.x, falcon.y, true, () => {
+              const idx = GameState.activeBarks.indexOf(bark);
+              if(idx !== -1) GameState.activeBarks.splice(idx,1);
+            });
+            if(bark){
+              GameState.activeBarks.push(bark);
+            }
+          }
         }, []);
         if(dog.anims && dog.play){ dog.play('dog_walk'); }
         dTl.play();
@@ -2919,6 +2921,35 @@ function dogsBarkAtFalcon(){
               }
             });
           }
+        }
+      });
+    }
+
+    function dropLatchedDog(dog){
+      if(!dog) return;
+      const idx = latchedDogs.indexOf(dog);
+      if(idx !== -1) latchedDogs.splice(idx,1);
+      if(dog.chewEvent) { dog.chewEvent.remove(false); dog.chewEvent = null; }
+      if(dog.wiggleTween) { dog.wiggleTween.stop(); dog.wiggleTween = null; }
+      const dir = dog.dir || 1;
+      scene.tweens.add({
+        targets:dog,
+        x:falcon.x + dir*20,
+        y:falcon.y + 40,
+        angle:dir>0?90:-90,
+        duration:dur(250),
+        ease:'Sine.easeIn',
+        onComplete:()=>{
+          scene.tweens.add({
+            targets:dog,
+            y:DOG_MIN_Y,
+            duration:dur(300),
+            ease:'Sine.easeIn',
+            onUpdate:()=>{ const s=scaleForY(dog.y)*0.5; dog.setScale(s*(dog.dir||1),s); },
+            onComplete:()=>{ scene.time.delayedCall(dur(1000),()=>{
+              scene.tweens.add({targets:dog,angle:0,duration:dur(150),onComplete:()=>{ ensureOnGround(dog); dog.attacking=false; }});
+            },[],scene); }
+          });
         }
       });
     }

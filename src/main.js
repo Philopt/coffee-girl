@@ -3155,17 +3155,15 @@ function dogsBarkAtFalcon(){
         GameState.falconStunned = true;
         falcon.setTint(0x3399ff);
       scene.tweens.add({
-        targets:falcon,
-        x:girl.x,
-        y:girl.y-20,
-        duration:dur(200),
-        ease:'Sine.easeOut',
-        onComplete:()=>{
-          scene.time.delayedCall(dur(1500), () => {
-            if(falcon && falcon.clearTint) falcon.clearTint();
-            GameState.falconStunned = false;
-            if(done) done();
-          }, [], scene);
+        targets: falcon,
+        x: girl.x,
+        y: girl.y - 20,
+        duration: dur(1000), // slow descent while stunned
+        ease: 'Sine.easeOut',
+        onComplete: () => {
+          if (falcon && falcon.clearTint) falcon.clearTint();
+          GameState.falconStunned = false;
+          if (done) done();
         }
       });
     }

@@ -2892,12 +2892,12 @@ function dogsBarkAtFalcon(){
                         const epl = h.heartEmoji.getPostPipeline(DesaturatePipeline);
                         if(epl){
                           epl.amount = 0;
-                          scene.tweens.add({targets:epl, amount:1, delay:dur(1000), duration:dur(300)});
+                          scene.tweens.add({targets:epl, amount:0.5, delay:dur(1000), duration:dur(300)});
                         }
                       }
                       h.setPostPipeline('desaturate');
                       const pl = h.getPostPipeline(DesaturatePipeline);
-                      if(pl) pl.amount = 1;
+                      if(pl) pl.amount = 0.5;
                       return;
                     }
                     scene.time.delayedCall(dur(1000),()=>{

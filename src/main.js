@@ -3755,29 +3755,22 @@ function dogsBarkAtFalcon(){
       overlay.setDepth(20);
     }
 
-    const titleYou = this.add.text(240,170,'YOU',{
-      font:'80px sans-serif',fill:'#0f0',stroke:'#000',strokeThickness:8
-    }).setOrigin(0.5).setDepth(21).setAlpha(0);
-    const titleWin = this.add.text(240,250,'WIN',{
-      font:'80px sans-serif',fill:'#0f0',stroke:'#000',strokeThickness:8
-    }).setOrigin(0.5).setDepth(21).setAlpha(0);
     const fadeDur = dur(2400);
-    this.tweens.add({targets:[titleYou,titleWin],alpha:1,duration:fadeDur});
 
     const img = this.add.image(240,250,'falcon_victory')
-      .setScale(1.2)
+      .setScale(2.4)
       .setDepth(21)
       .setAlpha(0);
-    this.tweens.add({targets:img,alpha:1,duration:fadeDur,delay:dur(1200)});
+    this.tweens.add({targets:img,alpha:1,duration:fadeDur});
 
-    const line1 = this.add.text(240,450,'You defeated Lady Falcon.',
+    const line1 = this.add.text(240,450,'LADY FALCON DEFEATED',
       {font:'28px sans-serif',fill:'#fff'})
       .setOrigin(0.5)
       .setDepth(22)
       .setAlpha(0);
-    this.tweens.add({targets:line1,alpha:1,duration:fadeDur,delay:dur(2000)});
+    this.tweens.add({targets:line1,alpha:1,duration:fadeDur,delay:dur(2400)});
 
-    const line2 = this.add.text(240,490,'Kindness and love has brought you victory.',
+    const line2 = this.add.text(240,490,'Victory with Love and Kindness.',
       {font:'20px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
       .setOrigin(0.5)
       .setDepth(22)
@@ -3820,8 +3813,6 @@ function dogsBarkAtFalcon(){
           duration:300,
           ease:'Cubic.easeOut',
           onComplete:()=>{
-            titleYou.destroy();
-            titleWin.destroy();
             img.destroy();
             line1.destroy();
             line2.destroy();

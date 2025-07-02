@@ -132,9 +132,11 @@ window.onload = function() {
     currentRequest = currentCoins < COFFEE_COST ? 'water':'coffee';
     const key = Phaser.Utils.Array.GetRandom(['genz1','genz2','genz3']);
     // Customer sprites are small so scale them up for visibility (slightly reduced)
+    // GenZ2 should appear twice as large as the others
+    const scale = key === 'genz2' ? 6.3 : 3.15;
     currentCustomer = this.add.sprite(240,640,key)
       .setOrigin(0.5,1)
-      .setScale(3.15)
+      .setScale(scale)
       .setDepth(1);
     this.tweens.add({ targets: currentCustomer, y:300, duration:1000,
       onComplete: showDialog, callbackScope: this });

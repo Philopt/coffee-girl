@@ -18,6 +18,13 @@ let openingNumber = null;
 let openingDog = null;
 let badgeIcons = [];
 
+function hideStartMessages(){
+  startMsgTimers.forEach(t=>t.remove(false));
+  startMsgTimers=[];
+  startMsgBubbles.forEach(b=>b.destroy());
+  startMsgBubbles=[];
+}
+
 function playOpening(scene){
   scene = scene || this;
   startWhite = scene.add.rectangle(240,320,480,640,0xffffff,1)
@@ -632,4 +639,8 @@ function playIntro(scene){
   intro.play();
 }
 
-export { playOpening, showStartScreen, playIntro };
+export { playOpening, showStartScreen, playIntro, hideStartMessages };
+
+if (typeof window !== 'undefined') {
+  window.hideStartMessages = hideStartMessages;
+}

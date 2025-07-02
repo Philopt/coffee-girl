@@ -3051,10 +3051,24 @@ function dogsBarkAtFalcon(){
             onComplete: () => {
               if(dog.anims && dog.anims.stop) dog.anims.stop();
               else if(dog.anims && dog.anims.pause) dog.anims.pause();
-              dog.dead = true;
-              const idx = reinDogs.indexOf(dog);
-              if(idx !== -1) reinDogs.splice(idx,1);
-              if(done) done();
+              dog.setTint(0x888888);
+              scene.tweens.add({
+                targets: dog,
+                y: DOG_MIN_Y,
+                duration: dur(300),
+                ease: 'Sine.easeIn',
+                onUpdate: () => {
+                  const s = scaleForY(dog.y) * (dog.scaleFactor || 0.5);
+                  dog.setScale(s * (dog.dir || 1), s);
+                },
+                onComplete: () => {
+                  ensureOnGround(dog);
+                  dog.dead = true;
+                  const idx = reinDogs.indexOf(dog);
+                  if(idx !== -1) reinDogs.splice(idx,1);
+                  if(done) done();
+                }
+              });
             }
           });
         }

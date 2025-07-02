@@ -48,10 +48,10 @@ window.onload = function() {
   let dialogBg, dialogText, dialogCoins, sellBtn, giveBtn, refuseBtn;
 
   function preload() {
-    this.load.image('truck','assets/truck.png');
-    this.load.image('genZHacker','assets/genz.png');
-    this.load.image('cup','assets/cup.png');
-    this.load.image('tip','assets/tip.png');
+    this.load.image('truck','assets/truck1.png');
+    this.load.image('genz1','assets/genz1.png');
+    this.load.image('genz2','assets/genz2.png');
+    this.load.image('genz3','assets/genz3.png');
   }
 
   function create() {
@@ -122,7 +122,7 @@ window.onload = function() {
     if (!started || gameOver || currentCustomer) return;
     currentCoins = Phaser.Math.Between(1,10);
     currentRequest = currentCoins < COFFEE_COST ? 'water':'coffee';
-    const key = Phaser.Utils.Array.GetRandom(['genZHacker','cup','tip']);
+    const key = Phaser.Utils.Array.GetRandom(['genz1','genz2','genz3']);
     currentCustomer = this.add.sprite(240,640,key).setOrigin(0.5,1).setScale(0.075).setDepth(1);
     this.tweens.add({ targets: currentCustomer, y:300, duration:1000,
       onComplete: showDialog, callbackScope: this });

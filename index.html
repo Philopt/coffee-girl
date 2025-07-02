@@ -8,14 +8,42 @@
   <script src="lib/phaser.min.js"></script>
   <script type="module" src="src/game.js"></script>
   <style>
-    html, body, #game-container { margin:0; padding:0; width:100%; height:100%; overflow:hidden; }
-    body {
-      background: linear-gradient(to bottom, #cfa87e, #5c3b2a);
-    }
-  </style>
+      html, body, #game-container { margin:0; padding:0; width:100%; height:100%; overflow:hidden; }
+      body {
+        background: linear-gradient(to bottom, #cfa87e, #5c3b2a);
+      }
+      #version1-frame {
+        position: absolute;
+        width: 260px;
+        height: 500px;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        border: none;
+        display: none;
+        z-index: 100;
+      }
+    </style>
 </head>
 <body>
   <div id="game-container" role="application" aria-label="Coffee Clicker game"></div>
+  <iframe id="version1-frame" title="Mini Game"></iframe>
+  <script>
+    window.showMiniGame = function() {
+      const f = document.getElementById('version1-frame');
+      if (f) {
+        f.src = 'version1.html';
+        f.style.display = 'block';
+      }
+    };
+    window.hideMiniGame = function() {
+      const f = document.getElementById('version1-frame');
+      if (f) {
+        f.style.display = 'none';
+        f.src = '';
+      }
+    };
+  </script>
 </body>
 </html>
 

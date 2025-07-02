@@ -2497,13 +2497,15 @@ export function setupGame(){
     const updateLatchedDogs=()=>{
       if(!falcon) return;
       latchedDogs.forEach(d=>{
-        d.setPosition(falcon.x + d.offsetX, falcon.y + d.offsetY);
+        const wiggle = d.wiggleOffset || 0;
+        d.setPosition(falcon.x + d.offsetX, falcon.y + d.offsetY + wiggle);
         const s=scaleForY(d.y)*0.5;
         d.setScale(s*(d.dir||1), s);
+        d.setDepth(falcon.depth + 1);
         if(d.heartEmoji){
           d.heartEmoji.setPosition(d.x,d.y)
             .setScale(scaleForY(d.y)*0.8)
-            .setDepth(d.depth);
+            .setDepth(d.depth + 1);
         }
       });
     };
@@ -2921,10 +2923,14 @@ function dogsBarkAtFalcon(){
         onComplete:()=>{
           if(hit){
             featherExplosion(scene, falcon.x, falcon.y, 8, 1.2);
-            // Center the dog on the falcon once it latches on
-            // This avoids it appearing offset to the top-left
-            dog.offsetX = 0;
-            dog.offsetY = 0;
+            dog.dir = dir;
+            cleanupBarks();
+            // Position so the dog's mouth aligns with the falcon center
+            dog.offsetX = -dir * dog.displayWidth * 0.5;
+            dog.offsetY = dog.displayHeight * 0.1;
+            dog.wiggleOffset = 0;
+            dog.setFrame(1);
+            if(dog.anims && dog.anims.stop) dog.anims.stop();
             latchedDogs.push(dog);
             dog.chewEvent=scene.time.addEvent({
               delay:dur(250),
@@ -2937,7 +2943,7 @@ function dogsBarkAtFalcon(){
                 if(GameState.falconHP<=0){ falconDies(); }
               }
             });
-            dog.wiggleTween=scene.tweens.add({targets:dog,angle:10,duration:dur(100),yoyo:true,repeat:-1});
+            dog.wiggleTween=scene.tweens.add({targets:dog,wiggleOffset:6,duration:dur(120),yoyo:true,repeat:-1});
           }else{
             scene.tweens.add({
               targets:dog,
@@ -3128,6 +3134,8 @@ function dogsBarkAtFalcon(){
               finished = true;
               setSpeedMultiplier(0.25);
               bigCoffeeExplosion(scene);
+              flashRed(scene, girl, 800);
+              scene.tweens.add({targets:girl,alpha:0,duration:dur(800),yoyo:true});
               scene.time.delayedCall(2000, ()=>{
                 setSpeedMultiplier(1);
                 endAttack(true);

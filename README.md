@@ -88,6 +88,12 @@ When you choose to sell or give a drink, the button briefly blinks.
 After the animation finishes, the button automatically becomes
 clickable again so you can quickly serve the next customer.
 
+You can also use the keyboard:
+
+* **A** - Refuse a customer
+* **S** - Sell the order
+* **D** - Give the order for free
+
 The price text used to flash green when a sale completed. That effect
 has been removed so the amount simply updates without flashing.
 

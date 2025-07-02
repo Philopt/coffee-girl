@@ -945,6 +945,14 @@ export function setupGame(){
     btnSell=createButton(240,'sell',()=>handleAction.call(this,'sell'),1.15,13,0xffd700);
     btnGive=createButton(370,'give',()=>handleAction.call(this,'give'),1.0,12,0xff69b4);
 
+    const triggerBtn = btn => {
+      if (!btn || !btn.zone || (btn.zone.input && !btn.zone.input.enabled)) return;
+      if (btn.zone.emit) btn.zone.emit('pointerdown');
+    };
+    this.input.keyboard.on('keydown-A', () => triggerBtn(btnRef));
+    this.input.keyboard.on('keydown-S', () => triggerBtn(btnSell));
+    this.input.keyboard.on('keydown-D', () => triggerBtn(btnGive));
+
 
     // sliding report texts
     reportLine1=this.add.text(480,moneyText.y,'',{font:'16px sans-serif',fill:'#fff'})

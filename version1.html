@@ -62,7 +62,7 @@ window.onload = function() {
 
   function create() {
     // HUD
-    this.add.rectangle(240,70,460,100,0xffffff).setStrokeStyle(2,0x000).setDepth(0);
+    this.add.rectangle(240,70,460,100,0xE0F7FF).setStrokeStyle(2,0x000).setDepth(0);
     moneyText = this.add.text(20,40,'🪙 '+money.toFixed(2),{font:'20px sans-serif',fill:'#000'}).setDepth(0);
     loveText  = this.add.text(20,70,'❤️ '+love,{font:'20px sans-serif',fill:'#000'}).setDepth(0);
     coffeeText = this.add.text(460,40,'Coffee $'+COFFEE_COST.toFixed(2),{font:'18px sans-serif',fill:'#000'})
@@ -76,7 +76,7 @@ window.onload = function() {
 
 
     // Dialog UI
-    dialogBg = this.add.rectangle(240,520,420,180,0xffffff)
+    dialogBg = this.add.rectangle(240,520,420,180,0xEEFFEE)
       .setStrokeStyle(2,0x000).setVisible(false).setDepth(10);
     dialogText = this.add.text(240,480,'',{font:'20px sans-serif',color:'#000',align:'center',wordWrap:{width:380}})
                      .setOrigin(0.5).setVisible(false).setDepth(10);
@@ -107,11 +107,11 @@ window.onload = function() {
       .on('pointerdown', ()=>{ showClickFeedback.call(this,refuseBtn); hideUI.call(this); handleRefuse.call(this); });
 
     // Start overlay
-    const startBg = this.add.rectangle(240,320,480,240,0xffffff).setStrokeStyle(2,0x000).setDepth(20);
+    const startBg = this.add.rectangle(240,320,480,240,0xEEFFEE).setStrokeStyle(2,0x000).setDepth(20);
     const startText = this.add.text(240,280,'Start Shift at Lady Falcon',{font:'24px sans-serif',fill:'#000'})
                       .setOrigin(0.5).setDepth(20);
-    const startBtn = this.add.text(240,350,'Start',{font:'20px sans-serif',fill:'#fff',
-                        backgroundColor:'#000',padding:{x:12,y:6}})
+    const startBtn = this.add.text(240,350,'Start',{font:'20px sans-serif',fill:'#000',
+                        backgroundColor:'#EEFFEE',padding:{x:12,y:6}})
       .setOrigin(0.5).setDepth(20).setInteractive()
       .on('pointerdown', ()=>{
         startBg.destroy(); startText.destroy(); startBtn.destroy(); started=true;
@@ -131,10 +131,10 @@ window.onload = function() {
     currentCoins = Phaser.Math.Between(1,10);
     currentRequest = currentCoins < COFFEE_COST ? 'water':'coffee';
     const key = Phaser.Utils.Array.GetRandom(['genz1','genz2','genz3']);
-    // Customer sprites are small so scale them up for visibility
+    // Customer sprites are small so scale them up for visibility (slightly reduced)
     currentCustomer = this.add.sprite(240,640,key)
       .setOrigin(0.5,1)
-      .setScale(4.5)
+      .setScale(3.15)
       .setDepth(1);
     this.tweens.add({ targets: currentCustomer, y:300, duration:1000,
       onComplete: showDialog, callbackScope: this });

@@ -238,6 +238,26 @@ function showStartScreen(scene){
 
   phoneContainer.add(startButton);
 
+  // Mini game button above the Clock In button
+  const miniLabel = scene.add.text(0,0,'Mini Game',{ font:'24px sans-serif', fill:'#fff' })
+    .setOrigin(0.5);
+  const mbw = miniLabel.width + 40;
+  const mbh = miniLabel.height + 16;
+  const miniBg = scene.add.graphics();
+  miniBg.fillStyle(0x333333,1);
+  miniBg.fillRoundedRect(-mbw/2,-mbh/2,mbw,mbh,12);
+  const miniButton = scene.add.container(0, offsetY - bh - 20, [miniBg, miniLabel])
+    .setSize(mbw, mbh)
+    .setVisible(true)
+    .setAlpha(1);
+  const miniZone = scene.add.zone(0,0,mbw,mbh).setOrigin(0.5);
+  miniZone.setInteractive({ useHandCursor: true });
+  miniZone.on('pointerdown', () => {
+    if (window.showMiniGame) window.showMiniGame();
+  });
+  miniButton.add(miniZone);
+  phoneContainer.add(miniButton);
+
   badgeIcons.forEach(i=>i.destroy());
   badgeIcons=[];
   const iconY = 80; // place badges above the Clock In button
@@ -408,6 +428,7 @@ function showStartScreen(scene){
   }
   startZone.on('pointerdown',()=>{
     // Disable further clicks as soon as the intro begins
+    if (window.hideMiniGame) window.hideMiniGame();
     startZone.disableInteractive();
     if (phoneContainer && phoneContainer.disableInteractive) {
       phoneContainer.disableInteractive();

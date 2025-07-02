@@ -3032,6 +3032,8 @@ function dogsBarkAtFalcon(){
       scene.tweens.killTweensOf(dog);
       if(dog.chewEvent) { dog.chewEvent.remove(false); dog.chewEvent = null; }
       if(dog.wiggleTween) { dog.wiggleTween.stop(); dog.wiggleTween = null; }
+      const lIdx = latchedDogs.indexOf(dog);
+      if(lIdx !== -1) latchedDogs.splice(lIdx, 1);
       scene.tweens.add({
         targets: falcon,
         x: dog.x,

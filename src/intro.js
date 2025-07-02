@@ -17,6 +17,7 @@ let openingTitle = null;
 let openingNumber = null;
 let openingDog = null;
 let badgeIcons = [];
+let miniGameCup = null;
 
 function hideStartMessages(){
   startMsgTimers.forEach(t=>t.remove(false));
@@ -78,6 +79,10 @@ function playOpening(scene){
         onComplete:()=>cup.destroy()
       });
     }
+    // Spawn the minigame button cup during the explosion
+    miniGameCup = scene.add.image(openingNumber.x, openingNumber.y, 'coffeecup2')
+      .setDepth(17)
+      .setScale(1);
   }, []);
 
   tl.add({
@@ -245,25 +250,31 @@ function showStartScreen(scene){
 
   phoneContainer.add(startButton);
 
-  // Mini game button above the Clock In button
-  const miniLabel = scene.add.text(0,0,'Mini Game',{ font:'24px sans-serif', fill:'#fff' })
-    .setOrigin(0.5);
-  const mbw = miniLabel.width + 40;
-  const mbh = miniLabel.height + 16;
-  const miniBg = scene.add.graphics();
-  miniBg.fillStyle(0x333333,1);
-  miniBg.fillRoundedRect(-mbw/2,-mbh/2,mbw,mbh,12);
-  const miniButton = scene.add.container(0, offsetY - bh - 20, [miniBg, miniLabel])
-    .setSize(mbw, mbh)
-    .setVisible(true)
-    .setAlpha(1);
-  const miniZone = scene.add.zone(0,0,mbw,mbh).setOrigin(0.5);
-  miniZone.setInteractive({ useHandCursor: true });
-  miniZone.on('pointerdown', () => {
-    if (window.showMiniGame) window.showMiniGame();
-  });
-  miniButton.add(miniZone);
-  phoneContainer.add(miniButton);
+  // Mini game cup drops into place above the Clock In button
+  if (miniGameCup) {
+    const pcScale = phoneContainer.scale || phoneContainer.scaleX || 1;
+    const m = phoneContainer.getWorldTransformMatrix();
+    const localX = (miniGameCup.x - m.tx) / m.a;
+    const localY = (miniGameCup.y - m.ty) / m.d;
+    miniGameCup
+      .setPosition(localX, localY)
+      .setScale(miniGameCup.scale / pcScale)
+      .setDepth(16);
+    phoneContainer.add(miniGameCup);
+    scene.tweens.add({
+      targets: miniGameCup,
+      x: 0,
+      y: offsetY - bh - 20,
+      duration: 800,
+      ease: 'Bounce.easeOut',
+      onComplete: () => {
+        miniGameCup.setInteractive({ useHandCursor: true });
+        miniGameCup.on('pointerdown', () => {
+          if (window.showMiniGame) window.showMiniGame();
+        });
+      }
+    });
+  }
 
   badgeIcons.forEach(i=>i.destroy());
   badgeIcons=[];
@@ -463,6 +474,7 @@ function showStartScreen(scene){
         phoneContainer.destroy();
         phoneContainer = null;
       }
+      miniGameCup = null;
       GameState.phoneContainer = null;
       playIntro.call(scene);
     }});

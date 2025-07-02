@@ -512,7 +512,8 @@ export function setupGame(){
   function enforceCustomerScaling(){
       const updateHeart = c => {
         if(!c.sprite || !c.sprite.scene) return;
-        const state = c.memory && c.memory.state || CustomerState.NORMAL;
+        const state = (c.loveState !== undefined ? c.loveState :
+                       c.memory && c.memory.state) || CustomerState.NORMAL;
         if(c.hideHeart){
           if(c.heartEmoji && c.heartEmoji.scene){
             c.heartEmoji.setVisible(false);
@@ -2887,6 +2888,12 @@ function dogsBarkAtFalcon(){
                       h.loveState = CustomerState.BROKEN;
                       if(h.heartEmoji){
                         h.heartEmoji.setText(HEART_EMOJIS[CustomerState.BROKEN] || '');
+                        h.heartEmoji.setPostPipeline('desaturate');
+                        const epl = h.heartEmoji.getPostPipeline(DesaturatePipeline);
+                        if(epl){
+                          epl.amount = 0;
+                          scene.tweens.add({targets:epl, amount:1, delay:dur(1000), duration:dur(300)});
+                        }
                       }
                       h.setPostPipeline('desaturate');
                       const pl = h.getPostPipeline(DesaturatePipeline);

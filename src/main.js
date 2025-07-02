@@ -3271,6 +3271,16 @@ function dogsBarkAtFalcon(){
         onComplete:()=>{
           featherExplosion(scene,falcon.x,falcon.y,30,3);
           bigCoffeeExplosion(scene);
+          // Blink red a few times on impact
+          flashRed(scene, falcon, 150);
+          scene.time.delayedCall(dur(200), () => flashRed(scene, falcon, 150), [], scene);
+          scene.time.delayedCall(dur(400), () => flashRed(scene, falcon, 150), [], scene);
+          // Shake the truck briefly
+          scene.tweens.add({targets:truck,x:truck.x+8,duration:dur(80),yoyo:true,repeat:3});
+          // White flash overlay
+          GameState.victoryOverlay = scene.add.rectangle(240,320,480,640,0xffffff)
+            .setDepth(30).setAlpha(0);
+          scene.tweens.add({targets:GameState.victoryOverlay,alpha:1,duration:dur(600)});
           if(falcon && falcon.anims) falcon.anims.stop();
           scene.time.delayedCall(2000,()=>{
             setSpeedMultiplier(1);
@@ -3689,7 +3699,109 @@ function dogsBarkAtFalcon(){
   }
 
   function showFalconDefeat(){
-    showEnd.call(this,'You defeated Lady Falcon! \uD83C\uDF89');
+    const scene = this;
+    scene.tweens.killAll();
+    scene.time.removeAllEvents();
+    cleanupFloatingEmojis();
+    cleanupHeartEmojis(scene);
+    cleanupBarks();
+    cleanupBursts();
+    cleanupDogs(scene);
+    cleanupSparrows(scene);
+    hideOverlayTexts();
+    if (GameState.spawnTimer) {
+      GameState.spawnTimer.remove(false);
+      GameState.spawnTimer = null;
+    }
+    clearDialog.call(scene);
+    if(endOverlay){ endOverlay.destroy(); }
+    endOverlay = this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
+
+    const overlay = GameState.victoryOverlay;
+    if(overlay){
+      overlay.setDepth(20);
+    }
+
+    const titleYou = this.add.text(240,170,'YOU',{
+      font:'80px sans-serif',fill:'#0f0',stroke:'#000',strokeThickness:8
+    }).setOrigin(0.5).setDepth(21).setAlpha(0);
+    const titleWin = this.add.text(240,250,'WIN',{
+      font:'80px sans-serif',fill:'#0f0',stroke:'#000',strokeThickness:8
+    }).setOrigin(0.5).setDepth(21).setAlpha(0);
+    const fadeDur = dur(2400);
+    this.tweens.add({targets:[titleYou,titleWin],alpha:1,duration:fadeDur});
+
+    const img = this.add.image(240,250,'falcon_victory')
+      .setScale(1.2)
+      .setDepth(21)
+      .setAlpha(0);
+    this.tweens.add({targets:img,alpha:1,duration:fadeDur,delay:dur(1200)});
+
+    const line1 = this.add.text(240,450,'You defeated Lady Falcon.',
+      {font:'28px sans-serif',fill:'#fff'})
+      .setOrigin(0.5)
+      .setDepth(22)
+      .setAlpha(0);
+    this.tweens.add({targets:line1,alpha:1,duration:fadeDur,delay:dur(2000)});
+
+    const line2 = this.add.text(240,490,'Kindness and love has brought you victory.',
+      {font:'20px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
+      .setOrigin(0.5)
+      .setDepth(22)
+      .setAlpha(0);
+    this.tweens.add({targets:line2,alpha:1,duration:dur(1200),delay:dur(2600)});
+
+    const btn = this.add.text(240,550,'Play Again?',{
+      font:'20px sans-serif',
+      fill:'#000',
+      backgroundColor:'#ffffff',
+      padding:{x:14,y:8}
+    }).setOrigin(0.5).setDepth(23).setAlpha(0)
+      .setInteractive({ useHandCursor:true });
+
+    const showBtnDelay = dur(2600) + dur(1200) + 1000;
+    this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
+
+    btn.on('pointerdown',()=>{
+        btn.disableInteractive();
+        const key = img ? img.texture.key : null;
+        if(key){
+          GameState.lastEndKey = key;
+          if(!GameState.badges.includes(key)) GameState.badges.push(key);
+          GameState.badgeCounts[key] = (GameState.badgeCounts[key] || 0) + 1;
+          const grayKey = `${key}_gray`;
+          createGrayscaleTexture(this,key,grayKey);
+          GameState.carryPortrait = img.setDepth(25);
+        }
+        btn.setVisible(false);
+        if(overlay){ this.tweens.add({targets:overlay,alpha:0,duration:dur(600)}); }
+        createGlowTexture(this,0xffffff,'screen_flash',256);
+        const overlayG = this.add.image(btn.x,btn.y,'screen_flash').setDepth(24);
+        overlayG.setDisplaySize(btn.width,btn.height);
+        this.tweens.add({
+          targets:overlayG,
+          x:240,
+          y:320,
+          scaleX:Math.max(480/btn.width,640/btn.height)*2,
+          scaleY:Math.max(480/btn.width,640/btn.height)*2,
+          duration:300,
+          ease:'Cubic.easeOut',
+          onComplete:()=>{
+            titleYou.destroy();
+            titleWin.destroy();
+            img.destroy();
+            line1.destroy();
+            line2.destroy();
+            btn.destroy();
+            if(overlay) overlay.destroy();
+            GameState.victoryOverlay = null;
+            if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
+            restartGame.call(this, overlayG);
+          }
+        });
+      });
+    if(overlay){ this.tweens.add({targets:overlay,alpha:0,duration:fadeDur}); }
+    GameState.gameOver=true;
   }
 
   function showCustomerRevoltLoss(){

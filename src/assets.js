@@ -1,7 +1,7 @@
 import { DEBUG } from './debug.js';
 
 export const keys = [];
-export const requiredAssets = ['bg','truck','girl','lady_falcon','falcon_end','revolt_end','sparrow','dog1','price_ticket','pupcup','pupcup2','give','refuse','sell','cloudHeart','cloudDollar'];
+export const requiredAssets = ['bg','truck','girl','lady_falcon','falcon_end','falcon_victory','revolt_end','sparrow','dog1','price_ticket','pupcup','pupcup2','give','refuse','sell','cloudHeart','cloudDollar'];
 export const genzSprites = [
   'new_kid_0_0','new_kid_0_1','new_kid_0_2','new_kid_0_4','new_kid_0_5',
   'new_kid_1_0','new_kid_1_1','new_kid_1_2','new_kid_1_3','new_kid_1_4','new_kid_1_5',
@@ -90,6 +90,7 @@ export function preload(){
   loader.image('title2','assets/title2.png');
   loader.spritesheet('lady_falcon','assets/lady_falcon.png',{frameWidth:64,frameHeight:64});
   loader.image('falcon_end','assets/ladyfalconend.png');
+  loader.image('falcon_victory','assets/falconvictory.png');
   loader.image('revolt_end','assets/revolt.png');
   loader.image('price_ticket','assets/priceticket.png');
   loader.image('pupcup','assets/pupcup.png');

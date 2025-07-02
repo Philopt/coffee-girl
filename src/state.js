@@ -35,6 +35,7 @@ export const GameState = {
   ,phoneContainer: null
   ,activeBarks: []
   ,activeBursts: []
+  ,victoryOverlay: null
 };
 
 export const floatingEmojis = [];

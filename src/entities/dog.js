@@ -158,7 +158,7 @@ export function animateDogPowerUp(scene, dog, cb){
 // Keep the dog positioned near its owner and react to other customers.
 export function updateDog(owner) {
   const dog = owner && owner.dog;
-  if (!dog || !owner.sprite) return;
+  if (!dog || !owner.sprite || dog.dead) return;
   const ms = owner.sprite;
   const dogDist = Phaser.Math.Distance.Between(dog.x, dog.y, ms.x, ms.y);
   let radius = DOG_ROAM_RADIUS;

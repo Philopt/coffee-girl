@@ -2641,13 +2641,14 @@ export function setupGame(){
     }
 function dogsBarkAtFalcon(){
       const dogs=[];
-      const gatherDog=c=>{ if(c && c.dog) dogs.push(c.dog); };
+      const gatherDog=c=>{ if(c && c.dog && !c.dog.dead) dogs.push(c.dog); };
       GameState.queue.forEach(gatherDog);
       GameState.wanderers.forEach(gatherDog);
       gatherDog(GameState.activeCustomer);
       reinDogs.forEach(d=>dogs.push(d));
       if(dogs.length===0) return;
         dogs.forEach(dog=>{
+          if(dog.dead) return;
           const mood=dog.dogCustomer && dog.dogCustomer.memory ? dog.dogCustomer.memory.state : CustomerState.NORMAL;
         if(mood===CustomerState.BROKEN || mood===CustomerState.NORMAL){
           if(!dog.fled){
@@ -2893,7 +2894,7 @@ function dogsBarkAtFalcon(){
     }
 
     function arrowDogAttack(dog){
-      if(!falcon || finished || !dog || dog.attacking) return;
+      if(!falcon || finished || !dog || dog.attacking || dog.dead) return;
       dog.attacking=true;
       const dx=falcon.x-dog.x;
       const dy=falcon.y-dog.y;
@@ -2970,14 +2971,18 @@ function dogsBarkAtFalcon(){
         duration: dur(300),
         ease: 'Cubic.easeIn',
         onComplete: () => {
-          flashRed(scene, dog, 200);
+          flashRed(scene, dog, 150);
+          scene.time.delayedCall(dur(200), () => flashRed(scene, dog, 150), [], scene);
+          scene.time.delayedCall(dur(400), () => flashRed(scene, dog, 150), [], scene);
           if(dog.heartEmoji) { dog.heartEmoji.destroy(); dog.heartEmoji = null; }
+          cleanupBarks();
           scene.tweens.add({
             targets: dog,
             angle: 180,
             duration: dur(300),
             onComplete: () => {
-              if(dog.anims && dog.anims.pause) dog.anims.pause();
+              if(dog.anims && dog.anims.stop) dog.anims.stop();
+              else if(dog.anims && dog.anims.pause) dog.anims.pause();
               dog.dead = true;
               const idx = reinDogs.indexOf(dog);
               if(idx !== -1) reinDogs.splice(idx,1);

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Painted Ladies Coffee Game</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
+  <style>
+    html, body, #game-container {
+      margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+    }
+    body { background: #f2e5d7; }
+    #game-container { position: relative; }
+  </style>
+</head>
+<body>
+  <div id="game-container"></div>
+<script>
+window.onload = function() {
+  const COFFEE_COST = 5.00, WATER_COST = 5.58;
+  const SPAWN_DELAY = 500;
+  const MAX_MONEY = 100, MAX_LOVE = 100;
+  let money = 10.00, love = 10;
+  let gameOver = false, started = false, niceShown = false;
+  let currentCustomer = null, currentCoins = 0, currentRequest = 'coffee';
+
+  // Play background MIDI using HTML Audio
+  const bgm = new Audio('assets/ififell.mid');
+  bgm.volume = 0.1;
+  bgm.loop = true;
+  bgm.play().catch(e => console.warn('Audio play failed:', e));
+
+  const config = {
+    type: Phaser.AUTO,
+    parent: 'game-container',
+    backgroundColor: '#f2e5d7',
+    scale: {
+      mode: Phaser.Scale.FIT,
+      autoCenter: Phaser.Scale.CENTER_BOTH,
+      width: 480,
+      height: 640
+    },
+    scene: { preload, create }
+  };
+  new Phaser.Game(config);
+
+  let moneyText, loveText, coffeeText, waterText;
+  let dialogBg, dialogText, dialogCoins, sellBtn, giveBtn, refuseBtn;
+
+  function preload() {
+    this.load.image('truck','assets/truck.png');
+    this.load.image('genZHacker','assets/genz.png');
+    this.load.image('cup','assets/cup.png');
+    this.load.image('tip','assets/tip.png');
+  }
+
+  function create() {
+    // HUD
+    this.add.rectangle(240,70,460,100,0xffffff).setStrokeStyle(2,0x000).setDepth(0);
+    moneyText = this.add.text(20,40,'🪙 '+money.toFixed(2),{font:'20px sans-serif',fill:'#000'}).setDepth(0);
+    loveText  = this.add.text(20,70,'❤️ '+love,{font:'20px sans-serif',fill:'#000'}).setDepth(0);
+    coffeeText = this.add.text(460,40,'Coffee $'+COFFEE_COST.toFixed(2),{font:'18px sans-serif',fill:'#000'})
+                   .setOrigin(1,0).setDepth(0);
+    waterText  = this.add.text(460,70,'Water $'+WATER_COST.toFixed(2),{font:'18px sans-serif',fill:'#000'})
+                   .setOrigin(1,0).setDepth(0);
+
+    // Truck
+    this.add.image(240,180,'truck').setScale(0.25).setDepth(1);
+
+    // Dialog UI
+    dialogBg = this.add.rectangle(240,520,420,180,0xffffff)
+      .setStrokeStyle(2,0x000).setVisible(false).setDepth(10);
+    dialogText = this.add.text(240,480,'',{font:'20px sans-serif',color:'#000',align:'center',wordWrap:{width:380}})
+                     .setOrigin(0.5).setVisible(false).setDepth(10);
+    dialogCoins = this.add.text(240,520,'',{font:'28px sans-serif',color:'#000',align:'center'})
+                       .setOrigin(0.5).setVisible(false).setDepth(10);
+
+    // Button click feedback
+    function showClickFeedback(btn) {
+      const x = btn.x + btn.width/2, y = btn.y - 20;
+      const icon = this.add.text(x,y,'☕',{font:'32px sans-serif'}).setOrigin(0.5).setDepth(11);
+      this.tweens.add({ targets: icon, y: y-20, alpha:0, duration:500, onComplete: ()=>icon.destroy() });
+    }
+
+    // Buttons
+    sellBtn = this.add.text(80,580,'Sell',{font:'18px sans-serif',fill:'#fff',
+                   backgroundColor:'#006400',padding:{x:12,y:6}})
+      .setInteractive().setVisible(false).setDepth(10)
+      .on('pointerdown', ()=>{ showClickFeedback.call(this,sellBtn); hideUI.call(this); handleSell.call(this); });
+
+    giveBtn = this.add.text(200,580,'Give Free',{font:'18px sans-serif',fill:'#fff',
+                   backgroundColor:'#008000',padding:{x:12,y:6}})
+      .setInteractive().setVisible(false).setDepth(10)
+      .on('pointerdown', ()=>{ showClickFeedback.call(this,giveBtn); hideUI.call(this); handleGiveFree.call(this); });
+
+    refuseBtn = this.add.text(360,580,'Refuse',{font:'18px sans-serif',fill:'#fff',
+                   backgroundColor:'#800000',padding:{x:12,y:6}})
+      .setInteractive().setVisible(false).setDepth(10)
+      .on('pointerdown', ()=>{ showClickFeedback.call(this,refuseBtn); hideUI.call(this); handleRefuse.call(this); });
+
+    // Start overlay
+    const startBg = this.add.rectangle(240,320,480,240,0xffffff).setStrokeStyle(2,0x000).setDepth(20);
+    const startText = this.add.text(240,280,'Start Shift at Lady Falcon',{font:'24px sans-serif',fill:'#000'})
+                      .setOrigin(0.5).setDepth(20);
+    const startBtn = this.add.text(240,350,'Start',{font:'20px sans-serif',fill:'#fff',
+                        backgroundColor:'#000',padding:{x:12,y:6}})
+      .setOrigin(0.5).setDepth(20).setInteractive()
+      .on('pointerdown', ()=>{
+        startBg.destroy(); startText.destroy(); startBtn.destroy(); started=true;
+        this.time.delayedCall(SPAWN_DELAY, spawnCustomer, [], this);
+      });
+  }
+
+  // Core game logic (hideUI, spawnCustomer, showDialog, handleSell, handleGiveFree, handleRefuse, postAction, showNice, animateCoin, animateEmoji, checkEnd, showEnd)
+  // (Identical to v32 for brevity)
+
+  function hideUI() {
+    dialogBg.setVisible(false); dialogText.setVisible(false); dialogCoins.setVisible(false);
+    sellBtn.setVisible(false); giveBtn.setVisible(false); refuseBtn.setVisible(false);
+  }
+  function spawnCustomer() {
+    if (!started || gameOver || currentCustomer) return;
+    currentCoins = Phaser.Math.Between(1,10);
+    currentRequest = currentCoins < COFFEE_COST ? 'water':'coffee';
+    const key = Phaser.Utils.Array.GetRandom(['genZHacker','cup','tip']);
+    currentCustomer = this.add.sprite(240,640,key).setOrigin(0.5,1).setScale(0.075).setDepth(1);
+    this.tweens.add({ targets: currentCustomer, y:300, duration:1000,
+      onComplete: showDialog, callbackScope: this });
+  }
+  function showDialog() {
+    dialogBg.setVisible(true);
+    dialogText.setText(`${currentRequest.charAt(0).toUpperCase()+currentRequest.slice(1)}?`).setVisible(true);
+    dialogCoins.setText(`🪙${currentCoins}`).setVisible(true);
+    sellBtn.setVisible(currentRequest==='coffee');
+    giveBtn.setVisible(true);
+    refuseBtn.setVisible(true);
+  }
+  function handleSell() {
+    const cost = currentRequest==='coffee'?COFFEE_COST:WATER_COST;
+    money = parseFloat((money + cost).toFixed(2));
+    animateCoin.call(this, currentCustomer.x, currentCustomer.y-60, moneyText.x+50, moneyText.y+20);
+    const loveGain = Phaser.Math.Between(1,3); love += loveGain;
+    for(let i=0;i<loveGain;i++) animateEmoji.call(this,'❤️',currentCustomer.x+(i*20-20),currentCustomer.y-60,loveText.x+50,loveText.y+20);
+    const extra = currentCoins - cost;
+    if(extra>0) {
+      const tip = Phaser.Math.Between(1,extra);
+      const tipText = this.add.text(currentCustomer.x, currentCustomer.y-40, `tip 🪙${tip}`,
+        {font:'20px sans-serif',fill:'#008000'}).setOrigin(0.5).setDepth(11);
+      this.tweens.add({ targets: tipText, x: moneyText.x, y: moneyText.y, alpha:0, duration:800, onComplete:()=>tipText.destroy() });
+      money = parseFloat((money + tip).toFixed(2));
+    }
+    const exitEmoji = this.add.text(currentCustomer.x, currentCustomer.y-60,'☕',{font:'32px sans-serif'})
+      .setOrigin(0.5).setDepth(10);
+    this.tweens.add({ targets:[currentCustomer, exitEmoji], x:520, duration:800,
+      onComplete:()=>{ currentCustomer.destroy(); exitEmoji.destroy(); currentCustomer=null; postAction.call(this);} });
+  }
+  function handleGiveFree() {
+    const cost = currentRequest==='coffee'?COFFEE_COST:WATER_COST;
+    money = parseFloat((money - cost).toFixed(2));
+    const loveGain = Phaser.Math.Between(2,4); love += loveGain;
+    for(let i=0;i<loveGain;i++) animateEmoji.call(this,'❤️',currentCustomer.x+(i*20-20),currentCustomer.y-60,loveText.x+50,loveText.y+20);
+    const exitEmoji = this.add.text(currentCustomer.x, currentCustomer.y-60,'☕',{font:'32px sans-serif'})
+      .setOrigin(0.5).setDepth(10);
+    this.tweens.add({ targets:[currentCustomer, exitEmoji], x:520, duration:800,
+      onComplete:()=>{ currentCustomer.destroy(); exitEmoji.destroy(); currentCustomer=null; postAction.call(this);} });
+  }
+  function handleRefuse() {
+    const loveLoss = Phaser.Math.Between(1,4); love -= loveLoss;
+    for(let i=0;i<loveLoss;i++) animateEmoji.call(this,'😠',currentCustomer.x+(i*20-20),currentCustomer.y-60,loveText.x+50,loveText.y+20);
+    this.tweens.add({ targets: currentCustomer, x:-50, y:700, duration:800,
+      onComplete:()=>{ currentCustomer.destroy(); currentCustomer=null; postAction.call(this);} });
+  }
+  function postAction() {
+    moneyText.setText('🪙 '+money.toFixed(2));
+    loveText.setText('❤️ '+love);
+    if(!niceShown && Math.abs(money-69) < 0.001) { niceShown=true; showNice.call(this); return; }
+    checkEnd.call(this);
+    if(!gameOver) this.time.delayedCall(SPAWN_DELAY, spawnCustomer, [], this);
+  }
+  function showNice() {
+    started = false;
+    const overlay = this.add.rectangle(240,320,480,240,0xffffff).setStrokeStyle(2,0x000).setDepth(20);
+    const text = this.add.text(240,280,'N-I-C-E',{font:'48px sans-serif',fill:'#000'}).setOrigin(0.5).setDepth(20);
+    const btn1 = this.add.text(160,360,'End Game (Victory)',{font:'20px sans-serif',fill:'#fff',backgroundColor:'#006400',padding:{x:8,y:4}})
+      .setOrigin(0.5).setDepth(20).setInteractive().on('pointerdown',()=>{
+        overlay.destroy(); text.destroy(); btn1.destroy(); btn2.destroy();
+        showEnd.call(this,'Congratulations! 💰\nYou are the Coffee Queen!'); gameOver=true;
+      });
+    const btn2 = this.add.text(320,360,'Ignore and Continue',{font:'20px sans-serif',fill:'#fff',backgroundColor:'#800000',padding:{x:8,y:4}})
+      .setOrigin(0.5).setDepth(20).setInteractive().on('pointerdown',()=>{
+        overlay.destroy(); text.destroy(); btn1.destroy(); btn2.destroy();
+        started=true; this.time.delayedCall(SPAWN_DELAY, spawnCustomer, [], this);
+      });
+  }
+  function animateCoin(x0,y0,x1,y1) {
+    const coin=this.add.text(x0,y0,'🪙',{font:'32px sans-serif'}).setOrigin(0.5).setDepth(10);
+    this.tweens.add({targets:coin, x:x1, y:y1, alpha:0, duration:1000, onComplete:()=>coin.destroy()});
+  }
+  function animateEmoji(em,x0,y0,x1,y1) {
+    const e=this.add.text(x0,y0,em,{font:'48px sans-serif'}).setOrigin(0.5).setDepth(10);
+    this.tweens.add({targets:e, x:x1, y:y1, alpha:0, duration:1000, onComplete:()=>e.destroy()});
+  }
+  function checkEnd() {
+    if(money >= MAX_MONEY)    { gameOver=true; showEnd.call(this,'Congratulations! 💰\nYou are the Coffee Queen!'); }
+    else if(love >= MAX_LOVE) { gameOver=true; showEnd.call(this,'Victory! ❤️\nYou are the Muse!'); }
+    else if(money <= 0)       { gameOver=true; showEnd.call(this,'Game Over\nYou are fired.'); }
+    else if(love <= 0)        { gameOver=true; showEnd.call(this,'Game Over 😠\nCustomer Revolt\nCustomers Destroy the Truck'); }
+  }
+  function showEnd(msg) {
+    this.add.rectangle(240,320,480,240,0xffffff).setStrokeStyle(2,0x000).setDepth(20);
+    this.add.text(240,320,msg,{font:'24px sans-serif',fill:'#000',align:'center',wordWrap:{width:440}})
+      .setOrigin(0.5).setDepth(20);
+  }
+};
+</script>
+</body>
+</html>

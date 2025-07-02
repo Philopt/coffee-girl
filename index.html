@@ -14,11 +14,12 @@
       }
       #version1-frame {
         position: absolute;
-        width: 260px;
-        height: 500px;
+        width: 480px;
+        height: 640px;
         left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
+        /* Shift the mini game container downward by 100px */
+        top: calc(5% + 100px);
+        transform: translate(-50%, 0);
         border: none;
         display: none;
         z-index: 100;
@@ -32,6 +33,8 @@
     window.showMiniGame = function() {
       const f = document.getElementById('version1-frame');
       if (f) {
+        if (window.hideStartMessages) window.hideStartMessages();
+        window.minigameActive = true;
         f.src = 'version1.html';
         f.style.display = 'block';
       }
@@ -42,6 +45,7 @@
         f.style.display = 'none';
         f.src = '';
       }
+      window.minigameActive = false;
     };
   </script>
 </body>

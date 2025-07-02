@@ -3032,11 +3032,10 @@ function dogsBarkAtFalcon(){
       scene.tweens.killTweensOf(dog);
       if(dog.chewEvent) { dog.chewEvent.remove(false); dog.chewEvent = null; }
       if(dog.wiggleTween) { dog.wiggleTween.stop(); dog.wiggleTween = null; }
-      // Mark the dog as dead immediately to prevent further updates even if the
-      // cleanup tween gets interrupted.
-      dog.dead = true;
-      const idxStart = reinDogs.indexOf(dog);
-      if(idxStart !== -1) reinDogs.splice(idxStart, 1);
+
+      const lIdx = latchedDogs.indexOf(dog);
+      if(lIdx !== -1) latchedDogs.splice(lIdx, 1);
+
       scene.tweens.add({
         targets: falcon,
         x: dog.x,

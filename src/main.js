@@ -4092,11 +4092,18 @@ function dogsBarkAtFalcon(){
     if (truck && girl) {
       const startX = scene.scale.width + 100;
       truck.setPosition(startX, 245);
-      girl.setPosition(startX, 245).setVisible(false);
+      girl.setPosition(startX, 245)
+        .setVisible(false)
+        .setAlpha(1);
+      if (girl.clearTint) girl.clearTint();
     }
     GameState.money=10.00; GameState.love=3;
     moneyText.setText(receipt(GameState.money));
     loveText.setText(String(GameState.love));
+    moneyText.setColor('#fff');
+    loveText.setColor('#fff');
+    if (cloudDollar && cloudDollar.clearTint) cloudDollar.clearTint();
+    if (cloudHeart && cloudHeart.clearTint) cloudHeart.clearTint();
     updateLevelDisplay();
     updateCloudStatus(scene);
     if(GameState.activeCustomer){

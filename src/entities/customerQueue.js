@@ -90,6 +90,7 @@ function customerQueueThreshold(cust){
 }
 
 export function lureNextWanderer(scene, specific) {
+  if (GameState.falconActive) return;
   if (typeof debugLog === 'function') {
     debugLog('lureNextWanderer', GameState.queue.length, GameState.wanderers.length, GameState.activeCustomer);
   }
@@ -206,6 +207,7 @@ export function lureNextWanderer(scene, specific) {
 }
 
 export function moveQueueForward() {
+  if (GameState.falconActive) return;
   if (typeof debugLog === 'function') {
     debugLog('moveQueueForward', GameState.queue.length, GameState.wanderers.length, GameState.activeCustomer);
   }
@@ -281,6 +283,7 @@ export function moveQueueForward() {
 }
 
 export function checkQueueSpacing(scene) {
+  if (GameState.falconActive) return;
   // Avoid adjusting the line while a customer is waiting for their dog
   // to order. This keeps the dog from being pulled into the queue by a
   // recheck triggered by a new arrival.

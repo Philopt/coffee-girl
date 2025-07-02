@@ -1050,6 +1050,7 @@ export function setupGame(){
   }
 
   function showDialog(){
+    if (GameState.falconActive) return;
     if (GameState.saleInProgress || GameState.dialogActive) {
       // Defer showing the next order until the current sale animation finishes
       // or while another dialog is already visible

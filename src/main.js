@@ -3074,6 +3074,8 @@ function dogsBarkAtFalcon(){
                 },
                 onComplete: () => {
                   ensureOnGround(dog);
+                  dog.attacking = false;
+                  dog.dead = true;
                   if(done) done();
                 }
               });

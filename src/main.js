@@ -3327,8 +3327,22 @@ function dogsBarkAtFalcon(){
             if(c.walkTween.remove) c.walkTween.remove();
             c.walkTween=null;
           }
-          if(c.sprite) c.sprite.destroy();
-          if(c.dog){ if(c.dog.followEvent) c.dog.followEvent.remove(false); c.dog.destroy(); }
+          if(c.sprite){
+            const dir = c.sprite.x < ORDER_X ? -1 : 1;
+            const targetX = dir===1 ? 520 : -40;
+            scene.tweens.add({
+              targets:c.sprite,
+              x:targetX,
+              duration:dur(WALK_OFF_BASE/1.2),
+              onComplete:()=>{ c.sprite.destroy(); }
+            });
+          }
+          if(c.dog){
+            if(c.dog.followEvent) c.dog.followEvent.remove(false);
+            const ddir = c.dog.x < ORDER_X ? -1 : 1;
+            const dx = ddir===1 ? 520 : -40;
+            sendDogOffscreen.call(scene,c.dog,dx,c.dog.y);
+          }
           return;
         }
         if(c.walkTween){
@@ -3390,12 +3404,13 @@ function dogsBarkAtFalcon(){
         if (mem && mem.dogMemory && mem.dogMemory.state === CustomerState.BROKEN && mem.dogMemory.hasDog) {
           const dx = Phaser.Math.Between(40, 440);
           const dy = scene.scale.height + 60;
+          const dType = DOG_TYPES.find(d => d.type === mem.dogMemory.type) || { scale: 0.4, tint: 0xffffff };
           const dog = scene.add.sprite(dx, dy, 'dog1',1)
             .setOrigin(0.5)
-            .setTint(0xffffff)
+            .setTint(dType.tint || 0xffffff)
             .setDepth(20);
-          dog.baseScaleFactor = 0.4;
-          dog.scaleFactor = 0.4;
+          dog.baseScaleFactor = dType.scale || 0.4;
+          dog.scaleFactor = dog.baseScaleFactor;
           scaleDog(dog);
           attackerDogs.push(dog);
           const h = scene.add.text(dx, dy, HEART_EMOJIS[CustomerState.BROKEN], {font:'28px sans-serif'})
@@ -3437,7 +3452,17 @@ function dogsBarkAtFalcon(){
         scene.tweens.add({targets:driver,x:truck.x-40,y:truck.y,duration:dur(300),onUpdate:()=>updateHeart(driver),onComplete:()=>{ if(driver.heartEmoji) driver.heartEmoji.destroy(); driver.destroy(); }});
         scene.tweens.add({targets:truck,x:-200,duration:dur(800),delay:dur(300),onComplete:()=>{if(cb) cb();}});
         attackerDogs.forEach(dog=>{
-          dogRefuseJumpBark.call(scene,dog,false);
+          const bark = dogRefuseJumpBark.call(scene,dog,false);
+          if(bark){
+            GameState.activeBarks.push(bark);
+            scene.tweens.add({
+              targets:bark,
+              y:'-=20',
+              alpha:0,
+              duration:dur(600),
+              onComplete:()=>{ const idx=GameState.activeBarks.indexOf(bark); if(idx!==-1) GameState.activeBarks.splice(idx,1); bark.destroy(); }
+            });
+          }
           sendDogOffscreen.call(scene,dog,-200,dog.y);
         });
         scene.events.off('update', updateHpPos);

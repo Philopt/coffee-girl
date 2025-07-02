@@ -3063,6 +3063,7 @@ function dogsBarkAtFalcon(){
     spawnReinforcements();
     scene.events.on('update', updateReinforcementHearts);
     const attackOnce=()=>{
+        if(finished) return;
         const activeHumans = reinHumans.filter(h => h.active).length;
         if(activeHumans === 0 && reinDogs.length > 0){
           falconAttackDog(reinDogs[0], () => scene.time.delayedCall(dur(400), attackOnce, [], scene));

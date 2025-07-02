@@ -130,27 +130,58 @@ export function animateDogPowerUp(scene, dog, cb){
 
   const tl = scene.tweens.createTimeline();
   const originalTint = dog.tintTopLeft || 0xffffff;
-  const colors = [0xffff66, 0xff66ff, 0x66ffff, 0xffffff];
-  for(let j=0;j<2;j++){
-    colors.forEach(color => {
-      tl.add({
-        targets: dog,
-        alpha: 0,
-        duration: dur(60),
-        onStart: () => dog.setTint(color)
-      });
-      tl.add({ targets: dog, alpha: 1, duration: dur(60) });
+  const shiftHue = (color, amount) => {
+    const rgb = Phaser.Display.Color.IntegerToRGB(color);
+    const r = rgb.r / 255, g = rgb.g / 255, b = rgb.b / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s = 0, l = (max + min) / 2;
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        default: h = (r - g) / d + 4; break;
+      }
+      h /= 6;
+    }
+    h = (h + amount) % 1;
+    const hue2rgb = (p, q, t) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1/6) return p + (q - p) * 6 * t;
+      if (t < 1/2) return q;
+      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+      return p;
+    };
+    let r2, g2, b2;
+    if (s === 0) {
+      r2 = g2 = b2 = l;
+    } else {
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r2 = hue2rgb(p, q, h + 1/3);
+      g2 = hue2rgb(p, q, h);
+      b2 = hue2rgb(p, q, h - 1/3);
+    }
+    return (Math.round(r2 * 255) << 16) | (Math.round(g2 * 255) << 8) | Math.round(b2 * 255);
+  };
+  const colors = [0.02, 0.04, 0.06].map(a => shiftHue(originalTint, a));
+  colors.push(originalTint);
+  colors.forEach(color => {
+    tl.add({
+      targets: dog,
+      duration: dur(60),
+      onStart: () => dog.setTint(color)
     });
-  }
+  });
   tl.setCallback('onComplete', () => {
     dog.setTint(originalTint);
-    animateDogGrowth(scene, dog, () => {
-      dog.hideHeart = false;
-      if(dog.heartEmoji && dog.heartEmoji.scene){
-        dog.heartEmoji.setVisible(true);
-      }
-      if(cb) cb();
-    });
+    dog.hideHeart = false;
+    if(dog.heartEmoji && dog.heartEmoji.scene){
+      dog.heartEmoji.setVisible(true);
+    }
+    if(cb) cb();
   }, []);
   tl.play();
 }

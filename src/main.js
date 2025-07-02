@@ -2490,9 +2490,6 @@ export function setupGame(){
     cleanupBarks();
     cleanupBursts();
     cleanupSparkles(scene);
-    cleanupDogs(scene);
-    cleanupSparrows(scene);
-    // Keep dogs around so they can defend the girl
     cleanupSparrows(scene);
     hideOverlayTexts();
     clearDialog.call(scene);
@@ -3080,6 +3077,15 @@ function dogsBarkAtFalcon(){
       const present = new Set(GameState.queue.map(c=>c.spriteKey));
       GameState.wanderers.forEach(c=>{ if(c.spriteKey) present.add(c.spriteKey); });
       if(GameState.activeCustomer && GameState.activeCustomer.spriteKey) present.add(GameState.activeCustomer.spriteKey);
+      const dogPresent = new Set();
+      const gatherDog = c => {
+        if(c && c.dog && c.dog.dogCustomer && c.dog.dogCustomer.memory){
+          dogPresent.add(c.dog.dogCustomer.memory);
+        }
+      };
+      GameState.queue.forEach(gatherDog);
+      GameState.wanderers.forEach(gatherDog);
+      gatherDog(GameState.activeCustomer);
       let delay = 0;
       Object.entries(GameState.customerMemory).forEach(([key, mem]) => {
         if(mem && positive.includes(mem.state) && !present.has(key)){
@@ -3112,7 +3118,8 @@ function dogsBarkAtFalcon(){
           },[],scene);
           delay += 500;
         }
-        if(mem && mem.dogMemory && mem.dogMemory.hasDog && positive.includes(mem.dogMemory.state)){
+        if(mem && mem.dogMemory && mem.dogMemory.hasDog &&
+           positive.includes(mem.dogMemory.state) && !dogPresent.has(mem.dogMemory)){
           scene.time.delayedCall(dur(delay),()=>{
             const dx=Phaser.Math.Between(40,440);
             const dy=scene.scale.height + 60;

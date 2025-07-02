@@ -2955,6 +2955,38 @@ function dogsBarkAtFalcon(){
         }
       });
     }
+
+    function falconAttackDog(dog, done){
+      if(!falcon || finished || !dog) { if(done) done(); return; }
+      if(dog.followEvent) { dog.followEvent.remove(false); dog.followEvent = null; }
+      if(dog.currentTween) { dog.currentTween.stop(); dog.currentTween = null; }
+      scene.tweens.killTweensOf(dog);
+      if(dog.chewEvent) { dog.chewEvent.remove(false); dog.chewEvent = null; }
+      if(dog.wiggleTween) { dog.wiggleTween.stop(); dog.wiggleTween = null; }
+      scene.tweens.add({
+        targets: falcon,
+        x: dog.x,
+        y: dog.y - 20,
+        duration: dur(300),
+        ease: 'Cubic.easeIn',
+        onComplete: () => {
+          flashRed(scene, dog, 200);
+          if(dog.heartEmoji) { dog.heartEmoji.destroy(); dog.heartEmoji = null; }
+          scene.tweens.add({
+            targets: dog,
+            angle: 180,
+            duration: dur(300),
+            onComplete: () => {
+              if(dog.anims && dog.anims.pause) dog.anims.pause();
+              dog.dead = true;
+              const idx = reinDogs.indexOf(dog);
+              if(idx !== -1) reinDogs.splice(idx,1);
+              if(done) done();
+            }
+          });
+        }
+      });
+    }
     const spawnReinforcements = () => {
       const positive = [CustomerState.MENDING, CustomerState.GROWING, CustomerState.SPARKLING, CustomerState.ARROW];
       const present = new Set(GameState.queue.map(c=>c.spriteKey));
@@ -3018,6 +3050,11 @@ function dogsBarkAtFalcon(){
     spawnReinforcements();
     scene.events.on('update', updateReinforcementHearts);
     const attackOnce=()=>{
+        const activeHumans = reinHumans.filter(h => h.active).length;
+        if(activeHumans === 0 && reinDogs.length > 0){
+          falconAttackDog(reinDogs[0], () => scene.time.delayedCall(dur(400), attackOnce, [], scene));
+          return;
+        }
         const dir=Math.random()<0.5?-1:1;
         const angle=Phaser.Math.FloatBetween(Phaser.Math.DegToRad(55),Phaser.Math.DegToRad(80));
         const radius=Phaser.Math.Between(140,200);

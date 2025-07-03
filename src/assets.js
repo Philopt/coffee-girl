@@ -90,7 +90,7 @@ export function preload(){
   loader.image('title2','assets/title2.png');
   loader.spritesheet('lady_falcon','assets/lady_falcon.png',{frameWidth:64,frameHeight:64});
   loader.image('falcon_end','assets/ladyfalconend.png');
-  loader.image('fired_end','assets/FiredN.png');
+  loader.image('fired_end','assets/firedend.png');
   // Correct file extension and name for falcon victory asset
   loader.image('falcon_victory','assets/falcon_victory.gif');
   loader.image('revolt_end','assets/revolt.png');

@@ -2731,18 +2731,17 @@ function dogsBarkAtFalcon(){
         scene.tweens.killTweensOf(dog);
         ensureOnGround(dog);
         if(dog.setAngle) dog.setAngle(0);
-        let loops=1;
-        if(mood===CustomerState.GROWING) loops=1;
-        if(mood===CustomerState.SPARKLING) loops=2;
-        const dTl=scene.tweens.createTimeline();
-        for(let j=0;j<loops;j++){
-          const ang=Phaser.Math.FloatBetween(0,Math.PI*2);
-          const r=Phaser.Math.Between(30,50);
-          const dx=falcon.x+Math.cos(ang)*r;
-          let dy=falcon.y+Math.sin(ang)*r;
-          if(dy < DOG_MIN_Y) dy = DOG_MIN_Y;
-          dTl.add({targets:dog,x:dx,y:dy,duration:dur(Phaser.Math.Between(300,500)),ease:'Sine.easeInOut'});
-        }
+        const dir = dog.x < falcon.x ? 1 : -1;
+        const attackX = falcon.x - dir * 40;
+        const attackY = Math.max(DOG_MIN_Y, falcon.y + 10);
+        const dTl = scene.tweens.createTimeline();
+        dTl.add({
+          targets: dog,
+          x: attackX,
+          y: attackY,
+          duration: dur(Phaser.Math.Between(300, 500)),
+          ease: 'Sine.easeInOut'
+        });
         dTl.setCallback('onUpdate',()=>{
           if(dog.prevX===undefined) dog.prevX=dog.x;
           const dx=dog.x-dog.prevX;
@@ -3058,28 +3057,53 @@ function dogsBarkAtFalcon(){
             dog.wiggleTween=scene.tweens.add({targets:dog,wiggleOffset:6,duration:dur(120),yoyo:true,repeat:-1});
             scene.time.delayedCall(dur(latchMs), () => dropLatchedDog(dog), [], scene);
           }else{
-            scene.tweens.add({
-              targets:dog,
-              x:tx+dir*20,
-              y:ty+40,
-              angle:dir>0?90:-90,
-              duration:dur(250),
-              ease:'Sine.easeIn',
-              onComplete:()=>{
-                scene.tweens.add({
-                  targets:dog,
-                  y:DOG_MIN_Y,
-                  duration:dur(300),
-                  ease:'Sine.easeIn',
-                  onUpdate:()=>{ const s=scaleForY(dog.y)*0.5; dog.setScale(s*(dog.dir||1),s); },
-                  onComplete:()=>{
-                    scene.time.delayedCall(dur(1000),()=>{
-                      scene.tweens.add({targets:dog,angle:0,duration:dur(150),onComplete:()=>{ ensureOnGround(dog); dog.attacking=false; }});
-                    },[],scene);
-                  }
-                });
-              }
+            const missTl = scene.tweens.createTimeline();
+            missTl.add({
+              targets: dog,
+              x: tx + dir * 20,
+              y: ty + 40,
+              angle: dir > 0 ? '+=180' : '-=180',
+              duration: dur(250),
+              ease: 'Sine.easeIn'
             });
+            missTl.add({
+              targets: dog,
+              y: DOG_MIN_Y,
+              angle: dir > 0 ? '+=360' : '-=360',
+              duration: dur(400),
+              ease: 'Sine.easeIn',
+              onUpdate: () => { const s = scaleForY(dog.y) * 0.5; dog.setScale(s * (dog.dir || 1), s); }
+            });
+            missTl.setCallback('onComplete', () => {
+              scene.tweens.add({
+                targets: dog,
+                angle: 0,
+                duration: dur(150),
+                onComplete: () => {
+                  const jumpTl = scene.tweens.createTimeline();
+                  const h1 = 25;
+                  const h2 = 15;
+                  const jumpDur1 = dur(120);
+                  const jumpDur2 = dur(100);
+                  jumpTl.add({ targets: dog, y: DOG_MIN_Y - h1, duration: jumpDur1, ease: 'Sine.easeOut' });
+                  jumpTl.add({ targets: dog, y: DOG_MIN_Y, duration: jumpDur1, ease: 'Sine.easeIn' });
+                  jumpTl.add({ targets: dog, y: DOG_MIN_Y - h2, duration: jumpDur2, ease: 'Sine.easeOut' });
+                  jumpTl.add({ targets: dog, y: DOG_MIN_Y, duration: jumpDur2, ease: 'Sine.easeIn' });
+                  jumpTl.setCallback('onUpdate', () => { const s = scaleForY(dog.y) * 0.5; dog.setScale(s * (dog.dir || 1), s); }, []);
+                  jumpTl.setCallback('onComplete', () => {
+                    ensureOnGround(dog);
+                    dog.attacking = false;
+                    if(GameState.falconStunned){
+                      arrowDogAttack(dog, latchMs);
+                    }else{
+                      dogsBarkAtFalcon();
+                    }
+                  }, []);
+                  jumpTl.play();
+                }
+              });
+            }, []);
+            missTl.play();
           }
         }
       });

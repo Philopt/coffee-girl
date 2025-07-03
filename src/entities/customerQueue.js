@@ -594,8 +594,7 @@ export function spawnCustomer() {
     const offsetY = Phaser.Math.Between(10, 20);
     const dogType = DOG_TYPES.find(d => d.type === memory.dogMemory.type) || Phaser.Utils.Array.GetRandom(DOG_TYPES);
     const dog = this.add.sprite(startX + offsetX, startY + offsetY, 'dog1', 1)
-      .setOrigin(0.5)
-      .setTint(dogType.tint || 0xffffff);
+      .setOrigin(0.5);
     if (DEBUG && dog.setInteractive) {
       dog.setInteractive({ useHandCursor: true });
       dog.on('pointerdown', () => {

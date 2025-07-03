@@ -608,6 +608,7 @@ export function spawnCustomer() {
     dog.prevX = dog.x;
     dog.dogType = dogType.type;
     dog.hasBarked = false;
+    dog.barkReady = true;
     scaleDog(dog);
     c.dog = dog;
 

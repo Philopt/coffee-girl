@@ -2715,7 +2715,7 @@ function dogsBarkAtFalcon(){
       reinDogs.forEach(d=>dogs.push(d));
       if(dogs.length===0) return;
         dogs.forEach(dog=>{
-          if(dog.dead) return;
+          if(dog.dead || dog.barkReady === false) return;
           const mood=dog.dogCustomer && dog.dogCustomer.memory ? dog.dogCustomer.memory.state : CustomerState.NORMAL;
         if(mood===CustomerState.BROKEN || mood===CustomerState.NORMAL){
           if(!dog.fled){
@@ -3014,7 +3014,7 @@ function dogsBarkAtFalcon(){
     }
 
     function arrowDogAttack(dog, latchMs=2000){
-      if(!falcon || finished || !dog || dog.attacking || dog.dead) return;
+      if(!falcon || finished || !dog || dog.attacking || dog.dead || dog.barkReady === false) return;
       dog.attacking=true;
       const dx=falcon.x-dog.x;
       const dy=falcon.y-dog.y;
@@ -3197,6 +3197,7 @@ function dogsBarkAtFalcon(){
               .setDepth(20);
             dog.baseScaleFactor=0.4;
             dog.scaleFactor=0.4;
+            dog.barkReady = false;
             scaleDog(dog);
             dog.dogCustomer={memory:mem.dogMemory};
             reinDogs.push(dog);
@@ -3205,7 +3206,14 @@ function dogsBarkAtFalcon(){
               .setOrigin(0.5)
               .setDepth(21)
               .setShadow(0,0,'#000',4);
-            scene.tweens.add({targets:dog,x:girl.x+Phaser.Math.Between(-80,80),y:girl.y+Phaser.Math.Between(40,60),duration:dur(800),onUpdate:()=>{const s=scaleForY(dog.y)*0.5;dog.setScale(s*(dog.dir||1),s);}});
+            scene.tweens.add({
+              targets:dog,
+              x:girl.x+Phaser.Math.Between(-80,80),
+              y:girl.y+Phaser.Math.Between(40,60),
+              duration:dur(800),
+              onUpdate:()=>{const s=scaleForY(dog.y)*0.5;dog.setScale(s*(dog.dir||1),s);},
+              onComplete:()=>{dog.barkReady = true;}
+            });
           },[],scene);
           delay += 500;
         }

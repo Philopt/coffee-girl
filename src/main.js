@@ -3214,9 +3214,17 @@ function dogsBarkAtFalcon(){
     const attackOnce=()=>{
         if(finished) return;
         const activeHumans = reinHumans.filter(h => h.active).length;
-        if(activeHumans === 0 && reinDogs.length > 0){
-          falconAttackDog(reinDogs[0], () => scene.time.delayedCall(dur(400), attackOnce, [], scene));
-          return;
+        if(activeHumans === 0){
+          const dogs = [];
+          const gatherDog = c => { if(c && c.dog && !c.dog.dead) dogs.push(c.dog); };
+          GameState.queue.forEach(gatherDog);
+          GameState.wanderers.forEach(gatherDog);
+          gatherDog(GameState.activeCustomer);
+          reinDogs.forEach(d => dogs.push(d));
+          if(dogs.length > 0){
+            falconAttackDog(dogs[0], () => scene.time.delayedCall(dur(400), attackOnce, [], scene));
+            return;
+          }
         }
         const dir=Math.random()<0.5?-1:1;
         const angle=Phaser.Math.FloatBetween(Phaser.Math.DegToRad(55),Phaser.Math.DegToRad(80));

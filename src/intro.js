@@ -162,15 +162,15 @@ function playOpening(scene){
         .setDepth(17)
         .setScale(0.13)
         .setAlpha(0);
-      // Launch the cup upward and to the left so it arcs out of the burst
+      // Launch the cup straight up with a slight left drift while spinning
       scene.tweens.add({
         targets: miniGameCup,
-        x: finalX - 80,
-        y: finalY - 220,
+        x: finalX - 40,
+        y: finalY - 200,
         scale: 0.72,
         alpha: 1,
         angle: -360,
-        duration: 600,
+        duration: 700,
         ease: 'Cubic.easeOut'
       });
     }
@@ -281,37 +281,23 @@ function showStartScreen(scene){
     phoneContainer.add(miniGameCup);
     const cupTL = scene.tweens.createTimeline();
 
-    // Launch upward then arc left before dropping onto the button
+    // Continue the launch by moving left slightly then dropping onto the button
     cupTL.add({
       targets: miniGameCup,
-
-
-      x: '-=20',
-      y: offsetY - bh - 100,
-      scale: 1.2,
-
-      alpha: 1,
-      angle: -180,
-      duration: 400,
-      ease: 'Cubic.easeOut'
-    });
-    cupTL.add({
-      targets: miniGameCup,
-      x: '-=20',
-      y: offsetY - bh - 60,
-      angle: -270,
-      duration: 350,
-      ease: 'Cubic.easeInOut'
-    });
-    cupTL.add({
-      targets: miniGameCup,
-
-      x: 0,
-      y: offsetY - bh - 20,
+      x: '-=30',
+      y: offsetY - bh - 120,
       scale: 1.2,
       alpha: 1,
       angle: -720,
-      duration: 400,
+      duration: 500,
+      ease: 'Cubic.easeIn'
+    });
+    cupTL.add({
+      targets: miniGameCup,
+      x: 0,
+      y: offsetY - bh - 20,
+      angle: -1080,
+      duration: 500,
       ease: 'Bounce.easeOut'
     });
     cupTL.add({ targets: miniGameCup, angle: -15, duration: 120, ease: 'Sine.easeInOut' });

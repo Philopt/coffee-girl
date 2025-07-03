@@ -1,6 +1,6 @@
 import { debugLog, DEBUG } from './debug.js';
 import { dur, scaleForY, articleFor, flashMoney, BUTTON_Y, DIALOG_Y, setSpeedMultiplier } from "./ui.js";
-import { ORDER_X, ORDER_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, queueLimit, RESPAWN_COOLDOWN } from "./customers.js";
+import { ORDER_X, ORDER_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, FIRED_THRESHOLD, queueLimit, RESPAWN_COOLDOWN } from "./customers.js";
 import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer, startDogWaitTimer } from './entities/customerQueue.js';
 import { baseConfig } from "./scene.js";
 import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from "./state.js";
@@ -1842,7 +1842,7 @@ export function setupGame(){
           });
           return;
         }
-        if(GameState.money>=MAX_M){
+        if(GameState.money>=FIRED_THRESHOLD){
           showHighMoneyLoss.call(this);
           return;
         }
@@ -3889,6 +3889,12 @@ function dogsBarkAtFalcon(){
     }).setOrigin(0.5).setDepth(20).setAlpha(0);
     this.tweens.add({targets:[titleGame,titleOver],alpha:1,duration:dur(1200)});
 
+    const img = this.add.image(240,250,'fired_end')
+      .setScale(1.2)
+      .setDepth(20)
+      .setAlpha(0);
+    this.tweens.add({targets:img,alpha:1,duration:dur(1200),delay:dur(1000)});
+
     const line1 = this.add.text(240,450,'LADY FALCON COFFEE SUCCEEDS.',
       {font:'28px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
       .setOrigin(0.5)
@@ -3915,6 +3921,11 @@ function dogsBarkAtFalcon(){
     this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
     btn.on('pointerdown',()=>{
         btn.disableInteractive();
+        GameState.lastEndKey = 'fired_end';
+        if(!GameState.badges.includes('fired_end')) GameState.badges.push('fired_end');
+        GameState.badgeCounts['fired_end'] = (GameState.badgeCounts['fired_end'] || 0) + 1;
+        createGrayscaleTexture(this,'fired_end','fired_end_gray');
+        GameState.carryPortrait = img.setDepth(25);
         btn.setVisible(false);
         createGlowTexture(this,0xffffff,'screen_flash',256);
         const overlayG = this.add.image(btn.x,btn.y,'screen_flash').setDepth(23);
@@ -3930,6 +3941,7 @@ function dogsBarkAtFalcon(){
           onComplete:()=>{
             titleGame.destroy();
             titleOver.destroy();
+            img.destroy();
             line1.destroy();
             line2.destroy();
             btn.destroy();

@@ -327,7 +327,8 @@ function showStartScreen(scene){
   const badgeScale = 0.3;
   const badgeSlots = {
     falcon_end: { x: -60, y: iconY },
-    revolt_end: { x:  60, y: iconY }
+    revolt_end: { x:  60, y: iconY },
+    fired_end: { x:   0, y: iconY }
   };
   const iconStartX = -phoneW/2 + 30; // fallback for unknown badges
   GameState.badges.forEach((key, idx) => {
@@ -497,9 +498,17 @@ function showStartScreen(scene){
       ['keep em happy or they\'ll riot again', 'learn and be cooler next shift', 'better customer vibes or bust', 'make ppl happy, avoid another revolt']
     ];
 
+    const firedMsgs=[
+      ['u really handed the corp all ur $$', 'overlord vibes much?', 'did they at least say thx?', 'bro you got fired at 100'],
+      ['keep some of that cash for urself', 'stop feeding the corporate machine', 'seriously did u ask for ur job back?', "can't just give away all ur worth"],
+      ['capitalism 101: hoard ur coins', 'no more freebies 4 the boss', 'maybe start ur own thing?', 'so, did they rehire u?'],
+      ['remember ur value!', "don't let them take it all", 'get that job back or bounce', 'gen z would revolt']
+    ];
+
     let msgOptions = defaultMsgs;
     if(GameState.lastEndKey === 'falcon_end') msgOptions = falconMsgs;
     else if(GameState.lastEndKey === 'revolt_end') msgOptions = revoltMsgs;
+    else if(GameState.lastEndKey === 'fired_end') msgOptions = firedMsgs;
 
     let delay=0;
     for(const opts of msgOptions){

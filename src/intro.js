@@ -266,15 +266,25 @@ function showStartScreen(scene){
       .setAlpha(0);
     phoneContainer.add(miniGameCup);
     const cupTL = scene.tweens.createTimeline();
+
+    // Launch upward then arc left before dropping onto the button
     cupTL.add({
       targets: miniGameCup,
-      x: '-=40',
-      y: offsetY - bh - 60,
+      x: '-=20',
+      y: offsetY - bh - 100,
       scale: 1,
       alpha: 1,
       angle: -180,
-      duration: 500,
+      duration: 400,
       ease: 'Cubic.easeOut'
+    });
+    cupTL.add({
+      targets: miniGameCup,
+      x: '-=20',
+      y: offsetY - bh - 60,
+      angle: -270,
+      duration: 350,
+      ease: 'Cubic.easeInOut'
     });
     cupTL.add({
       targets: miniGameCup,

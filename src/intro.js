@@ -159,8 +159,7 @@ function playOpening(scene){
     ease: 'Bounce.easeOut',
     onStart: () => {
       for (let i = 0; i < 4; i++) spawnThrust();
-    },
-    onComplete: () => {
+      // Trigger the big coffee burst immediately as the "2" lands
       for (let i = 0; i < 8; i++) spawnThrust(3);
     }
   });

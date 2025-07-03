@@ -2717,7 +2717,7 @@ function dogsBarkAtFalcon(){
         dogs.forEach(dog=>{
           if(dog.dead || dog.barkReady === false) return;
           const mood=dog.dogCustomer && dog.dogCustomer.memory ? dog.dogCustomer.memory.state : CustomerState.NORMAL;
-        if(mood===CustomerState.BROKEN || mood===CustomerState.NORMAL){
+        if(mood===CustomerState.BROKEN || mood===CustomerState.MENDING || mood===CustomerState.NORMAL){
           if(!dog.fled){
             if(dog.followEvent) dog.followEvent.remove(false);
             const dir=dog.x<ORDER_X?-1:1;

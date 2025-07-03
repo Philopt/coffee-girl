@@ -266,6 +266,9 @@ function showStartScreen(scene){
 
   // Mini game cup drops into place above the Clock In button
   if (miniGameCup) {
+    if (scene.tweens && scene.tweens.killTweensOf) {
+      scene.tweens.killTweensOf(miniGameCup);
+    }
     const pcScale = phoneContainer.scale || phoneContainer.scaleX || 1;
     const m = phoneContainer.getWorldTransformMatrix();
     const localX = (miniGameCup.x - m.tx) / m.a;

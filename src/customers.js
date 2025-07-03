@@ -42,6 +42,8 @@ export const MAX_WANDERERS = 5;
 export const WALK_OFF_BASE = 800;
 export const MAX_M = 200;
 export const MAX_L = 100;
+// Money threshold that triggers the fired ending
+export const FIRED_THRESHOLD = 100;
 
 // Queue capacity is determined directly from the player's heart count in
 // `queueLimit`. There is no longer a separate base limit constant.

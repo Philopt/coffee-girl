@@ -238,6 +238,12 @@ export function setupGame(){
         c.heartEmoji.destroy();
         c.heartEmoji = null;
       }
+      if(c && c.hideHeart){
+        c.hideHeart = false;
+      }
+      if(c && c.dog && c.dog.hideHeart){
+        c.dog.hideHeart = false;
+      }
     });
 
     if(scene && scene.children){

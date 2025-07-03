@@ -14,6 +14,7 @@ export function startGame() {
 
 // Start the game immediately when loaded in a browser
 if (typeof window !== 'undefined') {
+  window.GameState = GameState;
   startGame();
 }
 

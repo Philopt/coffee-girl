@@ -2827,15 +2827,15 @@ function dogsBarkAtFalcon(){
     falcon.anims.play('falcon_fly');
     const girlHpBar = createHpBar(scene, 40, 6, 10);
     girlHpBar.setPosition(
-      girl.x - 3,
-      girl.y - (girl.displayHeight || 0) * 0.5
+      girl.x + 7,
+      girl.y - (girl.displayHeight || 0) * 0.5 + 10
     );
     const falconHpBar = createHpBar(scene, 40, 6, 10);
     falconHpBar.setPosition(falcon.x, falcon.y - 30);
     const updateHpPos = () => {
       girlHpBar.setPosition(
-        girl.x - 3,
-        girl.y - (girl.displayHeight || 0) * 0.5
+        girl.x + 7,
+        girl.y - (girl.displayHeight || 0) * 0.5 + 10
       );
       falconHpBar.setPosition(falcon.x, falcon.y - 30);
     };
@@ -3508,14 +3508,14 @@ function dogsBarkAtFalcon(){
     GameState.girlHP = 10;
     const girlHpBar = createHpBar(scene, 40, 6, 10);
     girlHpBar.setPosition(
-      girl.x - 3,
-      girl.y - (girl.displayHeight || 0) * 0.5
+      girl.x + 7,
+      girl.y - (girl.displayHeight || 0) * 0.5 + 10
     );
     let girlBlinkEvent = startHpBlink(scene, girl, () => GameState.girlHP, 10);
     const updateHpPos = () => {
       girlHpBar.setPosition(
-        girl.x - 3,
-        girl.y - (girl.displayHeight || 0) * 0.5
+        girl.x + 7,
+        girl.y - (girl.displayHeight || 0) * 0.5 + 10
       );
     };
     scene.events.on('update', updateHpPos);

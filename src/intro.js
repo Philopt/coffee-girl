@@ -502,7 +502,6 @@ function showStartScreen(scene){
   }
   startZone.on('pointerdown',()=>{
     // Disable further clicks as soon as the intro begins
-    if (window.hideMiniGame) window.hideMiniGame();
     startZone.disableInteractive();
     if (phoneContainer && phoneContainer.disableInteractive) {
       phoneContainer.disableInteractive();
@@ -518,6 +517,7 @@ function showStartScreen(scene){
       spawnSparrow(scene,{ground:true});
     }
     const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
+      if (window.hideMiniGame) window.hideMiniGame();
       if(startButton) startButton.destroy();
       if(startOverlay){startOverlay.destroy(); startOverlay=null;}
       if(startWhite){startWhite.destroy(); startWhite=null;}

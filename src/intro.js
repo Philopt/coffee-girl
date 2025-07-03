@@ -84,7 +84,7 @@ function playOpening(scene){
     miniGameCup = scene.add
       .image(finalX, finalY, 'coffeecup2')
       .setDepth(17)
-      .setScale(0.1)
+      .setScale(0.13)
       .setAlpha(0);
   }, []);
 
@@ -269,7 +269,7 @@ function showStartScreen(scene){
       targets: miniGameCup,
       x: '-=40',
       y: offsetY - bh - 60,
-      scale: 1,
+      scale: 1.3,
       alpha: 1,
       angle: -180,
       duration: 500,
@@ -511,10 +511,6 @@ function showStartScreen(scene){
     tl.play();
   });
 
-  // Fallback: allow tapping anywhere on the phone to start
-  phoneContainer.on('pointerdown', () => {
-    if (startZone && startZone.emit) startZone.emit('pointerdown');
-  });
 }
 
 function pauseWanderersForTruck(scene){

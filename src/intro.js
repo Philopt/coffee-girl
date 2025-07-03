@@ -80,7 +80,9 @@ function playOpening(scene){
       });
     }
     // Spawn the minigame button cup during the explosion
-    miniGameCup = scene.add.image(openingNumber.x, openingNumber.y, 'coffeecup2')
+    // Position it where the "2" lands so it bursts from the right
+    miniGameCup = scene.add
+      .image(finalX, finalY, 'coffeecup2')
       .setDepth(17)
       .setScale(1);
   }, []);
@@ -265,6 +267,7 @@ function showStartScreen(scene){
       targets: miniGameCup,
       x: 0,
       y: offsetY - bh - 20,
+      scale: 1,
       duration: 800,
       ease: 'Bounce.easeOut',
       onComplete: () => {

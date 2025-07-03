@@ -2523,7 +2523,11 @@ export function setupGame(){
     cleanupBarks();
     cleanupBursts();
     cleanupSparkles(scene);
-    cleanupSparrows(scene);
+    scatterSparrows(scene);
+    if(scene.gameState.sparrowSpawnEvent){
+      scene.gameState.sparrowSpawnEvent.remove(false);
+      scene.gameState.sparrowSpawnEvent = null;
+    }
     hideOverlayTexts();
     clearDialog.call(scene);
     GameState.falconActive = true;

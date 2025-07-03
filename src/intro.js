@@ -163,16 +163,17 @@ function playOpening(scene){
         .setScale(0.13)
         .setAlpha(0);
       // Launch the cup straight up with a slight left drift while spinning
-      scene.tweens.add({
-        targets: miniGameCup,
-        x: finalX - 40,
-        y: finalY - 200,
-        scale: 0.72,
-        alpha: 1,
-        angle: -360,
-        duration: 700,
-        ease: 'Cubic.easeOut'
-      });
+        scene.tweens.add({
+          targets: miniGameCup,
+          x: finalX - 40,
+          // Launch much higher so the cup arcs before descending
+          y: finalY - 350,
+          scale: 0.72,
+          alpha: 1,
+          angle: -360,
+          duration: 700,
+          ease: 'Cubic.easeOut'
+        });
     }
   });
   tl.add({
@@ -276,9 +277,11 @@ function showStartScreen(scene){
     miniGameCup
       .setPosition(localX, localY)
       .setScale(miniGameCup.scale / pcScale)
-      .setDepth(16)
+      .setDepth(17)
       .setAlpha(0);
     phoneContainer.add(miniGameCup);
+    // Ensure the cup renders above other phone elements
+    if (phoneContainer.bringToTop) phoneContainer.bringToTop(miniGameCup);
     const cupTL = scene.tweens.createTimeline();
 
     // Continue the launch by moving left slightly then dropping onto the button

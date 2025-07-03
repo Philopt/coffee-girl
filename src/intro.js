@@ -473,12 +473,22 @@ function showStartScreen(scene){
   };
 
   if(scene.time && scene.time.delayedCall){
-    const msgOptions=[
+    const defaultMsgs=[
       ['u coming in? 🤔', 'where u at??', 'mornin ☀️'],
       ['better not still be in bed 😜', 'yo coffee girl ☕', 'stop ghostin me'],
       ['late night? 🥱💃', 'phone dead again? 🔋', 'omg wait till u hear about this guy 😏'],
       ['u good?', 'hope everythin\'s chill', '…sry 😬']
     ];
+
+    const falconMsgs=[
+      ['what happened yesterday?', 'wtf?!?', '🦅🩸☕', 'skreeee 🦅'],
+      ['what happened yesterday? ppl saw falcons in the park last night', 'eleanor said the falcon got u!!', '🪶💥🪶'],
+      ['was that THE lady falcon?', 'is the lady some kinda royalty?', 'she won\'t let you lose ALL the money', "ada said lady falcon's from another dimension"],
+      ['u better keep an eye on the register', 'stop giving so much coffee away', 'what u gonna do with all the free love u earn giving away coffee?', "don't be a sparrow"]
+    ];
+
+    const msgOptions = GameState.lastEndKey === 'falcon_end' ? falconMsgs : defaultMsgs;
+
     let delay=0;
     for(const opts of msgOptions){
       delay += Phaser.Math.Between(5000,15000);

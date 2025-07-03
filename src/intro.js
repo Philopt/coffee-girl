@@ -84,7 +84,8 @@ function playOpening(scene){
     miniGameCup = scene.add
       .image(finalX, finalY, 'coffeecup2')
       .setDepth(17)
-      .setScale(1);
+      .setScale(0.1)
+      .setAlpha(0);
   }, []);
 
   tl.add({
@@ -261,15 +262,28 @@ function showStartScreen(scene){
     miniGameCup
       .setPosition(localX, localY)
       .setScale(miniGameCup.scale / pcScale)
-      .setDepth(16);
+      .setDepth(16)
+      .setAlpha(0);
     phoneContainer.add(miniGameCup);
-    scene.tweens.add({
+    const cupTL = scene.tweens.createTimeline();
+    cupTL.add({
       targets: miniGameCup,
       x: 0,
       y: offsetY - bh - 20,
       scale: 1,
+      alpha: 1,
+      angle: -360,
       duration: 800,
-      ease: 'Bounce.easeOut',
+      ease: 'Bounce.easeOut'
+    });
+    cupTL.add({ targets: miniGameCup, angle: -15, duration: 120, ease: 'Sine.easeInOut' });
+    cupTL.add({ targets: miniGameCup, angle: 10, duration: 140, ease: 'Sine.easeInOut' });
+    cupTL.add({ targets: miniGameCup, angle: -5, duration: 140, ease: 'Sine.easeInOut' });
+    cupTL.add({
+      targets: miniGameCup,
+      angle: 0,
+      duration: 100,
+      ease: 'Sine.easeInOut',
       onComplete: () => {
         miniGameCup.setInteractive({ useHandCursor: true });
         miniGameCup.on('pointerdown', () => {
@@ -277,6 +291,7 @@ function showStartScreen(scene){
         });
       }
     });
+    cupTL.play();
   }
 
   badgeIcons.forEach(i=>i.destroy());

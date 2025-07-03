@@ -86,6 +86,17 @@ function playOpening(scene){
       .setDepth(17)
       .setScale(0.1)
       .setAlpha(0);
+    // Launch the cup upward and to the left so it arcs out of the burst
+    scene.tweens.add({
+      targets: miniGameCup,
+      x: finalX - 60,
+      y: finalY - 120,
+      scale: 0.6,
+      alpha: 1,
+      angle: -360,
+      duration: 600,
+      ease: 'Cubic.easeOut'
+    });
   }, []);
 
   tl.add({
@@ -118,7 +129,8 @@ function playOpening(scene){
   openingNumber.finalPos = { x: finalX, y: finalY };
 
   const spawnThrust = (scale=2) => {
-    const ang = Phaser.Math.DegToRad(Phaser.Math.Between(240, 300));
+    // Emit cups in random directions around the "2" as it lands
+    const ang = Phaser.Math.DegToRad(Phaser.Math.Between(0, 360));
     const dist = Phaser.Math.Between(80, 160);
     const cup = scene.add.image(openingNumber.x, openingNumber.y, 'coffeecup2')
       .setDepth(17)
@@ -267,20 +279,12 @@ function showStartScreen(scene){
     const cupTL = scene.tweens.createTimeline();
     cupTL.add({
       targets: miniGameCup,
-      x: '-=40',
-      y: offsetY - bh - 60,
-      scale: 1,
-      alpha: 1,
-      angle: -180,
-      duration: 500,
-      ease: 'Cubic.easeOut'
-    });
-    cupTL.add({
-      targets: miniGameCup,
       x: 0,
       y: offsetY - bh - 20,
-      angle: -360,
-      duration: 300,
+      scale: 1,
+      alpha: 1,
+      angle: -720,
+      duration: 400,
       ease: 'Bounce.easeOut'
     });
     cupTL.add({ targets: miniGameCup, angle: -15, duration: 120, ease: 'Sine.easeInOut' });

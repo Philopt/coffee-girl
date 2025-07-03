@@ -13,8 +13,10 @@ export const DOG_COUNTER_RADIUS = 40; // distance to maintain when owner is orde
 export const DOG_PAUSE_DISTANCE = 30; // distance from owner to pause following
 export const DOG_TYPES = [
   // scale represents relative size compared to a customer sprite
+
   // all dogs are smaller and share the same look now
   { type: 'standard', emoji: '🐶', tint: 0x996633, scale: 0.4 }
+
 ];
 
 export function barkLevel(dog){

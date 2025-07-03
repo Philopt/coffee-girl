@@ -3115,7 +3115,8 @@ function dogsBarkAtFalcon(){
             onComplete: () => {
               if(dog.anims && dog.anims.stop) dog.anims.stop();
               else if(dog.anims && dog.anims.pause) dog.anims.pause();
-              dog.setTint(0x888888);
+              // leave the dog permanently gray when defeated
+              dog.setTint(0x808080);
               scene.tweens.add({
                 targets: dog,
                 y: DOG_MIN_Y,
@@ -3129,6 +3130,7 @@ function dogsBarkAtFalcon(){
                   ensureOnGround(dog);
                   dog.attacking = false;
                   dog.dead = true;
+                  dog.setAngle(180);
                   const rIdx = reinDogs.indexOf(dog);
                   if(rIdx !== -1) reinDogs.splice(rIdx, 1);
                   if(done) done();

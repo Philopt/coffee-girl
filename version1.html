@@ -26,11 +26,8 @@ window.onload = function() {
   let gameOver = false, started = false, niceShown = false;
   let currentCustomer = null, currentCoins = 0, currentRequest = 'coffee';
 
-  // Play background MIDI using HTML Audio
-  const bgm = new Audio('assets/ififell.mid');
-  bgm.volume = 0.1;
-  bgm.loop = true;
-  bgm.play().catch(e => console.warn('Audio play failed:', e));
+  // Background music has been removed because the MIDI file was missing
+  // and caused 404 errors when attempting to load it.
 
   const config = {
     type: Phaser.AUTO,

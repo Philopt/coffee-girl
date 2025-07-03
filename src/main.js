@@ -3133,7 +3133,26 @@ function dogsBarkAtFalcon(){
           flashRed(scene, dog, 150);
           scene.time.delayedCall(dur(200), () => flashRed(scene, dog, 150), [], scene);
           scene.time.delayedCall(dur(400), () => flashRed(scene, dog, 150), [], scene);
-          if(dog.heartEmoji) { dog.heartEmoji.destroy(); dog.heartEmoji = null; }
+          // update the dog's mood to broken and show a desaturated heart
+          if(dog.dogCustomer && dog.dogCustomer.memory){
+            dog.dogCustomer.memory.state = CustomerState.BROKEN;
+          }
+          if(!dog.heartEmoji || !dog.heartEmoji.scene){
+            dog.heartEmoji = scene.add.text(dog.x, dog.y, HEART_EMOJIS[CustomerState.BROKEN], {font:'28px sans-serif'})
+              .setOrigin(0.5)
+              .setDepth(dog.depth + 1)
+              .setShadow(0,0,'#000',4);
+          }
+          if(dog.heartEmoji){
+            dog.heartEmoji
+              .setText(HEART_EMOJIS[CustomerState.BROKEN] || '')
+              .setPostPipeline('desaturate');
+            const epl = dog.heartEmoji.getPostPipeline(DesaturatePipeline);
+            if(epl){
+              epl.amount = 0;
+              scene.tweens.add({targets:epl, amount:0.5, delay:dur(1000), duration:dur(300)});
+            }
+          }
           cleanupBarks();
           scene.tweens.add({
             targets: dog,
@@ -3144,6 +3163,9 @@ function dogsBarkAtFalcon(){
               else if(dog.anims && dog.anims.pause) dog.anims.pause();
               // leave the dog permanently gray when defeated
               dog.setTint(0x808080);
+              dog.setPostPipeline('desaturate');
+              const dpl = dog.getPostPipeline(DesaturatePipeline);
+              if(dpl) dpl.amount = 0.5;
               scene.tweens.add({
                 targets: dog,
                 y: DOG_MIN_Y,
@@ -3152,6 +3174,12 @@ function dogsBarkAtFalcon(){
                 onUpdate: () => {
                   const s = scaleForY(dog.y) * (dog.scaleFactor || 0.5);
                   dog.setScale(s * (dog.dir || 1), s);
+                  if(dog.heartEmoji){
+                    dog.heartEmoji
+                      .setPosition(dog.x, dog.y)
+                      .setScale(scaleForY(dog.y) * 0.8)
+                      .setDepth(dog.depth);
+                  }
                 },
                 onComplete: () => {
                   ensureOnGround(dog);

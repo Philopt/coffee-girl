@@ -4113,43 +4113,24 @@ function dogsBarkAtFalcon(){
       .setAlpha(0);
     this.tweens.add({targets:img,alpha:1,duration:fadeDur});
 
-    const line1 = this.add.text(240,450,'LADY FALCON DEFEATED',
+    const line1 = this.add.text(240,450,'Lady Falcon defeated',
       {font:'28px sans-serif',fill:'#fff'})
       .setOrigin(0.5)
       .setDepth(22)
       .setAlpha(0);
+    // Apply a yellow to gold gradient for emphasis
+    const l1grad = line1.context.createLinearGradient(0,0,0,line1.height);
+    l1grad.addColorStop(0,'#ffeb60');
+    l1grad.addColorStop(1,'#d4a000');
+    line1.setFill(l1grad);
     this.tweens.add({targets:line1,alpha:1,duration:fadeDur,delay:dur(2400)});
 
-    const line2 = this.add.text(240,490,'Victory with Love and Kindness.',
+    const line2 = this.add.text(240,490,'victory from love and kindness',
       {font:'20px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
       .setOrigin(0.5)
       .setDepth(22)
       .setAlpha(0);
     this.tweens.add({targets:line2,alpha:1,duration:dur(1200),delay:dur(2600)});
-
-    const msg1 = this.add.text(240,520,
-      'With no boss watching, run the truck your way.',
-      {font:'18px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
-      .setOrigin(0.5)
-      .setDepth(22)
-      .setAlpha(0);
-    this.tweens.add({targets:msg1,alpha:1,duration:dur(600),delay:dur(3600)});
-
-    const msg2 = this.add.text(240,550,
-      'Give every drink away for free if you like.',
-      {font:'18px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
-      .setOrigin(0.5)
-      .setDepth(22)
-      .setAlpha(0);
-    this.tweens.add({targets:msg2,alpha:1,duration:dur(600),delay:dur(4200)});
-
-    const msg3 = this.add.text(240,580,
-      'Money can even go negative with no consequences.',
-      {font:'18px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
-      .setOrigin(0.5)
-      .setDepth(22)
-      .setAlpha(0);
-    this.tweens.add({targets:msg3,alpha:1,duration:dur(600),delay:dur(4800)});
     const btn = this.add.text(240,620,'Play Again?',{
       font:'20px sans-serif',
       fill:'#000',
@@ -4189,9 +4170,6 @@ function dogsBarkAtFalcon(){
             img.destroy();
             line1.destroy();
             line2.destroy();
-            msg1.destroy();
-            msg2.destroy();
-            msg3.destroy();
             btn.destroy();
             if(overlay) overlay.destroy();
             GameState.victoryOverlay = null;

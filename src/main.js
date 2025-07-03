@@ -2957,8 +2957,10 @@ function dogsBarkAtFalcon(){
                         duration:dur(150),
                         onComplete:()=>{
                           const newX = Phaser.Math.Between(girl.x-80, girl.x+80);
-                          const groundY = Math.max(WANDER_TOP, girl.y + 60);
-                          const newY = Phaser.Math.Between(groundY, groundY + 20);
+                          const groundLevel = Math.max(WANDER_TOP, girl.y + 60);
+                          const groundY = Math.max(h.baseY, groundLevel);
+                          const maxY = Math.min(WANDER_BOTTOM, groundY + 20);
+                          const newY = Phaser.Math.Between(groundY, maxY);
                           scene.tweens.add({
                             targets:h,
                             x:newX,

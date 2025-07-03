@@ -533,7 +533,17 @@ function showStartScreen(scene){
       GameState.phoneContainer = null;
       playIntro.call(scene);
     }});
-    tl.add({targets:phoneContainer,y:-320,duration:600,ease:'Sine.easeIn'});
+    tl.add({
+      targets: phoneContainer,
+      y: -320,
+      duration: 600,
+      ease: 'Sine.easeIn',
+      onUpdate: () => {
+        if (window.minigameActive && window.positionMiniGame) {
+          window.positionMiniGame();
+        }
+      }
+    });
     const fadeTargets = [startOverlay, openingTitle, openingNumber, openingDog].filter(Boolean);
     if (fadeTargets.length) {
       tl.add({targets:fadeTargets,alpha:0,duration:600});

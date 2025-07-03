@@ -15,10 +15,11 @@ export const DOG_TYPES = [
   // scale represents relative size compared to a customer sprite
   // all dogs are smaller; the largest is now the old "service" size
   // tints use more subdued dog-like colors
+  // use a uniform base size for all dogs
   { type: 'standard', emoji: '🐶', tint: 0x996633, scale: 0.4 }, // brown
-  { type: 'poodle',   emoji: '🐩', tint: 0xdddddd, scale: 0.37 }, // white/gray
-  { type: 'guide',    emoji: '🦮', tint: 0x444444, scale: 0.34 }, // dark
-  { type: 'service',  emoji: '🐕‍🦺', tint: 0xbb8844, scale: 0.31 } // tan
+  { type: 'poodle',   emoji: '🐩', tint: 0xdddddd, scale: 0.4 }, // white/gray
+  { type: 'guide',    emoji: '🦮', tint: 0x444444, scale: 0.4 }, // dark
+  { type: 'service',  emoji: '🐕‍🦺', tint: 0xbb8844, scale: 0.4 } // tan
 ];
 
 export function barkLevel(dog){

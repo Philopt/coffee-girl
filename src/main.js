@@ -2941,7 +2941,7 @@ function dogsBarkAtFalcon(){
                       h.active = false;
                       h.attacking = false;
                       h.loveState = CustomerState.BROKEN;
-                      if(h.heartEmoji){
+                      if(h.heartEmoji && h.heartEmoji.scene){
                         h.heartEmoji.setText(HEART_EMOJIS[CustomerState.BROKEN] || '');
                         h.heartEmoji.setPostPipeline('desaturate');
                         const epl = h.heartEmoji.getPostPipeline(DesaturatePipeline);
@@ -2950,9 +2950,11 @@ function dogsBarkAtFalcon(){
                           scene.tweens.add({targets:epl, amount:0.5, delay:dur(1000), duration:dur(300)});
                         }
                       }
-                      h.setPostPipeline('desaturate');
-                      const pl = h.getPostPipeline(DesaturatePipeline);
-                      if(pl) pl.amount = 0.5;
+                      if(h.scene){
+                        h.setPostPipeline('desaturate');
+                        const pl = h.getPostPipeline(DesaturatePipeline);
+                        if(pl) pl.amount = 0.5;
+                      }
                       return;
                     }
                     scene.time.delayedCall(dur(1000),()=>{
@@ -3149,7 +3151,7 @@ function dogsBarkAtFalcon(){
               .setDepth(dog.depth + 1)
               .setShadow(0,0,'#000',4);
           }
-          if(dog.heartEmoji){
+          if(dog.heartEmoji && dog.heartEmoji.scene){
             dog.heartEmoji
               .setText(HEART_EMOJIS[CustomerState.BROKEN] || '')
               .setPostPipeline('desaturate');
@@ -3169,9 +3171,11 @@ function dogsBarkAtFalcon(){
               else if(dog.anims && dog.anims.pause) dog.anims.pause();
               // leave the dog permanently gray when defeated
               dog.setTint(0x808080);
-              dog.setPostPipeline('desaturate');
-              const dpl = dog.getPostPipeline(DesaturatePipeline);
-              if(dpl) dpl.amount = 0.5;
+              if(dog.scene){
+                dog.setPostPipeline('desaturate');
+                const dpl = dog.getPostPipeline(DesaturatePipeline);
+                if(dpl) dpl.amount = 0.5;
+              }
               scene.tweens.add({
                 targets: dog,
                 y: DOG_MIN_Y,

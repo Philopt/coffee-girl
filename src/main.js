@@ -148,6 +148,9 @@ export function setupGame(){
 
   function updateCloudStatus(scene){
     if(!scene) return;
+    if(cloudHeart) cloudHeart.x = cloudHeartBaseX;
+    if(cloudDollar) cloudDollar.x = cloudDollarBaseX;
+    updateCloudPositions();
     if(cloudHeart && cloudHeart.setFrame){
       cloudHeart.setFrame(frameForStat(GameState.love));
     }
@@ -165,7 +168,6 @@ export function setupGame(){
     };
     cloudHeartTween=makeTween(cloudHeartTween,[cloudHeart,loveText],amps[loveIdx],durs[loveIdx]);
     cloudDollarTween=makeTween(cloudDollarTween,[cloudDollar,moneyText],amps[moneyIdx],durs[moneyIdx]);
-    updateCloudPositions();
   }
 
   function updateCloudPositions(){
@@ -531,6 +533,7 @@ export function setupGame(){
 
 
   let moneyText, loveText, cloudHeart, cloudDollar, queueLevelText;
+  let cloudHeartBaseX = 0, cloudDollarBaseX = 0;
   let dialogBg, dialogText, dialogCoins,
       dialogPriceLabel, dialogPriceValue, dialogPriceBox,
       dialogDrinkEmoji, dialogPriceContainer, dialogPriceTicket, dialogPupCup,
@@ -646,15 +649,16 @@ export function setupGame(){
   function updateSideC(){
     if(GameState.servedCount<6) return;
     showSideC.call(this);
-    const target=Math.min(1,(GameState.servedCount-5)*0.1);
+    const progress=Math.min(1,(GameState.servedCount-5)*0.1);
+    const target=Math.min(0.3, 0.3*progress);
     if(target<=sideCAlpha) return;
     if(sideCFadeTween){ sideCFadeTween.stop(); }
-    let duration=2000;
-    if(target>0.5) duration=1000;
+    let duration=4000;
+    if(target>0.15) duration=3000;
     sideCFadeTween=this.tweens.add({targets:sideCText,alpha:target,duration:duration});
     sideCAlpha=target;
-    if(sideCAlpha>=1){
-      sideCFadeTween=this.tweens.add({targets:sideCText,alpha:0,duration:20000,
+    if(sideCAlpha>=0.3){
+      sideCFadeTween=this.tweens.add({targets:sideCText,alpha:0,duration:40000,
         onComplete:()=>{ sideCText.destroy(); sideCText=null; sideCFadeTween=null; sideCAlpha=0; }});
     }
   }
@@ -729,6 +733,7 @@ export function setupGame(){
     if (dollarPipeline) dollarPipeline.amount = 0.5;
 
     cloudDollar.x = 160 - cloudDollar.displayWidth/2;
+    cloudDollarBaseX = cloudDollar.x;
     moneyText=this.add.text(0,0,receipt(GameState.money),{font:'26px Arial, sans-serif',fill:'#fff'})
       .setOrigin(0.5)
       .setDepth(2)
@@ -752,6 +757,7 @@ export function setupGame(){
     if (heartPipeline) heartPipeline.amount = 0.5;
 
     cloudHeart.x = 320 + cloudHeart.displayWidth/2;
+    cloudHeartBaseX = cloudHeart.x;
     loveText=this.add.text(0,0,GameState.love,{font:'26px Arial, sans-serif',fill:'#fff'})
       .setOrigin(0.5)
       .setDepth(2)

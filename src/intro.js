@@ -79,24 +79,6 @@ function playOpening(scene){
         onComplete:()=>cup.destroy()
       });
     }
-    // Spawn the minigame button cup during the explosion
-    // Position it where the "2" lands so it bursts from the right
-    miniGameCup = scene.add
-      .image(finalX, finalY, 'coffeecup2')
-      .setDepth(17)
-      .setScale(0.13)
-      .setAlpha(0);
-    // Launch the cup upward and to the left so it arcs out of the burst
-    scene.tweens.add({
-      targets: miniGameCup,
-      x: finalX - 60,
-      y: finalY - 120,
-      scale: 0.6,
-      alpha: 1,
-      angle: -360,
-      duration: 600,
-      ease: 'Cubic.easeOut'
-    });
   }, []);
 
   tl.add({
@@ -173,6 +155,24 @@ function playOpening(scene){
       for (let i = 0; i < 4; i++) spawnThrust();
       // Trigger the big coffee burst immediately as the "2" lands
       for (let i = 0; i < 8; i++) spawnThrust(3);
+      // Spawn the minigame button cup during the explosion
+      // Position it where the "2" lands so it bursts from the right
+      miniGameCup = scene.add
+        .image(finalX, finalY, 'coffeecup2')
+        .setDepth(17)
+        .setScale(0.13)
+        .setAlpha(0);
+      // Launch the cup upward and to the left so it arcs out of the burst
+      scene.tweens.add({
+        targets: miniGameCup,
+        x: finalX - 80,
+        y: finalY - 220,
+        scale: 0.72,
+        alpha: 1,
+        angle: -360,
+        duration: 600,
+        ease: 'Cubic.easeOut'
+      });
     }
   });
   tl.add({
@@ -285,7 +285,7 @@ function showStartScreen(scene){
 
       x: '-=20',
       y: offsetY - bh - 100,
-      scale: 1,
+      scale: 1.2,
 
       alpha: 1,
       angle: -180,
@@ -305,7 +305,7 @@ function showStartScreen(scene){
 
       x: 0,
       y: offsetY - bh - 20,
-      scale: 1,
+      scale: 1.2,
       alpha: 1,
       angle: -720,
       duration: 400,

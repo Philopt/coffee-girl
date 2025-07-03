@@ -1830,7 +1830,7 @@ export function setupGame(){
           mem.cooldownUntil = (this.time ? this.time.now : Date.now()) + RESPAWN_COOLDOWN;
         }
         current.sprite.destroy();
-        if(GameState.money<=0){
+        if(GameState.money<=0 && !GameState.falconDefeated){
           showFalconAttack.call(this,()=>{
             showFalconLoss.call(this);
           });
@@ -2520,7 +2520,7 @@ export function setupGame(){
   }
 
   function showFalconAttack(cb){
-    if (GameState.falconActive) return;
+    if (GameState.falconActive || GameState.falconDefeated) return;
     const scene=this;
     scene.tweens.killAll();
     scene.time.removeAllEvents();
@@ -4004,6 +4004,8 @@ function dogsBarkAtFalcon(){
     if(endOverlay){ endOverlay.destroy(); }
     endOverlay = this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
 
+    GameState.falconDefeated = true;
+
     const overlay = GameState.victoryOverlay;
     if(overlay){
       overlay.setDepth(20);
@@ -4031,7 +4033,30 @@ function dogsBarkAtFalcon(){
       .setAlpha(0);
     this.tweens.add({targets:line2,alpha:1,duration:dur(1200),delay:dur(2600)});
 
-    const btn = this.add.text(240,550,'Play Again?',{
+    const msg1 = this.add.text(240,520,
+      'With no boss watching, run the truck your way.',
+      {font:'18px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
+      .setOrigin(0.5)
+      .setDepth(22)
+      .setAlpha(0);
+    this.tweens.add({targets:msg1,alpha:1,duration:dur(600),delay:dur(3600)});
+
+    const msg2 = this.add.text(240,550,
+      'Give every drink away for free if you like.',
+      {font:'18px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
+      .setOrigin(0.5)
+      .setDepth(22)
+      .setAlpha(0);
+    this.tweens.add({targets:msg2,alpha:1,duration:dur(600),delay:dur(4200)});
+
+    const msg3 = this.add.text(240,580,
+      'Money can even go negative with no consequences.',
+      {font:'18px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
+      .setOrigin(0.5)
+      .setDepth(22)
+      .setAlpha(0);
+    this.tweens.add({targets:msg3,alpha:1,duration:dur(600),delay:dur(4800)});
+    const btn = this.add.text(240,620,'Play Again?',{
       font:'20px sans-serif',
       fill:'#000',
       backgroundColor:'#ffffff',
@@ -4039,7 +4064,7 @@ function dogsBarkAtFalcon(){
     }).setOrigin(0.5).setDepth(23).setAlpha(0)
       .setInteractive({ useHandCursor:true });
 
-    const showBtnDelay = dur(2600) + dur(1200) + 1000;
+    const showBtnDelay = dur(5600);
     this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
 
     btn.on('pointerdown',()=>{
@@ -4070,6 +4095,9 @@ function dogsBarkAtFalcon(){
             img.destroy();
             line1.destroy();
             line2.destroy();
+            msg1.destroy();
+            msg2.destroy();
+            msg3.destroy();
             btn.destroy();
             if(overlay) overlay.destroy();
             GameState.victoryOverlay = null;

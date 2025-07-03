@@ -84,7 +84,7 @@ function playOpening(scene){
     miniGameCup = scene.add
       .image(finalX, finalY, 'coffeecup2')
       .setDepth(17)
-      .setScale(0.1)
+      .setScale(0.13)
       .setAlpha(0);
     // Launch the cup upward and to the left so it arcs out of the burst
     scene.tweens.add({
@@ -277,8 +277,32 @@ function showStartScreen(scene){
       .setAlpha(0);
     phoneContainer.add(miniGameCup);
     const cupTL = scene.tweens.createTimeline();
+
+    // Launch upward then arc left before dropping onto the button
     cupTL.add({
       targets: miniGameCup,
+
+
+      x: '-=20',
+      y: offsetY - bh - 100,
+      scale: 1,
+
+      alpha: 1,
+      angle: -180,
+      duration: 400,
+      ease: 'Cubic.easeOut'
+    });
+    cupTL.add({
+      targets: miniGameCup,
+      x: '-=20',
+      y: offsetY - bh - 60,
+      angle: -270,
+      duration: 350,
+      ease: 'Cubic.easeInOut'
+    });
+    cupTL.add({
+      targets: miniGameCup,
+
       x: 0,
       y: offsetY - bh - 20,
       scale: 1,
@@ -515,10 +539,6 @@ function showStartScreen(scene){
     tl.play();
   });
 
-  // Fallback: allow tapping anywhere on the phone to start
-  phoneContainer.on('pointerdown', () => {
-    if (startZone && startZone.emit) startZone.emit('pointerdown');
-  });
 }
 
 function pauseWanderersForTruck(scene){

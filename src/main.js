@@ -3069,11 +3069,14 @@ function dogsBarkAtFalcon(){
 
     function falconAttackDog(dog, done){
       if(!falcon || finished || !dog) { if(done) done(); return; }
+      if(dog.dead) { if(done) done(); return; }
       if(dog.followEvent) { dog.followEvent.remove(false); dog.followEvent = null; }
       if(dog.currentTween) { dog.currentTween.stop(); dog.currentTween = null; }
       scene.tweens.killTweensOf(dog);
       if(dog.chewEvent) { dog.chewEvent.remove(false); dog.chewEvent = null; }
       if(dog.wiggleTween) { dog.wiggleTween.stop(); dog.wiggleTween = null; }
+      // mark dead immediately so other logic stops interacting with this dog
+      dog.dead = true;
 
       const lIdx = latchedDogs.indexOf(dog);
       if(lIdx !== -1) latchedDogs.splice(lIdx, 1);

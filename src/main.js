@@ -2719,6 +2719,8 @@ function dogsBarkAtFalcon(){
         }
         if(dog.followEvent) dog.followEvent.remove(false);
         scene.tweens.killTweensOf(dog);
+        ensureOnGround(dog);
+        if(dog.setAngle) dog.setAngle(0);
         let loops=1;
         if(mood===CustomerState.GROWING) loops=1;
         if(mood===CustomerState.SPARKLING) loops=2;
@@ -2741,8 +2743,10 @@ function dogsBarkAtFalcon(){
         }, []);
         dTl.setCallback('onComplete',()=>{
           dog.setFrame(1);
-          if(mood===CustomerState.ARROW && GameState.falconStunned){
-            arrowDogAttack(dog);
+          if(GameState.falconStunned &&
+             (mood===CustomerState.ARROW || mood===CustomerState.SPARKLING)){
+            const durMs = mood===CustomerState.ARROW ? 2000 : 1000;
+            arrowDogAttack(dog, durMs);
           }else{
             const bark = dogBarkAt.call(scene, dog, falcon.x, falcon.y, true, () => {
               const idx = GameState.activeBarks.indexOf(bark);
@@ -2813,17 +2817,17 @@ function dogsBarkAtFalcon(){
     falcon.anims.play('falcon_fly');
     const girlHpBar = createHpBar(scene, 40, 6, 10);
     girlHpBar.setPosition(
-      girl.x + (girl.displayWidth || 0) * 0.25,
-      girl.y + (girl.displayHeight || 0) * 0.45
+      girl.x - 3,
+      girl.y - (girl.displayHeight || 0) * 0.5
     );
     const falconHpBar = createHpBar(scene, 40, 6, 10);
-    falconHpBar.setPosition(falcon.x, falcon.y - 40);
+    falconHpBar.setPosition(falcon.x, falcon.y - 30);
     const updateHpPos = () => {
       girlHpBar.setPosition(
-        girl.x + (girl.displayWidth || 0) * 0.25,
-        girl.y + (girl.displayHeight || 0) * 0.45
+        girl.x - 3,
+        girl.y - (girl.displayHeight || 0) * 0.5
       );
-      falconHpBar.setPosition(falcon.x, falcon.y - 40);
+      falconHpBar.setPosition(falcon.x, falcon.y - 30);
     };
     scene.events.on('update', updateHpPos);
     scene.events.on('update', updateLatchedDogs);
@@ -2999,7 +3003,7 @@ function dogsBarkAtFalcon(){
       });
     }
 
-    function arrowDogAttack(dog){
+    function arrowDogAttack(dog, latchMs=2000){
       if(!falcon || finished || !dog || dog.attacking || dog.dead) return;
       dog.attacking=true;
       const dx=falcon.x-dog.x;
@@ -3039,6 +3043,7 @@ function dogsBarkAtFalcon(){
               }
             });
             dog.wiggleTween=scene.tweens.add({targets:dog,wiggleOffset:6,duration:dur(120),yoyo:true,repeat:-1});
+            scene.time.delayedCall(dur(latchMs), () => dropLatchedDog(dog), [], scene);
           }else{
             scene.tweens.add({
               targets:dog,
@@ -3445,14 +3450,14 @@ function dogsBarkAtFalcon(){
     GameState.girlHP = 10;
     const girlHpBar = createHpBar(scene, 40, 6, 10);
     girlHpBar.setPosition(
-      girl.x + (girl.displayWidth || 0) * 0.25,
-      girl.y + (girl.displayHeight || 0) * 0.45
+      girl.x - 3,
+      girl.y - (girl.displayHeight || 0) * 0.5
     );
     let girlBlinkEvent = startHpBlink(scene, girl, () => GameState.girlHP, 10);
     const updateHpPos = () => {
       girlHpBar.setPosition(
-        girl.x + (girl.displayWidth || 0) * 0.25,
-        girl.y + (girl.displayHeight || 0) * 0.45
+        girl.x - 3,
+        girl.y - (girl.displayHeight || 0) * 0.5
       );
     };
     scene.events.on('update', updateHpPos);

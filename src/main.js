@@ -3695,26 +3695,50 @@ function dogsBarkAtFalcon(){
 
     function attack(a){
       if(finished) return;
-      scene.tweens.add({
-        targets:a,
-        x:girl.x+Phaser.Math.Between(-5,5),
-        y:girl.y+Phaser.Math.Between(-5,5),
-        scale:scaleForY(girl.y),
-        duration:dur(80),
-        yoyo:true,
-        onComplete:()=>{
-          if(finished) return;
-          GameState.girlHP = Math.max(0, GameState.girlHP - 0.5);
-          girlHpBar.setHp(GameState.girlHP);
-          blinkGirl();
-          if(GameState.girlHP<=5){
-            finished=true;
-            sendDriver(a);
-          } else {
+      if(Math.random() < 0.5){
+        // Regular attack lunge
+        scene.tweens.add({
+          targets:a,
+          x:girl.x+Phaser.Math.Between(-5,5),
+          y:girl.y+Phaser.Math.Between(-5,5),
+          scale:scaleForY(girl.y),
+          duration:dur(80),
+          yoyo:true,
+          onComplete:()=>{
+            if(finished) return;
+            GameState.girlHP = Math.max(0, GameState.girlHP - 0.5);
+            girlHpBar.setHp(GameState.girlHP);
+            blinkGirl();
+            if(GameState.girlHP<=5){
+              finished=true;
+              sendDriver(a);
+            } else {
+              loops.set(a, scene.time.delayedCall(dur(Phaser.Math.Between(400,600)),()=>attack(a),[],scene));
+            }
+          }
+        });
+      } else {
+        // Reposition before the next attack
+        const bigHop = Math.random() < 0.5;
+        const radius = bigHop ? Phaser.Math.Between(50,80) : Phaser.Math.Between(10,30);
+        const ang = Phaser.Math.FloatBetween(0, Math.PI * 2);
+        const tx = girl.x + Math.cos(ang) * radius;
+        const ty = Math.max(girl.y + Math.sin(ang) * radius, gatherStartY);
+        const hopHeight = bigHop ? Phaser.Math.Between(20,30) : 0;
+        const durMs = bigHop ? 300 : 200;
+        scene.tweens.add({
+          targets:a,
+          x:tx,
+          y:ty - hopHeight,
+          duration:dur(durMs),
+          yoyo: !!hopHeight,
+          ease: hopHeight ? 'Sine.easeInOut' : 'Linear',
+          onUpdate:()=>updateHeart(a),
+          onComplete:()=>{
             loops.set(a, scene.time.delayedCall(dur(Phaser.Math.Between(400,600)),()=>attack(a),[],scene));
           }
-        }
-      });
+        });
+      }
     }
 
     let firstArrived = false;

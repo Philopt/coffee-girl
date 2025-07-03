@@ -14,14 +14,10 @@
       }
       #version1-frame {
         position: absolute;
-        left: 50%;
-        /* Offset slightly upward so the mini game aligns with the on-screen phone */
-        top: calc(5% + 230px);
-        transform: translate(-50%, 0);
-        width: 70%;
-        max-width: 480px;
-        aspect-ratio: 3 / 4; /* keep 480x640 ratio */
-        height: auto;
+        left: 0;
+        top: 0;
+        width: 1px; /* updated dynamically */
+        height: 1px; /* updated dynamically */
         border: none;
         display: none;
         z-index: 100;
@@ -32,12 +28,34 @@
   <div id="game-container" role="application" aria-label="Coffee Clicker game"></div>
   <iframe id="version1-frame" title="Mini Game"></iframe>
   <script>
+    function positionMiniGame() {
+      const f = document.getElementById('version1-frame');
+      const canvas = document.querySelector('#game-container canvas');
+      const state = window.GameState || {};
+      const pc = state.phoneContainer;
+      if (!f || !canvas || !pc) return;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = rect.width / 480;
+      const scaleY = rect.height / 640;
+      const phoneW = 260;
+      const phoneH = 500;
+      const homeH = 100;
+      const screenW = (phoneW - 24) * (pc.scaleX || pc.scale || 1);
+      const screenH = (phoneH - homeH - 24) * (pc.scaleY || pc.scale || 1);
+      const left = (pc.x - phoneW / 2 + 12) * scaleX + rect.left;
+      const top = (pc.y - phoneH / 2 + 12) * scaleY + rect.top;
+      f.style.left = `${left}px`;
+      f.style.top = `${top}px`;
+      f.style.width = `${screenW * scaleX}px`;
+      f.style.height = `${screenH * scaleY}px`;
+    }
     window.showMiniGame = function() {
       const f = document.getElementById('version1-frame');
       if (f) {
         if (window.hideStartMessages) window.hideStartMessages();
         window.minigameActive = true;
         f.src = 'version1.html';
+        positionMiniGame();
         f.style.display = 'block';
       }
     };
@@ -49,6 +67,9 @@
       }
       window.minigameActive = false;
     };
+    window.addEventListener('resize', () => {
+      if (window.minigameActive) positionMiniGame();
+    });
   </script>
 </body>
 </html>

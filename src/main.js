@@ -27,6 +27,14 @@ const DART_MAX_SPEED = (560 / 6) * 3;
 // Also determines where the drink lands when tossed to a customer
 // Lowered by 10px so the drink doesn't land on top of their head
 const DRINK_HOLD_OFFSET = { x: 0, y: -10 };
+
+// Cloud display positions
+// When money reaches $200 the dollar cloud sits at the top value.
+// Hearts use a similar scale based on the MAX_L constant.
+const MONEY_TOP_Y = 5;
+const MONEY_BOTTOM_Y = 35;
+const LOVE_TOP_Y = 5;
+const LOVE_BOTTOM_Y = 35;
 const HEART_EMOJIS = {
   [CustomerState.NORMAL]: null,
   [CustomerState.BROKEN]: '💔',
@@ -125,7 +133,9 @@ export function setupGame(){
         // removed wobble animation for the love counter
       }
     },[],scene);
-    updateCloudStatus(scene);
+    scene.time.delayedCall(dur(moveDur)*2,()=>{
+      updateCloudStatus(scene);
+    },[],scene);
   }
 
   function frameForStat(val){
@@ -155,6 +165,28 @@ export function setupGame(){
     };
     cloudHeartTween=makeTween(cloudHeartTween,[cloudHeart,loveText],amps[loveIdx],durs[loveIdx]);
     cloudDollarTween=makeTween(cloudDollarTween,[cloudDollar,moneyText],amps[moneyIdx],durs[moneyIdx]);
+    updateCloudPositions();
+  }
+
+  function updateCloudPositions(){
+    if(cloudDollar){
+      const ratio=Math.min(MAX_M,Math.max(0,GameState.money))/MAX_M;
+      const newY=MONEY_BOTTOM_Y-(MONEY_BOTTOM_Y-MONEY_TOP_Y)*ratio;
+      cloudDollar.y=newY;
+      moneyText.setPosition(
+        cloudDollar.x + cloudDollar.displayWidth/2,
+        newY + cloudDollar.displayHeight/2
+      );
+    }
+    if(cloudHeart){
+      const ratio=Math.min(MAX_L,Math.max(0,GameState.love))/MAX_L;
+      const newY=LOVE_BOTTOM_Y-(LOVE_BOTTOM_Y-LOVE_TOP_Y)*ratio;
+      cloudHeart.y=newY;
+      loveText.setPosition(
+        cloudHeart.x - cloudHeart.displayWidth/2,
+        newY + cloudHeart.displayHeight/2
+      );
+    }
   }
 
   function countPrice(text, scene, from, to, baseLeft, baseY=15){

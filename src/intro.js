@@ -268,12 +268,20 @@ function showStartScreen(scene){
     const cupTL = scene.tweens.createTimeline();
     cupTL.add({
       targets: miniGameCup,
-      x: 0,
-      y: offsetY - bh - 20,
+      x: '-=40',
+      y: offsetY - bh - 60,
       scale: 1,
       alpha: 1,
+      angle: -180,
+      duration: 500,
+      ease: 'Cubic.easeOut'
+    });
+    cupTL.add({
+      targets: miniGameCup,
+      x: 0,
+      y: offsetY - bh - 20,
       angle: -360,
-      duration: 800,
+      duration: 300,
       ease: 'Bounce.easeOut'
     });
     cupTL.add({ targets: miniGameCup, angle: -15, duration: 120, ease: 'Sine.easeInOut' });

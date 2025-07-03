@@ -7,7 +7,7 @@ import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from
 import { CustomerState } from './constants.js';
 
 import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows, scatterSparrows } from './sparrow.js';
-import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog, dogTruckRuckus, dogRefuseJumpBark, dogBarkAt, animateDogPowerUp, barkProps } from './entities/dog.js';
+import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog, dogTruckRuckus, dogRefuseJumpBark, dogBarkAt, animateDogPowerUp, barkProps, PUP_CUP_TINT } from './entities/dog.js';
 import { startWander } from './entities/wanderers.js';
 
 import { flashBorder, flashFill, blinkButton, applyRandomSkew, setDepthFromBottom, createGrayscaleTexture, createGlowTexture, createHpBar } from './ui/helpers.js';
@@ -1453,7 +1453,7 @@ export function setupGame(){
           tl.add({ targets: dialogDrinkEmoji, scale: 0, duration: dur(150), ease:'Cubic.easeIn' });
           tl.add({ targets: dialogDrinkEmoji, alpha:0, duration: dur(80) });
           tl.setCallback('onComplete', () => {
-            animateDogPowerUp(this, target, react);
+            animateDogPowerUp(this, target, react, PUP_CUP_TINT);
           }, []);
           tl.play();
         } else if (this.time) {
@@ -3629,7 +3629,6 @@ function dogsBarkAtFalcon(){
           const dType = DOG_TYPES.find(d => d.type === mem.dogMemory.type) || { scale: 0.4, tint: 0xffffff };
           const dog = scene.add.sprite(dx, dy, 'dog1',1)
             .setOrigin(0.5)
-            .setTint(dType.tint || 0xffffff)
             .setDepth(20);
           dog.baseScaleFactor = dType.scale || 0.4;
           dog.scaleFactor = dog.baseScaleFactor;

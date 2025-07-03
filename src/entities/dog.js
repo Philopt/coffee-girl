@@ -2,7 +2,7 @@ import { ORDER_X, ORDER_Y } from '../customers.js';
 import { GameState } from '../state.js';
 import { CustomerState } from '../constants.js';
 import { dur, scaleForY } from '../ui.js';
-import { setDepthFromBottom } from '../ui/helpers.js';
+import { setDepthFromBottom, createGlowTexture } from '../ui/helpers.js';
 import { scatterSparrows } from '../sparrow.js';
 
 export const DOG_MIN_Y = ORDER_Y + 20;
@@ -11,6 +11,7 @@ export const DOG_FAST_DISTANCE = 160; // accelerate when farther than this from 
 export const DOG_ROAM_RADIUS = 120; // how far a dog can wander from its owner
 export const DOG_COUNTER_RADIUS = 40; // distance to maintain when owner is ordering
 export const DOG_PAUSE_DISTANCE = 30; // distance from owner to pause following
+export const PUP_CUP_TINT = 0xffe066; // final tint after receiving a pup cup
 export const DOG_TYPES = [
   // scale represents relative size compared to a customer sprite
 
@@ -46,6 +47,12 @@ export function scaleDog(d) {
   const dir = d.dir || 1;
   d.setScale(s * dir, s);
   setDepthFromBottom(d, 5);
+  if(d.pupGlow){
+    d.pupGlow.setPosition(d.x, d.y);
+    const gs = Math.max(Math.abs(d.scaleX), Math.abs(d.scaleY)) * 1.5;
+    d.pupGlow.setScale(gs);
+    setDepthFromBottom(d.pupGlow, 4);
+  }
 }
 
 export function animateDogGrowth(scene, dog, cb) {
@@ -98,7 +105,7 @@ export function animateDogGrowth(scene, dog, cb) {
   tl.play();
 }
 
-export function animateDogPowerUp(scene, dog, cb){
+export function animateDogPowerUp(scene, dog, cb, finalTint = null){
   if(!scene || !dog){ if(cb) cb(); return; }
   dog.hideHeart = true;
   if(dog.heartEmoji && dog.heartEmoji.scene){
@@ -174,11 +181,22 @@ export function animateDogPowerUp(scene, dog, cb){
     });
   });
   tl.setCallback('onComplete', () => {
-    dog.setTint(originalTint);
+    const tint = finalTint || originalTint;
+    dog.setTint(tint);
+    if(finalTint){
+      dog.hasPupCup = true;
+      const radius = Math.max(dog.displayWidth, dog.displayHeight)/2 + 10;
+      const key = `pupcup_glow_${Math.round(radius)}`;
+      createGlowTexture(scene, tint, key, radius);
+      if(dog.pupGlow) dog.pupGlow.destroy();
+      dog.pupGlow = scene.add.image(dog.x, dog.y, key)
+        .setBlendMode(Phaser.BlendModes.ADD);
+    }
     dog.hideHeart = false;
     if(dog.heartEmoji && dog.heartEmoji.scene){
       dog.heartEmoji.setVisible(true);
     }
+    scaleDog(dog);
     if(cb) cb();
   }, []);
   tl.play();
@@ -368,9 +386,7 @@ export function updateDog(owner) {
         t.dir = dx > 0 ? 1 : -1;
       }
       t.prevX = t.x;
-      const s = scaleForY(t.y) * (t.scaleFactor || 0.6);
-      t.setScale(s * (t.dir || 1), s);
-      setDepthFromBottom(t, 5);
+      scaleDog(t);
       if (dog.heartEmoji && dog.heartEmoji.scene && dog.heartEmoji.active) {
         const hy = t.y + t.displayHeight * 0.30;
         const hs = scaleForY(t.y) * 0.8;
@@ -413,9 +429,7 @@ export function sendDogOffscreen(dog, x, y) {
         t.dir = dx > 0 ? 1 : -1;
       }
       t.prevX = t.x;
-      const s = scaleForY(t.y) * (t.scaleFactor || 0.6);
-      t.setScale(s * (t.dir || 1), s);
-      setDepthFromBottom(t, 5);
+      scaleDog(t);
       if (dog.heartEmoji && dog.heartEmoji.scene && dog.heartEmoji.active) {
         const hy = t.y + t.displayHeight * 0.30;
         const hs = scaleForY(t.y) * 0.8;
@@ -430,6 +444,10 @@ export function sendDogOffscreen(dog, x, y) {
       if (dog.heartEmoji && dog.heartEmoji.scene && dog.heartEmoji.active) {
         dog.heartEmoji.destroy();
         dog.heartEmoji = null;
+      }
+      if(dog.pupGlow && dog.pupGlow.destroy){
+        dog.pupGlow.destroy();
+        dog.pupGlow = null;
       }
       dog.destroy();
     }
@@ -535,9 +553,7 @@ export function dogRefuseJumpBark(dog, scatter=true){
     duration: dur(150),
     yoyo: true,
     onUpdate: (tw, t) => {
-      const s = scaleForY(t.y) * (t.scaleFactor || 0.6);
-      t.setScale(s * (t.dir || 1), s);
-      setDepthFromBottom(t, 5);
+      scaleDog(t);
     },
     onComplete: () => { dog.setFrame(1); }
   });

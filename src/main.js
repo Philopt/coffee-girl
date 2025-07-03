@@ -2812,12 +2812,18 @@ function dogsBarkAtFalcon(){
     GameState.falcon = falcon;
     falcon.anims.play('falcon_fly');
     const girlHpBar = createHpBar(scene, 40, 6, 10);
-    girlHpBar.setPosition(girl.x, girl.y-60);
+    girlHpBar.setPosition(
+      girl.x + (girl.displayWidth || 0) * 0.25,
+      girl.y + (girl.displayHeight || 0) * 0.45
+    );
     const falconHpBar = createHpBar(scene, 40, 6, 10);
-    falconHpBar.setPosition(falcon.x, falcon.y-60);
+    falconHpBar.setPosition(falcon.x, falcon.y - 40);
     const updateHpPos = () => {
-      girlHpBar.setPosition(girl.x, girl.y-60);
-      falconHpBar.setPosition(falcon.x, falcon.y-60);
+      girlHpBar.setPosition(
+        girl.x + (girl.displayWidth || 0) * 0.25,
+        girl.y + (girl.displayHeight || 0) * 0.45
+      );
+      falconHpBar.setPosition(falcon.x, falcon.y - 40);
     };
     scene.events.on('update', updateHpPos);
     scene.events.on('update', updateLatchedDogs);
@@ -3435,9 +3441,17 @@ function dogsBarkAtFalcon(){
     if (GameState.spawnTimer) { GameState.spawnTimer.remove(false); GameState.spawnTimer = null; }
     GameState.girlHP = 10;
     const girlHpBar = createHpBar(scene, 40, 6, 10);
-    girlHpBar.setPosition(girl.x, girl.y - 60);
+    girlHpBar.setPosition(
+      girl.x + (girl.displayWidth || 0) * 0.25,
+      girl.y + (girl.displayHeight || 0) * 0.45
+    );
     let girlBlinkEvent = startHpBlink(scene, girl, () => GameState.girlHP, 10);
-    const updateHpPos = () => { girlHpBar.setPosition(girl.x, girl.y-60); };
+    const updateHpPos = () => {
+      girlHpBar.setPosition(
+        girl.x + (girl.displayWidth || 0) * 0.25,
+        girl.y + (girl.displayHeight || 0) * 0.45
+      );
+    };
     scene.events.on('update', updateHpPos);
 
     const attackers=[];

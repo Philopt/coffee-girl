@@ -490,7 +490,16 @@ function showStartScreen(scene){
       ['u better keep an eye on the register', 'stop giving so much coffee away', 'what u gonna do with all the free love u earn giving away coffee?', "don't be a sparrow"]
     ];
 
-    const msgOptions = GameState.lastEndKey === 'falcon_end' ? falconMsgs : defaultMsgs;
+    const revoltMsgs=[
+      ['anyone see the truck this morning?', 'ppl whisperin bout a revolt?', 'heard the crowd went wild', 'where did u disappear to?'],
+      ['dude u pissed off the park', 'everyone was mad yesterday', "maybe don't blow em off next time", 'word is u bailed on them'],
+      ['try showin some love', 'remember when service mattered?', 'hand out a few smiles', "don't treat folks like dirt"],
+      ['keep em happy or they\'ll riot again', 'learn and be cooler next shift', 'better customer vibes or bust', 'make ppl happy, avoid another revolt']
+    ];
+
+    let msgOptions = defaultMsgs;
+    if(GameState.lastEndKey === 'falcon_end') msgOptions = falconMsgs;
+    else if(GameState.lastEndKey === 'revolt_end') msgOptions = revoltMsgs;
 
     let delay=0;
     for(const opts of msgOptions){

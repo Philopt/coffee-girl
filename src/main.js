@@ -3073,6 +3073,8 @@ function dogsBarkAtFalcon(){
                   ensureOnGround(dog);
                   dog.attacking = false;
                   dog.dead = true;
+                  const rIdx = reinDogs.indexOf(dog);
+                  if(rIdx !== -1) reinDogs.splice(rIdx, 1);
                   if(done) done();
                 }
               });

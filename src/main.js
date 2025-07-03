@@ -2778,6 +2778,7 @@ function dogsBarkAtFalcon(){
     let falcon=null;
     let featherTrail=null;
     let firstAttack=true;
+    let dogCheckActive=false;
     let attackTween=null;
     const endAttack=(force=false)=>{
       if(finished && !force) return;
@@ -3224,7 +3225,7 @@ function dogsBarkAtFalcon(){
     const attackOnce=()=>{
         if(finished) return;
         const activeHumans = reinHumans.filter(h => h.active).length;
-        if(activeHumans === 0){
+        if(dogCheckActive && activeHumans === 0){
           const dogs = [];
           const gatherDog = c => { if(c && c.dog && !c.dog.dead) dogs.push(c.dog); };
           GameState.queue.forEach(gatherDog);
@@ -3289,7 +3290,10 @@ function dogsBarkAtFalcon(){
           // No more feathers during the attack
           tl.setCallback('onComplete', () => {
             // stopTrail();
-            if(firstAttack) firstAttack=false;
+            if(firstAttack){
+              firstAttack=false;
+              dogCheckActive=true;
+            }
             if(GameState.girlHP<=0){
               finished = true;
               setSpeedMultiplier(0.25);
@@ -3340,8 +3344,8 @@ function dogsBarkAtFalcon(){
 
     function sprinkleBursts(s){
       for(let b=0;b<3;b++){
-        const bx=girl.x+Phaser.Math.Between(-20,20);
-        const by=girl.y+Phaser.Math.Between(-40,0);
+        const bx=girl.x+5+Phaser.Math.Between(-20,20);
+        const by=girl.y+3+Phaser.Math.Between(-40,0);
         const line=s.add.rectangle(bx,by,Phaser.Math.Between(2,4),18,0xff0000)
           .setOrigin(0.5).setDepth(21)
           .setAngle(Phaser.Math.Between(-45,45));

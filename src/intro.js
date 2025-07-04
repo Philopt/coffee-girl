@@ -275,21 +275,23 @@ function showStartScreen(scene){
   const marginX = (phoneW - 24 - cols * slotSize) / (cols + 1);
   const marginY = 40;
   const startX = -phoneW/2 + 12 + marginX + slotSize/2;
-  const startY = -phoneH/2 + 12 + marginY + slotSize/2;
 
-  function getSlot(slotIdx){
-    if(iconSlots[slotIdx]) return iconSlots[slotIdx];
-    const col = slotIdx % cols;
-    const row = rows - 1 - Math.floor(slotIdx / cols); // fill bottom row first
-    const x = startX + col*(slotSize+marginX);
-    const y = startY + row*(slotSize+marginY);
-    const g = scene.add.graphics();
-    g.fillStyle(0xf0f0f0,1);
-    g.fillRoundedRect(-slotSize/2,-slotSize/2,slotSize,slotSize,12);
-    const slot = scene.add.container(x,y,[g]).setDepth(16);
-    phoneContainer.add(slot);
-    iconSlots[slotIdx] = slot;
-    return slot;
+  // Align the slots relative to the bottom of the phone so they appear
+  // just above the "Clock In" button instead of hugging the top.
+  const startY =
+    offsetY - bh / 2 - marginY - (rows - 1) * (slotSize + marginY) - slotSize / 2;
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const x = startX + c*(slotSize+marginX);
+      const y = startY + r*(slotSize+marginY);
+      const g = scene.add.graphics();
+      g.fillStyle(0xf0f0f0,1);
+      g.fillRoundedRect(-slotSize/2,-slotSize/2,slotSize,slotSize,12);
+      const slot = scene.add.container(x,y,[g]).setDepth(16);
+      phoneContainer.add(slot);
+      iconSlots.push(slot);
+    }
+
   }
 
   // Mini game cup drops into the bottom-left icon slot

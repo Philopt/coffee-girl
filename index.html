@@ -53,7 +53,7 @@
     window.showMiniGame = function() {
       const f = document.getElementById('version1-frame');
       if (f) {
-        if (window.hideStartMessages) window.hideStartMessages();
+        if (window.hideStartScreen) window.hideStartScreen();
         window.minigameActive = true;
         f.src = 'version1.html';
         positionMiniGame();

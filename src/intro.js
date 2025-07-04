@@ -275,18 +275,21 @@ function showStartScreen(scene){
   // Lazily create gray icon slots on the phone screen as needed
   iconSlots.forEach(s => s.destroy());
   iconSlots = [];
-  const slotSize = 64;
+  // Slightly smaller icons
+  const slotSize = 56;
   const rows = 2;
   const cols = 3;
   const marginX = (phoneW - 24 - cols * slotSize) / (cols + 1);
-  const marginY = 40;
+  // Vertical spacing matches the horizontal margin
+  const marginY = marginX;
   const startX = -phoneW/2 + 12 + marginX + slotSize/2;
 
   // Align the slots relative to the bottom of the phone so they appear
   // just above the "Clock In" button instead of hugging the top.
   const startY =
-    offsetY - bh / 2 - marginY - (rows - 1) * (slotSize + marginY) - slotSize / 2;
-  for(let r=0;r<rows;r++){
+    offsetY - bh / 2 - marginY - (rows - 1) * (slotSize + marginY) - slotSize / 2 + 5;
+  // Build slots starting from the bottom row so index 0 maps to bottom-left
+  for(let r=rows-1;r>=0;r--){
     for(let c=0;c<cols;c++){
       const x = startX + c*(slotSize+marginX);
       const y = startY + r*(slotSize+marginY);
@@ -294,6 +297,8 @@ function showStartScreen(scene){
       g.fillStyle(0xf0f0f0,1);
       g.fillRoundedRect(-slotSize/2,-slotSize/2,slotSize,slotSize,12);
       const slot = scene.add.container(x,y,[g]).setDepth(16);
+      // Hide until an icon is placed
+      slot.setVisible(false);
       phoneContainer.add(slot);
       iconSlots.push(slot);
     }
@@ -323,6 +328,8 @@ function showStartScreen(scene){
     const cupSlot = getSlot(0);
     const slotX = cupSlot.x;
     const slotY = cupSlot.y;
+    // Reveal the slot as the cup approaches
+    cupSlot.setVisible(true);
     cupTL.add({
       targets: miniGameCup,
       x: '-=30',
@@ -368,6 +375,7 @@ function showStartScreen(scene){
     const slotIdx = nextIdx++;
     slotMap[key] = slotIdx;
     const slot = getSlot(slotIdx);
+    slot.setVisible(true);
     const grayKey = `${key}_gray`;
     if(!scene.textures.exists(grayKey)) createGrayscaleTexture(scene, key, grayKey);
     const iconImg = scene.add.image(0, 0, grayKey)

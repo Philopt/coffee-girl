@@ -568,13 +568,18 @@ function showStartScreen(scene){
   let introDismissed = false;
   let introFadeEvent = null;
 
-  const scheduleStartMessages = (initialDelay = 1000) => {
-    let delay = initialDelay;
-    for (const opts of msgOptions) {
-      delay += Phaser.Math.Between(5000, 15000);
+  const scheduleStartMessages = (initialDelay = 0) => {
+    // Begin showing text messages 1-2 seconds after the intro fades.
+    let delay = initialDelay + Phaser.Math.Between(1000, 2000);
+    msgOptions.forEach((opts, idx) => {
+      if (idx > 0) {
+        delay += Phaser.Math.Between(5000, 15000);
+      }
       const msg = Phaser.Utils.Array.GetRandom(opts);
-      startMsgTimers.push(scene.time.delayedCall(delay, () => addStartMessage(msg), [], scene));
-    }
+      startMsgTimers.push(
+        scene.time.delayedCall(delay, () => addStartMessage(msg), [], scene)
+      );
+    });
   };
 
   const dismissIntro = () => {
@@ -587,10 +592,10 @@ function showStartScreen(scene){
         targets,
         alpha: 0,
         duration: 600,
-        onComplete: () => scheduleStartMessages(1000)
+        onComplete: () => scheduleStartMessages(0)
       });
     } else {
-      scheduleStartMessages(Phaser.Math.Between(1000, 2000));
+      scheduleStartMessages(0);
     }
   };
 

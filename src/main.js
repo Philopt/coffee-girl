@@ -3391,8 +3391,9 @@ function dogsBarkAtFalcon(){
                   falconHpBar.setHp(GameState.falconHP);
                   featherExplosion(scene, falcon.x, falcon.y, 4, 1);
                   if(GameState.falconHP<=0){ falconDies(); return; }
+                  const sd = b.stunDuration || 1000;
                   if(!GameState.falconStunned){
-                    stunFalcon(()=>scene.time.delayedCall(0, attackOnce, [], scene));
+                    stunFalcon(sd, ()=>scene.time.delayedCall(0, attackOnce, [], scene));
                   }
                 }
               });
@@ -3444,23 +3445,46 @@ function dogsBarkAtFalcon(){
       if(GameState.falconHP<=0){ falcon.setTintFill(0xff0000); }
     }
 
-      function stunFalcon(done){
+      function stunFalcon(duration=1000, done){
         if(!falcon) { if(done) done(); return; }
+        if(falcon.stunTimer){ falcon.stunTimer.remove(false); falcon.stunTimer=null; }
+        if(falcon.wobbleTween){ falcon.wobbleTween.stop(); falcon.wobbleTween=null; }
         GameState.falconStunned = true;
         falcon.setTint(0x3399ff);
-      scene.tweens.add({
-        targets: falcon,
-        x: girl.x,
-        y: girl.y - 20,
-        duration: dur(1000), // slow descent while stunned
-        ease: 'Sine.easeOut',
-        onComplete: () => {
+        falcon.stunEnd = (scene.time ? scene.time.now : Date.now()) + duration;
+        falcon.stunDone = done;
+        scene.tweens.add({
+          targets: falcon,
+          x: girl.x,
+          y: girl.y - 20,
+          duration: dur(duration),
+          ease: 'Sine.easeOut',
+          onComplete: () => {
+            shakeFalcon();
+          }
+        });
+        falcon.wobbleTween = scene.tweens.add({targets:falcon,angle:5,duration:dur(200),yoyo:true,repeat:-1});
+        const finish=()=>{
+          if(falcon.wobbleTween){ falcon.wobbleTween.stop(); falcon.wobbleTween=null; }
           if (falcon && falcon.clearTint) falcon.clearTint();
           GameState.falconStunned = false;
-          if (done) done();
-        }
-      });
-    }
+          if(falcon.stunDone){ const cb=falcon.stunDone; falcon.stunDone=null; cb(); }
+        };
+        falcon.stunFinish = finish;
+        falcon.stunTimer = scene.time.delayedCall(duration, finish, [], scene);
+      }
+
+      function shakeFalcon(){
+        if(!falcon || !GameState.falconStunned || !falcon.stunTimer) return;
+        const remaining = falcon.stunEnd - (scene.time ? scene.time.now : Date.now());
+        if(remaining <= 0) return;
+        falcon.stunTimer.remove(false);
+        const newDur = remaining * 0.5;
+        falcon.stunEnd = (scene.time ? scene.time.now : Date.now()) + newDur;
+        const finish = falcon.stunFinish;
+        falcon.stunTimer = scene.time.delayedCall(newDur, finish, [], scene);
+        scene.tweens.add({targets:falcon,angle:0,duration:dur(150),yoyo:true});
+      }
 
     function sprinkleBursts(s){
       for(let b=0;b<3;b++){

@@ -40,6 +40,30 @@ export function barkProps(dog){
   };
 }
 
+export function barkCooldown(dog){
+  const mood = dog && dog.dogCustomer && dog.dogCustomer.memory
+    ? dog.dogCustomer.memory.state
+    : CustomerState.NORMAL;
+  switch(mood){
+    case CustomerState.GROWING: return 1500;
+    case CustomerState.SPARKLING: return 1100;
+    case CustomerState.ARROW: return 600;
+    default: return 800;
+  }
+}
+
+export function barkStunDuration(dog){
+  const mood = dog && dog.dogCustomer && dog.dogCustomer.memory
+    ? dog.dogCustomer.memory.state
+    : CustomerState.NORMAL;
+  switch(mood){
+    case CustomerState.GROWING: return 1000;
+    case CustomerState.SPARKLING: return 2000;
+    case CustomerState.ARROW: return 3000;
+    default: return 0;
+  }
+}
+
 export function scaleDog(d) {
   if (!d) return;
   const factor = d.scaleFactor || 0.6;
@@ -564,11 +588,15 @@ export function dogRefuseJumpBark(dog, scatter=true){
 export function dogBarkAt(dog, targetX, targetY, scatter=true, cb){
   const scene = this;
   if(!scene || !dog) return null;
+  if(dog.barkReady === false) return null;
+  dog.barkReady = false;
+  scene.time.delayedCall(dur(barkCooldown(dog)), () => { dog.barkReady = true; }, [], scene);
   const { scale } = barkProps(dog);
   const bark = scene.add.sprite(dog.x, dog.y - 20, 'dog1', 3)
     .setOrigin(0.5)
     .setDepth(dog.depth + 1)
     .setScale(Math.abs(dog.scaleX) * scale, Math.abs(dog.scaleY) * scale);
+  bark.stunDuration = barkStunDuration(dog);
   if (dog.anims && dog.play) {
     dog.play('dog_bark');
   }

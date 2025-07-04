@@ -167,7 +167,7 @@ export function setupGame(){
       return scene.tweens.add({targets,x:`+=${amp}`,duration:dur,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
     };
     cloudHeartTween=makeTween(cloudHeartTween,[cloudHeart,loveText],amps[loveIdx],durs[loveIdx]);
-    cloudDollarTween=makeTween(cloudDollarTween,[cloudDollar,moneyText],amps[moneyIdx],durs[moneyIdx]);
+    cloudDollarTween=makeTween(cloudDollarTween,[cloudDollar,moneyText,moneyDollar],amps[moneyIdx],durs[moneyIdx]);
   }
 
   function updateCloudPositions(){
@@ -175,10 +175,15 @@ export function setupGame(){
       const ratio=Math.min(MAX_M,Math.max(0,GameState.money))/MAX_M;
       const newY=MONEY_BOTTOM_Y-(MONEY_BOTTOM_Y-MONEY_TOP_Y)*ratio;
       cloudDollar.y=newY;
-      moneyText.setPosition(
-        cloudDollar.x + cloudDollar.displayWidth/2,
-        newY + cloudDollar.displayHeight/2
-      );
+      const centerX = cloudDollar.x + cloudDollar.displayWidth/2;
+      const centerY = newY + cloudDollar.displayHeight/2;
+      moneyText.setPosition(centerX, centerY);
+      if(moneyDollar){
+        moneyDollar.setPosition(
+          centerX - moneyText.displayWidth/2 + moneyDollar.displayWidth*0.4,
+          centerY - moneyText.displayHeight*0.4
+        );
+      }
     }
     if(cloudHeart){
       const ratio=Math.min(MAX_L,Math.max(0,GameState.love))/MAX_L;
@@ -189,6 +194,14 @@ export function setupGame(){
         newY + cloudHeart.displayHeight/2
       );
     }
+  }
+
+  function updateMoneyDisplay(){
+    if(!moneyText || !moneyDollar) return;
+    const val = receipt(GameState.money);
+    moneyDollar.setText(val.charAt(0));
+    moneyText.setText(val.slice(1));
+    updateCloudPositions();
   }
 
   function countPrice(text, scene, from, to, baseLeft, baseY=15){
@@ -532,7 +545,7 @@ export function setupGame(){
 
 
 
-  let moneyText, loveText, cloudHeart, cloudDollar, queueLevelText;
+  let moneyText, moneyDollar, loveText, cloudHeart, cloudDollar, queueLevelText;
   let cloudHeartBaseX = 0, cloudDollarBaseX = 0;
   let dialogBg, dialogText, dialogCoins,
       dialogPriceLabel, dialogPriceValue, dialogPriceBox,
@@ -734,15 +747,19 @@ export function setupGame(){
 
     cloudDollar.x = 160 - cloudDollar.displayWidth/2;
     cloudDollarBaseX = cloudDollar.x;
-    moneyText=this.add.text(0,0,receipt(GameState.money),{font:'26px Arial, sans-serif',fill:'#fff'})
+    const moneyStr = receipt(GameState.money);
+    moneyDollar=this.add.text(0,0,moneyStr.charAt(0),{font:'26px Arial, sans-serif',fill:'#fff'})
+      .setOrigin(0.5)
+      .setDepth(2)
+      .setBlendMode(Phaser.BlendModes.NEGATIVE)
+      .setAlpha(1)
+      .setScale(0.5);
+    moneyText=this.add.text(0,0,moneyStr.slice(1),{font:'26px Arial, sans-serif',fill:'#fff'})
       .setOrigin(0.5)
       .setDepth(2)
       .setBlendMode(Phaser.BlendModes.NEGATIVE)
       .setAlpha(1);
-    moneyText.setPosition(
-      cloudDollar.x + cloudDollar.displayWidth/2,
-      cloudDollar.y + cloudDollar.displayHeight/2
-    );
+    updateMoneyDisplay();
     cloudHeart=this.add.sprite(0,35,'cloudHeart')
       .setOrigin(1,0)
       .setDepth(1)
@@ -768,12 +785,16 @@ export function setupGame(){
       cloudHeart.y + cloudHeart.displayHeight/2
     );
     moneyText.setInteractive({ useHandCursor:true });
+    if(moneyDollar) moneyDollar.setInteractive({ useHandCursor:true });
     loveText.setInteractive({ useHandCursor:true });
-    moneyText.on('pointerdown',()=>{
+    const moneyClick=()=>{
       GameState.money = +(GameState.money + 20).toFixed(2);
-      moneyText.setText(receipt(GameState.money));
+      updateMoneyDisplay();
       animateStatChange(moneyText, this, 1);
-    });
+      if(moneyDollar) animateStatChange(moneyDollar, this, 1);
+    };
+    moneyText.on('pointerdown', moneyClick);
+    if(moneyDollar) moneyDollar.on('pointerdown', moneyClick);
     loveText.on('pointerdown',()=>{
       GameState.love += 10;
       loveText.setText(GameState.love);
@@ -842,11 +863,11 @@ export function setupGame(){
     .setOrigin(0.5)
     .setScale(1.25)
     .setVisible(false);
-  dialogPriceShadow=this.add.image(4,4,'price_ticket')
+  dialogPriceShadow=this.add.image(2,4,'price_ticket')
     .setOrigin(0.5)
     .setTint(0x000000)
     .setAlpha(0.7)
-    .setScale(1.3)
+    .setScale(1.3,1.4)
     .setVisible(false);
   createGrayscaleTexture(this, 'price_ticket', 'price_ticket_gray');
   dialogPupCup=this.add.image(0,0,'pupcup2')
@@ -1266,7 +1287,7 @@ export function setupGame(){
     const startY = (typeof girl !== 'undefined' && girl) ? girl.y - 30 : dialogBg.y - 10;
     const priceTargetX = startX;
     const priceTargetY = startY - ticketH * 0.5 + 10;
-    const peekY = startY - ticketH * 0.5;
+    const peekY = startY - ticketH * 0.5 + 12;
     dialogPriceContainer
       .setPosition(startX, startY)
       .setScale(0.4)
@@ -1340,7 +1361,9 @@ export function setupGame(){
           const frontDepth = dialogPriceContainer.depth;
           const behindDepth = truckRef && truckRef.depth ? truckRef.depth - 1 : frontDepth - 1;
           dialogPriceContainer.setDepth(behindDepth);
-          const midY = truckRef ? truckRef.y - (truckRef.displayHeight||0)/2 : priceTargetY + 20;
+          const midY = truckRef ?
+            truckRef.y - (truckRef.displayHeight||0)/2 - 40 :
+            priceTargetY - 40;
           const tl = this.tweens.createTimeline();
           tl.add({
             targets: dialogPriceContainer,
@@ -1351,13 +1374,13 @@ export function setupGame(){
           });
           tl.add({
             targets: dialogPriceContainer,
-            x: startX - 3,
+            x: startX - 2,
             y: peekY,
             scale: 0.4,
-            duration: dur(40),
+            duration: dur(20),
             ease: 'Sine.easeInOut',
             yoyo: true,
-            repeat: 2
+            repeat: 1
           });
           tl.add({
             targets: dialogPriceContainer,
@@ -2060,8 +2083,8 @@ export function setupGame(){
     if(type==='sell'){
       const ticket=dialogPriceContainer;
       const t=dialogPriceValue;
-      const destX=moneyText.x+moneyText.width-15;
-      const destY=moneyText.y+10;
+      const destX=moneyText.x;
+      const destY=moneyText.y;
       t.setVisible(true);
       // start below the stamp so the stamp appears on top first
       t.setDepth(paidStamp.depth-1);
@@ -2178,8 +2201,9 @@ export function setupGame(){
               clearDialog.call(this);
               ticket.setVisible(false);
               GameState.money=+(GameState.money+mD).toFixed(2);
-              moneyText.setText(receipt(GameState.money));
+              updateMoneyDisplay();
               animateStatChange(moneyText, this, mD);
+              if(moneyDollar) animateStatChange(moneyDollar, this, mD);
               done();
             });
           }});
@@ -2203,8 +2227,8 @@ export function setupGame(){
         } else if(type==='give'){
       const ticket=dialogPriceContainer;
       const t=dialogPriceValue;
-      const destX=moneyText.x+moneyText.width-15;
-      const destY=moneyText.y+10;
+      const destX=moneyText.x;
+      const destY=moneyText.y;
       if(current.isDog){
         // Pup cup: keep the ticket visible briefly so the dessert emoji can fly
         // to the dog before the ticket fades away.
@@ -2218,8 +2242,9 @@ export function setupGame(){
               clearDialog.call(this);
               ticket.setVisible(false);
               GameState.money = +(GameState.money + mD).toFixed(2);
-              moneyText.setText(receipt(GameState.money));
+              updateMoneyDisplay();
               animateStatChange(moneyText, this, mD);
+              if(moneyDollar) animateStatChange(moneyDollar, this, mD);
               done();
             }
           });
@@ -2310,8 +2335,9 @@ export function setupGame(){
               clearDialog.call(this);
               ticket.setVisible(false);
               GameState.money=+(GameState.money+mD).toFixed(2);
-              moneyText.setText(receipt(GameState.money));
+              updateMoneyDisplay();
               animateStatChange(moneyText, this, mD);
+              if(moneyDollar) animateStatChange(moneyDollar, this, mD);
               done();
           }});
           if (typeof dialogPriceBox !== 'undefined' && dialogPriceBox) {
@@ -2355,16 +2381,17 @@ export function setupGame(){
       }
       reportLine3.setVisible(false).alpha=1;
 
-      const destX=moneyText.x+moneyText.width-15;
-      const destY=moneyText.y+10;
+      const destX=moneyText.x;
+      const destY=moneyText.y;
       const moving=[reportLine1];
       const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
           reportLine1.setVisible(false).alpha=1;
           reportLine2.setVisible(false).alpha=1;
           reportLine3.setVisible(false).alpha=1;
           GameState.money=+(GameState.money+mD).toFixed(2);
-          moneyText.setText(receipt(GameState.money));
+          updateMoneyDisplay();
           animateStatChange(moneyText, this, mD);
+          if(moneyDollar) animateStatChange(moneyDollar, this, mD);
           done();
           
       }});
@@ -4489,7 +4516,7 @@ function dogsBarkAtFalcon(){
       if (girl.clearTint) girl.clearTint();
     }
     GameState.money=10.00; GameState.love=3;
-    moneyText.setText(receipt(GameState.money));
+    updateMoneyDisplay();
     loveText.setText(String(GameState.love));
     moneyText.setColor('#fff');
     loveText.setColor('#fff');

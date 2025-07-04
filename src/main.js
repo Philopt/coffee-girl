@@ -2779,14 +2779,16 @@ function dogsBarkAtFalcon(){
 
 
     // send everyone scattering immediately in case a new spawn sneaks in
-    let finished=false;
-    let falcon=null;
-    let featherTrail=null;
+      let finished=false;
+      let falcon=null;
+      let falconDeathStarted=false;
+      let featherTrail=null;
     let firstAttack=true;
     let dogCheckActive=false;
     let attackTween=null;
-    const endAttack=(force=false)=>{
-      if(finished && !force) return;
+      const endAttack=(force=false)=>{
+        falconDeathStarted = false;
+        if(finished && !force) return;
       finished=true;
       if(GameState.dogBarkEvent){
         GameState.dogBarkEvent.remove(false);
@@ -3480,8 +3482,10 @@ function dogsBarkAtFalcon(){
       }
     }
 
-    function falconDies(){
-      if(!falcon) return;
+      function falconDies(){
+        if(falconDeathStarted) return;
+        falconDeathStarted = true;
+        if(!falcon) return;
       setSpeedMultiplier(0.25);
       scene.tweens.killAll();
       scene.time.removeAllEvents();

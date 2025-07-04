@@ -213,6 +213,7 @@ function showStartScreen(scene){
   startMsgTimers = [];
   startMsgBubbles.forEach(b => b.destroy());
   startMsgBubbles = [];
+  let msgOptions = [];
   startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.75)
     .setDepth(13);
 
@@ -564,16 +565,54 @@ function showStartScreen(scene){
     });
   }
 
-  if(scene.time && scene.tweens){
-    scene.time.delayedCall(5000,()=>{
-      const targets=[];
-      if(openingTitle) targets.push(openingTitle);
-      if(openingNumber) targets.push(openingNumber);
-      if(openingDog) targets.push(openingDog);
-      if(targets.length){
-        scene.tweens.add({targets,alpha:0,duration:600});
-      }
-    },[],scene);
+  let introDismissed = false;
+  let introFadeEvent = null;
+
+  const scheduleStartMessages = (initialDelay = 1000) => {
+    let delay = initialDelay;
+    for (const opts of msgOptions) {
+      delay += Phaser.Math.Between(5000, 15000);
+      const msg = Phaser.Utils.Array.GetRandom(opts);
+      startMsgTimers.push(scene.time.delayedCall(delay, () => addStartMessage(msg), [], scene));
+    }
+  };
+
+  const dismissIntro = () => {
+    if (introDismissed) return;
+    introDismissed = true;
+    if (introFadeEvent) introFadeEvent.remove(false);
+    const targets = [openingTitle, openingNumber, openingDog].filter(Boolean);
+    if (targets.length) {
+      scene.tweens.add({
+        targets,
+        alpha: 0,
+        duration: 600,
+        onComplete: () => scheduleStartMessages(1000)
+      });
+    } else {
+      scheduleStartMessages(Phaser.Math.Between(1000, 2000));
+    }
+  };
+
+  if (scene.time && scene.tweens) {
+    if (!openingTitle && !openingNumber && !openingDog) {
+      dismissIntro();
+    } else {
+      introFadeEvent = scene.time.delayedCall(5000, dismissIntro, [], scene);
+    }
+  }
+
+  if (openingTitle) {
+    openingTitle.setInteractive({ useHandCursor: true });
+    openingTitle.on('pointerdown', dismissIntro);
+  }
+  if (openingDog) {
+    openingDog.setInteractive({ useHandCursor: true });
+    openingDog.on('pointerdown', dismissIntro);
+  }
+  if (openingNumber) {
+    openingNumber.setInteractive({ useHandCursor: true });
+    openingNumber.on('pointerdown', dismissIntro);
   }
 
   let startMsgY = -phoneH/2 + 20;
@@ -675,18 +714,13 @@ function showStartScreen(scene){
       ['remember ur value!', "don't let them take it all", 'get that job back or bounce', 'gen z would revolt']
     ];
 
-    let msgOptions = defaultMsgs;
+    msgOptions = defaultMsgs;
     if(GameState.lastEndKey === 'falcon_end') msgOptions = falconMsgs;
     else if(GameState.lastEndKey === 'falcon_victory' || GameState.lastEndKey === 'muse_victory') msgOptions = victoryMsgs;
     else if(GameState.lastEndKey === 'revolt_end') msgOptions = revoltMsgs;
     else if(GameState.lastEndKey === 'fired_end') msgOptions = firedMsgs;
 
-    let delay=0;
-    for(const opts of msgOptions){
-      delay += Phaser.Math.Between(5000,15000);
-      const msg = Phaser.Utils.Array.GetRandom(opts);
-      startMsgTimers.push(scene.time.delayedCall(delay,()=>addStartMessage(msg),[],scene));
-    }
+    // scheduleStartMessages() handles message timing after the intro fades
   }
   GameState.startScreenSeen = true;
   startZone.on('pointerdown',()=>{

@@ -37,6 +37,7 @@ export const GameState = {
   ,activeBursts: []
   ,victoryOverlay: null
   ,falconDefeated: false
+  ,achievementsRevealed: false
 };
 
 export const floatingEmojis = [];

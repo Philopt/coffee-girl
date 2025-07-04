@@ -1,4 +1,4 @@
-import { GameState } from './state.js';
+import { GameState, loadAchievements } from './state.js';
 import * as CustomerQueue from './entities/customerQueue.js';
 import * as Dog from './entities/dog.js';
 import { setupGame, showStartScreen, handleAction, spawnCustomer, scheduleNextSpawn, showDialog, animateLoveChange, blinkButton } from './main.js';
@@ -9,6 +9,7 @@ export function startGame() {
   void GameState;
   void CustomerQueue;
   void Dog;
+  loadAchievements();
   setupGame();
 }
 

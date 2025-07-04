@@ -55,3 +55,28 @@ export function removeFloatingEmoji(emoji) {
   const idx = floatingEmojis.indexOf(emoji);
   if (idx !== -1) floatingEmojis.splice(idx, 1);
 }
+
+export function loadAchievements() {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  try {
+    const raw = window.localStorage.getItem('coffeeGirlAchievements');
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (Array.isArray(data.badges)) GameState.badges = data.badges.slice();
+    if (data.badgeCounts && typeof data.badgeCounts === 'object') {
+      GameState.badgeCounts = { ...data.badgeCounts };
+    }
+  } catch (err) {
+    // ignore malformed storage
+  }
+}
+
+export function saveAchievements() {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  try {
+    const data = { badges: GameState.badges, badgeCounts: GameState.badgeCounts };
+    window.localStorage.setItem('coffeeGirlAchievements', JSON.stringify(data));
+  } catch (err) {
+    // ignore quota errors
+  }
+}

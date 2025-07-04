@@ -3,7 +3,7 @@ import { dur, scaleForY, articleFor, flashMoney, BUTTON_Y, DIALOG_Y, setSpeedMul
 import { ORDER_X, ORDER_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, FIRED_THRESHOLD, queueLimit, RESPAWN_COOLDOWN } from "./customers.js";
 import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer, startDogWaitTimer } from './entities/customerQueue.js';
 import { baseConfig } from "./scene.js";
-import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji } from "./state.js";
+import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji, saveAchievements } from "./state.js";
 import { CustomerState } from './constants.js';
 
 import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows, scatterSparrows } from './sparrow.js';
@@ -307,6 +307,7 @@ export function setupGame(){
     GameState.lastEndKey = key;
     if(!GameState.badges.includes(key)) GameState.badges.push(key);
     GameState.badgeCounts[key] = (GameState.badgeCounts[key] || 0) + 1;
+    if (typeof saveAchievements === 'function') saveAchievements();
     const grayKey = `${key}_gray`;
     createGrayscaleTexture(scene, key, grayKey);
   }

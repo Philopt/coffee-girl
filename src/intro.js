@@ -5,7 +5,7 @@ import { GameState } from './state.js';
 import { debugLog, DEBUG } from './debug.js';
 import { dur } from './ui.js';
 import { spawnSparrow, scatterSparrows } from './sparrow.js';
-import { createGrayscaleTexture } from './ui/helpers.js';
+import { createGrayscaleTexture, createGlowTexture } from './ui/helpers.js';
 
 let startOverlay = null;
 let startButton = null;
@@ -19,6 +19,41 @@ let openingDog = null;
 let badgeIcons = [];
 let iconSlots = [];
 let miniGameCup = null;
+let professorCup = null;
+
+const ACHIEVEMENT_HINTS = {
+  fired_end: [
+    'Maybe the boss wants more money...',
+    'Try hoarding cash instead of giving it away.',
+    'Focus on profits to keep your job.',
+    'Keep the register full or else...'
+  ],
+  falcon_victory: [
+    'A dog might help against the falcon.',
+    'Love can be a powerful weapon.',
+    'Coffee and courage beat talons.',
+    'Defend yourself and don\'t back down!'
+  ],
+  falcon_end: [
+    'The lady might be unstoppable if you don\'t fight back...',
+    'What if you ignore the falcon?',
+    'Is she tougher when you are weak?',
+    'Maybe avoid upsetting her so much.'
+  ],
+  revolt_end: [
+    'I wonder what would happen if everyone hated you...',
+    'What if the crowd got really angry?',
+    'Ignore customers\' feelings at your own risk.',
+    'Upset enough folks and see what happens.'
+  ],
+  muse_victory: [
+    'Serve with kindness to inspire the muse.',
+    'Maybe speed and smiles matter.',
+    'Keep customers happy for creative vibes.',
+    'Good service leads to inspiration.'
+  ]
+};
+const ALL_BADGES = Object.keys(ACHIEVEMENT_HINTS);
 
 function getSlot(idx){
   if(!iconSlots.length) return { x: 0, y: 0 };
@@ -200,6 +235,7 @@ function playOpening(scene){
 function showStartScreen(scene){
   scene = scene || this;
   if (typeof debugLog === 'function') debugLog('showStartScreen called');
+  GameState.profHintUsed = false;
   if(startButton){ startButton.destroy(); startButton = null; }
   if(typeof phoneContainer !== 'undefined' && phoneContainer){
     if(scene.tweens && scene.tweens.killTweensOf){
@@ -307,14 +343,51 @@ function showStartScreen(scene){
 
   }
 
-  // Mini game cup appears in the bottom-left icon slot on every start screen
-  const cupSlot = getSlot(0);
+  // Professor cup in bottom-left slot, mini game cup next
+  const profSlot = getSlot(0);
+  const cupSlot = getSlot(1);
+
+  if(!professorCup){
+    professorCup = scene.add
+      .image(profSlot.x, profSlot.y, 'coffeecup2')
+      .setDepth(18)
+      .setAlpha(1);
+    const tex = scene.textures.get('coffeecup2');
+    if(tex && tex.getSourceImage){
+      const src = tex.getSourceImage();
+      const s = (src && src.width && src.height) ? slotSize / Math.max(src.width, src.height) : 1;
+      professorCup.setScale(s);
+    }
+    professorCup.setInteractive({useHandCursor:true});
+    professorCup.on('pointerdown',()=>{
+      if(GameState.profHintUsed) return;
+      const missing = ALL_BADGES.filter(k=>!GameState.badges.includes(k));
+      if(!missing.length) return;
+      GameState.profHintUsed = true;
+      const key = Phaser.Utils.Array.GetRandom(missing);
+      const hint = Phaser.Utils.Array.GetRandom(ACHIEVEMENT_HINTS[key]);
+      const bubble = addStartMessage(hint,0xcccccc,'#888');
+      if(bubble){
+        bubble.attachedSprite = professorCup;
+        professorCup.disableInteractive();
+        scene.tweens.add({targets:professorCup,scale:professorCup.scale*1.1,duration:200,yoyo:true});
+        professorCup.x = bubble.x;
+        professorCup.y = bubble.y - bubble.bh/2;
+      }
+    });
+    profSlot.setVisible(true);
+    phoneContainer.add(professorCup);
+  }else{
+    profSlot.setVisible(true);
+    phoneContainer.add(professorCup);
+  }
   if (!miniGameCup) {
     // Spawn a fresh cup when restarting the game
     miniGameCup = scene.add
       .image(cupSlot.x, cupSlot.y, 'coffeecup2')
       .setDepth(17)
-      .setAlpha(1);
+      .setAlpha(1)
+      .setTint(0xffd700);
     const tex = scene.textures.get('coffeecup2');
     if (tex && tex.getSourceImage) {
       const src = tex.getSourceImage();
@@ -341,7 +414,8 @@ function showStartScreen(scene){
       .setPosition(localX, localY)
       .setScale(miniGameCup.scale / pcScale)
       .setDepth(17)
-      .setAlpha(0);
+      .setAlpha(0)
+      .setTint(0xffd700);
     phoneContainer.add(miniGameCup);
     // Ensure the cup renders above other phone elements
     if (phoneContainer.bringToTop) phoneContainer.bringToTop(miniGameCup);
@@ -402,24 +476,35 @@ function showStartScreen(scene){
   const slotMap = {};
   const scaleMap = {};
   let nextIdx = 1;
-  GameState.badges.forEach((key) => {
+  ALL_BADGES.forEach((key) => {
+    const earned = GameState.badges.includes(key);
     const slotIdx = nextIdx++;
     slotMap[key] = slotIdx;
     const slot = getSlot(slotIdx);
     slot.setVisible(true);
-    const grayKey = `${key}_gray`;
-    if(!scene.textures.exists(grayKey)) createGrayscaleTexture(scene, key, grayKey);
-    const iconScale = computeScale(grayKey);
+    let texKey = key;
+    if(!earned){
+      const grayKey = `${key}_gray`;
+      if(!scene.textures.exists(grayKey)) createGrayscaleTexture(scene,key,grayKey);
+      texKey = grayKey;
+    }
+    const iconScale = computeScale(texKey);
     scaleMap[key] = iconScale;
-    const iconImg = scene.add.image(0, 0, grayKey)
-      .setScale(iconScale);
-    const container = scene.add.container(slot.x, slot.y, [iconImg])
-      .setDepth(16);
+    const iconImg = scene.add.image(0,0,texKey).setScale(iconScale);
+    const children=[iconImg];
+    if(earned){
+      const glowKey = `gold_glow_${slotSize}`;
+      if(!scene.textures.exists(glowKey)) createGlowTexture(scene,0xffd700,glowKey,slotSize);
+      const glow = scene.add.image(0,0,glowKey).setScale(1).setDepth(-1);
+      children.unshift(glow);
+    }
+    const container = scene.add.container(slot.x,slot.y,children).setDepth(16);
     if(GameState.badgeCounts[key] > 1){
-      const txt = scene.add.text(0, 0, String(GameState.badgeCounts[key]), {
-        font: '16px sans-serif', fill: '#fff'
-      }).setOrigin(0.5);
+      const txt = scene.add.text(0,0,String(GameState.badgeCounts[key]),{font:'16px sans-serif',fill:'#fff'}).setOrigin(0.5);
       container.add(txt);
+    }
+    if(!earned && GameState.badges.length >=3){
+      container.setAlpha(0.5);
     }
     phoneContainer.add(container);
     badgeIcons.push(container);
@@ -532,25 +617,50 @@ function showStartScreen(scene){
 
   let startMsgY = -phoneH/2 + 20;
 
-  const addStartMessage=(text)=>{
-    if(!phoneContainer) return;
+  const MAX_MSGS = 5;
+
+  const repositionMessages=()=>{
+    let y = -phoneH/2 + 20;
+    startMsgBubbles.forEach(b=>{
+      scene.tweens.add({targets:b,y:y + b.bh/2,duration:200});
+      if(b.attachedSprite){
+        scene.tweens.add({targets:b.attachedSprite,y:y - b.bh/2,duration:200});
+      }
+      y += b.bh + 10;
+    });
+    startMsgY = y;
+  };
+
+  const addStartMessage=(text,color=0x8bd48b,textColor='#fff')=>{
+    if(!phoneContainer) return null;
+    startMsgBubbles.forEach(b=>{
+      const target = Math.max(0,b.alpha*0.8);
+      scene.tweens.add({targets:b,alpha:target,duration:200});
+    });
     const pad = 10;
     const wrapWidth = phoneW - 60;
-    const txt = scene.add.text(0,0,text,{font:'20px sans-serif',fill:'#fff',wordWrap:{width:wrapWidth}})
+    const txt = scene.add.text(0,0,text,{font:'20px sans-serif',fill:textColor,wordWrap:{width:wrapWidth}})
       .setOrigin(0,0.5);
     const bw = txt.width + pad*2;
     const bh = txt.height + pad*2;
     const bg = scene.add.graphics();
-    bg.fillStyle(0x8bd48b,1);
+    bg.fillStyle(color,1);
     bg.fillRoundedRect(-bw/2,-bh/2,bw,bh,10);
     txt.setPosition(-bw/2 + pad, 0);
     const xPos = -phoneW/2 + bw/2 + 20;
     const yPos = startMsgY + bh/2;
     const bubble = scene.add.container(xPos,yPos,[bg,txt]).setDepth(16).setAlpha(0);
+    bubble.bh = bh;
     phoneContainer.add(bubble);
     startMsgBubbles.push(bubble);
     startMsgY += bh + 10;
     scene.tweens.add({targets:bubble,alpha:1,duration:300,ease:'Cubic.easeOut'});
+    if(startMsgBubbles.length>MAX_MSGS){
+      const old = startMsgBubbles.shift();
+      scene.tweens.add({targets:old,alpha:0,duration:300,onComplete:()=>{if(old.destroy) old.destroy();}});
+    }
+    repositionMessages();
+    return bubble;
   };
 
   if(scene.time && scene.time.delayedCall){
@@ -632,6 +742,7 @@ function showStartScreen(scene){
         phoneContainer = null;
       }
       miniGameCup = null;
+      professorCup = null;
       GameState.phoneContainer = null;
       playIntro.call(scene);
     }});

@@ -1256,29 +1256,13 @@ export function setupGame(){
 
     const truckRef = (typeof truck !== 'undefined' && truck) ? truck : null;
 
-    const girlRight = (typeof girl !== 'undefined' && girl)
-      ? girl.x + girl.displayWidth / 2
-      : dialogBg.x;
-    const minX = girlRight + ticketOffset;
-
-    let priceTargetX;
-    let priceTargetY;
-    if (truckRef) {
-      const truckRight = truckRef.x + truckRef.displayWidth / 2;
-      const truckTop = truckRef.y - truckRef.displayHeight / 2;
-      priceTargetX = Math.max(truckRight + ticketOffset, minX) - 20;
-      priceTargetY = truckTop + ticketH / 2 - 10;
-    } else {
-      const priceTargetXDefault = dialogBg.x + dialogBg.width/2 - 30; // nudge right
-      priceTargetX = Math.max(priceTargetXDefault, minX) - 20;
-      priceTargetY = dialogBg.y - dialogBg.height - 20 - (c.isDog ? 30 : 0) - 10;
-    }
-
     const startX = (typeof girl !== 'undefined' && girl) ? girl.x : dialogBg.x;
     const startY = (typeof girl !== 'undefined' && girl) ? girl.y - 30 : dialogBg.y - 10;
+    const priceTargetX = startX;
+    const priceTargetY = startY - ticketH - 40;
     dialogPriceContainer
       .setPosition(startX, startY)
-      .setScale(0.2)
+      .setScale(0.16)
       .setVisible(false);
     if (dialogDrinkEmoji.parentContainer !== dialogPriceContainer) {
       dialogPriceContainer.add(dialogDrinkEmoji);
@@ -1348,7 +1332,7 @@ export function setupGame(){
             targets:dialogPriceContainer,
             x:priceTargetX,
             y:priceTargetY,
-            scale:1,
+            scale:0.8,
             duration:dur(300),
             ease:'Sine.easeOut',
             onComplete:()=>{
@@ -3014,19 +2998,35 @@ function dogsBarkAtFalcon(){
         targets:dog,
         x:falcon.x + dir*20,
         y:falcon.y + 40,
-        angle:dir>0?90:-90,
+        angle:dir>0?360:-360,
         duration:dur(250),
         ease:'Sine.easeIn',
         onComplete:()=>{
           scene.tweens.add({
             targets:dog,
             y:DOG_MIN_Y,
-            duration:dur(300),
+            angle:dir>0?720:-720,
+            duration:dur(400),
             ease:'Sine.easeIn',
             onUpdate:()=>{ const s=scaleForY(dog.y)*0.5; dog.setScale(s*(dog.dir||1),s); },
-            onComplete:()=>{ scene.time.delayedCall(dur(1000),()=>{
-              scene.tweens.add({targets:dog,angle:0,duration:dur(150),onComplete:()=>{ ensureOnGround(dog); dog.attacking=false; }});
-            },[],scene); }
+            onComplete:()=>{
+              scene.tweens.add({
+                targets:dog,
+                y:`-=20`,
+                duration:dur(150),
+                yoyo:true,
+                ease:'Sine.easeOut',
+                onComplete:()=>{
+                  const tl=scene.tweens.createTimeline();
+                  tl.add({targets:dog,angle:-15,duration:dur(80)});
+                  tl.add({targets:dog,angle:15,duration:dur(80)});
+                  tl.add({targets:dog,angle:-10,duration:dur(80)});
+                  tl.add({targets:dog,angle:10,duration:dur(80)});
+                  tl.add({targets:dog,angle:0,duration:dur(80),onComplete:()=>{ ensureOnGround(dog); dog.attacking=false; }});
+                  tl.play();
+                }
+              });
+            }
           });
         }
       });
@@ -3037,20 +3037,34 @@ function dogsBarkAtFalcon(){
         targets: dog,
         x: startX,
         y: startY,
-        angle: dir>0?90:-90,
+        angle: dir>0?360:-360,
         duration: dur(250),
         ease: 'Sine.easeIn',
         onComplete: () => {
           scene.tweens.add({
             targets: dog,
             y: DOG_MIN_Y,
-            duration: dur(300),
+            angle: dir>0?720:-720,
+            duration: dur(400),
             ease: 'Sine.easeIn',
             onUpdate: () => { const s = scaleForY(dog.y)*0.5; dog.setScale(s*(dog.dir||1), s); },
             onComplete: () => {
-              scene.time.delayedCall(dur(1000), () => {
-                scene.tweens.add({targets:dog,angle:0,duration:dur(150),onComplete:()=>{ ensureOnGround(dog); if(done) done(); }});
-              }, [], scene);
+              scene.tweens.add({
+                targets: dog,
+                y: `-=20`,
+                duration: dur(150),
+                yoyo: true,
+                ease: 'Sine.easeOut',
+                onComplete: () => {
+                  const tl = scene.tweens.createTimeline();
+                  tl.add({targets:dog,angle:-15,duration:dur(80)});
+                  tl.add({targets:dog,angle:15,duration:dur(80)});
+                  tl.add({targets:dog,angle:-10,duration:dur(80)});
+                  tl.add({targets:dog,angle:10,duration:dur(80)});
+                  tl.add({targets:dog,angle:0,duration:dur(80),onComplete:()=>{ ensureOnGround(dog); if(done) done(); }});
+                  tl.play();
+                }
+              });
             }
           });
         }

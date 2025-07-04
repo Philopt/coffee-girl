@@ -293,6 +293,8 @@ function showStartScreen(scene){
       g.fillStyle(0xf0f0f0,1);
       g.fillRoundedRect(-slotSize/2,-slotSize/2,slotSize,slotSize,12);
       const slot = scene.add.container(x,y,[g]).setDepth(16);
+      // Create a mask so icons don't extend beyond the gray box
+      slot.iconMask = g.createGeometryMask();
       // Hide until an icon is placed
       slot.setVisible(false);
       phoneContainer.add(slot);
@@ -421,6 +423,9 @@ function showStartScreen(scene){
       children.unshift(glow);
     }
     const container = scene.add.container(slot.x,slot.y,children).setDepth(16);
+    if(slot.iconMask){
+      container.setMask(slot.iconMask);
+    }
     if(GameState.badgeCounts[key] > 1){
       const txt = scene.add.text(0,0,String(GameState.badgeCounts[key]),{font:'16px sans-serif',fill:'#fff'}).setOrigin(0.5);
       container.add(txt);

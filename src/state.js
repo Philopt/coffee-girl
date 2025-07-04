@@ -37,6 +37,8 @@ export const GameState = {
   ,activeBursts: []
   ,victoryOverlay: null
   ,falconDefeated: false
+  ,slotsRevealed: false
+  ,startScreenSeen: false
   ,achievementsRevealed: false
 };
 

@@ -231,7 +231,8 @@ function showStartScreen(scene){
   const homeH = 100;
   const homeG = scene.add.graphics();
   homeG.fillStyle(0xf0f0f0,1);
-  homeG.fillRoundedRect(-phoneW/2+12,phoneH/2-homeH-12,phoneW-24,homeH,20);
+  // Shrink the gray margin around the button
+  homeG.fillRoundedRect(-phoneW/2+6,phoneH/2-homeH-6,phoneW-12,homeH,20);
 
   const btnLabel = scene.add.text(0,0,'Clock In',{
       font:'32px sans-serif',fill:'#fff'})
@@ -241,7 +242,8 @@ function showStartScreen(scene){
   const btnBg = scene.add.graphics();
   btnBg.fillStyle(0x007bff,1);
   btnBg.fillRoundedRect(-bw/2,-bh/2,bw,bh,15);
-  const offsetY = phoneH/2 - homeH/2 - 12;
+  // Adjust for the reduced home area margin
+  const offsetY = phoneH/2 - homeH/2 - 6;
   const containerY = 320;
   phoneContainer = scene.add
     .container(240, containerY, [caseG, blackG, whiteG, homeG])
@@ -287,7 +289,7 @@ function showStartScreen(scene){
   // Align the slots relative to the bottom of the phone so they appear
   // just above the "Clock In" button instead of hugging the top.
   const startY =
-    offsetY - bh / 2 - marginY - (rows - 1) * (slotSize + marginY) - slotSize / 2 + 5;
+    offsetY - bh / 2 - marginY - (rows - 1) * (slotSize + marginY) - slotSize / 2 - 10;
   // Build slots starting from the bottom row so index 0 maps to bottom-left
   for(let r=rows-1;r>=0;r--){
     for(let c=0;c<cols;c++){

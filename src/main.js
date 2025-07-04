@@ -1259,7 +1259,7 @@ export function setupGame(){
     const startX = (typeof girl !== 'undefined' && girl) ? girl.x : dialogBg.x;
     const startY = (typeof girl !== 'undefined' && girl) ? girl.y - 30 : dialogBg.y - 10;
     const priceTargetX = startX;
-    const priceTargetY = startY - ticketH - 40;
+    const priceTargetY = startY - ticketH * 0.5 - 10;
     dialogPriceContainer
       .setPosition(startX, startY)
       .setScale(0.16)
@@ -1328,30 +1328,45 @@ export function setupGame(){
       onComplete:()=>{
         const showPrice=()=>{
           dialogPriceContainer.setVisible(true);
-          this.tweens.add({
-            targets:dialogPriceContainer,
-            x:priceTargetX,
-            y:priceTargetY,
-            scale:0.8,
-            duration:dur(300),
-            ease:'Sine.easeOut',
-            onComplete:()=>{
-              if (typeof fadeInButtons === 'function') {
-                fadeInButtons.call(this, canSell);
+          const frontDepth = dialogPriceContainer.depth;
+          const behindDepth = truckRef && truckRef.depth ? truckRef.depth - 1 : frontDepth - 1;
+          dialogPriceContainer.setDepth(behindDepth);
+          const midY = truckRef ? truckRef.y - (truckRef.displayHeight||0)/2 : priceTargetY + 20;
+          const tl = this.tweens.createTimeline();
+          tl.add({
+            targets: dialogPriceContainer,
+            x: priceTargetX,
+            y: midY,
+            scale: 0.5,
+            duration: dur(200),
+            ease: 'Sine.easeOut'
+          });
+          tl.add({
+            targets: dialogPriceContainer,
+            x: priceTargetX,
+            y: priceTargetY,
+            scale: 0.8,
+            duration: dur(200),
+            ease: 'Sine.easeOut',
+            onStart: ()=> dialogPriceContainer.setDepth(frontDepth)
+          });
+          tl.setCallback('onComplete', () => {
+            if (typeof fadeInButtons === 'function') {
+              fadeInButtons.call(this, canSell);
+            } else {
+              if (canSell) {
+                btnSell.setVisible(true);
+                if (btnSell.zone && btnSell.zone.input) btnSell.zone.input.enabled = true;
               } else {
-                if (canSell) {
-                  btnSell.setVisible(true);
-                  if (btnSell.zone && btnSell.zone.input) btnSell.zone.input.enabled = true;
-                } else {
-                  btnSell.setVisible(false);
-                  if (btnSell.zone && btnSell.zone.input) btnSell.zone.input.enabled = false;
-                }
-                btnGive.setVisible(true);
-                if (btnGive.zone && btnGive.zone.input) btnGive.zone.input.enabled = true;
-                if (btnRef.zone && btnRef.zone.input) btnRef.zone.input.enabled = true;
+                btnSell.setVisible(false);
+                if (btnSell.zone && btnSell.zone.input) btnSell.zone.input.enabled = false;
               }
+              btnGive.setVisible(true);
+              if (btnGive.zone && btnGive.zone.input) btnGive.zone.input.enabled = true;
+              if (btnRef.zone && btnRef.zone.input) btnRef.zone.input.enabled = true;
             }
           });
+          tl.play();
         };
         if(this.time && this.time.delayedCall){
           this.time.delayedCall(dur(250), showPrice, [], this);

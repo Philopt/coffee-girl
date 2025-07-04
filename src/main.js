@@ -4122,7 +4122,7 @@ function dogsBarkAtFalcon(){
       .setAlpha(0);
     this.tweens.add({targets:img,alpha:1,duration:fadeDur});
 
-    const line1 = this.add.text(240,450,'Lady Falcon defeated',
+    const line1 = this.add.text(240,450,'LADY FALCON DEFEATED',
       {font:'28px sans-serif',fill:'#fff'})
       .setOrigin(0.5)
       .setDepth(22)
@@ -4134,13 +4134,27 @@ function dogsBarkAtFalcon(){
     line1.setFill(l1grad);
     this.tweens.add({targets:line1,alpha:1,duration:fadeDur,delay:dur(2400)});
 
-    const line2 = this.add.text(240,490,'victory from love and kindness',
-      {font:'20px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
-      .setOrigin(0.5)
-      .setDepth(22)
-      .setAlpha(0);
-    this.tweens.add({targets:line2,alpha:1,duration:dur(1200),delay:dur(2600)});
-    const btn = this.add.text(240,620,'Play Again?',{
+    const line2a = this.add.text(0,0,'Victory through ',
+      {font:'20px sans-serif',fill:'#fff'});
+    const line2Love = this.add.text(0,0,'Love ',
+      {font:'20px sans-serif',fill:'#ffb6c1'});
+    const line2Kind = this.add.text(0,0,'Kindness',
+      {font:'20px sans-serif',fill:'#add8e6'});
+
+    const line2Width = line2a.width + line2Love.width + line2Kind.width;
+    const line2StartX = 240 - line2Width/2;
+    const line2Y = 490;
+    line2a.setPosition(line2StartX,line2Y).setOrigin(0,0.5).setDepth(22).setAlpha(0);
+    line2Love.setPosition(line2StartX + line2a.width,line2Y).setOrigin(0,0.5).setDepth(22).setAlpha(0);
+    line2Kind.setPosition(line2StartX + line2a.width + line2Love.width,line2Y)
+      .setOrigin(0,0.5).setDepth(22).setAlpha(0);
+
+    const line2Delay = dur(2400) + fadeDur;
+    this.tweens.add({targets:line2a,alpha:1,duration:dur(1200),delay:line2Delay});
+    this.tweens.add({targets:line2Love,alpha:1,duration:dur(1200),delay:line2Delay + dur(1200)});
+    this.tweens.add({targets:line2Kind,alpha:1,duration:dur(1200),delay:line2Delay + dur(2400)});
+
+    const btn = this.add.text(240,550,'Play Again?',{
       font:'20px sans-serif',
       fill:'#000',
       backgroundColor:'#ffffff',
@@ -4178,7 +4192,9 @@ function dogsBarkAtFalcon(){
           onComplete:()=>{
             img.destroy();
             line1.destroy();
-            line2.destroy();
+            line2a.destroy();
+            line2Love.destroy();
+            line2Kind.destroy();
             btn.destroy();
             if(overlay) overlay.destroy();
             GameState.victoryOverlay = null;

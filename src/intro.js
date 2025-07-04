@@ -191,6 +191,14 @@ function playOpening(scene){
 function showStartScreen(scene){
   scene = scene || this;
   if (typeof debugLog === 'function') debugLog('showStartScreen called');
+  // `cupShadow` is destroyed when the phone container is removed but the
+  // variable persists between runs. If we try to re-add the old destroyed
+  // object, Phaser throws a "Cannot read properties of undefined" error when
+  // it attempts to access `sys` on the dead game object. Guard against this by
+  // clearing any lingering reference before creating the new start screen.
+  if (cupShadow && !cupShadow.scene) {
+    cupShadow = null;
+  }
   if(startButton){ startButton.destroy(); startButton = null; }
   if(typeof phoneContainer !== 'undefined' && phoneContainer){
     if(scene.tweens && scene.tweens.killTweensOf){

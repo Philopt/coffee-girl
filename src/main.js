@@ -4140,7 +4140,7 @@ function dogsBarkAtFalcon(){
 
     const line2a = this.add.text(0,0,'Victory through ',
       {font:'20px sans-serif',fill:'#fff'});
-    const line2Love = this.add.text(0,0,'Love ',
+    const line2Love = this.add.text(0,0,'Love and ',
       {font:'20px sans-serif',fill:'#ffb6c1'});
     const line2Kind = this.add.text(0,0,'Kindness',
       {font:'20px sans-serif',fill:'#add8e6'});

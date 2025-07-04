@@ -480,18 +480,39 @@ export function sendDogOffscreen(dog, x, y) {
 
 export function cleanupDogs(scene){
   const gs = scene.gameState || GameState;
-  if(gs.activeCustomer && gs.activeCustomer.dog){
-    const dog = gs.activeCustomer.dog;
-    if(dog.followEvent) dog.followEvent.remove(false);
-    const dir = dog.x < ORDER_X ? -1 : 1;
-    const targetX = dir===1 ? 520 : -40;
-    sendDogOffscreen.call(scene, dog, targetX, dog.y);
-    gs.activeCustomer.dog = null;
+  if(gs.activeCustomer){
+    if(gs.activeCustomer.isDog){
+      const dog = gs.activeCustomer.sprite;
+      if(dog){
+        if(dog.followEvent) dog.followEvent.remove(false);
+        const dir = dog.x < ORDER_X ? -1 : 1;
+        const targetX = dir===1 ? 520 : -40;
+        sendDogOffscreen.call(scene, dog, targetX, dog.y);
+      }
+      gs.activeCustomer = null;
+    } else if(gs.activeCustomer.dog){
+      const dog = gs.activeCustomer.dog;
+      if(dog.followEvent) dog.followEvent.remove(false);
+      const dir = dog.x < ORDER_X ? -1 : 1;
+      const targetX = dir===1 ? 520 : -40;
+      sendDogOffscreen.call(scene, dog, targetX, dog.y);
+      gs.activeCustomer.dog = null;
+    }
   }
   [gs.queue, gs.wanderers].forEach(arr => {
     if(Array.isArray(arr)){
-      arr.forEach(c => {
-        if(c.dog){
+      for(let i=arr.length-1;i>=0;i--){
+        const c = arr[i];
+        if(c.isDog){
+          const dog = c.sprite;
+          if(dog){
+            if(dog.followEvent) dog.followEvent.remove(false);
+            const dir = dog.x < ORDER_X ? -1 : 1;
+            const targetX = dir===1 ? 520 : -40;
+            sendDogOffscreen.call(scene, dog, targetX, dog.y);
+          }
+          arr.splice(i,1);
+        }else if(c.dog){
           const dog = c.dog;
           if(dog.followEvent) dog.followEvent.remove(false);
           const dir = dog.x < ORDER_X ? -1 : 1;
@@ -499,7 +520,7 @@ export function cleanupDogs(scene){
           sendDogOffscreen.call(scene, dog, targetX, dog.y);
           c.dog = null;
         }
-      });
+      }
     }
   });
 

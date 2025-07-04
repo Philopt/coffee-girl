@@ -339,12 +339,15 @@ function showStartScreen(scene){
   }
   if(!allEarned){
     if(!cupShadow){
+      const grayKey = 'coffeecup2_gray';
+      if(!scene.textures.exists(grayKey)) {
+        createGrayscaleTexture(scene, 'coffeecup2', grayKey);
+      }
       cupShadow = scene.add
-        .image(cupSlot.x, cupSlot.y, 'coffeecup2')
+        .image(cupSlot.x, cupSlot.y, grayKey)
         .setDepth(16)
-        .setTint(0xaaaaaa)
-        .setAlpha(showSlots ? 0.4 : 0);
-      const tex = scene.textures.get('coffeecup2');
+        .setAlpha(showSlots ? 0.3 : 0);
+      const tex = scene.textures.get(grayKey);
       if (tex && tex.getSourceImage) {
         const src = tex.getSourceImage();
         const cupScale = (src && src.width && src.height)
@@ -354,7 +357,7 @@ function showStartScreen(scene){
       }
     } else {
       cupShadow.setPosition(cupSlot.x, cupSlot.y);
-      cupShadow.setAlpha(showSlots ? 0.4 : 0);
+      cupShadow.setAlpha(showSlots ? 0.3 : 0);
     }
     phoneContainer.add(cupShadow);
   } else if(cupShadow){

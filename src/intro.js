@@ -275,7 +275,10 @@ function showStartScreen(scene){
   const marginX = (phoneW - 24 - cols*slotSize) / (cols+1);
   const marginY = 40;
   const startX = -phoneW/2 + 12 + marginX + slotSize/2;
-  const startY = -phoneH/2 + 12 + marginY + slotSize/2;
+  // Align the slots relative to the bottom of the phone so they appear
+  // just above the "Clock In" button instead of hugging the top.
+  const startY =
+    offsetY - bh / 2 - marginY - (rows - 1) * (slotSize + marginY) - slotSize / 2;
   for(let r=0;r<rows;r++){
     for(let c=0;c<cols;c++){
       const x = startX + c*(slotSize+marginX);

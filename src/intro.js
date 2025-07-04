@@ -17,6 +17,7 @@ let openingTitle = null;
 let openingNumber = null;
 let openingDog = null;
 let badgeIcons = [];
+let iconSlots = [];
 let miniGameCup = null;
 
 function hideStartMessages(){
@@ -265,7 +266,30 @@ function showStartScreen(scene){
 
   phoneContainer.add(startButton);
 
-  // Mini game cup drops into place above the Clock In button
+  // Create gray icon slots on the phone screen
+  iconSlots.forEach(s=>s.destroy());
+  iconSlots=[];
+  const slotSize = 64;
+  const rows = 2;
+  const cols = 3;
+  const marginX = (phoneW - 24 - cols*slotSize) / (cols+1);
+  const marginY = 40;
+  const startX = -phoneW/2 + 12 + marginX + slotSize/2;
+  const startY = -phoneH/2 + 12 + marginY + slotSize/2;
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const x = startX + c*(slotSize+marginX);
+      const y = startY + r*(slotSize+marginY);
+      const g = scene.add.graphics();
+      g.fillStyle(0xf0f0f0,1);
+      g.fillRoundedRect(-slotSize/2,-slotSize/2,slotSize,slotSize,12);
+      const slot = scene.add.container(x,y,[g]).setDepth(16);
+      phoneContainer.add(slot);
+      iconSlots.push(slot);
+    }
+  }
+
+  // Mini game cup drops into the bottom-left icon slot
   if (miniGameCup) {
     if (scene.tweens && scene.tweens.killTweensOf) {
       scene.tweens.killTweensOf(miniGameCup);
@@ -285,6 +309,9 @@ function showStartScreen(scene){
     const cupTL = scene.tweens.createTimeline();
 
     // Continue the launch by moving left slightly then dropping onto the button
+    const cupSlot = iconSlots[3];
+    const slotX = cupSlot ? cupSlot.x : 0;
+    const slotY = cupSlot ? cupSlot.y : offsetY - bh - 20;
     cupTL.add({
       targets: miniGameCup,
       x: '-=30',
@@ -297,8 +324,8 @@ function showStartScreen(scene){
     });
     cupTL.add({
       targets: miniGameCup,
-      x: 0,
-      y: offsetY - bh - 20,
+      x: slotX,
+      y: slotY,
       angle: -1080,
       duration: 500,
       ease: 'Bounce.easeOut'
@@ -323,18 +350,16 @@ function showStartScreen(scene){
 
   badgeIcons.forEach(i=>i.destroy());
   badgeIcons=[];
-  const iconY = 80; // place badges above the Clock In button
   const badgeScale = 0.3;
-  const badgeSlots = {
-    falcon_end: { x: -60, y: iconY },
-    revolt_end: { x:  60, y: iconY },
-    fired_end: { x:   0, y: iconY }
-  };
-  const iconStartX = -phoneW/2 + 30; // fallback for unknown badges
-  GameState.badges.forEach((key, idx) => {
+  const badgeOrder = { falcon_end:0, revolt_end:1, fired_end:2 };
+  let nextIdx = 4;
+  const slotMap = {};
+  GameState.badges.forEach((key) => {
+    const slotIdx = (key in badgeOrder) ? badgeOrder[key] : nextIdx++;
+    slotMap[key] = slotIdx;
+    const slot = iconSlots[slotIdx % iconSlots.length] || iconSlots[0];
     const grayKey = `${key}_gray`;
     if(!scene.textures.exists(grayKey)) createGrayscaleTexture(scene, key, grayKey);
-    const slot = badgeSlots[key] || { x: iconStartX + idx*36, y: offsetY + bh/2 + 20 };
     const iconImg = scene.add.image(0, 0, grayKey)
       .setScale(badgeScale);
     const container = scene.add.container(slot.x, slot.y, [iconImg])
@@ -353,7 +378,8 @@ function showStartScreen(scene){
     const idx = GameState.badges.indexOf(GameState.lastEndKey);
     if(idx !== -1){
       badgeIcons[idx].setAlpha(0);
-      const slot = badgeSlots[GameState.lastEndKey] || { x: iconStartX + idx*36, y: offsetY + bh/2 + 20 };
+      const slotIdx = slotMap[GameState.lastEndKey];
+      const slot = iconSlots[slotIdx % iconSlots.length] || iconSlots[0];
       const destX = phoneContainer.x + slot.x;
       const destY = phoneContainer.y + slot.y;
       const p = GameState.carryPortrait;

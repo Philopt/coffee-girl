@@ -536,7 +536,7 @@ export function setupGame(){
   let cloudHeartBaseX = 0, cloudDollarBaseX = 0;
   let dialogBg, dialogText, dialogCoins,
       dialogPriceLabel, dialogPriceValue, dialogPriceBox,
-      dialogDrinkEmoji, dialogPriceContainer, dialogPriceTicket, dialogPupCup,
+      dialogDrinkEmoji, dialogPriceContainer, dialogPriceTicket, dialogPriceShadow, dialogPupCup,
       btnSell, btnGive, btnRef;
   let reportLine1, reportLine2, reportLine3, tipText;
   let paidStamp, lossStamp;
@@ -842,6 +842,12 @@ export function setupGame(){
     .setOrigin(0.5)
     .setScale(1.25)
     .setVisible(false);
+  dialogPriceShadow=this.add.image(4,4,'price_ticket')
+    .setOrigin(0.5)
+    .setTint(0x000000)
+    .setAlpha(0.7)
+    .setScale(1.3)
+    .setVisible(false);
   createGrayscaleTexture(this, 'price_ticket', 'price_ticket_gray');
   dialogPupCup=this.add.image(0,0,'pupcup2')
     .setOrigin(0.5)
@@ -932,7 +938,7 @@ export function setupGame(){
       return this;
     };
 
-    dialogPriceContainer=this.add.container(0,0,[dialogPriceTicket, dialogPupCup, dialogPriceBox, dialogDrinkEmoji, dialogPriceLabel, dialogPriceValue])
+    dialogPriceContainer=this.add.container(0,0,[dialogPriceShadow, dialogPriceTicket, dialogPupCup, dialogPriceBox, dialogDrinkEmoji, dialogPriceLabel, dialogPriceValue])
       .setDepth(11)
       .setVisible(false);
 
@@ -1259,10 +1265,11 @@ export function setupGame(){
     const startX = (typeof girl !== 'undefined' && girl) ? girl.x : dialogBg.x;
     const startY = (typeof girl !== 'undefined' && girl) ? girl.y - 30 : dialogBg.y - 10;
     const priceTargetX = startX;
-    const priceTargetY = startY - ticketH * 0.5 - 10;
+    const priceTargetY = startY - ticketH * 0.5 + 10;
+    const peekY = startY - ticketH * 0.5;
     dialogPriceContainer
       .setPosition(startX, startY)
-      .setScale(0.16)
+      .setScale(0.4)
       .setVisible(false);
     if (dialogDrinkEmoji.parentContainer !== dialogPriceContainer) {
       dialogPriceContainer.add(dialogDrinkEmoji);
@@ -1271,6 +1278,7 @@ export function setupGame(){
     dialogPriceContainer.alpha = 1;
     if(c.isDog){
       dialogPriceTicket.setVisible(false);
+      dialogPriceShadow.setVisible(false);
       dialogPupCup.setTexture('pupcup2');
       dialogPupCup.setVisible(true);
       dialogPriceBox.setVisible(false);
@@ -1293,6 +1301,7 @@ export function setupGame(){
     } else {
       dialogPupCup.setVisible(false);
       dialogPriceTicket.setVisible(true);
+      dialogPriceShadow.setVisible(true);
       dialogPriceBox.setVisible(false); // hide outline from old ticket
       dialogPriceBox.width = dialogPriceTicket.displayWidth;
       dialogPriceBox.height = dialogPriceTicket.displayHeight;
@@ -1335,9 +1344,26 @@ export function setupGame(){
           const tl = this.tweens.createTimeline();
           tl.add({
             targets: dialogPriceContainer,
+            y: peekY,
+            scale: 0.4,
+            duration: dur(150),
+            ease: 'Sine.easeOut'
+          });
+          tl.add({
+            targets: dialogPriceContainer,
+            x: startX - 3,
+            y: peekY,
+            scale: 0.4,
+            duration: dur(40),
+            ease: 'Sine.easeInOut',
+            yoyo: true,
+            repeat: 2
+          });
+          tl.add({
+            targets: dialogPriceContainer,
             x: priceTargetX,
             y: midY,
-            scale: 0.5,
+            scale: 0.6,
             duration: dur(200),
             ease: 'Sine.easeOut'
           });

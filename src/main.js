@@ -301,6 +301,16 @@ export function setupGame(){
     if(lossStamp) lossStamp.setVisible(false);
   }
 
+  // Record an achievement immediately when an ending is shown
+  function awardBadge(scene, key){
+    if(!key) return;
+    GameState.lastEndKey = key;
+    if(!GameState.badges.includes(key)) GameState.badges.push(key);
+    GameState.badgeCounts[key] = (GameState.badgeCounts[key] || 0) + 1;
+    const grayKey = `${key}_gray`;
+    createGrayscaleTexture(scene, key, grayKey);
+  }
+
 
   function fadeInButtons(canSell){
     const startY = BUTTON_Y + 50;
@@ -4035,6 +4045,7 @@ function dogsBarkAtFalcon(){
       .setDepth(20)
       .setAlpha(0);
     this.tweens.add({targets:img,alpha:1,duration:dur(1200)});
+    awardBadge(this, img.texture.key);
 
     const line1 = this.add.text(240,450,'YOU ARE THE MUSE',
       {font:'28px sans-serif',fill:'#fff'})
@@ -4062,15 +4073,7 @@ function dogsBarkAtFalcon(){
     this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
     btn.on('pointerdown',()=>{
         btn.disableInteractive();
-        const key = img ? img.texture.key : null;
-        if(key){
-          GameState.lastEndKey = key;
-          if(!GameState.badges.includes(key)) GameState.badges.push(key);
-          GameState.badgeCounts[key] = (GameState.badgeCounts[key] || 0) + 1;
-          const grayKey = `${key}_gray`;
-          createGrayscaleTexture(this,key,grayKey);
-          GameState.carryPortrait = img.setDepth(25);
-        }
+        GameState.carryPortrait = img.setDepth(25);
         btn.setVisible(false);
         createGlowTexture(this,0xffffff,'screen_flash',256);
         const overlayG = this.add.image(btn.x,btn.y,'screen_flash').setDepth(23);
@@ -4126,6 +4129,7 @@ function dogsBarkAtFalcon(){
       .setDepth(20)
       .setAlpha(0);
     this.tweens.add({targets:img,alpha:1,duration:dur(1200),delay:dur(1000)});
+    awardBadge(this, img.texture.key);
 
     const line1 = this.add.text(240,450,'LADY FALCON WINS',
       {font:'28px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
@@ -4153,10 +4157,6 @@ function dogsBarkAtFalcon(){
     this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
     btn.on('pointerdown',()=>{
         btn.disableInteractive();
-        GameState.lastEndKey = 'fired_end';
-        if(!GameState.badges.includes('fired_end')) GameState.badges.push('fired_end');
-        GameState.badgeCounts['fired_end'] = (GameState.badgeCounts['fired_end'] || 0) + 1;
-        createGrayscaleTexture(this,'fired_end','fired_end_gray');
         GameState.carryPortrait = img.setDepth(25);
         btn.setVisible(false);
         createGlowTexture(this,0xffffff,'screen_flash',256);
@@ -4215,6 +4215,7 @@ function dogsBarkAtFalcon(){
       .setDepth(20)
       .setAlpha(0);
     this.tweens.add({targets:img,alpha:1,duration:dur(1200),delay:dur(1000)});
+    awardBadge(this, img.texture.key);
 
     const line1 = this.add.text(240,450,'YOU LOST ALL THE MONEY',
       {font:'28px sans-serif',fill:'#fff'})
@@ -4246,15 +4247,7 @@ function dogsBarkAtFalcon(){
     this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
     btn.on('pointerdown',()=>{
         btn.disableInteractive();
-        const key = img ? img.texture.key : null;
-        if(key){
-          GameState.lastEndKey = key;
-          if(!GameState.badges.includes(key)) GameState.badges.push(key);
-          GameState.badgeCounts[key] = (GameState.badgeCounts[key] || 0) + 1;
-          const grayKey = `${key}_gray`;
-          createGrayscaleTexture(this,key,grayKey);
-          GameState.carryPortrait = img.setDepth(25);
-        }
+        GameState.carryPortrait = img.setDepth(25);
         btn.setVisible(false);
         createGlowTexture(this,0xffffff,'screen_flash',256);
         const overlayG = this.add.image(btn.x,btn.y,'screen_flash').setDepth(23);
@@ -4316,6 +4309,7 @@ function dogsBarkAtFalcon(){
       .setDepth(21)
       .setAlpha(0);
     this.tweens.add({targets:img,alpha:1,duration:fadeDur});
+    awardBadge(this, img.texture.key);
 
     const line1 = this.add.text(240,450,'LADY FALCON DEFEATED',
       {font:'28px sans-serif',fill:'#fff'})
@@ -4362,15 +4356,7 @@ function dogsBarkAtFalcon(){
 
     btn.on('pointerdown',()=>{
         btn.disableInteractive();
-        const key = img ? img.texture.key : null;
-        if(key){
-          GameState.lastEndKey = key;
-          if(!GameState.badges.includes(key)) GameState.badges.push(key);
-          GameState.badgeCounts[key] = (GameState.badgeCounts[key] || 0) + 1;
-          const grayKey = `${key}_gray`;
-          createGrayscaleTexture(this,key,grayKey);
-          GameState.carryPortrait = img.setDepth(25);
-        }
+        GameState.carryPortrait = img.setDepth(25);
         btn.setVisible(false);
         if(overlay){ this.tweens.add({targets:overlay,alpha:0,duration:dur(600)}); }
         createGlowTexture(this,0xffffff,'screen_flash',256);
@@ -4432,6 +4418,7 @@ function dogsBarkAtFalcon(){
       .setDepth(20)
       .setAlpha(0);
     this.tweens.add({targets:img,alpha:1,duration:dur(1200),delay:dur(1000)});
+    awardBadge(this, img.texture.key);
 
     const line1 = this.add.text(240,450,'THE CUSTOMERS REVOLT!',
       {font:'28px sans-serif',fill:'#fff'})
@@ -4464,15 +4451,7 @@ function dogsBarkAtFalcon(){
 
     btn.on('pointerdown',()=>{
         btn.disableInteractive();
-        const key = img ? img.texture.key : null;
-        if(key){
-          GameState.lastEndKey = key;
-          if(!GameState.badges.includes(key)) GameState.badges.push(key);
-          GameState.badgeCounts[key] = (GameState.badgeCounts[key] || 0) + 1;
-          const grayKey = `${key}_gray`;
-          createGrayscaleTexture(this,key,grayKey);
-          GameState.carryPortrait = img.setDepth(25);
-        }
+        GameState.carryPortrait = img.setDepth(25);
         btn.setVisible(false);
         createGlowTexture(this,0xffffff,'screen_flash',256);
         const overlayG = this.add.image(btn.x,btn.y,'screen_flash').setDepth(23);

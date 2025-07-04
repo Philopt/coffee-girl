@@ -266,27 +266,30 @@ function showStartScreen(scene){
 
   phoneContainer.add(startButton);
 
-  // Create gray icon slots on the phone screen
-  iconSlots.forEach(s=>s.destroy());
-  iconSlots=[];
+  // Lazily create gray icon slots on the phone screen as needed
+  iconSlots.forEach(s => s.destroy());
+  iconSlots = [];
   const slotSize = 64;
   const rows = 2;
   const cols = 3;
-  const marginX = (phoneW - 24 - cols*slotSize) / (cols+1);
+  const marginX = (phoneW - 24 - cols * slotSize) / (cols + 1);
   const marginY = 40;
   const startX = -phoneW/2 + 12 + marginX + slotSize/2;
   const startY = -phoneH/2 + 12 + marginY + slotSize/2;
-  for(let r=0;r<rows;r++){
-    for(let c=0;c<cols;c++){
-      const x = startX + c*(slotSize+marginX);
-      const y = startY + r*(slotSize+marginY);
-      const g = scene.add.graphics();
-      g.fillStyle(0xf0f0f0,1);
-      g.fillRoundedRect(-slotSize/2,-slotSize/2,slotSize,slotSize,12);
-      const slot = scene.add.container(x,y,[g]).setDepth(16);
-      phoneContainer.add(slot);
-      iconSlots.push(slot);
-    }
+
+  function getSlot(slotIdx){
+    if(iconSlots[slotIdx]) return iconSlots[slotIdx];
+    const col = slotIdx % cols;
+    const row = rows - 1 - Math.floor(slotIdx / cols); // fill bottom row first
+    const x = startX + col*(slotSize+marginX);
+    const y = startY + row*(slotSize+marginY);
+    const g = scene.add.graphics();
+    g.fillStyle(0xf0f0f0,1);
+    g.fillRoundedRect(-slotSize/2,-slotSize/2,slotSize,slotSize,12);
+    const slot = scene.add.container(x,y,[g]).setDepth(16);
+    phoneContainer.add(slot);
+    iconSlots[slotIdx] = slot;
+    return slot;
   }
 
   // Mini game cup drops into the bottom-left icon slot
@@ -309,9 +312,9 @@ function showStartScreen(scene){
     const cupTL = scene.tweens.createTimeline();
 
     // Continue the launch by moving left slightly then dropping onto the button
-    const cupSlot = iconSlots[3];
-    const slotX = cupSlot ? cupSlot.x : 0;
-    const slotY = cupSlot ? cupSlot.y : offsetY - bh - 20;
+    const cupSlot = getSlot(0);
+    const slotX = cupSlot.x;
+    const slotY = cupSlot.y;
     cupTL.add({
       targets: miniGameCup,
       x: '-=30',
@@ -351,13 +354,12 @@ function showStartScreen(scene){
   badgeIcons.forEach(i=>i.destroy());
   badgeIcons=[];
   const badgeScale = 0.3;
-  const badgeOrder = { falcon_end:0, revolt_end:1, fired_end:2 };
-  let nextIdx = 4;
   const slotMap = {};
+  let nextIdx = 1;
   GameState.badges.forEach((key) => {
-    const slotIdx = (key in badgeOrder) ? badgeOrder[key] : nextIdx++;
+    const slotIdx = nextIdx++;
     slotMap[key] = slotIdx;
-    const slot = iconSlots[slotIdx % iconSlots.length] || iconSlots[0];
+    const slot = getSlot(slotIdx);
     const grayKey = `${key}_gray`;
     if(!scene.textures.exists(grayKey)) createGrayscaleTexture(scene, key, grayKey);
     const iconImg = scene.add.image(0, 0, grayKey)
@@ -379,7 +381,7 @@ function showStartScreen(scene){
     if(idx !== -1){
       badgeIcons[idx].setAlpha(0);
       const slotIdx = slotMap[GameState.lastEndKey];
-      const slot = iconSlots[slotIdx % iconSlots.length] || iconSlots[0];
+      const slot = getSlot(slotIdx);
       const destX = phoneContainer.x + slot.x;
       const destY = phoneContainer.y + slot.y;
       const p = GameState.carryPortrait;

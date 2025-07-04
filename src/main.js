@@ -4177,7 +4177,7 @@ function dogsBarkAtFalcon(){
     this.tweens.add({targets:[titleGame,titleOver],alpha:1,duration:dur(1200)});
 
     const img = this.add.image(240,250,'fired_end')
-      .setScale(1.2)
+      .setScale(2.4)
       .setDepth(20)
       .setAlpha(0);
     this.tweens.add({targets:img,alpha:1,duration:dur(1200),delay:dur(1000)});

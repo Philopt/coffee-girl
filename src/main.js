@@ -3933,19 +3933,19 @@ function dogsBarkAtFalcon(){
     endOverlay = this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
 
     const img = this.add.image(240,250,'muse_victory')
-      .setScale(1.2)
+      .setScale(2.4)
       .setDepth(20)
       .setAlpha(0);
     this.tweens.add({targets:img,alpha:1,duration:dur(1200)});
 
-    const line1 = this.add.text(240,450,'LOVE WINS!',
+    const line1 = this.add.text(240,450,'YOU ARE THE MUSE',
       {font:'28px sans-serif',fill:'#fff'})
       .setOrigin(0.5)
       .setDepth(21)
       .setAlpha(0);
     this.tweens.add({targets:line1,alpha:1,duration:dur(1200),delay:dur(1700)});
 
-    const line2 = this.add.text(240,490,'You reached 100 Love',
+    const line2 = this.add.text(240,490,'You are an inspiration!',
       {font:'20px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
       .setOrigin(0.5)
       .setDepth(21)

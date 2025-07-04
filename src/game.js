@@ -2,7 +2,6 @@ import { GameState } from './state.js';
 import * as CustomerQueue from './entities/customerQueue.js';
 import * as Dog from './entities/dog.js';
 import { setupGame, showStartScreen, handleAction, spawnCustomer, scheduleNextSpawn, showDialog, animateLoveChange, blinkButton } from './main.js';
-import { addFullscreenButton } from './ui/fullscreen.js';
 
 // Initialize the Phaser game scene using main.js logic
 export function startGame() {
@@ -11,7 +10,6 @@ export function startGame() {
   void CustomerQueue;
   void Dog;
   setupGame();
-  addFullscreenButton();
 }
 
 // Start the game immediately when loaded in a browser

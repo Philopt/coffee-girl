@@ -314,7 +314,7 @@ function showStartScreen(scene){
   iconSlots.forEach(s => s.destroy());
   iconSlots = [];
   // Slightly smaller icons
-  const slotSize = 56;
+  const slotSize = 45; // 20% smaller achievement slots
   const rows = 2;
   const cols = 3;
   const marginX = (phoneW - 24 - cols * slotSize) / (cols + 1);
@@ -498,8 +498,16 @@ function showStartScreen(scene){
     const iconImg = scene.add.image(0,0,texKey).setScale(iconScale);
     const children=[iconImg];
     if(earned && GameState.lastEndKey === key){
-      const glowKey = `gold_glow_${slotSize}`;
-      if(!scene.textures.exists(glowKey)) createGlowTexture(scene,0xffd700,glowKey,slotSize);
+      const glowColors = {
+        falcon_victory: 0xffd700,
+        muse_victory: 0xff3300,
+        fired_end: 0x00a000,
+        revolt_end: 0xff0000,
+        falcon_end: 0x8b4513
+      };
+      const color = glowColors[key] || 0xffd700;
+      const glowKey = `glow_${color.toString(16)}_${slotSize}`;
+      if(!scene.textures.exists(glowKey)) createGlowTexture(scene,color,glowKey,slotSize);
       const glow = scene.add.image(0,0,glowKey).setScale(1).setDepth(-1);
       children.unshift(glow);
     }

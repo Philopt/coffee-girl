@@ -305,8 +305,29 @@ function showStartScreen(scene){
 
   }
 
-  // Mini game cup drops into the bottom-left icon slot
-  if (miniGameCup) {
+  // Mini game cup appears in the bottom-left icon slot on every start screen
+  const cupSlot = getSlot(0);
+  if (!miniGameCup) {
+    // Spawn a fresh cup when restarting the game
+    miniGameCup = scene.add
+      .image(cupSlot.x, cupSlot.y, 'coffeecup2')
+      .setDepth(17)
+      .setAlpha(1);
+    const tex = scene.textures.get('coffeecup2');
+    if (tex && tex.getSourceImage) {
+      const src = tex.getSourceImage();
+      const cupScale = (src && src.width && src.height)
+        ? slotSize / Math.max(src.width, src.height)
+        : 1;
+      miniGameCup.setScale(cupScale);
+    }
+    miniGameCup.setInteractive({ useHandCursor: true });
+    miniGameCup.on('pointerdown', () => {
+      if (window.showMiniGame) window.showMiniGame();
+    });
+    cupSlot.setVisible(true);
+    phoneContainer.add(miniGameCup);
+  } else {
     if (scene.tweens && scene.tweens.killTweensOf) {
       scene.tweens.killTweensOf(miniGameCup);
     }
@@ -325,7 +346,6 @@ function showStartScreen(scene){
     const cupTL = scene.tweens.createTimeline();
 
     // Continue the launch by moving left slightly then dropping onto the button
-    const cupSlot = getSlot(0);
     const slotX = cupSlot.x;
     const slotY = cupSlot.y;
     // Reveal the slot as the cup approaches
@@ -368,8 +388,17 @@ function showStartScreen(scene){
 
   badgeIcons.forEach(i=>i.destroy());
   badgeIcons=[];
-  const badgeScale = 0.3;
+  const computeScale = key => {
+    if (scene.textures.exists(key)) {
+      const img = scene.textures.get(key).getSourceImage();
+      if (img && img.width && img.height) {
+        return slotSize / Math.max(img.width, img.height);
+      }
+    }
+    return 1;
+  };
   const slotMap = {};
+  const scaleMap = {};
   let nextIdx = 1;
   GameState.badges.forEach((key) => {
     const slotIdx = nextIdx++;
@@ -378,8 +407,10 @@ function showStartScreen(scene){
     slot.setVisible(true);
     const grayKey = `${key}_gray`;
     if(!scene.textures.exists(grayKey)) createGrayscaleTexture(scene, key, grayKey);
+    const iconScale = computeScale(grayKey);
+    scaleMap[key] = iconScale;
     const iconImg = scene.add.image(0, 0, grayKey)
-      .setScale(badgeScale);
+      .setScale(iconScale);
     const container = scene.add.container(slot.x, slot.y, [iconImg])
       .setDepth(16);
     if(GameState.badgeCounts[key] > 1){
@@ -407,7 +438,7 @@ function showStartScreen(scene){
         targets:p,
         x:destX,
         y:destY,
-        scale:badgeScale,
+        scale:scaleMap[GameState.lastEndKey] || 1,
         alpha:0,
         duration:600,
         ease:'Sine.easeIn',

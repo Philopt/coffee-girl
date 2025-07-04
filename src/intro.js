@@ -590,7 +590,7 @@ function showStartScreen(scene){
 
     let msgOptions = defaultMsgs;
     if(GameState.lastEndKey === 'falcon_end') msgOptions = falconMsgs;
-    else if(GameState.lastEndKey === 'falcon_victory') msgOptions = victoryMsgs;
+    else if(GameState.lastEndKey === 'falcon_victory' || GameState.lastEndKey === 'muse_victory') msgOptions = victoryMsgs;
     else if(GameState.lastEndKey === 'revolt_end') msgOptions = revoltMsgs;
     else if(GameState.lastEndKey === 'fired_end') msgOptions = firedMsgs;
 

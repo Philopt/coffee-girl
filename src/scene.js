@@ -8,7 +8,9 @@ export const baseConfig = {
   canvas,
   backgroundColor: '#f2e5d7',
   scale: {
-    mode: Phaser.Scale.FIT,
+    // Fill the screen vertically on mobile and crop the sides
+    // instead of adding letterbox bars.
+    mode: Phaser.Scale.ENVELOP,
     autoCenter: Phaser.Scale.CENTER_BOTH,
     width: 480,
     height: 640

@@ -1,7 +1,7 @@
 import { START_PHONE_W, START_PHONE_H } from './ui.js';
 import { lureNextWanderer, scheduleNextSpawn, queueLimit } from './entities/customerQueue.js';
 import { resumeWanderer } from './entities/wanderers.js';
-import { GameState } from './state.js';
+import { GameState, resetAchievements } from './state.js';
 import { debugLog, DEBUG } from './debug.js';
 import { dur } from './ui.js';
 import { spawnSparrow, scatterSparrows } from './sparrow.js';
@@ -20,6 +20,8 @@ let badgeIcons = [];
 let iconSlots = [];
 let miniGameCup = null;
 let cupShadow = null;
+let classicButton = null;
+let resetButton = null;
 
 // Achievement keys used throughout the intro and main game
 const ALL_BADGES = [
@@ -41,6 +43,15 @@ function hideStartMessages(){
   startMsgTimers=[];
   startMsgBubbles.forEach(b=>b.destroy());
   startMsgBubbles=[];
+}
+
+function hideStartScreen(){
+  hideStartMessages();
+  badgeIcons.forEach(b => b.setVisible(false));
+  if(miniGameCup) miniGameCup.setVisible(false);
+  if(cupShadow) cupShadow.setVisible(false);
+  if(classicButton) classicButton.setVisible(false);
+  if(resetButton) resetButton.setVisible(false);
 }
 
 function playOpening(scene){
@@ -200,6 +211,8 @@ function showStartScreen(scene){
     cupShadow = null;
   }
   if(startButton){ startButton.destroy(); startButton = null; }
+  if(classicButton){ classicButton.destroy(); classicButton = null; }
+  if(resetButton){ resetButton.destroy(); resetButton = null; }
   if(typeof phoneContainer !== 'undefined' && phoneContainer){
     if(scene.tweens && scene.tweens.killTweensOf){
       scene.tweens.killTweensOf(phoneContainer);
@@ -312,8 +325,10 @@ function showStartScreen(scene){
 
   }
 
-  // Mini game cup appears in the top-left slot when all achievements are earned
-  const cupSlot = getSlot(3);
+  // Mini game cup appears in its own row above the achievements when all
+  // achievements are earned. Position it in the center of that row.
+  const cupRowY = startY - (slotSize + marginY);
+  const cupSlot = { x: startX + (slotSize + marginX), y: cupRowY };
   const allEarned = ALL_BADGES.every(k => GameState.badges.includes(k));
   if (!miniGameCup) {
     miniGameCup = scene.add
@@ -329,10 +344,9 @@ function showStartScreen(scene){
         : 1;
       miniGameCup.setScale(cupScale);
     }
-    miniGameCup.setInteractive({ useHandCursor: true });
-    miniGameCup.on('pointerdown', () => {
-      if (window.showMiniGame) window.showMiniGame();
-    });
+    // The cup no longer launches the mini game directly. A separate button does
+    // that, so disable interaction on the cup itself.
+    miniGameCup.disableInteractive();
     phoneContainer.add(miniGameCup);
   } else {
     miniGameCup.setPosition(cupSlot.x, cupSlot.y);
@@ -372,6 +386,26 @@ function showStartScreen(scene){
     const glow = scene.add.image(cupSlot.x, cupSlot.y, glowKey).setDepth(16).setAlpha(0);
     phoneContainer.add(glow);
     scene.tweens.add({ targets: [miniGameCup, glow], alpha: 1, duration: 600, ease: 'Sine.easeIn' });
+
+    const btnW = 70;
+    const btnH = 40;
+    const makeButton = (x, label, callback, color=0x007bff) => {
+      const bg = scene.add.graphics();
+      bg.fillStyle(color,1);
+      bg.fillRoundedRect(-btnW/2,-btnH/2,btnW,btnH,10);
+      const txt = scene.add.text(0,0,label,{font:'20px sans-serif',fill:'#fff'}).setOrigin(0.5);
+      const c = scene.add.container(x,cupSlot.y,[bg,txt]).setSize(btnW,btnH).setDepth(17);
+      c.setInteractive({ useHandCursor: true });
+      c.on('pointerdown',callback);
+      phoneContainer.add(c);
+      return c;
+    };
+    classicButton = makeButton(cupSlot.x - (slotSize + marginX), 'Classic', () => {
+      if(window.showMiniGame) window.showMiniGame();
+    });
+    resetButton = makeButton(cupSlot.x + (slotSize + marginX), 'Reset', () => {
+      if(typeof showResetConfirm === 'function') showResetConfirm();
+    }, 0x555555);
   } else {
     miniGameCup.setAlpha(0);
   }
@@ -472,7 +506,7 @@ function showStartScreen(scene){
     GameState.slotsRevealed = true;
   }
 
-  if(GameState.carryPortrait && GameState.lastEndKey){
+  if(revealNew && GameState.lastEndKey && openingNumber){
     const idx = ALL_BADGES.indexOf(GameState.lastEndKey);
     if(idx !== -1){
       badgeIcons[idx].setAlpha(0);
@@ -480,31 +514,26 @@ function showStartScreen(scene){
       const slot = getSlot(slotIdx);
       const destX = phoneContainer.x + slot.x;
       const destY = phoneContainer.y + slot.y;
-      const p = GameState.carryPortrait;
-      const icon = badgeIcons[idx];
-      scene.children.bringToTop(p);
+      const scale = scaleMap[GameState.lastEndKey] || 1;
+      const startX = phoneContainer.x + openingNumber.x * (phoneContainer.scaleX || phoneContainer.scale || 1);
+      const startY = phoneContainer.y + openingNumber.y * (phoneContainer.scaleY || phoneContainer.scale || 1);
+      const icon = scene.add.image(startX,startY,GameState.lastEndKey).setDepth(17).setScale(scale);
+      scene.children.bringToTop(icon);
       scene.tweens.add({
-        targets:p,
+        targets:icon,
         x:destX,
         y:destY,
-        scale:scaleMap[GameState.lastEndKey] || 1,
         alpha:0,
         duration:600,
         ease:'Sine.easeIn',
-        onComplete:()=>{
-          p.destroy();
-          GameState.carryPortrait=null;
-        }
+        onComplete:()=>{ icon.destroy(); }
       });
       scene.tweens.add({
-        targets:icon,
+        targets:badgeIcons[idx],
         alpha:1,
         duration:600,
         ease:'Sine.easeIn'
       });
-    } else {
-      GameState.carryPortrait.destroy();
-      GameState.carryPortrait=null;
     }
   }
 
@@ -684,6 +713,23 @@ function showStartScreen(scene){
     return createBubble();
   };
 
+  function showResetConfirm(){
+    const bubble = addStartMessage('Remove Stats and Achievements?', 0xff5555);
+    if(!bubble) return;
+    const btn = scene.add.text(0,0,'Reincarnate',{
+      font:'20px sans-serif',fill:'#000',backgroundColor:'#fff',padding:{x:10,y:5}
+    }).setOrigin(0.5);
+    btn.setShadow(0,0,'#000',8,true,true);
+    const c = scene.add.container(bubble.x + bubble.bw/2 + 50, bubble.y, [btn]).setDepth(17);
+    c.setSize(btn.width + 10, btn.height + 10);
+    c.setInteractive({ useHandCursor:true });
+    c.on('pointerdown',()=>{
+      if(typeof resetAchievements==='function') resetAchievements();
+      showStartScreen.call(scene);
+    });
+    phoneContainer.add(c);
+  }
+
   if(scene.time && scene.time.delayedCall){
     const defaultMsgs=[
       ['u coming in? 🤔', 'where u at??', 'mornin ☀️'],
@@ -758,6 +804,8 @@ function showStartScreen(scene){
         phoneContainer.destroy();
         phoneContainer = null;
       }
+      if(classicButton){ classicButton.destroy(); classicButton=null; }
+      if(resetButton){ resetButton.destroy(); resetButton=null; }
       miniGameCup = null;
       GameState.phoneContainer = null;
       playIntro.call(scene);
@@ -941,8 +989,9 @@ function playIntro(scene){
   intro.play();
 }
 
-export { playOpening, showStartScreen, playIntro, hideStartMessages };
+export { playOpening, showStartScreen, playIntro, hideStartMessages, hideStartScreen };
 
 if (typeof window !== 'undefined') {
   window.hideStartMessages = hideStartMessages;
+  window.hideStartScreen = hideStartScreen;
 }

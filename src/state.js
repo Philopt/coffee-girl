@@ -80,3 +80,15 @@ export function saveAchievements() {
     // ignore quota errors
   }
 }
+
+export function resetAchievements() {
+  GameState.badges = [];
+  GameState.badgeCounts = {};
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      window.localStorage.removeItem('coffeeGirlAchievements');
+    } catch (err) {
+      // ignore quota errors
+    }
+  }
+}

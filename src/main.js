@@ -560,6 +560,7 @@ export function setupGame(){
   let dialogBg, dialogText, dialogCoins,
       dialogPriceLabel, dialogPriceValue, dialogPriceBox,
       dialogDrinkEmoji, dialogPriceContainer, dialogPriceTicket, dialogPriceShadow, dialogPupCup,
+      ticketShadowMask,
       btnSell, btnGive, btnRef;
   let reportLine1, reportLine2, reportLine3, tipText;
   let paidStamp, lossStamp;
@@ -877,8 +878,16 @@ export function setupGame(){
     .setOrigin(0.5)
     .setTint(0x000000)
     .setAlpha(0.7)
-    .setScale(1.3,1.4)
+    // slightly larger shadow for more depth
+    .setScale(1.3 * 1.10, 1.4 * 1.20)
     .setVisible(false);
+  if(truck){
+    // mask the shadow so it only darkens the truck
+    ticketShadowMask=this.add.image(truck.x, truck.y, 'truck')
+      .setVisible(false)
+      .setScale(truck.scaleX * 1.10, truck.scaleY * 1.20);
+    dialogPriceShadow.setMask(ticketShadowMask.createBitmapMask());
+  }
   createGrayscaleTexture(this, 'price_ticket', 'price_ticket_gray');
   dialogPupCup=this.add.image(0,0,'pupcup2')
     .setOrigin(0.5)
@@ -1300,7 +1309,8 @@ export function setupGame(){
     const peekY = startY - ticketH * 0.5 + 12;
     dialogPriceContainer
       .setPosition(startX, startY)
-      .setScale(0.4)
+      // start smaller so the ticket is hidden behind the truck
+      .setScale(0.2)
       .setVisible(false);
     if (dialogDrinkEmoji.parentContainer !== dialogPriceContainer) {
       dialogPriceContainer.add(dialogDrinkEmoji);
@@ -1378,26 +1388,16 @@ export function setupGame(){
           tl.add({
             targets: dialogPriceContainer,
             y: peekY,
-            scale: 0.4,
-            duration: dur(150),
+            scale: 0.3,
+            duration: dur(100),
             ease: 'Sine.easeOut'
-          });
-          tl.add({
-            targets: dialogPriceContainer,
-            x: startX - 2,
-            y: peekY,
-            scale: 0.4,
-            duration: dur(20),
-            ease: 'Sine.easeInOut',
-            yoyo: true,
-            repeat: 1
           });
           tl.add({
             targets: dialogPriceContainer,
             x: priceTargetX,
             y: midY,
-            scale: 0.6,
-            duration: dur(200),
+            scale: 0.5,
+            duration: dur(250),
             ease: 'Sine.easeOut'
           });
           tl.add({
@@ -1405,7 +1405,7 @@ export function setupGame(){
             x: priceTargetX,
             y: priceTargetY,
             scale: 0.8,
-            duration: dur(200),
+            duration: dur(250),
             ease: 'Sine.easeOut',
             onStart: ()=> dialogPriceContainer.setDepth(frontDepth)
           });

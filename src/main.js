@@ -1101,6 +1101,9 @@ export function setupGame(){
         dialogPriceTicket.setTexture('price_ticket');
       }
     }
+    if(dialogDrinkEmoji && dialogDrinkEmoji.setAlpha){
+      dialogDrinkEmoji.setAlpha(1);
+    }
   }
 
   function showDialog(){
@@ -1130,6 +1133,10 @@ export function setupGame(){
         console.warn(`showDialog skipped: missing ${missingElems.join(', ')}`);
       }
       return;
+    }
+    // Reset ticket visuals in case previous animations modified them
+    if (typeof resetPriceBox === 'function') {
+      resetPriceBox.call(this);
     }
     // reset the dialog position in case previous animations moved it
     dialogBg.y = typeof DIALOG_Y === 'number' ? DIALOG_Y : 430;

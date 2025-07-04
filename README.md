@@ -22,10 +22,10 @@ an error if your Node version doesn't match `22.x`.
 
   Click **Clock In** when it appears to begin the game.
 
-  Achievements now appear as small icons on the phone screen. The screen
-  shows six soft gray slots arranged in two rows of three. The mini game
-  coffee cup lands in the bottom-left slot and each ending you reach fills
-  a slot with its portrait, including a count if you repeat that ending.
+  Achievements now appear as small icons on the phone screen. The mini game
+  coffee cup lands in the bottom-left slot and new slots fade in as you earn
+  endings, filling from the bottom row to the top. Each portrait shows a
+  count if you repeat that ending.
 
   The game now loads `src/game.js` as an ES module using
   `<script type="module" src="src/game.js"></script>` in `index.html`. If the page

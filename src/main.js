@@ -2218,8 +2218,13 @@ export function setupGame(){
               done();
             });
           }});
-        tl.add({targets:ticket,x:destX,y:destY,scale:0,duration:dur(400),
-          onStart:()=>{
+        tl.add({
+          targets: ticket,
+          y: '-=60',
+          angle: '-=10',
+          duration: dur(80),
+          ease: 'Cubic.easeOut',
+          onStart: () => {
             if(!dialogPriceValue.parentContainer){
               ticket.add(dialogPriceValue);
               dialogPriceValue.setPosition(-5, priceValueYOffset + 5);
@@ -2232,7 +2237,18 @@ export function setupGame(){
             if(dialogDrinkEmoji){
               dialogDrinkEmoji.clearTint();
             }
-          }});
+          }
+        });
+        tl.add({
+          targets: ticket,
+          props: {
+            x: { value: destX, ease: 'Sine.easeIn' },
+            y: { value: destY, ease: 'Quad.easeIn' }
+          },
+          angle: '-=10',
+          scale: 0,
+          duration: dur(400)
+        });
         tl.play();
       },[],this);
         } else if(type==='give'){
@@ -2285,6 +2301,16 @@ export function setupGame(){
           .setAngle(Phaser.Math.Between(-10,10))
           .setVisible(true);
         skewFn2(lossStamp);
+        this.time.delayedCall(dur(500), () => {
+          const flick = this.tweens.createTimeline({ targets: lossStamp });
+          flick.add({ alpha: 0.5, duration: dur(60), yoyo: true, repeat: 2 });
+          flick.add({ alpha: 0, duration: dur(300) });
+          flick.setCallback('onComplete', () => {
+            lossStamp.setVisible(false);
+            lossStamp.setAlpha(1);
+          });
+          flick.play();
+        }, [], this);
         // Ticket turns grayscale while the price flashes red
         if(dialogPriceTicket){
           if(dialogPriceTicket.setTexture && this.textures.exists('price_ticket_gray')){
@@ -2336,7 +2362,6 @@ export function setupGame(){
           t.setDepth(lossStamp.depth + 1);
         }, [], this);
         this.time.delayedCall(dur(1000),()=>{
-          lossStamp.setVisible(false);
           dialogBg.setVisible(false);
           dialogText.setVisible(false);
           if(this.tweens){
@@ -2355,21 +2380,35 @@ export function setupGame(){
             flashBorder(dialogPriceBox,this,0xff0000);
             flashFill(dialogPriceBox,this,0xff0000);
           }
-          tl.add({targets:ticket,x:destX,y:destY,scale:0,duration:dur(400),
-            onStart:()=>{
+          tl.add({
+            targets: ticket,
+            x: '-=60',
+            angle: 180,
+            duration: dur(80),
+            ease: 'Cubic.easeOut',
+            onStart: () => {
               if(!dialogPriceValue.parentContainer){
                 ticket.add(dialogPriceValue);
-                  dialogPriceValue.setPosition(-5, priceValueYOffset + 5);
+                dialogPriceValue.setPosition(-5, priceValueYOffset + 5);
               }
               if(this.tweens && typeof dialogPriceBox !== 'undefined' && dialogPriceBox){
                 this.tweens.add({targets:dialogPriceBox,fillAlpha:0,duration:dur(400)});
               }
-
               if(dialogDrinkEmoji){
                 dialogDrinkEmoji.clearTint();
               }
-
-            }});
+            }
+          });
+          tl.add({
+            targets: ticket,
+            props: {
+              x: { value: destX, ease: 'Sine.easeIn' },
+              y: { value: destY, ease: 'Quad.easeIn' }
+            },
+            angle: 180,
+            scale: 0,
+            duration: dur(400)
+          });
           tl.play();
         },[],this);
       }

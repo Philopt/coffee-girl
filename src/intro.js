@@ -19,6 +19,7 @@ let openingDog = null;
 let badgeIcons = [];
 let iconSlots = [];
 let miniGameCup = null;
+let cupShadow = null;
 
 // Achievement keys used throughout the intro and main game
 const ALL_BADGES = [
@@ -248,6 +249,9 @@ function showStartScreen(scene){
   }
   GameState.phoneContainer = phoneContainer;
 
+  const showSlots = GameState.startScreenSeen;
+  const fadeSlots = showSlots && !GameState.slotsRevealed;
+
   // Removed animated bird sprites so the start button remains clickable
 
   // Using setInteractive on the container caused misaligned hit areas on some
@@ -323,6 +327,30 @@ function showStartScreen(scene){
     miniGameCup.setPosition(cupSlot.x, cupSlot.y);
     phoneContainer.add(miniGameCup);
   }
+  if(!allEarned){
+    if(!cupShadow){
+      cupShadow = scene.add
+        .image(cupSlot.x, cupSlot.y, 'coffeecup2')
+        .setDepth(16)
+        .setTint(0xaaaaaa)
+        .setAlpha(showSlots ? 0.4 : 0);
+      const tex = scene.textures.get('coffeecup2');
+      if (tex && tex.getSourceImage) {
+        const src = tex.getSourceImage();
+        const cupScale = (src && src.width && src.height)
+          ? slotSize / Math.max(src.width, src.height)
+          : 1;
+        cupShadow.setScale(cupScale);
+      }
+    } else {
+      cupShadow.setPosition(cupSlot.x, cupSlot.y);
+      cupShadow.setAlpha(showSlots ? 0.4 : 0);
+    }
+    phoneContainer.add(cupShadow);
+  } else if(cupShadow){
+    cupShadow.destroy();
+    cupShadow = null;
+  }
   cupSlot.setVisible(allEarned);
   if (allEarned) {
     const glowKey = `gold_glow_${slotSize}`;
@@ -359,7 +387,15 @@ function showStartScreen(scene){
     const earned = GameState.badges.includes(key);
     const slotIdx = slotMap[key];
     const slot = getSlot(slotIdx);
-    slot.setVisible(true);
+    slot.setVisible(showSlots || earned);
+    if(showSlots && fadeSlots && !earned){
+      slot.setAlpha(0);
+      if(scene.tweens && scene.tweens.add){
+        scene.tweens.add({targets:slot,alpha:1,duration:600,ease:'Sine.easeOut'});
+      } else {
+        slot.setAlpha(1);
+      }
+    }
     let texKey = key;
     if(!earned){
       const grayKey = `${key}_gray`;
@@ -413,6 +449,10 @@ function showStartScreen(scene){
 
   if(revealNew){
     GameState.achievementsRevealed = true;
+  }
+
+  if(fadeSlots){
+    GameState.slotsRevealed = true;
   }
 
   if(GameState.carryPortrait && GameState.lastEndKey){
@@ -632,6 +672,7 @@ function showStartScreen(scene){
       startMsgTimers.push(scene.time.delayedCall(delay,()=>addStartMessage(msg),[],scene));
     }
   }
+  GameState.startScreenSeen = true;
   startZone.on('pointerdown',()=>{
     // Disable further clicks as soon as the intro begins
     startZone.disableInteractive();

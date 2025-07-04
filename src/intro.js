@@ -346,6 +346,8 @@ function showStartScreen(scene){
   // Professor cup in bottom-left slot, mini game cup next
   const profSlot = getSlot(0);
   const cupSlot = getSlot(1);
+  // Move the minigame cup above the achievements near the title logo
+  cupSlot.setPosition(0, startY - slotSize - marginY);
 
   if(!professorCup){
     professorCup = scene.add
@@ -371,8 +373,8 @@ function showStartScreen(scene){
         bubble.attachedSprite = professorCup;
         professorCup.disableInteractive();
         scene.tweens.add({targets:professorCup,scale:professorCup.scale*1.1,duration:200,yoyo:true});
-        professorCup.x = bubble.x;
-        professorCup.y = bubble.y - bubble.bh/2;
+        professorCup.x = bubble.x + bubble.bw/2 + 5;
+        professorCup.y = bubble.y + bubble.bh/2 + 5;
       }
     });
     profSlot.setVisible(true);
@@ -386,8 +388,9 @@ function showStartScreen(scene){
     miniGameCup = scene.add
       .image(cupSlot.x, cupSlot.y, 'coffeecup2')
       .setDepth(17)
-      .setAlpha(1)
       .setTint(0xffd700);
+    const allEarned = ALL_BADGES.every(k => GameState.badges.includes(k));
+    miniGameCup.setAlpha(allEarned ? 1 : 0.1);
     const tex = scene.textures.get('coffeecup2');
     if (tex && tex.getSourceImage) {
       const src = tex.getSourceImage();
@@ -453,6 +456,8 @@ function showStartScreen(scene){
       duration: 100,
       ease: 'Sine.easeInOut',
       onComplete: () => {
+        const allEarned = ALL_BADGES.every(k => GameState.badges.includes(k));
+        miniGameCup.setAlpha(allEarned ? 1 : 0.1);
         miniGameCup.setInteractive({ useHandCursor: true });
         miniGameCup.on('pointerdown', () => {
           if (window.showMiniGame) window.showMiniGame();
@@ -492,7 +497,7 @@ function showStartScreen(scene){
     scaleMap[key] = iconScale;
     const iconImg = scene.add.image(0,0,texKey).setScale(iconScale);
     const children=[iconImg];
-    if(earned){
+    if(earned && GameState.lastEndKey === key){
       const glowKey = `gold_glow_${slotSize}`;
       if(!scene.textures.exists(glowKey)) createGlowTexture(scene,0xffd700,glowKey,slotSize);
       const glow = scene.add.image(0,0,glowKey).setScale(1).setDepth(-1);
@@ -503,8 +508,8 @@ function showStartScreen(scene){
       const txt = scene.add.text(0,0,String(GameState.badgeCounts[key]),{font:'16px sans-serif',fill:'#fff'}).setOrigin(0.5);
       container.add(txt);
     }
-    if(!earned && GameState.badges.length >=3){
-      container.setAlpha(0.5);
+    if(!earned){
+      container.setAlpha(0.25);
     }
     phoneContainer.add(container);
     badgeIcons.push(container);
@@ -617,14 +622,19 @@ function showStartScreen(scene){
 
   let startMsgY = -phoneH/2 + 20;
 
-  const MAX_MSGS = 5;
+  const MAX_MSGS = 4;
 
   const repositionMessages=()=>{
     let y = -phoneH/2 + 20;
     startMsgBubbles.forEach(b=>{
       scene.tweens.add({targets:b,y:y + b.bh/2,duration:200});
       if(b.attachedSprite){
-        scene.tweens.add({targets:b.attachedSprite,y:y - b.bh/2,duration:200});
+        scene.tweens.add({
+          targets:b.attachedSprite,
+          x:b.x + b.bw/2 + 5,
+          y:y + b.bh/2 + 5,
+          duration:200
+        });
       }
       y += b.bh + 10;
     });
@@ -651,6 +661,7 @@ function showStartScreen(scene){
     const yPos = startMsgY + bh/2;
     const bubble = scene.add.container(xPos,yPos,[bg,txt]).setDepth(16).setAlpha(0);
     bubble.bh = bh;
+    bubble.bw = bw;
     phoneContainer.add(bubble);
     startMsgBubbles.push(bubble);
     startMsgY += bh + 10;

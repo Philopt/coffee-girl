@@ -20,6 +20,12 @@ let badgeIcons = [];
 let iconSlots = [];
 let miniGameCup = null;
 
+function getSlot(idx){
+  if(!iconSlots.length) return { x: 0, y: 0 };
+  const clamped = Math.max(0, Math.min(idx, iconSlots.length - 1));
+  return iconSlots[clamped];
+}
+
 function hideStartMessages(){
   startMsgTimers.forEach(t=>t.remove(false));
   startMsgTimers=[];

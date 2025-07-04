@@ -353,6 +353,8 @@ function showStartScreen(scene){
     muse_victory: 5
   };
   const scaleMap = {};
+  const revealNew = GameState.badges.length > 0 && !GameState.achievementsRevealed;
+  const sourceSlot = revealNew && GameState.lastEndKey ? getSlot(slotMap[GameState.lastEndKey]) : null;
   ALL_BADGES.forEach((key) => {
     const earned = GameState.badges.includes(key);
     const slotIdx = slotMap[key];
@@ -388,11 +390,30 @@ function showStartScreen(scene){
       container.add(txt);
     }
     if(!earned){
-      container.setAlpha(0.25);
+      if(revealNew){
+        container.setAlpha(0);
+        if(sourceSlot){
+          container.setPosition(sourceSlot.x, sourceSlot.y);
+        }
+        scene.tweens.add({
+          targets: container,
+          x: slot.x,
+          y: slot.y,
+          alpha: 0.1,
+          duration: 800,
+          ease: 'Sine.easeOut'
+        });
+      } else {
+        container.setAlpha(GameState.badges.length ? 0.1 : 0);
+      }
     }
     phoneContainer.add(container);
     badgeIcons.push(container);
   });
+
+  if(revealNew){
+    GameState.achievementsRevealed = true;
+  }
 
   if(GameState.carryPortrait && GameState.lastEndKey){
     const idx = ALL_BADGES.indexOf(GameState.lastEndKey);
@@ -501,7 +522,7 @@ function showStartScreen(scene){
 
   let startMsgY = -phoneH/2 + 20;
 
-  const MAX_MSGS = 4;
+  const MAX_MSGS = 3;
 
   const repositionMessages=()=>{
     let y = -phoneH/2 + 20;
@@ -522,35 +543,45 @@ function showStartScreen(scene){
 
   const addStartMessage=(text,color=0x8bd48b,textColor='#fff')=>{
     if(!phoneContainer) return null;
-    startMsgBubbles.forEach(b=>{
-      const target = Math.max(0,b.alpha*0.8);
-      scene.tweens.add({targets:b,alpha:target,duration:200});
-    });
-    const pad = 10;
-    const wrapWidth = phoneW - 60;
-    const txt = scene.add.text(0,0,text,{font:'20px sans-serif',fill:textColor,wordWrap:{width:wrapWidth}})
-      .setOrigin(0,0.5);
-    const bw = txt.width + pad*2;
-    const bh = txt.height + pad*2;
-    const bg = scene.add.graphics();
-    bg.fillStyle(color,1);
-    bg.fillRoundedRect(-bw/2,-bh/2,bw,bh,10);
-    txt.setPosition(-bw/2 + pad, 0);
-    const xPos = -phoneW/2 + bw/2 + 20;
-    const yPos = startMsgY + bh/2;
-    const bubble = scene.add.container(xPos,yPos,[bg,txt]).setDepth(16).setAlpha(0);
-    bubble.bh = bh;
-    bubble.bw = bw;
-    phoneContainer.add(bubble);
-    startMsgBubbles.push(bubble);
-    startMsgY += bh + 10;
-    scene.tweens.add({targets:bubble,alpha:1,duration:300,ease:'Cubic.easeOut'});
-    if(startMsgBubbles.length>MAX_MSGS){
+    const createBubble=()=>{
+      startMsgBubbles.forEach(b=>{
+        const target = Math.max(0,b.alpha*0.8);
+        scene.tweens.add({targets:b,alpha:target,duration:200});
+      });
+      const pad = 10;
+      const wrapWidth = phoneW - 60;
+      const txt = scene.add.text(0,0,text,{font:'20px sans-serif',fill:textColor,wordWrap:{width:wrapWidth}})
+        .setOrigin(0,0.5);
+      const bw = txt.width + pad*2;
+      const bh = txt.height + pad*2;
+      const bg = scene.add.graphics();
+      bg.fillStyle(color,1);
+      bg.fillRoundedRect(-bw/2,-bh/2,bw,bh,10);
+      txt.setPosition(-bw/2 + pad, 0);
+      const xPos = -phoneW/2 + bw/2 + 20;
+      const yPos = startMsgY + bh/2;
+      const bubble = scene.add.container(xPos,yPos,[bg,txt]).setDepth(16).setAlpha(0);
+      bubble.bh = bh;
+      bubble.bw = bw;
+      phoneContainer.add(bubble);
+      startMsgBubbles.push(bubble);
+      startMsgY += bh + 10;
+      scene.tweens.add({targets:bubble,alpha:1,duration:300,ease:'Cubic.easeOut'});
+      repositionMessages();
+      return bubble;
+    };
+    if(startMsgBubbles.length>=MAX_MSGS){
       const old = startMsgBubbles.shift();
-      scene.tweens.add({targets:old,alpha:0,duration:300,onComplete:()=>{if(old.destroy) old.destroy();}});
+      scene.tweens.add({
+        targets:old,
+        alpha:0,
+        duration:300,
+        onComplete:()=>{ if(old.destroy) old.destroy(); createBubble(); }
+      });
+      repositionMessages();
+      return null;
     }
-    repositionMessages();
-    return bubble;
+    return createBubble();
   };
 
   if(scene.time && scene.time.delayedCall){

@@ -1151,6 +1151,12 @@ export function setupGame(){
     if(dialogDrinkEmoji && dialogDrinkEmoji.setAlpha){
       dialogDrinkEmoji.setAlpha(1);
     }
+    if(dialogPriceContainer){
+      dialogPriceContainer
+        .setAngle(0)
+        .setScale(1)
+        .setAlpha(1);
+    }
   }
 
   function showDialog(){
@@ -1776,7 +1782,7 @@ export function setupGame(){
           if(dialogText.setColor) dialogText.setColor('#f00');
           if(dialogCoins.setColor) dialogCoins.setColor('#f00');
           if(ticket){
-            this.tweens.add({targets:ticket, x:520, alpha:0,
+            this.tweens.add({targets:ticket, x:-40, alpha:0,
                             duration:dur(300), ease:'Cubic.easeIn'});
           }
           // Move each dialog element downward together rather than
@@ -2382,8 +2388,8 @@ export function setupGame(){
           }
           tl.add({
             targets: ticket,
-            x: '-=60',
-            angle: 180,
+            x: '-=80',
+            angle: '-=90',
             duration: dur(80),
             ease: 'Cubic.easeOut',
             onStart: () => {
@@ -2405,9 +2411,25 @@ export function setupGame(){
               x: { value: destX, ease: 'Sine.easeIn' },
               y: { value: destY, ease: 'Quad.easeIn' }
             },
-            angle: 180,
+            angle: '-=270',
             scale: 0,
-            duration: dur(400)
+            alpha: 0,
+            duration: dur(600),
+            onStart: () => {
+              if(dialogPriceTicket && dialogPriceTicket.setTint){
+                dialogPriceTicket.setTint(0xffffff);
+                this.tweens.addCounter({
+                  from:0,
+                  to:1,
+                  duration: dur(600),
+                  onUpdate:t=>{
+                    const p=t.getValue();
+                    const g=Math.round(255*(1-p));
+                    dialogPriceTicket.setTint(Phaser.Display.Color.GetColor(255,g,g));
+                  }
+                });
+              }
+            }
           });
           tl.play();
         },[],this);

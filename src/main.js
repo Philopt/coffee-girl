@@ -3133,6 +3133,8 @@ function dogsBarkAtFalcon(){
     function falconAttackDog(dog, done){
       if(!falcon || finished || !dog) { if(done) done(); return; }
       if(dog.dead) { if(done) done(); return; }
+      // Ensure the dog sprite is visible before running the attack logic
+      if(dog.setAlpha) dog.setAlpha(1);
       if(dog.followEvent) { dog.followEvent.remove(false); dog.followEvent = null; }
       if(dog.currentTween) { dog.currentTween.stop(); dog.currentTween = null; }
       scene.tweens.killTweensOf(dog);

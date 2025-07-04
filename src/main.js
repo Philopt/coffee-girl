@@ -180,8 +180,8 @@ export function setupGame(){
       moneyText.setPosition(centerX, centerY);
       if(moneyDollar){
         moneyDollar.setPosition(
-          centerX - moneyText.displayWidth/2 + moneyDollar.displayWidth*0.4,
-          centerY - moneyText.displayHeight*0.4
+          centerX - moneyText.displayWidth/2 - moneyDollar.displayWidth/2,
+          centerY
         );
       }
     }
@@ -3806,10 +3806,20 @@ function dogsBarkAtFalcon(){
 
     const loops=new Map();
     let finished=false;
+    let firstAttacker=null;
 
     function blinkGirl(){
       flashRed(scene, girl);
       scene.tweens.add({targets:girl,duration:dur(60),repeat:2,yoyo:true,x:'+=4'});
+    }
+
+    function escalateIfNotEnoughDamage(){
+      if(finished) return;
+      if(GameState.girlHP>5){
+        finished=true;
+        const driver = firstAttacker || attackers[0];
+        if(driver) sendDriver(driver);
+      }
     }
 
       function sendDriver(driver){
@@ -3906,7 +3916,9 @@ function dogsBarkAtFalcon(){
       const arrive = () => {
         if(!firstArrived){
           firstArrived = true;
+          firstAttacker = a;
           scene.time.delayedCall(dur(1000), ()=>attack(a), [], scene);
+          scene.time.delayedCall(dur(5000), escalateIfNotEnoughDamage, [], scene);
         } else {
           attack(a);
         }

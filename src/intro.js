@@ -19,41 +19,15 @@ let openingDog = null;
 let badgeIcons = [];
 let iconSlots = [];
 let miniGameCup = null;
-let professorCup = null;
 
-const ACHIEVEMENT_HINTS = {
-  fired_end: [
-    'Maybe the boss wants more money...',
-    'Try hoarding cash instead of giving it away.',
-    'Focus on profits to keep your job.',
-    'Keep the register full or else...'
-  ],
-  falcon_victory: [
-    'A dog might help against the falcon.',
-    'Love can be a powerful weapon.',
-    'Coffee and courage beat talons.',
-    'Defend yourself and don\'t back down!'
-  ],
-  falcon_end: [
-    'The lady might be unstoppable if you don\'t fight back...',
-    'What if you ignore the falcon?',
-    'Is she tougher when you are weak?',
-    'Maybe avoid upsetting her so much.'
-  ],
-  revolt_end: [
-    'I wonder what would happen if everyone hated you...',
-    'What if the crowd got really angry?',
-    'Ignore customers\' feelings at your own risk.',
-    'Upset enough folks and see what happens.'
-  ],
-  muse_victory: [
-    'Serve with kindness to inspire the muse.',
-    'Maybe speed and smiles matter.',
-    'Keep customers happy for creative vibes.',
-    'Good service leads to inspiration.'
-  ]
-};
-const ALL_BADGES = Object.keys(ACHIEVEMENT_HINTS);
+// Achievement keys used throughout the intro and main game
+const ALL_BADGES = [
+  'revolt_end',
+  'fired_end',
+  'falcon_end',
+  'falcon_victory',
+  'muse_victory'
+];
 
 function getSlot(idx){
   if(!iconSlots.length) return { x: 0, y: 0 };
@@ -197,25 +171,6 @@ function playOpening(scene){
       for (let i = 0; i < 4; i++) spawnThrust();
       // Trigger the big coffee burst immediately as the "2" lands
       for (let i = 0; i < 8; i++) spawnThrust(3);
-      // Spawn the minigame button cup during the explosion
-      // Position it where the "2" lands so it bursts from the right
-      miniGameCup = scene.add
-        .image(finalX, finalY, 'coffeecup2')
-        .setDepth(17)
-        .setScale(0.13)
-        .setAlpha(0);
-      // Launch the cup straight up with a slight left drift while spinning
-        scene.tweens.add({
-          targets: miniGameCup,
-          x: finalX - 40,
-          // Launch much higher so the cup arcs before descending
-          y: finalY - 350,
-          scale: 0.72,
-          alpha: 1,
-          angle: -360,
-          duration: 700,
-          ease: 'Cubic.easeOut'
-        });
     }
   });
   tl.add({
@@ -235,7 +190,6 @@ function playOpening(scene){
 function showStartScreen(scene){
   scene = scene || this;
   if (typeof debugLog === 'function') debugLog('showStartScreen called');
-  GameState.profHintUsed = false;
   if(startButton){ startButton.destroy(); startButton = null; }
   if(typeof phoneContainer !== 'undefined' && phoneContainer){
     if(scene.tweens && scene.tweens.killTweensOf){
@@ -343,54 +297,15 @@ function showStartScreen(scene){
 
   }
 
-  // Professor cup in bottom-left slot, mini game cup next
-  const profSlot = getSlot(0);
-  const cupSlot = getSlot(1);
-  // Move the minigame cup above the achievements near the title logo
-  cupSlot.setPosition(0, startY - slotSize - marginY);
-
-  if(!professorCup){
-    professorCup = scene.add
-      .image(profSlot.x, profSlot.y, 'coffeecup2')
-      .setDepth(18)
-      .setAlpha(1);
-    const tex = scene.textures.get('coffeecup2');
-    if(tex && tex.getSourceImage){
-      const src = tex.getSourceImage();
-      const s = (src && src.width && src.height) ? slotSize / Math.max(src.width, src.height) : 1;
-      professorCup.setScale(s);
-    }
-    professorCup.setInteractive({useHandCursor:true});
-    professorCup.on('pointerdown',()=>{
-      if(GameState.profHintUsed) return;
-      const missing = ALL_BADGES.filter(k=>!GameState.badges.includes(k));
-      if(!missing.length) return;
-      GameState.profHintUsed = true;
-      const key = Phaser.Utils.Array.GetRandom(missing);
-      const hint = Phaser.Utils.Array.GetRandom(ACHIEVEMENT_HINTS[key]);
-      const bubble = addStartMessage(hint,0xcccccc,'#888');
-      if(bubble){
-        bubble.attachedSprite = professorCup;
-        professorCup.disableInteractive();
-        scene.tweens.add({targets:professorCup,scale:professorCup.scale*1.1,duration:200,yoyo:true});
-        professorCup.x = bubble.x + bubble.bw/2 + 5;
-        professorCup.y = bubble.y + bubble.bh/2 + 5;
-      }
-    });
-    profSlot.setVisible(true);
-    phoneContainer.add(professorCup);
-  }else{
-    profSlot.setVisible(true);
-    phoneContainer.add(professorCup);
-  }
+  // Mini game cup appears in the top-left slot when all achievements are earned
+  const cupSlot = getSlot(3);
+  const allEarned = ALL_BADGES.every(k => GameState.badges.includes(k));
   if (!miniGameCup) {
-    // Spawn a fresh cup when restarting the game
     miniGameCup = scene.add
       .image(cupSlot.x, cupSlot.y, 'coffeecup2')
       .setDepth(17)
-      .setTint(0xffd700);
-    const allEarned = ALL_BADGES.every(k => GameState.badges.includes(k));
-    miniGameCup.setAlpha(allEarned ? 1 : 0.1);
+      .setTint(0xffd700)
+      .setAlpha(0);
     const tex = scene.textures.get('coffeecup2');
     if (tex && tex.getSourceImage) {
       const src = tex.getSourceImage();
@@ -403,68 +318,20 @@ function showStartScreen(scene){
     miniGameCup.on('pointerdown', () => {
       if (window.showMiniGame) window.showMiniGame();
     });
-    cupSlot.setVisible(true);
     phoneContainer.add(miniGameCup);
   } else {
-    if (scene.tweens && scene.tweens.killTweensOf) {
-      scene.tweens.killTweensOf(miniGameCup);
-    }
-    const pcScale = phoneContainer.scale || phoneContainer.scaleX || 1;
-    const m = phoneContainer.getWorldTransformMatrix();
-    const localX = (miniGameCup.x - m.tx) / m.a;
-    const localY = (miniGameCup.y - m.ty) / m.d;
-    miniGameCup
-      .setPosition(localX, localY)
-      .setScale(miniGameCup.scale / pcScale)
-      .setDepth(17)
-      .setAlpha(0)
-      .setTint(0xffd700);
+    miniGameCup.setPosition(cupSlot.x, cupSlot.y);
     phoneContainer.add(miniGameCup);
-    // Ensure the cup renders above other phone elements
-    if (phoneContainer.bringToTop) phoneContainer.bringToTop(miniGameCup);
-    const cupTL = scene.tweens.createTimeline();
-
-    // Continue the launch by moving left slightly then dropping onto the button
-    const slotX = cupSlot.x;
-    const slotY = cupSlot.y;
-    // Reveal the slot as the cup approaches
-    cupSlot.setVisible(true);
-    cupTL.add({
-      targets: miniGameCup,
-      x: '-=30',
-      y: offsetY - bh - 120,
-      scale: 1.2,
-      alpha: 1,
-      angle: -720,
-      duration: 500,
-      ease: 'Cubic.easeIn'
-    });
-    cupTL.add({
-      targets: miniGameCup,
-      x: slotX,
-      y: slotY,
-      angle: -1080,
-      duration: 500,
-      ease: 'Bounce.easeOut'
-    });
-    cupTL.add({ targets: miniGameCup, angle: -15, duration: 120, ease: 'Sine.easeInOut' });
-    cupTL.add({ targets: miniGameCup, angle: 10, duration: 140, ease: 'Sine.easeInOut' });
-    cupTL.add({ targets: miniGameCup, angle: -5, duration: 140, ease: 'Sine.easeInOut' });
-    cupTL.add({
-      targets: miniGameCup,
-      angle: 0,
-      duration: 100,
-      ease: 'Sine.easeInOut',
-      onComplete: () => {
-        const allEarned = ALL_BADGES.every(k => GameState.badges.includes(k));
-        miniGameCup.setAlpha(allEarned ? 1 : 0.1);
-        miniGameCup.setInteractive({ useHandCursor: true });
-        miniGameCup.on('pointerdown', () => {
-          if (window.showMiniGame) window.showMiniGame();
-        });
-      }
-    });
-    cupTL.play();
+  }
+  cupSlot.setVisible(allEarned);
+  if (allEarned) {
+    const glowKey = `gold_glow_${slotSize}`;
+    if(!scene.textures.exists(glowKey)) createGlowTexture(scene,0xffd700,glowKey,slotSize);
+    const glow = scene.add.image(cupSlot.x, cupSlot.y, glowKey).setDepth(16).setAlpha(0);
+    phoneContainer.add(glow);
+    scene.tweens.add({ targets: [miniGameCup, glow], alpha: 1, duration: 600, ease: 'Sine.easeIn' });
+  } else {
+    miniGameCup.setAlpha(0);
   }
 
   badgeIcons.forEach(i=>i.destroy());
@@ -478,13 +345,17 @@ function showStartScreen(scene){
     }
     return 1;
   };
-  const slotMap = {};
+  const slotMap = {
+    revolt_end: 0,
+    fired_end: 1,
+    falcon_end: 2,
+    falcon_victory: 4,
+    muse_victory: 5
+  };
   const scaleMap = {};
-  let nextIdx = 1;
   ALL_BADGES.forEach((key) => {
     const earned = GameState.badges.includes(key);
-    const slotIdx = nextIdx++;
-    slotMap[key] = slotIdx;
+    const slotIdx = slotMap[key];
     const slot = getSlot(slotIdx);
     slot.setVisible(true);
     let texKey = key;
@@ -516,7 +387,7 @@ function showStartScreen(scene){
   });
 
   if(GameState.carryPortrait && GameState.lastEndKey){
-    const idx = GameState.badges.indexOf(GameState.lastEndKey);
+    const idx = ALL_BADGES.indexOf(GameState.lastEndKey);
     if(idx !== -1){
       badgeIcons[idx].setAlpha(0);
       const slotIdx = slotMap[GameState.lastEndKey];
@@ -753,7 +624,6 @@ function showStartScreen(scene){
         phoneContainer = null;
       }
       miniGameCup = null;
-      professorCup = null;
       GameState.phoneContainer = null;
       playIntro.call(scene);
     }});

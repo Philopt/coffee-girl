@@ -379,7 +379,9 @@ function showStartScreen(scene){
     cupShadow.destroy();
     cupShadow = null;
   }
-  cupSlot.setVisible(allEarned);
+  // cupSlot is just a plain coordinate object, so calling setVisible
+  // on it causes errors. Visibility is controlled by the cup and
+  // shadow sprites instead.
   if (allEarned) {
     const glowKey = `gold_glow_${slotSize}`;
     if(!scene.textures.exists(glowKey)) createGlowTexture(scene,0xffd700,glowKey,slotSize);

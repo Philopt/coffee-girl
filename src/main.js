@@ -1859,7 +1859,7 @@ export function setupGame(){
           showHighMoneyLoss.call(this);
           return;
         }
-        if(GameState.love>=MAX_L){showEnd.call(this,'Victory! ❤️');return;}
+        if(GameState.love>=MAX_L){showLoveVictory.call(this);return;}
         if(GameState.heartWin){
           showTrueLoveVictory.call(this, winSpriteKey);
           GameState.heartWin = null;
@@ -3912,6 +3912,92 @@ function dogsBarkAtFalcon(){
     GameState.gameOver=true;
   }
 
+  function showLoveVictory(){
+    const scene = this;
+    scene.tweens.killAll();
+    scene.time.removeAllEvents();
+    cleanupFloatingEmojis();
+    cleanupHeartEmojis(scene);
+    cleanupBarks();
+    cleanupBursts();
+    cleanupSparkles(scene);
+    cleanupDogs(scene);
+    cleanupSparrows(scene);
+    hideOverlayTexts();
+    if (GameState.spawnTimer) {
+      GameState.spawnTimer.remove(false);
+      GameState.spawnTimer = null;
+    }
+    clearDialog.call(scene);
+    if(endOverlay){ endOverlay.destroy(); }
+    endOverlay = this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
+
+    const img = this.add.image(240,250,'muse_victory')
+      .setScale(1.2)
+      .setDepth(20)
+      .setAlpha(0);
+    this.tweens.add({targets:img,alpha:1,duration:dur(1200)});
+
+    const line1 = this.add.text(240,450,'LOVE WINS!',
+      {font:'28px sans-serif',fill:'#fff'})
+      .setOrigin(0.5)
+      .setDepth(21)
+      .setAlpha(0);
+    this.tweens.add({targets:line1,alpha:1,duration:dur(1200),delay:dur(1700)});
+
+    const line2 = this.add.text(240,490,'You reached 100 Love',
+      {font:'20px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
+      .setOrigin(0.5)
+      .setDepth(21)
+      .setAlpha(0);
+    this.tweens.add({targets:line2,alpha:1,duration:dur(600),delay:dur(2400)});
+
+    const btn = this.add.text(240,550,'Play Again?',{
+      font:'20px sans-serif',
+      fill:'#000',
+      backgroundColor:'#ffffff',
+      padding:{x:14,y:8}
+    }).setOrigin(0.5).setDepth(22).setAlpha(0)
+      .setInteractive({ useHandCursor:true });
+
+    const showBtnDelay = dur(2400) + dur(600) + 1000;
+    this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
+    btn.on('pointerdown',()=>{
+        btn.disableInteractive();
+        const key = img ? img.texture.key : null;
+        if(key){
+          GameState.lastEndKey = key;
+          if(!GameState.badges.includes(key)) GameState.badges.push(key);
+          GameState.badgeCounts[key] = (GameState.badgeCounts[key] || 0) + 1;
+          const grayKey = `${key}_gray`;
+          createGrayscaleTexture(this,key,grayKey);
+          GameState.carryPortrait = img.setDepth(25);
+        }
+        btn.setVisible(false);
+        createGlowTexture(this,0xffffff,'screen_flash',256);
+        const overlayG = this.add.image(btn.x,btn.y,'screen_flash').setDepth(23);
+        overlayG.setDisplaySize(btn.width,btn.height);
+        this.tweens.add({
+          targets:overlayG,
+          x:240,
+          y:320,
+          scaleX:Math.max(480/btn.width,640/btn.height)*2,
+          scaleY:Math.max(480/btn.width,640/btn.height)*2,
+          duration:300,
+          ease:'Cubic.easeOut',
+          onComplete:()=>{
+            img.destroy();
+            line1.destroy();
+            line2.destroy();
+            btn.destroy();
+            if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
+            restartGame.call(this, overlayG);
+          }
+        });
+      });
+    GameState.gameOver=true;
+  }
+
   function showHighMoneyLoss(){
     const scene = this;
     scene.tweens.killAll();
@@ -4316,79 +4402,6 @@ function dogsBarkAtFalcon(){
     GameState.gameOver=true;
   }
 
-  function showEnd(msg, bigEmoji, opts){
-    const scene=this;
-    const keepTweens = opts && opts.keepTweens;
-    if(!keepTweens){
-      scene.tweens.killAll();
-      scene.time.removeAllEvents();
-    }
-    cleanupFloatingEmojis();
-    cleanupHeartEmojis(scene);
-    cleanupBarks();
-    cleanupBursts();
-    cleanupDogs(scene);
-    cleanupSparrows(scene);
-    hideOverlayTexts();
-    if (GameState.spawnTimer) { GameState.spawnTimer.remove(false); GameState.spawnTimer=null; }
-    clearDialog.call(scene);
-    if(endOverlay){ endOverlay.destroy(); }
-    endOverlay=this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
-    let bgY=360;
-    let img=null;
-    if(/lady falcon reclaims the coffee truck/i.test(msg)){
-      img=this.add.image(240,200,'falcon_end').setScale(1.2).setDepth(20);
-      bgY=480;
-    } else if(/customer.*revolt/i.test(msg)){
-      img=this.add.image(240,200,'revolt_end').setScale(1.2).setDepth(20);
-      bgY=480;
-    }
-    const bg=this.add.rectangle(240,bgY,480,240,0xffffff).setStrokeStyle(2,0x000).setDepth(20);
-    if(bigEmoji){
-      this.add.text(240,bgY-80,bigEmoji,{font:'72px sans-serif'}).setOrigin(0.5).setDepth(21);
-    }
-    const lines=msg.split('\n');
-    let offset=bgY-40;
-    let titleText=null;
-    let startIdx=0;
-    if(lines[0].toLowerCase().startsWith('game over')){
-      titleText=this.add.text(240,offset,lines[0].toUpperCase(),{
-        font:'58px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:4
-      }).setOrigin(0.5).setDepth(21);
-      startIdx=1;
-      offset+=72;
-    }
-    const txt=this.add.text(240,offset,lines.slice(startIdx).join('\n'),{font:'24px sans-serif',fill:'#000',align:'center',wordWrap:{width:440}})
-      .setOrigin(0.5).setDepth(21);
-    const btn=this.add.text(240,bgY+80,'Try Again',{font:'20px sans-serif',fill:'#000',backgroundColor:'#ffffff',padding:{x:14,y:8}})
-      .setOrigin(0.5).setDepth(22)
-      .setInteractive({ useHandCursor:true });
-    btn.on('pointerdown',()=>{
-        btn.disableInteractive();
-        const key = img ? img.texture.key : null;
-        if(key){
-          GameState.lastEndKey = key;
-          if(!GameState.badges.includes(key)) GameState.badges.push(key);
-          GameState.badgeCounts[key] = (GameState.badgeCounts[key] || 0) + 1;
-          const grayKey = `${key}_gray`;
-          createGrayscaleTexture(this,key,grayKey);
-          GameState.carryPortrait = img.setDepth(25);
-        }
-        createGlowTexture(this,0xffffff,'tryagain_glow');
-        const glow = this.add.image(btn.x,btn.y,'tryagain_glow').setDepth(24).setAlpha(0.8).setScale(0.1);
-        this.tweens.add({targets:glow,scale:3,alpha:0,duration:300,onComplete:()=>glow.destroy()});
-        btn.setVisible(false);
-        createGlowTexture(this,0xffffff,'screen_flash',256);
-        const overlayG = this.add.image(btn.x,btn.y,'screen_flash').setDepth(23);
-        overlayG.setDisplaySize(btn.width,btn.height);
-        this.tweens.add({targets:overlayG,x:240,y:320,scaleX:Math.max(480/btn.width,640/btn.height)*2,scaleY:Math.max(480/btn.width,640/btn.height)*2,duration:300,ease:'Cubic.easeOut',onComplete:()=>{
-          bg.destroy(); txt.destroy(); btn.destroy(); if(titleText) titleText.destroy();
-          if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
-          restartGame.call(this, overlayG);
-        }});
-      });
-    GameState.gameOver=true;
-  }
 
   function restartGame(overlay){
     const scene=this;

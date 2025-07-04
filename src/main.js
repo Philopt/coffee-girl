@@ -2302,9 +2302,9 @@ export function setupGame(){
           .setVisible(true);
         skewFn2(lossStamp);
         this.time.delayedCall(dur(500), () => {
-          const flick = this.tweens.createTimeline({ targets: lossStamp });
-          flick.add({ alpha: 0.5, duration: dur(60), yoyo: true, repeat: 2 });
-          flick.add({ alpha: 0, duration: dur(300) });
+          const flick = this.tweens.createTimeline();
+          flick.add({ targets: lossStamp, alpha: 0.5, duration: dur(60), yoyo: true, repeat: 2 });
+          flick.add({ targets: lossStamp, alpha: 0, duration: dur(300) });
           flick.setCallback('onComplete', () => {
             lossStamp.setVisible(false);
             lossStamp.setAlpha(1);

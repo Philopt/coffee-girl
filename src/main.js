@@ -3938,19 +3938,19 @@ function dogsBarkAtFalcon(){
     this.tweens.add({targets:[titleGame,titleOver],alpha:1,duration:dur(1200)});
 
     const img = this.add.image(240,250,'fired_end')
-      .setScale(2.4)
+      .setScale(1.2)
       .setDepth(20)
       .setAlpha(0);
     this.tweens.add({targets:img,alpha:1,duration:dur(1200),delay:dur(1000)});
 
-    const line1 = this.add.text(240,450,'Lady Falcon Wins',
+    const line1 = this.add.text(240,450,'LADY FALCON WINS',
       {font:'28px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
       .setOrigin(0.5)
       .setDepth(21)
       .setAlpha(0);
     this.tweens.add({targets:line1,alpha:1,duration:dur(1200),delay:dur(1700)});
 
-    const line2 = this.add.text(240,490,'And then you are fired!',
+    const line2 = this.add.text(240,490,'(and then you are fired)',
       {font:'20px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
       .setOrigin(0.5)
       .setDepth(21)

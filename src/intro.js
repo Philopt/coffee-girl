@@ -532,10 +532,13 @@ function showStartScreen(scene){
       ['what happened yesterday?', 'wtf?!?', '🦅🩸☕', 'skreeee 🦅'],
       ['what happened yesterday? ppl saw falcons in the park last night', 'eleanor said the falcon got u!!', '🪶💥🪶'],
       ['was that THE lady falcon?', 'is the lady some kinda royalty?', 'she won\'t let you lose ALL the money', "ada said lady falcon's from another dimension"],
-      ['u better keep an eye on the register', 'stop giving so much coffee away', 'what u gonna do with all the free love u earn giving away coffee?', "don't be a sparrow"],
-      ['With no boss watching, run the truck your way.'],
-      ['Give every drink away for free if you like.'],
-      ['Money can even go negative with no consequences.']
+      ['u better keep an eye on the register', 'stop giving so much coffee away', 'what u gonna do with all the free love u earn giving away coffee?', "don't be a sparrow"]
+    ];
+
+    const victoryMsgs=[
+      ['no boss around, run it ur way 🚚✨'],
+      ['give every drink away if u want ☕❤️'],
+      ['cash can drop negative, no worries 💸🤙']
     ];
 
     const revoltMsgs=[
@@ -554,6 +557,7 @@ function showStartScreen(scene){
 
     let msgOptions = defaultMsgs;
     if(GameState.lastEndKey === 'falcon_end') msgOptions = falconMsgs;
+    else if(GameState.lastEndKey === 'falcon_victory') msgOptions = victoryMsgs;
     else if(GameState.lastEndKey === 'revolt_end') msgOptions = revoltMsgs;
     else if(GameState.lastEndKey === 'fired_end') msgOptions = firedMsgs;
 

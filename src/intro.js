@@ -54,6 +54,38 @@ function hideStartScreen(){
   if(resetButton) resetButton.setVisible(false);
 }
 
+function revealAchievements(scene){
+  scene = scene || this;
+  if(GameState.startScreenSeen) return;
+  GameState.startScreenSeen = true;
+  const fadeTargets = [];
+  iconSlots.forEach(s => {
+    s.setVisible(true);
+    fadeTargets.push(s);
+    s.setAlpha(0);
+  });
+  if(cupShadow){
+    cupShadow.setVisible(true);
+    cupShadow.setAlpha(0);
+    fadeTargets.push(cupShadow);
+  }
+  if(miniGameCup){
+    miniGameCup.setAlpha(0);
+    fadeTargets.push(miniGameCup);
+  }
+  if(scene.tweens && scene.tweens.add){
+    scene.tweens.add({
+      targets: fadeTargets,
+      alpha: fadeTargets.map(t => t === cupShadow ? 0.3 : 1),
+      duration: 600,
+      ease: 'Sine.easeOut'
+    });
+  } else {
+    fadeTargets.forEach(t => t.setAlpha(t === cupShadow ? 0.3 : 1));
+  }
+  GameState.slotsRevealed = true;
+}
+
 function playOpening(scene){
   scene = scene || this;
   startWhite = scene.add.rectangle(240,320,480,640,0xffffff,1)
@@ -348,32 +380,39 @@ function showStartScreen(scene){
   const cupRowY = startY - (slotSize + marginY);
   const cupSlot = { x: startX + (slotSize + marginX), y: cupRowY };
   const allEarned = ALL_BADGES.every(k => GameState.badges.includes(k));
-  if (!miniGameCup) {
-    miniGameCup = scene.add
-      .image(cupSlot.x, cupSlot.y, 'coffeecup2')
-      .setDepth(17)
-      .setTint(0xffd700)
-      .setAlpha(0);
-    const tex = scene.textures.get('coffeecup2');
-    if (tex && tex.getSourceImage) {
-      const src = tex.getSourceImage();
-      const cupScale = (src && src.width && src.height)
-        ? slotSize / Math.max(src.width, src.height)
-        : 1;
-      miniGameCup.setScale(cupScale);
+  const nearAll = GameState.badges.length === ALL_BADGES.length - 1;
+
+  if (allEarned) {
+    if (!miniGameCup) {
+      miniGameCup = scene.add
+        .image(cupSlot.x, cupSlot.y, 'coffeecup2')
+        .setDepth(17)
+        .setTint(0xffd700)
+        .setAlpha(0);
+      const tex = scene.textures.get('coffeecup2');
+      if (tex && tex.getSourceImage) {
+        const src = tex.getSourceImage();
+        const cupScale = (src && src.width && src.height)
+          ? slotSize / Math.max(src.width, src.height)
+          : 1;
+        miniGameCup.setScale(cupScale);
+      }
+      miniGameCup.disableInteractive();
+    } else {
+      miniGameCup.setPosition(cupSlot.x, cupSlot.y);
     }
-    // The cup no longer launches the mini game directly. A separate button does
-    // that, so disable interaction on the cup itself.
-    miniGameCup.disableInteractive();
     phoneContainer.add(miniGameCup);
   } else {
-    miniGameCup.setPosition(cupSlot.x, cupSlot.y);
-    phoneContainer.add(miniGameCup);
+    if (miniGameCup) {
+      miniGameCup.destroy();
+      miniGameCup = null;
+    }
   }
-  if(!allEarned){
-    if(!cupShadow){
+
+  if (nearAll && !allEarned) {
+    if (!cupShadow) {
       const grayKey = 'coffeecup2_gray';
-      if(!scene.textures.exists(grayKey)) {
+      if (!scene.textures.exists(grayKey)) {
         createGrayscaleTexture(scene, 'coffeecup2', grayKey);
       }
       cupShadow = scene.add
@@ -393,7 +432,7 @@ function showStartScreen(scene){
       cupShadow.setAlpha(showSlots ? 0.3 : 0);
     }
     phoneContainer.add(cupShadow);
-  } else if(cupShadow){
+  } else if (cupShadow) {
     cupShadow.destroy();
     cupShadow = null;
   }
@@ -641,9 +680,13 @@ function showStartScreen(scene){
         targets,
         alpha: 0,
         duration: 600,
-        onComplete: () => scheduleStartMessages(0)
+        onComplete: () => {
+          revealAchievements(scene);
+          scheduleStartMessages(0);
+        }
       });
     } else {
+      revealAchievements(scene);
       scheduleStartMessages(0);
     }
   };
@@ -793,7 +836,6 @@ function showStartScreen(scene){
 
     // scheduleStartMessages() handles message timing after the intro fades
   }
-  GameState.startScreenSeen = true;
   startZone.on('pointerdown',()=>{
     // Disable further clicks as soon as the intro begins
     startZone.disableInteractive();

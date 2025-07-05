@@ -1312,13 +1312,9 @@ export function setupGame(){
     drawDialogBubble(c.sprite.x, c.sprite.y, bubbleColor);
 
 
-    const ticketW = c.isDog
-      ? dialogPriceBox.width
-      : (dialogPriceTicket ? dialogPriceTicket.displayWidth : dialogPriceBox.width);
     const ticketH = c.isDog
       ? dialogPriceBox.height
       : (dialogPriceTicket ? dialogPriceTicket.displayHeight : dialogPriceBox.height);
-    const ticketOffset = ticketW / 2 + 10;
 
     const truckRef = (typeof truck !== 'undefined' && truck) ? truck : null;
 

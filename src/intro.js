@@ -272,12 +272,15 @@ function showStartScreen(scene){
   const containerY = 320;
   phoneContainer = scene.add
     .container(240, containerY, [caseG, blackG, whiteG, homeG])
-    .setDepth(15)
+    .setDepth(20)
     .setVisible(true)
     .setAlpha(1)
     .setSize(phoneW + 20, phoneH + 20)
     .setInteractive({ useHandCursor: true })
     .setScale(2);
+  if(scene.children && scene.children.bringToTop){
+    scene.children.bringToTop(phoneContainer);
+  }
   if(!phoneContainer.visible || phoneContainer.alpha === 0){
     console.warn('phoneContainer not visible after creation');
   }
@@ -500,12 +503,12 @@ function showStartScreen(scene){
           targets: container,
           x: slot.x,
           y: slot.y,
-          alpha: 0.1,
+          alpha: 0.25,
           duration: 800,
           ease: 'Sine.easeOut'
         });
       } else {
-        container.setAlpha(GameState.badges.length ? 0.1 : 0);
+        container.setAlpha(GameState.badges.length ? 0.25 : 0.25);
       }
     }
     phoneContainer.add(container);

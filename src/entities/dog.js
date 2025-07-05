@@ -537,6 +537,19 @@ export function cleanupDogs(scene){
         sendDogOffscreen.call(scene, child, targetX, child.y);
       }
     });
+    // Immediately destroy dogs lingering well beyond the screen edges
+    scene.children.list.slice().forEach(child=>{
+      if(child.texture && child.texture.key==='dog1'){
+        const offX = child.x < -60 || child.x > 540;
+        const offY = child.y > 660;
+        if(offX || offY){
+          if(child.followEvent) child.followEvent.remove(false);
+          if(child.pupGlow) child.pupGlow.destroy();
+          if(child.heartEmoji) child.heartEmoji.destroy();
+          child.destroy();
+        }
+      }
+    });
   }
 }
 

@@ -4,6 +4,7 @@ import { ORDER_X, ORDER_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_
 import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer, startDogWaitTimer } from './entities/customerQueue.js';
 import { baseConfig } from "./scene.js";
 import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji, saveAchievements } from "./state.js";
+import { setActiveCustomer, updateMoney } from './stateHelpers.js';
 import { CustomerState } from './constants.js';
 
 import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows, scatterSparrows } from './sparrow.js';
@@ -637,7 +638,7 @@ let sideCAlpha=0;
     if(moneyDollar) moneyDollar.setInteractive({ useHandCursor:true });
     loveText.setInteractive({ useHandCursor:true });
     const moneyClick=()=>{
-      GameState.money = +(GameState.money + 20).toFixed(2);
+      updateMoney(20);
       updateMoneyDisplay();
       animateStatChange(moneyText, this, 1);
       if(moneyDollar) animateStatChange(moneyDollar, this, 1);
@@ -1044,7 +1045,7 @@ let sideCAlpha=0;
     dialogBg.setAlpha(1);
     dialogText.setAlpha(1);
     dialogCoins.setAlpha(1);
-    GameState.activeCustomer=GameState.queue[0]||null;
+    setActiveCustomer(GameState.queue[0]||null);
     if(!GameState.activeCustomer) return;
     const c=GameState.activeCustomer;
     if(c.isDog && c.owner && c.owner.dogWaitEvent){
@@ -1147,13 +1148,9 @@ let sideCAlpha=0;
     drawDialogBubble(c.sprite.x, c.sprite.y, bubbleColor);
 
 
-    const ticketW = c.isDog
-      ? dialogPriceBox.width
-      : (dialogPriceTicket ? dialogPriceTicket.displayWidth : dialogPriceBox.width);
     const ticketH = c.isDog
       ? dialogPriceBox.height
       : (dialogPriceTicket ? dialogPriceTicket.displayHeight : dialogPriceBox.height);
-    const ticketOffset = ticketW / 2 + 10;
 
     const truckRef = (typeof truck !== 'undefined' && truck) ? truck : null;
 
@@ -1699,7 +1696,7 @@ let sideCAlpha=0;
 
     const tipPct=type==='sell'? (totalCost>0? Math.round((tip/totalCost)*100):0):0;
     const customer=current.sprite;
-    GameState.activeCustomer=null;
+    setActiveCustomer(null);
 
     const finish=()=>{
       GameState.saleInProgress = false;
@@ -1829,7 +1826,7 @@ let sideCAlpha=0;
         current.waitingForDog = true;
         startDogWaitTimer(this, current);
         current.exitHandler = exit;
-        GameState.activeCustomer = dogCust;
+        setActiveCustomer(dogCust);
         // Keep the order marked in progress until the dog finishes
         GameState.orderInProgress = true;
         showDialog.call(this);
@@ -2065,7 +2062,7 @@ let sideCAlpha=0;
             stopSellGlowSparkle.call(this, () => {
               clearDialog.call(this);
               ticket.setVisible(false);
-              GameState.money=+(GameState.money+mD).toFixed(2);
+              updateMoney(mD);
               updateMoneyDisplay();
               animateStatChange(moneyText, this, mD);
               if(moneyDollar) animateStatChange(moneyDollar, this, mD);
@@ -2122,7 +2119,7 @@ let sideCAlpha=0;
             onComplete: () => {
               clearDialog.call(this);
               ticket.setVisible(false);
-              GameState.money = +(GameState.money + mD).toFixed(2);
+              updateMoney(mD);
               updateMoneyDisplay();
               animateStatChange(moneyText, this, mD);
               if(moneyDollar) animateStatChange(moneyDollar, this, mD);
@@ -2224,7 +2221,7 @@ let sideCAlpha=0;
           const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
               clearDialog.call(this);
               ticket.setVisible(false);
-              GameState.money=+(GameState.money+mD).toFixed(2);
+              updateMoney(mD);
               updateMoneyDisplay();
               animateStatChange(moneyText, this, mD);
               if(moneyDollar) animateStatChange(moneyDollar, this, mD);
@@ -2310,7 +2307,7 @@ let sideCAlpha=0;
           reportLine1.setVisible(false).alpha=1;
           reportLine2.setVisible(false).alpha=1;
           reportLine3.setVisible(false).alpha=1;
-          GameState.money=+(GameState.money+mD).toFixed(2);
+          updateMoney(mD);
           updateMoneyDisplay();
           animateStatChange(moneyText, this, mD);
           if(moneyDollar) animateStatChange(moneyDollar, this, mD);
@@ -4401,6 +4398,91 @@ function dogsBarkAtFalcon(){
         });
       });
     GameState.gameOver=true;
+  }
+
+
+
+  function restartGame(overlay){
+    const scene=this;
+    scene.tweens.killAll();
+    scene.time.removeAllEvents();
+    cleanupFloatingEmojis();
+    cleanupHeartEmojis(scene);
+    cleanupBarks();
+    cleanupBursts();
+    cleanupSparkles(scene);
+    cleanupSparrows(scene);
+    if (GameState.spawnTimer) {
+      GameState.spawnTimer.remove(false);
+      GameState.spawnTimer = null;
+    }
+    if (GameState.dogBarkEvent) {
+      GameState.dogBarkEvent.remove(false);
+      GameState.dogBarkEvent = null;
+    }
+    GameState.falconActive = false;
+    clearDialog.call(scene);
+    dialogDrinkEmoji.attachedTo = null;
+    if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
+    if(sideCText){ sideCText.destroy(); sideCText=null; }
+    reportLine1.setVisible(false);
+    reportLine2.setVisible(false);
+    reportLine3.setVisible(false);
+    tipText.setVisible(false);
+    paidStamp.setVisible(false);
+    lossStamp.setVisible(false);
+    // reset truck and girl to their initial off-screen positions
+    if (truck && girl) {
+      const startX = scene.scale.width + 100;
+      truck.setPosition(startX, 245);
+      girl.setPosition(startX, 245)
+        .setVisible(false)
+        .setAlpha(1);
+      if (girl.clearTint) girl.clearTint();
+    }
+    GameState.money=10.00; GameState.love=3;
+    updateMoneyDisplay();
+    loveText.setText(String(GameState.love));
+    moneyText.setColor('#fff');
+    loveText.setColor('#fff');
+    if (cloudDollar && cloudDollar.clearTint) cloudDollar.clearTint();
+    if (cloudHeart && cloudHeart.clearTint) cloudHeart.clearTint();
+    updateLevelDisplay();
+    updateCloudStatus(scene);
+    if(GameState.activeCustomer){
+      if(GameState.activeCustomer.heartEmoji){ GameState.activeCustomer.heartEmoji.destroy(); GameState.activeCustomer.heartEmoji=null; }
+      GameState.activeCustomer.sprite.destroy();
+    }
+    setActiveCustomer(null);
+    cleanupDogs(scene);
+    GameState.queue.forEach(c => {
+      if(c.walkTween){ if(c.walkTween.isPlaying && c.walkTween.stop) c.walkTween.stop(); if(c.walkTween.remove) c.walkTween.remove(); c.walkTween=null; }
+      if(c.heartEmoji){ c.heartEmoji.destroy(); c.heartEmoji=null; }
+      if(c.dog){ if(c.dog.followEvent) c.dog.followEvent.remove(false); c.dog.destroy(); c.dog=null; }
+      if(c.sprite) c.sprite.destroy();
+    });
+    GameState.wanderers.forEach(c => {
+      if(c.walkTween){ if(c.walkTween.isPlaying && c.walkTween.stop) c.walkTween.stop(); if(c.walkTween.remove) c.walkTween.remove(); c.walkTween=null; }
+      if(c.heartEmoji){ c.heartEmoji.destroy(); c.heartEmoji=null; }
+      if(c.dog){ if(c.dog.followEvent) c.dog.followEvent.remove(false); c.dog.destroy(); c.dog=null; }
+      if(c.sprite) c.sprite.destroy();
+    });
+    GameState.queue=[];
+    GameState.wanderers=[];
+    Object.keys(GameState.customerMemory).forEach(k=>{ delete GameState.customerMemory[k]; });
+    GameState.heartWin = null;
+    GameState.servedCount=0;
+    GameState.saleInProgress = false;
+    sideCAlpha=0;
+    sideCFadeTween=null;
+    GameState.gameOver=false;
+    showStartScreen.call(this);
+    scheduleSparrowSpawn(this);
+    if(overlay){
+      scene.time.delayedCall(50,()=>{
+        scene.tweens.add({targets:overlay,alpha:0,duration:400,onComplete:()=>overlay.destroy()});
+      },[],scene);
+    }
   }
 
 

@@ -4,6 +4,7 @@ import { ORDER_X, ORDER_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_
 import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer, startDogWaitTimer } from './entities/customerQueue.js';
 import { baseConfig } from "./scene.js";
 import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji, saveAchievements } from "./state.js";
+import { setActiveCustomer, updateMoney } from './stateHelpers.js';
 import { CustomerState } from './constants.js';
 
 import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows, scatterSparrows } from './sparrow.js';
@@ -12,6 +13,8 @@ import { startWander } from './entities/wanderers.js';
 
 import { flashBorder, flashFill, blinkButton, applyRandomSkew, setDepthFromBottom, createGrayscaleTexture, createGlowTexture, createHpBar } from './ui/helpers.js';
 
+import { animateStatChange, updateCloudStatus, updateMoneyDisplay, countPrice, cleanupFloatingEmojis } from "./hud.js";
+import { restartGame } from "./endings.js";
 import { keys, requiredAssets, preload as preloadAssets, receipt, emojiFor } from './assets.js';
 import { playOpening, showStartScreen, playIntro } from './intro.js';
 import DesaturatePipeline from './desaturatePipeline.js';
@@ -20,20 +23,22 @@ import { initDialogAssets, fadeInButtons, blowButtonsAway, drawDialogBubble, res
 export let Assets, Scene, Customers, config;
 export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;
 
-// Cloud display positions
-// When money reaches $200 the dollar cloud sits at the top value.
-// Hearts use a similar scale based on the MAX_L constant.
-const MONEY_TOP_Y = 5;
-const MONEY_BOTTOM_Y = 35;
-const LOVE_TOP_Y = 5;
-const LOVE_BOTTOM_Y = 35;
+// Minimum duration when a customer dashes to the table
+const DART_MIN_DURATION = 300;
+// Maximum speed (pixels per second) when dashing to the table
+const DART_MAX_SPEED = (560 / 6) * 3;
+// Offset for the drink emoji when the customer holds it
+// Raise it slightly so it appears near their hands instead of their feet
+// Also determines where the drink lands when tossed to a customer
+// Lowered by 10px so the drink doesn't land on top of their head
+const DRINK_HOLD_OFFSET = { x: 0, y: -10 };
+
 const HEART_EMOJIS = {
   [CustomerState.NORMAL]: null,
-  [CustomerState.BROKEN]: '💔',
-  [CustomerState.MENDING]: '❤️‍🩹',
-  [CustomerState.GROWING]: '💗',
-  [CustomerState.SPARKLING]: '💖',
-  [CustomerState.ARROW]: '💘'
+  [CustomerState.BROKEN]: "💔",
+  [CustomerState.MENDING]: "❤️‍🩹",
+  [CustomerState.GROWING]: "💗",
+  [CustomerState.SPARKLING]: "💖",
 };
 
 // Reactions when a customer receives a drink
@@ -75,163 +80,6 @@ export function setupGame(){
 
 
 
-  function animateStatChange(obj, scene, delta, isLove=false){
-    if(delta===0) return;
-    const up = delta>0;
-    const color = up ? '#0f0' : '#f00';
-    const by = up ? -8 : 8;
-    const originalY = obj.y;
-    const moveDur = isLove && !up ? 160 : 120;
-    scene.tweens.add({targets:obj, y:originalY+by, duration:dur(moveDur), yoyo:true});
-
-    const cloud = isLove ? cloudHeart : cloudDollar;
-    if(cloud){
-      const cOrigY = cloud.y;
-      scene.tweens.add({targets:cloud, y:cOrigY+by, duration:dur(moveDur), yoyo:true});
-    }
-    let on=true;
-    const flashes = isLove && !up ? 4 : 2;
-    const flashDelay = isLove && !up ? 120 : 80;
-    scene.time.addEvent({
-      repeat:flashes,
-      delay:dur(flashDelay),
-      callback:()=>{
-        obj.setColor(on?color:'#fff');
-        if(isLove && !up){
-          obj.setText(String(GameState.love));
-        }
-        on=!on;
-      }
-    });
-    if(cloud){
-      const tint = up ? 0x00ff00 : 0xff0000;
-      let cOn=true;
-      scene.time.addEvent({
-        repeat:flashes,
-        delay:dur(flashDelay),
-        callback:()=>{
-          if(cOn) cloud.setTintFill(tint); else cloud.clearTint();
-          cOn=!cOn;
-        }
-      });
-      scene.time.delayedCall(dur(flashDelay)*(flashes+1)+dur(10),()=>{
-        cloud.clearTint();
-      },[],scene);
-    }
-    scene.time.delayedCall(dur(flashDelay)*(flashes+1)+dur(10),()=>{
-      obj.setColor('#fff');
-      if(isLove && !up){
-        obj.setText(String(GameState.love));
-        // removed wobble animation for the love counter
-      }
-    },[],scene);
-    scene.time.delayedCall(dur(moveDur)*2,()=>{
-      updateCloudStatus(scene);
-    },[],scene);
-  }
-
-  function frameForStat(val){
-    if(val<=0) return 4;
-    if(val===1) return 3;
-    if(val===2) return 2;
-    if(val===3) return 1;
-    return 0;
-  }
-
-  function updateCloudStatus(scene){
-    if(!scene) return;
-    if(cloudHeart) cloudHeart.x = cloudHeartBaseX;
-    if(cloudDollar) cloudDollar.x = cloudDollarBaseX;
-    updateCloudPositions();
-    if(cloudHeart && cloudHeart.setFrame){
-      cloudHeart.setFrame(frameForStat(GameState.love));
-    }
-    if(cloudDollar && cloudDollar.setFrame){
-      cloudDollar.setFrame(frameForStat(Math.floor(GameState.money)));
-    }
-    const amps=[1,3,5,7,10];
-    const durs=[6000,5000,4000,3000,2000];
-    const loveIdx=frameForStat(GameState.love);
-    const moneyIdx=frameForStat(Math.floor(GameState.money));
-    const makeTween=(existing,targets,amp,dur)=>{
-      if(existing){ if(existing.remove) existing.remove(); else if(existing.stop) existing.stop(); }
-      if(!scene.tweens) return null;
-      return scene.tweens.add({targets,x:`+=${amp}`,duration:dur,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
-    };
-    cloudHeartTween=makeTween(cloudHeartTween,[cloudHeart,loveText],amps[loveIdx],durs[loveIdx]);
-    cloudDollarTween=makeTween(cloudDollarTween,[cloudDollar,moneyText,moneyDollar],amps[moneyIdx],durs[moneyIdx]);
-  }
-
-  function updateCloudPositions(){
-    if(cloudDollar){
-      const ratio=Math.min(MAX_M,Math.max(0,GameState.money))/MAX_M;
-      const newY=MONEY_BOTTOM_Y-(MONEY_BOTTOM_Y-MONEY_TOP_Y)*ratio;
-      cloudDollar.y=newY;
-      const centerX = cloudDollar.x + cloudDollar.displayWidth/2;
-      const centerY = newY + cloudDollar.displayHeight/2;
-      moneyText.setPosition(centerX, centerY);
-      if(moneyDollar){
-        moneyDollar.setPosition(
-          centerX - moneyText.displayWidth/2 - moneyDollar.displayWidth/2,
-          centerY
-        );
-      }
-    }
-    if(cloudHeart){
-      const ratio=Math.min(MAX_L,Math.max(0,GameState.love))/MAX_L;
-      const newY=LOVE_BOTTOM_Y-(LOVE_BOTTOM_Y-LOVE_TOP_Y)*ratio;
-      cloudHeart.y=newY;
-      loveText.setPosition(
-        cloudHeart.x - cloudHeart.displayWidth/2,
-        newY + cloudHeart.displayHeight/2
-      );
-    }
-  }
-
-  function updateMoneyDisplay(){
-    if(!moneyText || !moneyDollar) return;
-    const val = receipt(GameState.money);
-    moneyDollar.setText(val.charAt(0));
-    moneyText.setText(val.slice(1));
-    updateCloudPositions();
-  }
-
-  function countPrice(text, scene, from, to, baseLeft, baseY=15){
-    if(!text || !scene) return;
-    const duration = dur(400);
-    if(scene.tweens && scene.tweens.addCounter){
-      scene.tweens.addCounter({
-        from,
-        to,
-        duration,
-        onUpdate:tween=>{
-          text.setText(receipt(tween.getValue()));
-          text.setPosition(baseLeft + text.displayWidth/2, baseY);
-        },
-        onComplete:()=>{
-          text.setText(receipt(to));
-          text.setPosition(baseLeft + text.displayWidth/2, baseY);
-        }
-      });
-    } else {
-      text.setText(receipt(to));
-      text.setPosition(baseLeft + text.displayWidth/2, baseY);
-    }
-  }
-
-  function cleanupFloatingEmojis(){
-    floatingEmojis.slice().forEach(e=>{
-      if(e && e.destroy) e.destroy();
-      if (typeof removeFloatingEmoji === 'function') {
-        removeFloatingEmoji(e);
-      } else if (GameState && typeof GameState.removeFloatingEmoji === 'function') {
-        GameState.removeFloatingEmoji(e);
-      } else {
-        const i = floatingEmojis.indexOf(e);
-        if(i !== -1) floatingEmojis.splice(i,1);
-      }
-    });
-  }
 
   const HEART_EMOJI_LIST = Object.values(HEART_EMOJIS).filter(Boolean);
 
@@ -560,9 +408,8 @@ export function setupGame(){
   let priceValueYOffset = 15;
   let truck, girl;
   let sideCText;
-  let sideCAlpha=0;
+let sideCAlpha=0;
   let sideCFadeTween=null;
-  let cloudHeartTween=null, cloudDollarTween=null;
   let endOverlay=null;
   // hearts or anger symbols currently animating
 
@@ -794,7 +641,7 @@ export function setupGame(){
     if(moneyDollar) moneyDollar.setInteractive({ useHandCursor:true });
     loveText.setInteractive({ useHandCursor:true });
     const moneyClick=()=>{
-      GameState.money = +(GameState.money + 20).toFixed(2);
+      updateMoney(20);
       updateMoneyDisplay();
       animateStatChange(moneyText, this, 1);
       if(moneyDollar) animateStatChange(moneyDollar, this, 1);
@@ -1212,7 +1059,7 @@ export function setupGame(){
     dialogBg.setAlpha(1);
     dialogText.setAlpha(1);
     dialogCoins.setAlpha(1);
-    GameState.activeCustomer=GameState.queue[0]||null;
+    setActiveCustomer(GameState.queue[0]||null);
     if(!GameState.activeCustomer) return;
     const c=GameState.activeCustomer;
     if(c.isDog && c.owner && c.owner.dogWaitEvent){
@@ -1315,13 +1162,9 @@ export function setupGame(){
     drawDialogBubble(c.sprite.x, c.sprite.y, bubbleColor);
 
 
-    const ticketW = c.isDog
-      ? dialogPriceBox.width
-      : (dialogPriceTicket ? dialogPriceTicket.displayWidth : dialogPriceBox.width);
     const ticketH = c.isDog
       ? dialogPriceBox.height
       : (dialogPriceTicket ? dialogPriceTicket.displayHeight : dialogPriceBox.height);
-    const ticketOffset = ticketW / 2 + 10;
 
     const truckRef = (typeof truck !== 'undefined' && truck) ? truck : null;
 
@@ -1867,7 +1710,7 @@ export function setupGame(){
 
     const tipPct=type==='sell'? (totalCost>0? Math.round((tip/totalCost)*100):0):0;
     const customer=current.sprite;
-    GameState.activeCustomer=null;
+    setActiveCustomer(null);
 
     const finish=()=>{
       GameState.saleInProgress = false;
@@ -1997,7 +1840,7 @@ export function setupGame(){
         current.waitingForDog = true;
         startDogWaitTimer(this, current);
         current.exitHandler = exit;
-        GameState.activeCustomer = dogCust;
+        setActiveCustomer(dogCust);
         // Keep the order marked in progress until the dog finishes
         GameState.orderInProgress = true;
         showDialog.call(this);
@@ -2233,7 +2076,7 @@ export function setupGame(){
             stopSellGlowSparkle.call(this, () => {
               clearDialog.call(this);
               ticket.setVisible(false);
-              GameState.money=+(GameState.money+mD).toFixed(2);
+              updateMoney(mD);
               updateMoneyDisplay();
               animateStatChange(moneyText, this, mD);
               if(moneyDollar) animateStatChange(moneyDollar, this, mD);
@@ -2290,7 +2133,7 @@ export function setupGame(){
             onComplete: () => {
               clearDialog.call(this);
               ticket.setVisible(false);
-              GameState.money = +(GameState.money + mD).toFixed(2);
+              updateMoney(mD);
               updateMoneyDisplay();
               animateStatChange(moneyText, this, mD);
               if(moneyDollar) animateStatChange(moneyDollar, this, mD);
@@ -2392,7 +2235,7 @@ export function setupGame(){
           const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
               clearDialog.call(this);
               ticket.setVisible(false);
-              GameState.money=+(GameState.money+mD).toFixed(2);
+              updateMoney(mD);
               updateMoneyDisplay();
               animateStatChange(moneyText, this, mD);
               if(moneyDollar) animateStatChange(moneyDollar, this, mD);
@@ -2478,7 +2321,7 @@ export function setupGame(){
           reportLine1.setVisible(false).alpha=1;
           reportLine2.setVisible(false).alpha=1;
           reportLine3.setVisible(false).alpha=1;
-          GameState.money=+(GameState.money+mD).toFixed(2);
+          updateMoney(mD);
           updateMoneyDisplay();
           animateStatChange(moneyText, this, mD);
           if(moneyDollar) animateStatChange(moneyDollar, this, mD);
@@ -4572,6 +4415,7 @@ function dogsBarkAtFalcon(){
   }
 
 
+
   function restartGame(overlay){
     const scene=this;
     scene.tweens.killAll();
@@ -4623,7 +4467,7 @@ function dogsBarkAtFalcon(){
       if(GameState.activeCustomer.heartEmoji){ GameState.activeCustomer.heartEmoji.destroy(); GameState.activeCustomer.heartEmoji=null; }
       GameState.activeCustomer.sprite.destroy();
     }
-    GameState.activeCustomer=null;
+    setActiveCustomer(null);
     cleanupDogs(scene);
     GameState.queue.forEach(c => {
       if(c.walkTween){ if(c.walkTween.isPlaying && c.walkTween.stop) c.walkTween.stop(); if(c.walkTween.remove) c.walkTween.remove(); c.walkTween=null; }
@@ -4654,6 +4498,7 @@ function dogsBarkAtFalcon(){
       },[],scene);
     }
   }
+
 
    Assets = { keys, requiredAssets, preload };
    Scene = { create, showStartScreen, playIntro };

@@ -17,6 +17,7 @@ import {
   queueLimit as customersQueueLimit
 } from '../customers.js';
 import { GameState } from '../state.js';
+import { setActiveCustomer, addWanderer } from '../stateHelpers.js';
 import { CustomerState } from '../constants.js';
 
 import { showDialog } from '../dialog.js';
@@ -182,7 +183,7 @@ export function lureNextWanderer(scene, specific) {
     // the owner reaches the counter.
 
     if (typeof debugLog === 'function') debugLog('customer lured to queue');
-    GameState.activeCustomer = GameState.queue[0];
+    setActiveCustomer(GameState.queue[0]);
     let targetX;
     let targetY;
     if (queueIdx === 0 && !GameState.orderInProgress && !GameState.saleInProgress) {
@@ -271,7 +272,7 @@ export function moveQueueForward() {
       if (idx === 0) willShow = true;
     }
   });
-  GameState.activeCustomer = GameState.queue[0] || null;
+  setActiveCustomer(GameState.queue[0] || null);
   if (GameState.activeCustomer) {
     if (!willShow && GameState.activeCustomer.sprite.y === ORDER_Y && GameState.activeCustomer.sprite.x === ORDER_X) {
       if (typeof debugLog === 'function') debugLog('customer reached order position');
@@ -646,7 +647,7 @@ export function spawnCustomer() {
   const firstTarget = c.loopsRemaining > 0 ? insideX : exitX;
   startW(this, c, firstTarget, c.loopsRemaining === 0);
 
-  GameState.wanderers.push(c);
+  addWanderer(c);
   scheduleNextSpawn(this);
   // Wanderers should decide to approach the cart on their own rather than being
   // immediately pulled into line. The intro or queue logic will lure them when

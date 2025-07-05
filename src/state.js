@@ -66,7 +66,7 @@ export function loadAchievements() {
     if (data.badgeCounts && typeof data.badgeCounts === 'object') {
       GameState.badgeCounts = { ...data.badgeCounts };
     }
-  } catch (err) {
+  } catch {
     // ignore malformed storage
   }
 }
@@ -76,7 +76,7 @@ export function saveAchievements() {
   try {
     const data = { badges: GameState.badges, badgeCounts: GameState.badgeCounts };
     window.localStorage.setItem('coffeeGirlAchievements', JSON.stringify(data));
-  } catch (err) {
+  } catch {
     // ignore quota errors
   }
 }
@@ -87,7 +87,7 @@ export function resetAchievements() {
   if (typeof window !== 'undefined' && window.localStorage) {
     try {
       window.localStorage.removeItem('coffeeGirlAchievements');
-    } catch (err) {
+    } catch {
       // ignore quota errors
     }
   }

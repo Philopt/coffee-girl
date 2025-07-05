@@ -466,7 +466,7 @@ function showStartScreen(scene){
       if(typeof showResetConfirm === 'function') showResetConfirm();
     }, 0x555555);
   } else {
-    miniGameCup.setAlpha(0);
+    if (miniGameCup) miniGameCup.setAlpha(0);
   }
 
   badgeIcons.forEach(i=>i.destroy());

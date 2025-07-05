@@ -751,7 +751,8 @@ export function setupGame(){
       // Use screen blend for lighter overlay
       .setBlendMode(Phaser.BlendModes.SCREEN)
 
-      .setAlpha(0.6)
+      // start hidden; fade in later
+      .setAlpha(0)
       .setPostPipeline('desaturate');
 
     const dollarPipeline = cloudDollar.getPostPipeline(DesaturatePipeline);
@@ -764,13 +765,13 @@ export function setupGame(){
       .setOrigin(0.5)
       .setDepth(2)
       .setBlendMode(Phaser.BlendModes.NEGATIVE)
-      .setAlpha(1)
+      .setAlpha(0)
       .setScale(0.5);
     moneyText=this.add.text(0,0,moneyStr.slice(1),{font:'26px Arial, sans-serif',fill:'#fff'})
       .setOrigin(0.5)
       .setDepth(2)
       .setBlendMode(Phaser.BlendModes.NEGATIVE)
-      .setAlpha(1);
+      .setAlpha(0);
     updateMoneyDisplay();
     cloudHeart=this.add.sprite(0,35,'cloudHeart')
       .setOrigin(1,0)
@@ -779,7 +780,8 @@ export function setupGame(){
       // Use screen blend for lighter overlay
       .setBlendMode(Phaser.BlendModes.SCREEN)
 
-      .setAlpha(0.6)
+      // start hidden; fade in later
+      .setAlpha(0)
       .setPostPipeline('desaturate');
 
     const heartPipeline = cloudHeart.getPostPipeline(DesaturatePipeline);
@@ -791,7 +793,7 @@ export function setupGame(){
       .setOrigin(0.5)
       .setDepth(2)
       .setBlendMode(Phaser.BlendModes.NEGATIVE)
-      .setAlpha(1);
+      .setAlpha(0);
     loveText.setPosition(
       cloudHeart.x - cloudHeart.displayWidth/2,
       cloudHeart.y + cloudHeart.displayHeight/2
@@ -816,6 +818,11 @@ export function setupGame(){
 
     // gentle cloud animations handled by updateCloudStatus
     updateCloudStatus(this);
+
+    // fade in HUD elements over time
+    const fadeDuration = dur(20000);
+    this.tweens.add({targets:[cloudDollar,cloudHeart], alpha:0.6, duration:fadeDuration});
+    this.tweens.add({targets:[moneyText,moneyDollar,loveText], alpha:1, duration:fadeDuration, delay:dur(5000)});
 
     // Indicator for available queue slots
     queueLevelText=this.add.text(156,316,'',{font:'16px sans-serif',fill:'#000'})

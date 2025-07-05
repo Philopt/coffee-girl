@@ -42,6 +42,8 @@ function loadGameState(context) {
     }
   }
   context.GameState = context;
+  if (!('DEBUG' in context)) context.DEBUG = false;
+  if (typeof context.debugLog !== 'function') context.debugLog = () => {};
 }
 
 function loadCustomerState(context) {
@@ -190,6 +192,7 @@ function testSpawnCustomer() {
     maxWanderers: () => 5,
     scheduleNextSpawn: () => {},
     lureNextWanderer: () => {},
+    addWanderer(c) { this.wanderers.push(c); },
     sendDogOffscreen: () => {},
     Assets: { keys: ['c1'] },
     keys: ['c1'],
@@ -207,6 +210,7 @@ function testSpawnCustomer() {
     setDepthFromBottom: () => {},
     HEART_EMOJIS: { 0: '' }
   };
+  context.addWanderer = c => context.wanderers.push(c);
   loadGameState(context);
   loadCustomerState(context);
   vm.createContext(context);
@@ -227,6 +231,7 @@ function testSpawnCustomer() {
           setOrigin() { return this; },
           setShadow() { return this; },
           setDepth() { return this; },
+          setScale() { return this; },
           destroy() {}
         };
       }
@@ -257,6 +262,7 @@ function testSpawnCustomerQueuesWhenEmpty() {
     gameOver: false,
     maxWanderers: () => 5,
     scheduleNextSpawn: () => {},
+    addWanderer(c) { this.wanderers.push(c); },
     sendDogOffscreen: () => {},
     Assets: { keys: ['c1'] },
     keys: ['c1'],
@@ -275,6 +281,7 @@ function testSpawnCustomerQueuesWhenEmpty() {
     HEART_EMOJIS: { 0: '' }
   };
   context.lureNextWanderer = function(){ context.queue.push(context.wanderers.shift()); };
+  context.addWanderer = c => context.wanderers.push(c);
   loadGameState(context);
   loadCustomerState(context);
   vm.createContext(context);
@@ -286,7 +293,7 @@ function testSpawnCustomerQueuesWhenEmpty() {
         return { setScale() { return this; }, setDepth() { return this; }, setAngle() { return this; }, destroy() {} };
       },
       text() {
-        return { setOrigin() { return this; }, setShadow() { return this; }, setDepth() { return this; }, destroy() {} };
+        return { setOrigin() { return this; }, setShadow() { return this; }, setDepth() { return this; }, setScale() { return this; }, destroy() {} };
       }
     },
     tweens: { add(cfg) { if (cfg.onComplete) cfg.onComplete(); return { progress: 0 }; } },
@@ -315,6 +322,7 @@ function testSpawnCustomerEmptyAvailable() {
     gameOver: false,
     maxWanderers: () => 5,
     scheduleNextSpawn() { called.scheduled = true; },
+    addWanderer(c) { this.wanderers.push(c); },
     sendDogOffscreen: () => {},
     Assets: { keys: [] },
     keys: [],
@@ -340,7 +348,7 @@ function testSpawnCustomerEmptyAvailable() {
   const scene = {
     add: {
       sprite() { throw new Error('sprite should not be created'); },
-      text() { return { setOrigin() { return this; }, setShadow() { return this; }, setDepth() { return this; }, destroy() {} }; }
+      text() { return { setOrigin() { return this; }, setShadow() { return this; }, setDepth() { return this; }, setScale() { return this; }, destroy() {} }; }
     },
     tweens: { add() { return { progress: 0 }; } },
     time: { addEvent() { return { remove() {} }; }, delayedCall() { return { remove() {} }; } }
@@ -371,12 +379,16 @@ function testHandleActionSell() {
     showEnd: () => {},
     scheduleNextSpawn: () => {},
     updateSideC: () => {},
+    updateMoneyDisplay: () => {},
     clearDialog: () => {},
     animateStatChange: () => {},
     emphasizePrice: () => {},
     blinkPriceBorder: () => {},
     flashMoney: () => {},
+    growSellGlow: () => {},
     stopSellGlowSparkle: cb => { if (cb) cb(); },
+    moneyDollar: null,
+    FIRED_THRESHOLD: 100,
     btnSell: { glow: {} },
     moneyText: { x: 0, y: 0, width: 50, setText() { return this; } },
     loveText: { setText() { return this; } },
@@ -388,7 +400,7 @@ function testHandleActionSell() {
     dialogPriceContainer: { x:0, y:0, scaleX:1, scaleY:1, setVisible() { return this; }, setPosition(x,y){ this.x=x; this.y=y; return this; }, setScale(s){ this.scaleX=s; this.scaleY=s; return this; }, remove(){ return this; } },
     dialogDrinkEmoji: { x:0, y:0, depth:1, followEvent:null, setVisible(){ return this; }, setPosition(x,y){ this.x=x; this.y=y; return this; }, clearTint(){ return this; } },
     paidStamp: { setText() { return this; }, setScale() { return this; }, setPosition() { return this; }, setAngle() { return this; }, setVisible() { return this; } },
-    tipText: { setText() { return this; }, setScale() { return this; }, setPosition() { return this; }, setAngle() { return this; }, setVisible() { return this; } },
+    tipText: { setText() { return this; }, setScale() { return this; }, setPosition() { return this; }, setAngle() { return this; }, setVisible() { return this; }, setDepth() { return this; }, setAlpha() { return this; } },
     dialogBg: { setVisible() { return this; } },
     dialogText: { setVisible() { return this; } },
     supers: {},
@@ -397,6 +409,8 @@ function testHandleActionSell() {
     countPrice: () => {},
     setDepthFromBottom: () => {}
   };
+  context.updateMoney = delta => { context.money = +(context.money + delta).toFixed(2); };
+  context.setActiveCustomer = c => { context.activeCustomer = c; };
   loadGameState(context);
   loadCustomerState(context);
   vm.createContext(context);
@@ -405,12 +419,35 @@ function testHandleActionSell() {
   const handleAction = context.fn;
   const scene = {
     tweens: {
-      add(cfg) { if (cfg.onComplete) cfg.onComplete.call(cfg.callbackScope || null); return {}; },
+      add(cfg) { if (cfg.onComplete) cfg.onComplete.call(cfg.callbackScope || null); return { stop() {} }; },
       createTimeline({ callbackScope, onComplete }) { return { add() {}, play() { if (onComplete) onComplete.call(callbackScope); } }; }
     },
     time: { delayedCall(d, cb, args, s) { if (cb) cb.apply(s || this, args || []); return {}; } }
   };
-  const sprite = { destroy() {}, setDepth() { return this; }, x: 0, y: 0 };
+  const sprite = {
+    destroy() {},
+    setDepth() { return this; },
+    x: 0,
+    y: 0,
+    displayHeight: 10,
+    depth: 1,
+    scene: {
+      add: {
+        text() {
+          return {
+            setOrigin() { return this; },
+            setShadow() { return this; },
+            setDepth() { return this; },
+            setPosition() { return this; },
+            setScale() { return this; },
+            setTint() { return this; },
+            clearTint() { return this; },
+            destroy() {}
+          };
+        }
+      }
+    }
+  };
   const cust = { sprite, orders: [{ coins: 5.75, req: 'Coffee', price: 5, qty: 1 }], atOrder: true };
   context.activeCustomer = cust;
   context.queue = [cust];
@@ -504,7 +541,7 @@ function testStartButtonPlaysIntro() {
   const scene = {
     add: {
       rectangle() { return { setDepth() { return this; }, setStrokeStyle() { return this; }, destroy() { this.destroyed = true; } }; },
-      text() { return { setOrigin() { return this; }, setDepth() { return this; }, width: 100, height: 40 }; },
+      text() { return { setOrigin() { return this; }, setDepth() { return this; }, setScale() { return this; }, width: 100, height: 40 }; },
       graphics() { return { fillStyle() { return this; }, fillRoundedRect() { return this; } }; },
       sprite() { return { setOrigin() { return this; }, setScale() { return this; }, setDepth() { return this; }, setVisible() { return this; } }; },
       zone() {
@@ -731,7 +768,7 @@ function testAnimateLoveChange() {
   vm.runInContext(funcSrc + '\nfn=animateLoveChange;', context);
   const animateLoveChange = context.fn;
   const scene = {
-    add: { text() { return { setOrigin() { return this; }, setDepth() { return this; }, destroy() {} }; } },
+    add: { text() { return { setOrigin() { return this; }, setDepth() { return this; }, setScale() { return this; }, destroy() {} }; } },
     tweens: { add(cfg) { if (cfg.onComplete) cfg.onComplete(); return {}; }, createTimeline({ callbackScope }) { const steps = []; return { add(cfg) { steps.push(cfg); }, play() { steps.forEach(s => { if (s.onComplete) s.onComplete.call(callbackScope || null); }); } }; } },
     time: { delayedCall(d, cb, args, s) { if (cb) cb.apply(s || this, args || []); return {}; } }
   };
@@ -949,6 +986,99 @@ function testLureNextWandererQueueLimit() {
   console.log('lureNextWanderer queue limit test passed');
 }
 
+function testLureNextWandererPositioning() {
+  const code = extractFunction(['entities/customerQueue.js'], 'lureNextWanderer');
+  if (!code) throw new Error('lureNextWanderer not found');
+  const context = {
+    queue: [],
+    wanderers: [],
+    activeCustomer: null,
+    orderInProgress: false,
+    saleInProgress: false,
+    queueLimit: () => 5,
+    ORDER_X: 100,
+    ORDER_Y: 50,
+    QUEUE_X: 80,
+    QUEUE_Y: 60,
+    QUEUE_SPACING: 20,
+    QUEUE_OFFSET: 5,
+    LURE_SPEED: 1,
+    setActiveCustomer(c) { this.activeCustomer = c; },
+    setDepthFromBottom() {},
+    approachTarget(scene, sprite, dir, x, y, cb) { sprite.x = x; sprite.y = y; if (cb) cb(); return {}; },
+    registerArrival() {},
+    debugLog() {},
+    fn: null
+  };
+  loadGameState(context);
+  loadCustomerState(context);
+  vm.createContext(context);
+  const w1 = { sprite: { x: 110, y: 0, setDepth() {}, setScale() {} } };
+  const w2 = { sprite: { x: 30, y: 0, setDepth() {}, setScale() {} } };
+  context.wanderers.push(w1, w2);
+  vm.runInContext(code + '\nfn=lureNextWanderer;', context);
+  const lureNextWanderer = context.fn;
+  const scene = { time: { delayedCall() { return {}; } } };
+  lureNextWanderer(scene);
+  assert.strictEqual(context.queue.length, 1, 'first wanderer not queued');
+  assert.strictEqual(context.wanderers.length, 1, 'wanderer not removed');
+  assert.strictEqual(context.queue[0], w1, 'wrong wanderer queued first');
+  assert.strictEqual(context.activeCustomer, w1, 'activeCustomer not first');
+  assert.strictEqual(w1.sprite.x, context.ORDER_X, 'first wanderer x not order');
+  assert.strictEqual(w1.sprite.y, context.ORDER_Y, 'first wanderer y not order');
+  lureNextWanderer(scene);
+  assert.strictEqual(context.queue.length, 2, 'second wanderer not queued');
+  assert.strictEqual(context.queue[1], w2, 'wrong second wanderer');
+  assert.strictEqual(w2.sprite.x, context.QUEUE_X - context.QUEUE_SPACING, 'second wanderer x');
+  assert.strictEqual(w2.sprite.y, context.QUEUE_Y - context.QUEUE_OFFSET, 'second wanderer y');
+  console.log('lureNextWanderer positioning test passed');
+}
+
+function testMoveQueueForwardAdvance() {
+  const code = extractFunction(['entities/customerQueue.js'], 'moveQueueForward');
+  if (!code) throw new Error('moveQueueForward not found');
+  const context = {
+    queue: [],
+    wanderers: [],
+    activeCustomer: null,
+    orderInProgress: false,
+    saleInProgress: false,
+    girlReady: false,
+    queueLimit: () => 5,
+    ORDER_X: 100,
+    ORDER_Y: 50,
+    QUEUE_X: 80,
+    QUEUE_Y: 60,
+    QUEUE_SPACING: 20,
+    QUEUE_OFFSET: 5,
+    LURE_SPEED: 1,
+    CUSTOMER_SPEED: 1,
+    lureNextWanderer() {},
+    showDialog() {},
+    setActiveCustomer(c) { this.activeCustomer = c; },
+    approachTarget(scene, sprite, dir, x, y, cb) { sprite.x = x; sprite.y = y; if (cb) cb(); return {}; },
+    debugLog() {},
+    fn: null
+  };
+  loadGameState(context);
+  loadCustomerState(context);
+  vm.createContext(context);
+  const c1 = { sprite: { x: context.ORDER_X, y: context.ORDER_Y, setScale() {}, displayHeight: 10 }, atOrder: true, dir: 1, walkTween: null };
+  const c2 = { sprite: { x: context.QUEUE_X - context.QUEUE_SPACING, y: context.QUEUE_Y - context.QUEUE_OFFSET, setScale() {}, displayHeight: 10 }, atOrder: false, dir: 1, walkTween: null };
+  context.queue.push(c1, c2);
+  context.activeCustomer = c1;
+  vm.runInContext(code + '\nfn=moveQueueForward;', context);
+  const moveQueueForward = context.fn;
+  context.queue.shift();
+  context.activeCustomer = null;
+  moveQueueForward.call(context);
+  assert.strictEqual(c2.sprite.x, context.ORDER_X, 'second customer x not moved');
+  assert.strictEqual(c2.sprite.y, context.ORDER_Y, 'second customer y not moved');
+  assert.strictEqual(context.activeCustomer, c2, 'activeCustomer not updated');
+  assert.strictEqual(context.orderInProgress, true, 'orderInProgress not set');
+  console.log('moveQueueForward advance test passed');
+}
+
 function testShowEndRestart() {
   const showEndSrc = extractFunction(['endings.js', 'ui.js', 'main.js'], 'showEnd');
   const restartSrc = extractFunction(['endings.js', 'ui.js', 'main.js'], 'restartGame');
@@ -997,7 +1127,7 @@ function testShowEndRestart() {
   const scene = {
     add: {
       rectangle() { return { setDepth() { return this; }, setStrokeStyle() { return this; }, destroy() { this.destroyed = true; } }; },
-      text() { return { setOrigin() { return this; }, setDepth() { return this; }, width: BUTTON_WIDTH, height: BUTTON_HEIGHT, destroy() { this.destroyed = true; } }; },
+      text() { return { setOrigin() { return this; }, setDepth() { return this; }, setScale() { return this; }, width: BUTTON_WIDTH, height: BUTTON_HEIGHT, destroy() { this.destroyed = true; } }; },
       zone(x, y, w, h) { return { setOrigin() { return this; }, setInteractive() { return this; }, on(event, cb) { if (event === 'pointerdown') pointerCb = cb; return this; }, width: w, height: h }; },
       image() { return { setScale() { return this; }, setDepth() { return this; }, destroy() {} }; }
     },
@@ -1192,6 +1322,8 @@ async function run() {
     testScheduleNextSpawnZeroLimit();
     testSparrowRemovalOffscreen();
     testLureNextWandererQueueLimit();
+    testLureNextWandererPositioning();
+    testMoveQueueForwardAdvance();
     testShowEndRestart();
     testNextMoodProgression();
     testEmojiFor();

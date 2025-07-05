@@ -5,7 +5,7 @@ import { GameState, resetAchievements } from './state.js';
 import { debugLog, DEBUG } from './debug.js';
 import { dur } from './ui.js';
 import { spawnSparrow, scatterSparrows } from './sparrow.js';
-import { createGrayscaleTexture, createGlowTexture } from './ui/helpers.js';
+import { createGrayscaleTexture, createGlowTexture, playIfNotEmpty } from './ui/helpers.js';
 
 let startOverlay = null;
 let startButton = null;
@@ -198,7 +198,7 @@ function playOpening(scene){
       alpha: 0,
       duration: 200
     });
-    tl.play();
+    playIfNotEmpty(tl);
   };
 
   let thrustEvent = null;
@@ -240,7 +240,7 @@ function playOpening(scene){
       }
     }
   });
-  tl.play();
+  playIfNotEmpty(tl);
 }
 
 function showStartScreen(scene){
@@ -887,7 +887,7 @@ function showStartScreen(scene){
     if (fadeTargets.length) {
       tl.add({targets:fadeTargets,alpha:0,duration:600});
     }
-    tl.play();
+    playIfNotEmpty(tl);
   });
 
 }
@@ -1048,7 +1048,7 @@ function playIntro(scene){
       hopOut();
     }
   });
-  intro.play();
+  playIfNotEmpty(intro);
 }
 
 export { playOpening, showStartScreen, playIntro, hideStartMessages, hideStartScreen };

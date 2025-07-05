@@ -2,7 +2,7 @@ import { ORDER_X, ORDER_Y } from '../customers.js';
 import { GameState } from '../state.js';
 import { CustomerState } from '../constants.js';
 import { dur, scaleForY } from '../ui.js';
-import { setDepthFromBottom, createGlowTexture } from '../ui/helpers.js';
+import { setDepthFromBottom, createGlowTexture, playIfNotEmpty } from '../ui/helpers.js';
 import { scatterSparrows } from '../sparrow.js';
 
 export const DOG_MIN_Y = ORDER_Y + 20;
@@ -126,7 +126,7 @@ export function animateDogGrowth(scene, dog, cb) {
     arrow.destroy();
     if(cb) cb();
   }, []);
-  tl.play();
+  playIfNotEmpty(tl);
 }
 
 export function animateDogPowerUp(scene, dog, cb, finalTint = null){
@@ -223,7 +223,7 @@ export function animateDogPowerUp(scene, dog, cb, finalTint = null){
     scaleDog(dog);
     if(cb) cb();
   }, []);
-  tl.play();
+  playIfNotEmpty(tl);
 }
 
 // Keep the dog positioned near its owner and react to other customers.
@@ -338,7 +338,7 @@ export function updateDog(owner) {
       if (dog.anims && dog.play) {
         dog.play('dog_walk');
       }
-      tl.play();
+      playIfNotEmpty(tl);
       if (seenBird) scatterSparrows(this);
       return;
     }
@@ -587,7 +587,7 @@ export function dogTruckRuckus(scene, dog){
     }
   }, []);
   if (dog.anims && dog.play) { dog.play('dog_walk'); }
-  tl.play();
+  playIfNotEmpty(tl);
 }
 
 export function dogRefuseJumpBark(dog, scatter=true){

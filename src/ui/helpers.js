@@ -158,4 +158,13 @@ export function createHpBar(scene, width=40, height=6, maxHp=10){
   return container;
 }
 
+export function playIfNotEmpty(tl){
+  if(!tl || typeof tl.play!=="function") return;
+  if((Array.isArray(tl.data) && tl.data.length>0) || tl.totalData>0){
+    tl.play();
+  } else if(typeof console!=='undefined' && console.warn){
+    console.warn('Attempted to play empty TweenChain');
+  }
+}
+
 export { blinkButton as default };

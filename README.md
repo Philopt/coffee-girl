@@ -53,7 +53,8 @@ The game uses [Phaser](https://phaser.io/). It will load `lib/phaser.min.js` by 
 ## Debugging
 
 Append `?debug=1` to the game URL or set `localStorage.DEBUG = '1'` in the
-browser console to enable verbose logging. For example:
+browser console to enable verbose logging. For a full explanation of the helper
+that powers this feature, see [docs/debug-js.md](docs/debug-js.md). For example:
 
 ```
 http://localhost:8080/?debug=1

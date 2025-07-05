@@ -19,7 +19,8 @@ import {
 import { GameState } from '../state.js';
 import { CustomerState } from '../constants.js';
 
-import { showDialog, Assets } from '../main.js';
+import { showDialog } from '../dialog.js';
+import { Assets } from '../main.js';
 import { startWander, loopsForState } from './wanderers.js';
 import { DOG_TYPES, updateDog, scaleDog } from './dog.js';
 import { setDepthFromBottom } from '../ui/helpers.js';

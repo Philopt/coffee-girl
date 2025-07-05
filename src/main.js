@@ -895,6 +895,12 @@ export function setupGame(){
       .setVisible(false)
       .setScale(truck.scaleX * 1.10, truck.scaleY * 1.20);
     dialogPriceShadow.setMask(ticketShadowMask.createBitmapMask());
+    // keep the mask aligned with the truck as it moves or scales
+    this.events.on('update', () => {
+      if (!ticketShadowMask || !truck) return;
+      ticketShadowMask.setPosition(truck.x, truck.y);
+      ticketShadowMask.setScale(truck.scaleX * 1.10, truck.scaleY * 1.20);
+    });
   }
   createGrayscaleTexture(this, 'price_ticket', 'price_ticket_gray');
   dialogPupCup=this.add.image(0,0,'pupcup2')

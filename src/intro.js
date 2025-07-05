@@ -115,7 +115,7 @@ function playOpening(scene){
     .setScale(2.6)
     .setAngle(-45);
 
-  const tl = scene.add.timeline({paused:true,callbackScope:scene,onComplete:()=>{
+  const tl = scene.add.tweenchain({paused:true,callbackScope:scene,onComplete:()=>{
     if (startWhite) { startWhite.destroy(); startWhite = null; }
   }});
 
@@ -181,7 +181,7 @@ function playOpening(scene){
 
     const targetX = cup.x + Math.cos(ang) * dist;
     const targetY = cup.y + Math.sin(ang) * dist + 30;
-    const tl = scene.add.timeline({paused:true,
+    const tl = scene.add.tweenchain({paused:true,
       callbackScope: scene,
       onComplete: () => cup.destroy()
     });
@@ -854,7 +854,7 @@ function showStartScreen(scene){
     for(let i=0;i<2;i++){
       spawnSparrow(scene,{ground:true});
     }
-    const tl=scene.add.timeline({paused:true,callbackScope:scene,onComplete:()=>{
+    const tl=scene.add.tweenchain({paused:true,callbackScope:scene,onComplete:()=>{
       if (window.hideMiniGame) window.hideMiniGame();
       if(startButton) startButton.destroy();
       if(startOverlay){startOverlay.destroy(); startOverlay=null;}
@@ -991,7 +991,7 @@ function playIntro(scene){
     });
     scene.time.delayedCall(dur(1300), () => smokeEvent.remove(), [], scene);
   }
-  const intro=scene.add.timeline({paused:true,callbackScope:scene});
+  const intro=scene.add.tweenchain({paused:true,callbackScope:scene});
   const hopOut=()=>{
     const startX = GameState.truck.x + GameState.truck.displayWidth / 2 - 20;
     const startY = GameState.truck.y - 10;

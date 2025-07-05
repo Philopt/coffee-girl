@@ -2395,9 +2395,10 @@ export function setupGame(){
           }
           tl.add({
             targets: ticket,
-            x: '-=80',
-            angle: '-=90',
-            duration: dur(80),
+            x: '-=60',
+            angle: '-=30',
+            alpha: 0.6,
+            duration: dur(150),
             ease: 'Cubic.easeOut',
             onStart: () => {
               if(!dialogPriceValue.parentContainer){
@@ -2416,21 +2417,22 @@ export function setupGame(){
             targets: ticket,
             props: {
               x: { value: destX, ease: 'Sine.easeIn' },
-              y: { value: destY, ease: 'Quad.easeIn' }
+              y: { value: destY, ease: 'Bounce.easeOut' }
             },
-            angle: '-=270',
+            angle: '-=540',
             scale: 0,
             alpha: 0,
-            duration: dur(600),
+            duration: dur(700),
+            onUpdate:(tw,t)=>{t.skewX=Math.sin(tw.progress*Math.PI*8)*0.05;},
             onStart: () => {
               if(dialogPriceTicket && dialogPriceTicket.setTint){
                 dialogPriceTicket.setTint(0xffffff);
                 this.tweens.addCounter({
                   from:0,
                   to:1,
-                  duration: dur(600),
-                  onUpdate:t=>{
-                    const p=t.getValue();
+                  duration: dur(700),
+                  onUpdate:tween=>{
+                    const p=tween.getValue();
                     const g=Math.round(255*(1-p));
                     dialogPriceTicket.setTint(Phaser.Display.Color.GetColor(255,g,g));
                   }

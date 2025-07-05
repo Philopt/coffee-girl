@@ -45,10 +45,18 @@ an error if your Node version doesn't match `22.x`.
 
 
 
-The game uses [Phaser](https://phaser.io/). It loads `node_modules/phaser/dist/phaser.min.js` by default. If you prefer the CDN version, replace the script tag in `index.html` with:
+The game uses [Phaser](https://phaser.io/). It now loads the library from the CDN
+by default using:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
+```
+
+If you'd rather bundle Phaser locally, replace the script tag in
+`index.html` with:
+
+```html
+<script src="node_modules/phaser/dist/phaser.min.js"></script>
 ```
 
 ## Debugging

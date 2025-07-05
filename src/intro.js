@@ -144,17 +144,29 @@ function playOpening(scene){
     const dist = Phaser.Math.Between(80, 160);
     const cup = scene.add.image(openingNumber.x, openingNumber.y, 'coffeecup2')
       .setDepth(17)
-      .setScale(scale);
-    scene.tweens.add({
-      targets: cup,
-      x: cup.x + Math.cos(ang) * dist,
-      y: cup.y + Math.sin(ang) * dist,
-      angle: Phaser.Math.Between(-360, 360),
-      alpha: 0,
-      duration: 900,
-      ease: 'Cubic.easeOut',
+      .setScale(scale * 0.8)
+      .setAlpha(1);
+
+    const targetX = cup.x + Math.cos(ang) * dist;
+    const targetY = cup.y + Math.sin(ang) * dist + 30;
+    const tl = scene.tweens.createTimeline({
+      callbackScope: scene,
       onComplete: () => cup.destroy()
     });
+    tl.add({
+      targets: cup,
+      x: targetX,
+      y: targetY,
+      angle: Phaser.Math.Between(-360, 360),
+      duration: 700,
+      ease: 'Cubic.easeOut'
+    });
+    tl.add({
+      targets: cup,
+      alpha: 0,
+      duration: 200
+    });
+    tl.play();
   };
 
   let thrustEvent = null;

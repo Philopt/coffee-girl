@@ -15,5 +15,10 @@ export const baseConfig = {
     width: 480,
     height: 640
   },
-  pixelArt: true
+  pixelArt: true,
+  audio: {
+    // Disable WebAudio to avoid creating an AudioContext when we don't
+    // use any sounds. This prevents browser autoplay warnings.
+    noAudio: true
+  }
 };

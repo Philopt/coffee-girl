@@ -23,10 +23,10 @@ an error if your Node version doesn't match `22.x`.
    Both commands run `http-server` on `http://localhost:8080`. `npm run dev` logs additional debugging information. Open that URL in your browser. 
   Click **Clock In** when it appears to begin the game.
 
-  Achievements appear as small icons on the phone screen. Empty slots fade in
-  as you unlock endings, filling from the bottom row to the top. After every
-  badge is earned, a gold coffee cup appears in its own row above the icons to
-  launch the mini game. Its shadow only shows when you're one achievement away.
+  Achievements now appear as small icons on the phone screen. The mini game
+  coffee cup lands in the bottom-left slot and new slots fade in as you earn
+  endings, filling from the bottom row to the top. Each portrait shows a
+  count if you repeat that ending.
 
   The game now loads `src/game.js` as an ES module using
   `<script type="module" src="src/game.js"></script>` in `index.html`. If the page

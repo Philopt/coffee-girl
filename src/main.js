@@ -3491,7 +3491,7 @@ function dogsBarkAtFalcon(){
           y:startY+Math.sin(ang)*dist,
           angle:Phaser.Math.Between(-180,180),
           alpha:0,
-          duration:dur(500),
+          duration:dur(800),
           ease:'Cubic.easeOut',
           onComplete:()=>{ const i=GameState.activeBursts.indexOf(cup); if(i!==-1) GameState.activeBursts.splice(i,1); cup.destroy(); }
         });

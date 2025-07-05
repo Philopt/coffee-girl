@@ -601,7 +601,7 @@ let sideCAlpha=0;
       .setDepth(2)
       .setBlendMode(Phaser.BlendModes.NEGATIVE)
       .setAlpha(0);
-    updateMoneyDisplay();
+    updateMoneyDisplay(this);
     cloudHeart=this.add.sprite(0,35,'cloudHeart')
       .setOrigin(1,0)
       .setDepth(1)
@@ -632,7 +632,7 @@ let sideCAlpha=0;
     loveText.setInteractive({ useHandCursor:true });
     const moneyClick=()=>{
       updateMoney(20);
-      updateMoneyDisplay();
+      updateMoneyDisplay(this);
       animateStatChange(moneyText, this, 1);
       if(moneyDollar) animateStatChange(moneyDollar, this, 1);
     };
@@ -2067,7 +2067,7 @@ let sideCAlpha=0;
               clearDialog.call(this);
               ticket.setVisible(false);
               updateMoney(mD);
-              updateMoneyDisplay();
+              updateMoneyDisplay(this);
               animateStatChange(moneyText, this, mD);
               if(moneyDollar) animateStatChange(moneyDollar, this, mD);
               done();
@@ -2124,7 +2124,7 @@ let sideCAlpha=0;
               clearDialog.call(this);
               ticket.setVisible(false);
               updateMoney(mD);
-              updateMoneyDisplay();
+              updateMoneyDisplay(this);
               animateStatChange(moneyText, this, mD);
               if(moneyDollar) animateStatChange(moneyDollar, this, mD);
               done();
@@ -2226,7 +2226,7 @@ let sideCAlpha=0;
               clearDialog.call(this);
               ticket.setVisible(false);
               updateMoney(mD);
-              updateMoneyDisplay();
+              updateMoneyDisplay(this);
               animateStatChange(moneyText, this, mD);
               if(moneyDollar) animateStatChange(moneyDollar, this, mD);
               done();
@@ -2312,7 +2312,7 @@ let sideCAlpha=0;
           reportLine2.setVisible(false).alpha=1;
           reportLine3.setVisible(false).alpha=1;
           updateMoney(mD);
-          updateMoneyDisplay();
+          updateMoneyDisplay(this);
           animateStatChange(moneyText, this, mD);
           if(moneyDollar) animateStatChange(moneyDollar, this, mD);
           done();
@@ -4445,7 +4445,7 @@ function dogsBarkAtFalcon(){
       if (girl.clearTint) girl.clearTint();
     }
     GameState.money=10.00; GameState.love=3;
-    updateMoneyDisplay();
+    updateMoneyDisplay(scene);
     loveText.setText(String(GameState.love));
     moneyText.setColor('#fff');
     loveText.setColor('#fff');

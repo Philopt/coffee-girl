@@ -570,7 +570,7 @@ function testStartButtonPlaysIntro() {
 }
 
 function testShowDialogButtons() {
-  const match = readAndMatch(['ui.js', 'main.js'], /(?:export\s+)?function showDialog\(\)[\s\S]*?tipText\.setVisible\(false\);[\s\S]*?\n\s*\}/);
+  const match = readAndMatch(['dialog.js', 'ui.js', 'main.js'], /(?:export\s+)?function showDialog\(\)[\s\S]*?tipText\.setVisible\(false\);[\s\S]*?\n\s*\}/);
   if (!match) throw new Error('showDialog not found');
   const makeObj = () => ({
     visible: false,

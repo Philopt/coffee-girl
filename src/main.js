@@ -18,9 +18,11 @@ import { restartGame } from "./endings.js";
 import { keys, requiredAssets, preload as preloadAssets, receipt, emojiFor } from './assets.js';
 import { playOpening, showStartScreen, playIntro } from './intro.js';
 import DesaturatePipeline from './desaturatePipeline.js';
+import { initDialogAssets, fadeInButtons, blowButtonsAway, drawDialogBubble, resetPriceBox, showDialog, clearDialog, DRINK_HOLD_OFFSET, DART_MIN_DURATION, DART_MAX_SPEED } from './dialog.js';
 
 export let Assets, Scene, Customers, config;
 export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;
+
 // Minimum duration when a customer dashes to the table
 const DART_MIN_DURATION = 300;
 // Maximum speed (pixels per second) when dashing to the table
@@ -30,6 +32,7 @@ const DART_MAX_SPEED = (560 / 6) * 3;
 // Also determines where the drink lands when tossed to a customer
 // Lowered by 10px so the drink doesn't land on top of their head
 const DRINK_HOLD_OFFSET = { x: 0, y: -10 };
+
 const HEART_EMOJIS = {
   [CustomerState.NORMAL]: null,
   [CustomerState.BROKEN]: "💔",
@@ -945,6 +948,17 @@ let sideCAlpha=0;
       enforceCustomerScaling();
       updateDrinkEmojiPosition();
       updateSparrows(this, dt);
+    });
+    initDialogAssets({
+      dialogBg, dialogText, dialogCoins,
+      dialogPriceLabel, dialogPriceValue, dialogPriceBox,
+      dialogDrinkEmoji, dialogPriceContainer, dialogPriceTicket, dialogPriceShadow, dialogPupCup,
+      ticketShadowMask, btnSell, btnGive, btnRef,
+      reportLine1, reportLine2, reportLine3, tipText,
+      paidStamp, lossStamp,
+      truck,
+      girl,
+      priceValueYOffset
     });
 
 

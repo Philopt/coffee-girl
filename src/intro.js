@@ -115,7 +115,7 @@ function playOpening(scene){
     .setScale(2.6)
     .setAngle(-45);
 
-  const tl = scene.tweens.chain({paused:true,callbackScope:scene,onComplete:()=>{
+  const tl = scene.tweens.create({paused:true,callbackScope:scene,onComplete:()=>{
     if (startWhite) { startWhite.destroy(); startWhite = null; }
   }});
 
@@ -181,7 +181,7 @@ function playOpening(scene){
 
     const targetX = cup.x + Math.cos(ang) * dist;
     const targetY = cup.y + Math.sin(ang) * dist + 30;
-    const tl = scene.tweens.chain({paused:true,
+    const tl = scene.tweens.create({paused:true,
       callbackScope: scene,
       onComplete: () => cup.destroy()
     });
@@ -198,6 +198,7 @@ function playOpening(scene){
       alpha: 0,
       duration: 200
     });
+    scene.tweens.existing(tl);
     playIfNotEmpty(tl);
   };
 
@@ -240,6 +241,7 @@ function playOpening(scene){
       }
     }
   });
+  scene.tweens.existing(tl);
   playIfNotEmpty(tl);
 }
 
@@ -852,7 +854,7 @@ function showStartScreen(scene){
     for(let i=0;i<2;i++){
       spawnSparrow(scene,{ground:true});
     }
-    const tl=scene.tweens.chain({paused:true,callbackScope:scene,onComplete:()=>{
+    const tl=scene.tweens.create({paused:true,callbackScope:scene,onComplete:()=>{
       if (window.hideMiniGame) window.hideMiniGame();
       if(startButton) startButton.destroy();
       if(startOverlay){startOverlay.destroy(); startOverlay=null;}
@@ -887,6 +889,7 @@ function showStartScreen(scene){
     if (fadeTargets.length) {
       tl.add({targets:fadeTargets,alpha:0,duration:600});
     }
+    scene.tweens.existing(tl);
     playIfNotEmpty(tl);
   });
 
@@ -988,7 +991,7 @@ function playIntro(scene){
     });
     scene.time.delayedCall(dur(1300), () => smokeEvent.remove(), [], scene);
   }
-  const intro=scene.tweens.chain({paused:true,callbackScope:scene});
+  const intro=scene.tweens.create({paused:true,callbackScope:scene});
   const hopOut=()=>{
     const startX = GameState.truck.x + GameState.truck.displayWidth / 2 - 20;
     const startY = GameState.truck.y - 10;
@@ -1048,6 +1051,7 @@ function playIntro(scene){
       hopOut();
     }
   });
+  scene.tweens.existing(intro);
   playIfNotEmpty(intro);
 }
 

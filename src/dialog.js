@@ -98,7 +98,7 @@ function fadeInButtons(canSell){
   }
   resetBtn(btnGive, FINAL.give);
   resetBtn(btnRef, FINAL.ref);
-  const timeline = this.tweens.chain({paused:true});
+  const timeline = this.tweens.create({paused:true});
   if(canSell){
     timeline.add({ targets: btnSell, y: BUTTON_Y, angle: 0, alpha: 1, ease: 'Sine.easeOut', duration: dur(250) });
   }
@@ -119,6 +119,7 @@ function fadeInButtons(canSell){
       btnGive.glowTween = this.tweens.add({ targets: btnGive.glow, alpha: {from:0.1, to:0.05}, duration: dur(800), yoyo: true, repeat: -1 });
     }
   }, []);
+  this.tweens.existing(timeline);
   playIfNotEmpty(timeline);
 }
 
@@ -377,7 +378,7 @@ function showDialog(){
         const behindDepth = truck && truck.depth ? truck.depth - 1 : frontDepth - 1;
         dialogPriceContainer.setDepth(behindDepth);
         const midY = truck ? truck.y - (truck.displayHeight||0)/2 - 40 : priceTargetY - 40;
-        const tl = this.tweens.chain({paused:true});
+        const tl = this.tweens.create({paused:true});
         tl.add({ targets: dialogPriceContainer, y: peekY, scale: 0.3, duration: dur(100), ease: 'Sine.easeOut' });
         tl.add({ targets: dialogPriceContainer, x: priceTargetX, y: midY, scale: 0.5, duration: dur(250), ease: 'Sine.easeOut' });
         tl.add({ targets: dialogPriceContainer, x: priceTargetX, y: priceTargetY, scale: 0.8, duration: dur(250), ease: 'Sine.easeOut', onStart: ()=> dialogPriceContainer.setDepth(frontDepth) });
@@ -397,6 +398,7 @@ function showDialog(){
             if (btnRef.zone && btnRef.zone.input) btnRef.zone.input.enabled = true;
           }
         });
+        this.tweens.existing(tl);
         playIfNotEmpty(tl);
       };
       if(this.time && this.time.delayedCall){

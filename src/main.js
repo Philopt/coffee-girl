@@ -202,7 +202,7 @@ export function setupGame(){
     resetBtn(btnGive, FINAL.give);
     resetBtn(btnRef, FINAL.ref);
 
-    const timeline = this.add.timeline({paused:true});
+    const timeline = this.add.tweenchain({paused:true});
     if(canSell){
       timeline.add({
         targets: btnSell,
@@ -1241,7 +1241,7 @@ let sideCAlpha=0;
           const midY = truckRef ?
             truckRef.y - (truckRef.displayHeight||0)/2 - 40 :
             priceTargetY - 40;
-          const tl = this.add.timeline({paused:true});
+          const tl = this.add.tweenchain({paused:true});
           tl.add({
             targets: dialogPriceContainer,
             y: peekY,
@@ -1378,7 +1378,7 @@ let sideCAlpha=0;
         };
         if(target.isDog && type==='give'){
           // shrink the treat into the dog before the power up
-          const tl = this.add.timeline({paused:true});
+          const tl = this.add.tweenchain({paused:true});
           tl.add({ targets: dialogDrinkEmoji, scale: 0, duration: dur(150), ease:'Cubic.easeIn' });
           tl.add({ targets: dialogDrinkEmoji, alpha:0, duration: dur(80) });
           tl.setCallback('onComplete', () => {
@@ -2065,7 +2065,7 @@ let sideCAlpha=0;
       this.time.delayedCall(delay,()=>{
         paidStamp.setVisible(false);
         tipText.setVisible(false);
-        const tl=this.add.timeline({paused:true,callbackScope:this,onComplete:()=>{
+        const tl=this.add.tweenchain({paused:true,callbackScope:this,onComplete:()=>{
             stopSellGlowSparkle.call(this, () => {
               clearDialog.call(this);
               ticket.setVisible(false);
@@ -2161,7 +2161,7 @@ let sideCAlpha=0;
           .setVisible(true);
         skewFn2(lossStamp);
         this.time.delayedCall(dur(500), () => {
-          const flick = this.add.timeline({paused:true});
+          const flick = this.add.tweenchain({paused:true});
           flick.add({ targets: lossStamp, alpha: 0.5, duration: dur(60), yoyo: true, repeat: 2 });
           flick.add({ targets: lossStamp, alpha: 0, duration: dur(300) });
           flick.setCallback('onComplete', () => {
@@ -2227,7 +2227,7 @@ let sideCAlpha=0;
           if(this.tweens){
             this.tweens.add({targets:ticket,x:'+=6',duration:dur(60),yoyo:true,repeat:2});
           }
-          const tl=this.add.timeline({paused:true,callbackScope:this,onComplete:()=>{
+          const tl=this.add.tweenchain({paused:true,callbackScope:this,onComplete:()=>{
               clearDialog.call(this);
               ticket.setVisible(false);
               updateMoney(mD);
@@ -2313,7 +2313,7 @@ let sideCAlpha=0;
       const destX=moneyText.x;
       const destY=moneyText.y;
       const moving=[reportLine1];
-      const tl=this.add.timeline({paused:true,callbackScope:this,onComplete:()=>{
+      const tl=this.add.tweenchain({paused:true,callbackScope:this,onComplete:()=>{
           reportLine1.setVisible(false).alpha=1;
           reportLine2.setVisible(false).alpha=1;
           reportLine3.setVisible(false).alpha=1;
@@ -2386,7 +2386,7 @@ let sideCAlpha=0;
           .setOrigin(0.5).setDepth(10);
       }
       this.time.delayedCall(dur(delay), () => {
-        const tl = this.add.timeline({paused:true,callbackScope:this});
+        const tl = this.add.tweenchain({paused:true,callbackScope:this});
         // spin the face into a heart (or keep the upset face)
         tl.add({
           targets:h,
@@ -2640,7 +2640,7 @@ let sideCAlpha=0;
         }
 
         if(state===CustomerState.NORMAL){
-          const tl=scene.add.timeline({paused:true});
+          const tl=scene.add.tweenchain({paused:true});
           for(let i=0;i<5;i++){
             tl.add({targets:c.sprite,x:Phaser.Math.Between(40,440),y:Phaser.Math.Between(WANDER_TOP,WANDER_BOTTOM),duration:dur(Phaser.Math.Between(300,500)),ease:'Sine.easeInOut'});
           }
@@ -2654,7 +2654,7 @@ let sideCAlpha=0;
             const { scale, rise } = barkProps(dog);
             const bark=scene.add.sprite(dog.x,dog.y-20,'dog1',3).setOrigin(0.5).setDepth(dog.depth+1).setScale(Math.abs(dog.scaleX)*scale,Math.abs(dog.scaleY)*scale);
             scene.tweens.add({targets:bark,y:`-=${rise}`,alpha:0,duration:dur(600),onComplete:()=>bark.destroy()});
-            const dTl=scene.add.timeline({paused:true});
+            const dTl=scene.add.tweenchain({paused:true});
             for(let j=0;j<4;j++){
               const ang=Phaser.Math.FloatBetween(0,Math.PI*2);
               const r=Phaser.Math.Between(40,60);
@@ -2732,7 +2732,7 @@ function dogsBarkAtFalcon(){
         const dir = dog.x < falcon.x ? 1 : -1;
         const attackX = falcon.x - dir * 40;
         const attackY = Math.max(DOG_MIN_Y, falcon.y + 10);
-        const dTl = scene.add.timeline({paused:true});
+        const dTl = scene.add.tweenchain({paused:true});
         dTl.add({
           targets: dog,
           x: attackX,
@@ -3019,7 +3019,7 @@ function dogsBarkAtFalcon(){
                 yoyo:true,
                 ease:'Sine.easeOut',
                 onComplete:()=>{
-                  const tl=scene.add.timeline({paused:true});
+                  const tl=scene.add.tweenchain({paused:true});
                   tl.add({targets:dog,angle:-15,duration:dur(80)});
                   tl.add({targets:dog,angle:15,duration:dur(80)});
                   tl.add({targets:dog,angle:-10,duration:dur(80)});
@@ -3059,7 +3059,7 @@ function dogsBarkAtFalcon(){
                 yoyo: true,
                 ease: 'Sine.easeOut',
                   onComplete: () => {
-                    const tl = scene.add.timeline({paused:true});
+                    const tl = scene.add.tweenchain({paused:true});
                   tl.add({targets:dog,angle:-15,duration:dur(80)});
                   tl.add({targets:dog,angle:15,duration:dur(80)});
                   tl.add({targets:dog,angle:-10,duration:dur(80)});
@@ -3366,7 +3366,7 @@ function dogsBarkAtFalcon(){
             GameState.girlHP=Math.max(0,GameState.girlHP-1);
             girlHpBar.setHp(GameState.girlHP);
             coffeeExplosion(scene);
-            const tl=scene.add.timeline({paused:true,callbackScope:scene});
+            const tl=scene.add.tweenchain({paused:true,callbackScope:scene});
           tl.add({targets:falcon,y:targetY+10,duration:dur(80),yoyo:true});
           tl.add({targets:girl,y:girl.y+5,duration:dur(80),yoyo:true,
                    onStart:()=>sprinkleBursts(scene),

@@ -6,6 +6,7 @@
   "scripts": {
     "preinstall": "node scripts/check-node-version.mjs",
     "start": "http-server -p 8080 -c-1",
+    "dev": "DEBUG=1 http-server -p 8080 -c-1",
     "pretest": "test -d node_modules || npm ci && npm run lint",
     "test": "node test/test.js",
     "test:unit": "SKIP_PUPPETEER=1 node test/test.js",

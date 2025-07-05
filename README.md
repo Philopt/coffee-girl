@@ -16,10 +16,11 @@ an error if your Node version doesn't match `22.x`.
    ```bash
    npm install
    npm start
+   # or start with DEBUG=1
+   npm run dev
    ```
 
-   This runs `http-server` on `http://localhost:8080`. Open that URL in your browser.
-
+   Both commands run `http-server` on `http://localhost:8080`. `npm run dev` logs additional debugging information. Open that URL in your browser. 
   Click **Clock In** when it appears to begin the game.
 
   Achievements appear as small icons on the phone screen. Empty slots fade in
@@ -44,7 +45,7 @@ an error if your Node version doesn't match `22.x`.
 
 
 
-The game uses [Phaser](https://phaser.io/). It will load `lib/phaser.min.js` by default. If you prefer the CDN version, replace the script tag in `index.html` with:
+The game uses [Phaser](https://phaser.io/). It loads `node_modules/phaser/dist/phaser.min.js` by default. If you prefer the CDN version, replace the script tag in `index.html` with:
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
@@ -60,12 +61,13 @@ that powers this feature, see [docs/debug-js.md](docs/debug-js.md). For example:
 http://localhost:8080/?debug=1
 ```
 
-1. Run `npm start` and open the game in a browser.
+1. Run `npm start` and open the game in a browser. You can also use
+   `npm run dev` to start the server with `DEBUG=1`.
 2. If the truck never moves or "Clock In" does nothing, open the browser's developer console (usually F12).
 3. With debug logging enabled (see step 5), look for messages like
    "Asset failed to load" or "init() did not execute."
    When an asset fails to load, a message now appears on the page reminding
-   you to start the game with `npm start`.
+   you to start the game with `npm start` (or `npm run dev`).
 4. If customers reach the counter but never order, check for
    `showDialog early exit` warnings. This usually means initialization
    failed and some UI elements were never created.

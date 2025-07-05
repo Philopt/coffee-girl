@@ -23,8 +23,6 @@ import { initDialogAssets, fadeInButtons, blowButtonsAway, drawDialogBubble, res
 export let Assets, Scene, Customers, config;
 export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;
 
-
-
 const HEART_EMOJIS = {
   [CustomerState.NORMAL]: null,
   [CustomerState.BROKEN]: "💔",

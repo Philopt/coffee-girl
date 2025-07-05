@@ -950,8 +950,8 @@ function testLureNextWandererQueueLimit() {
 }
 
 function testShowEndRestart() {
-  const showEndSrc = extractFunction(['ui.js', 'main.js'], 'showEnd');
-  const restartSrc = extractFunction(['ui.js', 'main.js'], 'restartGame');
+  const showEndSrc = extractFunction(['endings.js', 'ui.js', 'main.js'], 'showEnd');
+  const restartSrc = extractFunction(['endings.js', 'ui.js', 'main.js'], 'restartGame');
   if (!showEndSrc || !restartSrc) throw new Error('showEnd or restartGame not found');
   const context = {
     gameOver: false,

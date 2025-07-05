@@ -222,6 +222,9 @@ function showStartScreen(scene){
   if (cupShadow && !cupShadow.scene) {
     cupShadow = null;
   }
+  if (miniGameCup && !miniGameCup.scene) {
+    miniGameCup = null;
+  }
   if(startButton){ startButton.destroy(); startButton = null; }
   if(classicButton){ classicButton.destroy(); classicButton = null; }
   if(resetButton){ resetButton.destroy(); resetButton = null; }

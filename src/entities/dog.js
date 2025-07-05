@@ -88,7 +88,7 @@ export function animateDogGrowth(scene, dog, cb) {
   const dir = dog.dir || 1;
   const baseX = scaleForY(dog.y) * finalFactor * dir;
   const baseY = scaleForY(dog.y) * finalFactor;
-  const tl = scene.tweens.createTimeline();
+  const tl = scene.tweens.chain({paused:true});
   const growX = baseX * 1.2;
   const growY = baseY * 1.2;
   // show an up arrow while the dog grows
@@ -157,7 +157,7 @@ export function animateDogPowerUp(scene, dog, cb, finalTint = null){
     onComplete: () => sparkle.destroy()
   });
 
-  const tl = scene.tweens.createTimeline();
+  const tl = scene.tweens.chain({paused:true});
   const originalTint = dog.tintTopLeft || 0xffffff;
   const shiftHue = (color, amount) => {
     const rgb = Phaser.Display.Color.IntegerToRGB(color);
@@ -308,7 +308,7 @@ export function updateDog(owner) {
         duration: dur(600),
         onComplete: () => bark.destroy()
       });
-      const tl = this.tweens.createTimeline();
+      const tl = this.tweens.chain({paused:true});
       tl.add({ targets: dog, y: '-=15', duration: dur(100), yoyo: true, repeat: 1 });
       tl.add({ targets: dog, x: s.x, y: s.y, duration: dur(300) });
       tl.add({ targets: dog, x: '-=12', duration: dur(120), yoyo: true, repeat: 1 });
@@ -566,7 +566,7 @@ export function dogTruckRuckus(scene, dog){
   scene.tweens.killTweensOf(dog);
   const truck = GameState.truck;
   if(!truck) return;
-  const tl = scene.tweens.createTimeline();
+  const tl = scene.tweens.chain({paused:true});
   const left = truck.x - truck.displayWidth/2 + 20 * truck.scaleX;
   const right = truck.x + truck.displayWidth/2 - 20 * truck.scaleX;
   const top = truck.y - truck.displayHeight/2;

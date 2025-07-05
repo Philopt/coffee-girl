@@ -420,7 +420,7 @@ function testHandleActionSell() {
   const scene = {
     tweens: {
       add(cfg) { if (cfg.onComplete) cfg.onComplete.call(cfg.callbackScope || null); return { stop() {} }; },
-      createTimeline({ callbackScope, onComplete }) { return { add() {}, play() { if (onComplete) onComplete.call(callbackScope); } }; }
+      chain({ callbackScope, onComplete }) { return { add() {}, play() { if (onComplete) onComplete.call(callbackScope); } }; }
     },
     time: { delayedCall(d, cb, args, s) { if (cb) cb.apply(s || this, args || []); return {}; } }
   };
@@ -573,7 +573,7 @@ function testStartButtonPlaysIntro() {
       }
     },
     tweens: {
-      createTimeline({ callbackScope, onComplete }) {
+      chain({ callbackScope, onComplete }) {
         const steps = [];
         return {
           add(cfg) { steps.push(cfg); },
@@ -746,7 +746,7 @@ function testAnimateLoveChange() {
       setText(t) { this.text = t; return this; },
       setVisible(v) { this.visible = v; return this; },
       scene: { add: { text() { return { setOrigin() { return this; }, setDepth() { return this; }, destroy() {} }; } },
-               tweens: { add() { return {}; }, createTimeline({ callbackScope }) { const steps = []; return { add(cfg) { steps.push(cfg); }, play() { steps.forEach(s => { if (s.onComplete) s.onComplete.call(callbackScope || null); }); } }; } } },
+               tweens: { add() { return {}; }, chain({ callbackScope }) { const steps = []; return { add(cfg) { steps.push(cfg); }, play() { steps.forEach(s => { if (s.onComplete) s.onComplete.call(callbackScope || null); }); } }; } } },
     },
     loveText: { x: 0, y: 0, setText(t) { this.text = t; return this; } },
     lureNextWanderer: () => {},
@@ -769,7 +769,7 @@ function testAnimateLoveChange() {
   const animateLoveChange = context.fn;
   const scene = {
     add: { text() { return { setOrigin() { return this; }, setDepth() { return this; }, setScale() { return this; }, destroy() {} }; } },
-    tweens: { add(cfg) { if (cfg.onComplete) cfg.onComplete(); return {}; }, createTimeline({ callbackScope }) { const steps = []; return { add(cfg) { steps.push(cfg); }, play() { steps.forEach(s => { if (s.onComplete) s.onComplete.call(callbackScope || null); }); } }; } },
+    tweens: { add(cfg) { if (cfg.onComplete) cfg.onComplete(); return {}; }, chain({ callbackScope }) { const steps = []; return { add(cfg) { steps.push(cfg); }, play() { steps.forEach(s => { if (s.onComplete) s.onComplete.call(callbackScope || null); }); } }; } },
     time: { delayedCall(d, cb, args, s) { if (cb) cb.apply(s || this, args || []); return {}; } }
   };
   const cust = { x: 100, y: 100 };

@@ -202,7 +202,7 @@ export function setupGame(){
     resetBtn(btnGive, FINAL.give);
     resetBtn(btnRef, FINAL.ref);
 
-    const timeline = this.tweens.chain({paused:true});
+    const timeline = this.tweens.create({paused:true});
     if(canSell){
       timeline.add({
         targets: btnSell,
@@ -255,6 +255,7 @@ export function setupGame(){
         });
       }
     }, []);
+    this.tweens.existing(timeline);
     playIfNotEmpty(timeline);
   }
 
@@ -1240,7 +1241,7 @@ let sideCAlpha=0;
           const midY = truckRef ?
             truckRef.y - (truckRef.displayHeight||0)/2 - 40 :
             priceTargetY - 40;
-          const tl = this.tweens.chain({paused:true});
+          const tl = this.tweens.create({paused:true});
           tl.add({
             targets: dialogPriceContainer,
             y: peekY,
@@ -1281,6 +1282,7 @@ let sideCAlpha=0;
               if (btnRef.zone && btnRef.zone.input) btnRef.zone.input.enabled = true;
             }
           });
+          this.tweens.existing(tl);
           playIfNotEmpty(tl);
         };
         if(this.time && this.time.delayedCall){
@@ -1376,12 +1378,13 @@ let sideCAlpha=0;
         };
         if(target.isDog && type==='give'){
           // shrink the treat into the dog before the power up
-          const tl = this.tweens.chain({paused:true});
+          const tl = this.tweens.create({paused:true});
           tl.add({ targets: dialogDrinkEmoji, scale: 0, duration: dur(150), ease:'Cubic.easeIn' });
           tl.add({ targets: dialogDrinkEmoji, alpha:0, duration: dur(80) });
           tl.setCallback('onComplete', () => {
             animateDogPowerUp(this, target, react, PUP_CUP_TINT);
           }, []);
+          this.tweens.existing(tl);
           playIfNotEmpty(tl);
         } else if (this.time) {
           this.time.delayedCall(dur(100), react, [], this);
@@ -2062,7 +2065,7 @@ let sideCAlpha=0;
       this.time.delayedCall(delay,()=>{
         paidStamp.setVisible(false);
         tipText.setVisible(false);
-        const tl=this.tweens.chain({paused:true,callbackScope:this,onComplete:()=>{
+        const tl=this.tweens.create({paused:true,callbackScope:this,onComplete:()=>{
             stopSellGlowSparkle.call(this, () => {
               clearDialog.call(this);
               ticket.setVisible(false);
@@ -2104,6 +2107,7 @@ let sideCAlpha=0;
           scale: 0,
           duration: dur(400)
         });
+        this.tweens.existing(tl);
         playIfNotEmpty(tl);
       },[],this);
         } else if(type==='give'){
@@ -2157,13 +2161,14 @@ let sideCAlpha=0;
           .setVisible(true);
         skewFn2(lossStamp);
         this.time.delayedCall(dur(500), () => {
-          const flick = this.tweens.chain({paused:true});
+          const flick = this.tweens.create({paused:true});
           flick.add({ targets: lossStamp, alpha: 0.5, duration: dur(60), yoyo: true, repeat: 2 });
           flick.add({ targets: lossStamp, alpha: 0, duration: dur(300) });
           flick.setCallback('onComplete', () => {
             lossStamp.setVisible(false);
             lossStamp.setAlpha(1);
           });
+          this.tweens.existing(flick);
           playIfNotEmpty(flick);
         }, [], this);
         // Ticket turns grayscale while the price flashes red
@@ -2222,7 +2227,7 @@ let sideCAlpha=0;
           if(this.tweens){
             this.tweens.add({targets:ticket,x:'+=6',duration:dur(60),yoyo:true,repeat:2});
           }
-          const tl=this.tweens.chain({paused:true,callbackScope:this,onComplete:()=>{
+          const tl=this.tweens.create({paused:true,callbackScope:this,onComplete:()=>{
               clearDialog.call(this);
               ticket.setVisible(false);
               updateMoney(mD);
@@ -2282,6 +2287,7 @@ let sideCAlpha=0;
               }
             }
           });
+          this.tweens.existing(tl);
           playIfNotEmpty(tl);
         },[],this);
       }
@@ -2307,7 +2313,7 @@ let sideCAlpha=0;
       const destX=moneyText.x;
       const destY=moneyText.y;
       const moving=[reportLine1];
-      const tl=this.tweens.chain({paused:true,callbackScope:this,onComplete:()=>{
+      const tl=this.tweens.create({paused:true,callbackScope:this,onComplete:()=>{
           reportLine1.setVisible(false).alpha=1;
           reportLine2.setVisible(false).alpha=1;
           reportLine3.setVisible(false).alpha=1;
@@ -2346,6 +2352,7 @@ let sideCAlpha=0;
       const endDelay = showTip ? 0 : dur(300);
       tl.add({targets:moving,x:destX,y:destY,scale:0,alpha:0,duration:dur(400),delay:endDelay});
 
+      this.tweens.existing(tl);
       playIfNotEmpty(tl);
     }
 
@@ -2379,7 +2386,7 @@ let sideCAlpha=0;
           .setOrigin(0.5).setDepth(10);
       }
       this.time.delayedCall(dur(delay), () => {
-        const tl = this.tweens.chain({paused:true,callbackScope:this});
+        const tl = this.tweens.create({paused:true,callbackScope:this});
         // spin the face into a heart (or keep the upset face)
         tl.add({
           targets:h,
@@ -2417,6 +2424,7 @@ let sideCAlpha=0;
                 popOne(idx+1);
               }
         }});
+        this.tweens.existing(tl);
         playIfNotEmpty(tl);
       }, [], this);
     };
@@ -2632,11 +2640,12 @@ let sideCAlpha=0;
         }
 
         if(state===CustomerState.NORMAL){
-          const tl=scene.tweens.chain({paused:true});
+          const tl=scene.tweens.create({paused:true});
           for(let i=0;i<5;i++){
             tl.add({targets:c.sprite,x:Phaser.Math.Between(40,440),y:Phaser.Math.Between(WANDER_TOP,WANDER_BOTTOM),duration:dur(Phaser.Math.Between(300,500)),ease:'Sine.easeInOut'});
           }
           tl.add({targets:c.sprite,x:targetX,duration:dur(WALK_OFF_BASE/1.2),onStart:()=>{if(c.dog){scene.tweens.killTweensOf(c.dog);if(c.dog.followEvent)c.dog.followEvent.remove(false);}},onComplete:()=>{c.sprite.destroy();remaining--;if(remaining===0&&done)done();}});
+          scene.tweens.existing(tl);
           playIfNotEmpty(tl);
           if(c.dog){
             const dog=c.dog;
@@ -2645,7 +2654,7 @@ let sideCAlpha=0;
             const { scale, rise } = barkProps(dog);
             const bark=scene.add.sprite(dog.x,dog.y-20,'dog1',3).setOrigin(0.5).setDepth(dog.depth+1).setScale(Math.abs(dog.scaleX)*scale,Math.abs(dog.scaleY)*scale);
             scene.tweens.add({targets:bark,y:`-=${rise}`,alpha:0,duration:dur(600),onComplete:()=>bark.destroy()});
-            const dTl=scene.tweens.chain({paused:true});
+            const dTl=scene.tweens.create({paused:true});
             for(let j=0;j<4;j++){
               const ang=Phaser.Math.FloatBetween(0,Math.PI*2);
               const r=Phaser.Math.Between(40,60);
@@ -2663,6 +2672,7 @@ let sideCAlpha=0;
             }, []);
             dTl.setCallback('onComplete',()=>{ if(dog) dog.setFrame(1); }, []);
             if(dog && dog.anims && dog.play){ dog.play('dog_walk'); }
+            scene.tweens.existing(dTl);
             playIfNotEmpty(dTl);
           }
           return;
@@ -2722,7 +2732,7 @@ function dogsBarkAtFalcon(){
         const dir = dog.x < falcon.x ? 1 : -1;
         const attackX = falcon.x - dir * 40;
         const attackY = Math.max(DOG_MIN_Y, falcon.y + 10);
-        const dTl = scene.tweens.chain({paused:true});
+        const dTl = scene.tweens.create({paused:true});
         dTl.add({
           targets: dog,
           x: attackX,
@@ -2755,6 +2765,7 @@ function dogsBarkAtFalcon(){
           }
         }, []);
         if(dog.anims && dog.play){ dog.play('dog_walk'); }
+        scene.tweens.existing(dTl);
         playIfNotEmpty(dTl);
       });
     }
@@ -3008,12 +3019,13 @@ function dogsBarkAtFalcon(){
                 yoyo:true,
                 ease:'Sine.easeOut',
                 onComplete:()=>{
-                  const tl=scene.tweens.chain({paused:true});
+                  const tl=scene.tweens.create({paused:true});
                   tl.add({targets:dog,angle:-15,duration:dur(80)});
                   tl.add({targets:dog,angle:15,duration:dur(80)});
                   tl.add({targets:dog,angle:-10,duration:dur(80)});
                   tl.add({targets:dog,angle:10,duration:dur(80)});
                   tl.add({targets:dog,angle:0,duration:dur(80),onComplete:()=>{ ensureOnGround(dog); dog.attacking=false; }});
+                  scene.tweens.existing(tl);
                   playIfNotEmpty(tl);
                 }
               });
@@ -3046,14 +3058,15 @@ function dogsBarkAtFalcon(){
                 duration: dur(150),
                 yoyo: true,
                 ease: 'Sine.easeOut',
-                onComplete: () => {
-                  const tl = scene.tweens.chain({paused:true});
+                  onComplete: () => {
+                    const tl = scene.tweens.create({paused:true});
                   tl.add({targets:dog,angle:-15,duration:dur(80)});
                   tl.add({targets:dog,angle:15,duration:dur(80)});
                   tl.add({targets:dog,angle:-10,duration:dur(80)});
                   tl.add({targets:dog,angle:10,duration:dur(80)});
-                  tl.add({targets:dog,angle:0,duration:dur(80),onComplete:()=>{ ensureOnGround(dog); if(done) done(); }});
-                  playIfNotEmpty(tl);
+                    tl.add({targets:dog,angle:0,duration:dur(80),onComplete:()=>{ ensureOnGround(dog); if(done) done(); }});
+                    scene.tweens.existing(tl);
+                    playIfNotEmpty(tl);
                 }
               });
             }
@@ -3353,7 +3366,7 @@ function dogsBarkAtFalcon(){
             GameState.girlHP=Math.max(0,GameState.girlHP-1);
             girlHpBar.setHp(GameState.girlHP);
             coffeeExplosion(scene);
-            const tl=scene.tweens.chain({paused:true,callbackScope:scene});
+            const tl=scene.tweens.create({paused:true,callbackScope:scene});
           tl.add({targets:falcon,y:targetY+10,duration:dur(80),yoyo:true});
           tl.add({targets:girl,y:girl.y+5,duration:dur(80),yoyo:true,
                    onStart:()=>sprinkleBursts(scene),
@@ -3379,6 +3392,7 @@ function dogsBarkAtFalcon(){
               attackOnce();
             }
           }, []);
+          scene.tweens.existing(tl);
           playIfNotEmpty(tl);
         }});
       }});

@@ -4,6 +4,7 @@ import { ORDER_X, ORDER_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_
 import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer, startDogWaitTimer } from './entities/customerQueue.js';
 import { baseConfig } from "./scene.js";
 import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji, saveAchievements } from "./state.js";
+import { setActiveCustomer, updateMoney } from './stateHelpers.js';
 import { CustomerState } from './constants.js';
 
 import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows, scatterSparrows } from './sparrow.js';
@@ -802,7 +803,7 @@ export function setupGame(){
     if(moneyDollar) moneyDollar.setInteractive({ useHandCursor:true });
     loveText.setInteractive({ useHandCursor:true });
     const moneyClick=()=>{
-      GameState.money = +(GameState.money + 20).toFixed(2);
+      updateMoney(20);
       updateMoneyDisplay();
       animateStatChange(moneyText, this, 1);
       if(moneyDollar) animateStatChange(moneyDollar, this, 1);
@@ -1209,7 +1210,7 @@ export function setupGame(){
     dialogBg.setAlpha(1);
     dialogText.setAlpha(1);
     dialogCoins.setAlpha(1);
-    GameState.activeCustomer=GameState.queue[0]||null;
+    setActiveCustomer(GameState.queue[0]||null);
     if(!GameState.activeCustomer) return;
     const c=GameState.activeCustomer;
     if(c.isDog && c.owner && c.owner.dogWaitEvent){
@@ -1864,7 +1865,7 @@ export function setupGame(){
 
     const tipPct=type==='sell'? (totalCost>0? Math.round((tip/totalCost)*100):0):0;
     const customer=current.sprite;
-    GameState.activeCustomer=null;
+    setActiveCustomer(null);
 
     const finish=()=>{
       GameState.saleInProgress = false;
@@ -1994,7 +1995,7 @@ export function setupGame(){
         current.waitingForDog = true;
         startDogWaitTimer(this, current);
         current.exitHandler = exit;
-        GameState.activeCustomer = dogCust;
+        setActiveCustomer(dogCust);
         // Keep the order marked in progress until the dog finishes
         GameState.orderInProgress = true;
         showDialog.call(this);
@@ -2230,7 +2231,7 @@ export function setupGame(){
             stopSellGlowSparkle.call(this, () => {
               clearDialog.call(this);
               ticket.setVisible(false);
-              GameState.money=+(GameState.money+mD).toFixed(2);
+              updateMoney(mD);
               updateMoneyDisplay();
               animateStatChange(moneyText, this, mD);
               if(moneyDollar) animateStatChange(moneyDollar, this, mD);
@@ -2287,7 +2288,7 @@ export function setupGame(){
             onComplete: () => {
               clearDialog.call(this);
               ticket.setVisible(false);
-              GameState.money = +(GameState.money + mD).toFixed(2);
+              updateMoney(mD);
               updateMoneyDisplay();
               animateStatChange(moneyText, this, mD);
               if(moneyDollar) animateStatChange(moneyDollar, this, mD);
@@ -2389,7 +2390,7 @@ export function setupGame(){
           const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
               clearDialog.call(this);
               ticket.setVisible(false);
-              GameState.money=+(GameState.money+mD).toFixed(2);
+              updateMoney(mD);
               updateMoneyDisplay();
               animateStatChange(moneyText, this, mD);
               if(moneyDollar) animateStatChange(moneyDollar, this, mD);
@@ -2475,7 +2476,7 @@ export function setupGame(){
           reportLine1.setVisible(false).alpha=1;
           reportLine2.setVisible(false).alpha=1;
           reportLine3.setVisible(false).alpha=1;
-          GameState.money=+(GameState.money+mD).toFixed(2);
+          updateMoney(mD);
           updateMoneyDisplay();
           animateStatChange(moneyText, this, mD);
           if(moneyDollar) animateStatChange(moneyDollar, this, mD);
@@ -4620,7 +4621,7 @@ function dogsBarkAtFalcon(){
       if(GameState.activeCustomer.heartEmoji){ GameState.activeCustomer.heartEmoji.destroy(); GameState.activeCustomer.heartEmoji=null; }
       GameState.activeCustomer.sprite.destroy();
     }
-    GameState.activeCustomer=null;
+    setActiveCustomer(null);
     cleanupDogs(scene);
     GameState.queue.forEach(c => {
       if(c.walkTween){ if(c.walkTween.isPlaying && c.walkTween.stop) c.walkTween.stop(); if(c.walkTween.remove) c.walkTween.remove(); c.walkTween=null; }

@@ -5,7 +5,7 @@ import { ORDER_X, ORDER_Y } from './customers.js';
 import { DOG_COUNTER_RADIUS, animateDogPowerUp, PUP_CUP_TINT } from './entities/dog.js';
 import { receipt, emojiFor } from './assets.js';
 import { GameState } from './state.js';
-import { blinkButton, createGrayscaleTexture } from './ui/helpers.js';
+import { blinkButton, createGrayscaleTexture, playIfNotEmpty } from './ui/helpers.js';
 
 export const DART_MIN_DURATION = 300;
 export const DART_MAX_SPEED = (560 / 6) * 3;
@@ -119,7 +119,7 @@ function fadeInButtons(canSell){
       btnGive.glowTween = this.tweens.add({ targets: btnGive.glow, alpha: {from:0.1, to:0.05}, duration: dur(800), yoyo: true, repeat: -1 });
     }
   }, []);
-  timeline.play();
+  playIfNotEmpty(timeline);
 }
 
 function blowButtonsAway(except){
@@ -397,7 +397,7 @@ function showDialog(){
             if (btnRef.zone && btnRef.zone.input) btnRef.zone.input.enabled = true;
           }
         });
-        tl.play();
+        playIfNotEmpty(tl);
       };
       if(this.time && this.time.delayedCall){
         this.time.delayedCall(dur(250), showPrice, [], this);

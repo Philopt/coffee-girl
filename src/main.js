@@ -11,7 +11,7 @@ import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows, scatterSparrows 
 import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog, dogTruckRuckus, dogRefuseJumpBark, dogBarkAt, animateDogPowerUp, barkProps, PUP_CUP_TINT } from './entities/dog.js';
 import { startWander } from './entities/wanderers.js';
 
-import { flashBorder, flashFill, blinkButton, applyRandomSkew, setDepthFromBottom, createGrayscaleTexture, createGlowTexture, createHpBar } from './ui/helpers.js';
+import { flashBorder, flashFill, blinkButton, applyRandomSkew, setDepthFromBottom, createGrayscaleTexture, createGlowTexture, createHpBar, playIfNotEmpty } from './ui/helpers.js';
 
 import { animateStatChange, updateCloudStatus, updateMoneyDisplay, countPrice, cleanupFloatingEmojis } from "./hud.js";
 import { restartGame } from "./endings.js";
@@ -255,7 +255,7 @@ export function setupGame(){
         });
       }
     }, []);
-    timeline.play();
+    playIfNotEmpty(timeline);
   }
 
 
@@ -1281,7 +1281,7 @@ let sideCAlpha=0;
               if (btnRef.zone && btnRef.zone.input) btnRef.zone.input.enabled = true;
             }
           });
-          tl.play();
+          playIfNotEmpty(tl);
         };
         if(this.time && this.time.delayedCall){
           this.time.delayedCall(dur(250), showPrice, [], this);
@@ -1382,7 +1382,7 @@ let sideCAlpha=0;
           tl.setCallback('onComplete', () => {
             animateDogPowerUp(this, target, react, PUP_CUP_TINT);
           }, []);
-          tl.play();
+          playIfNotEmpty(tl);
         } else if (this.time) {
           this.time.delayedCall(dur(100), react, [], this);
         } else {
@@ -2104,7 +2104,7 @@ let sideCAlpha=0;
           scale: 0,
           duration: dur(400)
         });
-        tl.play();
+        playIfNotEmpty(tl);
       },[],this);
         } else if(type==='give'){
       const ticket=dialogPriceContainer;
@@ -2164,7 +2164,7 @@ let sideCAlpha=0;
             lossStamp.setVisible(false);
             lossStamp.setAlpha(1);
           });
-          flick.play();
+          playIfNotEmpty(flick);
         }, [], this);
         // Ticket turns grayscale while the price flashes red
         if(dialogPriceTicket){
@@ -2282,7 +2282,7 @@ let sideCAlpha=0;
               }
             }
           });
-          tl.play();
+          playIfNotEmpty(tl);
         },[],this);
       }
 } else if(type!=='refuse'){
@@ -2346,7 +2346,7 @@ let sideCAlpha=0;
       const endDelay = showTip ? 0 : dur(300);
       tl.add({targets:moving,x:destX,y:destY,scale:0,alpha:0,duration:dur(400),delay:endDelay});
 
-      tl.play();
+      playIfNotEmpty(tl);
     }
 
     // Reaction happens after the order animation completes
@@ -2417,7 +2417,7 @@ let sideCAlpha=0;
                 popOne(idx+1);
               }
         }});
-        tl.play();
+        playIfNotEmpty(tl);
       }, [], this);
     };
 
@@ -2637,7 +2637,7 @@ let sideCAlpha=0;
             tl.add({targets:c.sprite,x:Phaser.Math.Between(40,440),y:Phaser.Math.Between(WANDER_TOP,WANDER_BOTTOM),duration:dur(Phaser.Math.Between(300,500)),ease:'Sine.easeInOut'});
           }
           tl.add({targets:c.sprite,x:targetX,duration:dur(WALK_OFF_BASE/1.2),onStart:()=>{if(c.dog){scene.tweens.killTweensOf(c.dog);if(c.dog.followEvent)c.dog.followEvent.remove(false);}},onComplete:()=>{c.sprite.destroy();remaining--;if(remaining===0&&done)done();}});
-          tl.play();
+          playIfNotEmpty(tl);
           if(c.dog){
             const dog=c.dog;
             if(!dog) { return; }
@@ -2663,7 +2663,7 @@ let sideCAlpha=0;
             }, []);
             dTl.setCallback('onComplete',()=>{ if(dog) dog.setFrame(1); }, []);
             if(dog && dog.anims && dog.play){ dog.play('dog_walk'); }
-            dTl.play();
+            playIfNotEmpty(dTl);
           }
           return;
         }
@@ -2755,7 +2755,7 @@ function dogsBarkAtFalcon(){
           }
         }, []);
         if(dog.anims && dog.play){ dog.play('dog_walk'); }
-        dTl.play();
+        playIfNotEmpty(dTl);
       });
     }
 
@@ -3014,7 +3014,7 @@ function dogsBarkAtFalcon(){
                   tl.add({targets:dog,angle:-10,duration:dur(80)});
                   tl.add({targets:dog,angle:10,duration:dur(80)});
                   tl.add({targets:dog,angle:0,duration:dur(80),onComplete:()=>{ ensureOnGround(dog); dog.attacking=false; }});
-                  tl.play();
+                  playIfNotEmpty(tl);
                 }
               });
             }
@@ -3053,7 +3053,7 @@ function dogsBarkAtFalcon(){
                   tl.add({targets:dog,angle:-10,duration:dur(80)});
                   tl.add({targets:dog,angle:10,duration:dur(80)});
                   tl.add({targets:dog,angle:0,duration:dur(80),onComplete:()=>{ ensureOnGround(dog); if(done) done(); }});
-                  tl.play();
+                  playIfNotEmpty(tl);
                 }
               });
             }
@@ -3379,7 +3379,7 @@ function dogsBarkAtFalcon(){
               attackOnce();
             }
           }, []);
-          tl.play();
+          playIfNotEmpty(tl);
         }});
       }});
     };

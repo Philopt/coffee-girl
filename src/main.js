@@ -4233,12 +4233,29 @@ function dogsBarkAtFalcon(){
         }
       }
     });
+
+    const positiveStates = [CustomerState.MENDING, CustomerState.GROWING,
+      CustomerState.SPARKLING, CustomerState.ARROW];
+
     const moveToGirl=c=>{
-      if(c&&c.sprite&&c.memory&&c.memory.state!==CustomerState.BROKEN){
-        this.tweens.add({targets:c.sprite,x:ORDER_X,y:ORDER_Y,duration:dur(4000)});
+      if(c&&c.sprite&&c.memory&&positiveStates.includes(c.memory.state)){
+        const g = GameState.girl;
+        if(g){
+          const bottom = g.y + g.displayHeight/2;
+          const targetY = bottom - c.sprite.displayHeight/2 - 2;
+          const targetX = ORDER_X + Phaser.Math.Between(-20,20);
+          this.tweens.add({targets:c.sprite,x:targetX,y:targetY,duration:dur(3000)});
+        }
+      } else if(c && c.sprite){
+        const dir=c.sprite.x<ORDER_X?-1:1;
+        const targetX=dir===1?520:-40;
+        this.tweens.add({targets:c.sprite,x:targetX,duration:dur(WALK_OFF_BASE)});
       }
     };
-    GameState.queue.forEach(moveToGirl); GameState.wanderers.forEach(moveToGirl); if(GameState.activeCustomer) moveToGirl(GameState.activeCustomer);
+
+    GameState.queue.forEach(moveToGirl);
+    GameState.wanderers.forEach(moveToGirl);
+    if(GameState.activeCustomer) moveToGirl(GameState.activeCustomer);
     this.time.delayedCall(dur(5000),()=>{
       spawnEv.remove(false);
       // Allow the crowd to gather around Coffee Girl for a bit
@@ -4267,6 +4284,7 @@ function dogsBarkAtFalcon(){
     endOverlay = this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
 
     const crowd = [];
+    const heartTimers = [];
     const positiveStates = [CustomerState.MENDING, CustomerState.GROWING,
       CustomerState.SPARKLING, CustomerState.ARROW];
 
@@ -4313,8 +4331,10 @@ function dogsBarkAtFalcon(){
           .setShadow(0,0,'#000',4);
         s.heartEmoji = heart;
         crowd.push(s);
-        const tx = Phaser.Math.Between(180,300);
-        const ty = 340;
+        const g = GameState.girl;
+        const bottom = g ? g.y + g.displayHeight/2 : 340;
+        const tx = ORDER_X + Phaser.Math.Between(-20,20);
+        const ty = bottom - s.displayHeight/2 - 2;
         scene.tweens.add({
           targets:s,
           x:tx,
@@ -4323,6 +4343,12 @@ function dogsBarkAtFalcon(){
           onUpdate:()=>updateHeart(s),
           onComplete:()=>emitHearts(s)
         });
+        const ht = scene.time.addEvent({
+          delay:Phaser.Math.Between(800,1500),
+          loop:true,
+          callback:()=>emitHearts(s)
+        });
+        heartTimers.push(ht);
       }
     });
 
@@ -4377,6 +4403,7 @@ function dogsBarkAtFalcon(){
           ease:'Cubic.easeOut',
           onComplete:()=>{
             scene.events.off('update', updateCrowdHearts);
+            heartTimers.forEach(t=>t.remove());
             crowd.forEach(c=>{ if(c.heartEmoji) c.heartEmoji.destroy(); if(c.destroy) c.destroy(); });
             img.destroy();
             line1.destroy();

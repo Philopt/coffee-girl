@@ -795,10 +795,11 @@ function showStartScreen(scene, opts = {}){
   };
 
   function showResetConfirm(){
+    hideStartMessages();
     const bubble = addStartMessage('Remove Stats and Achievements?', 0xff5555);
     if(!bubble) return;
     const pad=10;
-    const txt=scene.add.text(0,0,'Reincarnate',{
+    const txt=scene.add.text(0,0,'Reincarnate?',{
       font:'20px sans-serif',fill:'#fff'
     }).setOrigin(0.5);
     const bw=txt.width+pad*2;
@@ -810,7 +811,7 @@ function showStartScreen(scene, opts = {}){
     const radius=Math.max(bw,bh)/2+12;
     const glowKey=`reset_glow_${Math.round(radius)}`;
     createGlowTexture(scene,0x000000,glowKey,radius);
-    const glow=scene.add.image(0,0,glowKey).setAlpha(0.4);
+    const glow=scene.add.image(0,0,glowKey).setAlpha(0.6);
 
     txt.setShadow(0,0,'#000',8,true,true);
 
@@ -827,8 +828,8 @@ function showStartScreen(scene, opts = {}){
     });
     scene.tweens.add({
       targets:glow,
-      alpha:{from:0.4,to:0.2},
-      duration:1200,
+      alpha:{from:0.6,to:0.1},
+      duration:1000,
       yoyo:true,
       repeat:-1
     });

@@ -2752,7 +2752,6 @@ export function setupGame(){
     scene.tweens.killAll();
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
-    cleanupHeartEmojis(scene);
     cleanupBarks();
     cleanupBursts();
     cleanupSparkles(scene);
@@ -3768,7 +3767,6 @@ function dogsBarkAtFalcon(){
     scene.tweens.killAll();
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
-    cleanupHeartEmojis(scene);
     cleanupBarks();
     cleanupBursts();
     cleanupSparkles(scene);
@@ -4096,7 +4094,6 @@ function dogsBarkAtFalcon(){
     scene.tweens.killAll();
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
-    cleanupHeartEmojis(scene);
     cleanupBarks();
     cleanupBursts();
     cleanupSparkles(scene);
@@ -4188,22 +4185,17 @@ function dogsBarkAtFalcon(){
     GameState.loveSeqStarted = true;
     if(cloudHeartTween && cloudHeartTween.stop) cloudHeartTween.stop();
     if(cloudHeart) cloudHeart.setTintFill(0xff69b4);
-    const spawnEv = this.time.addEvent({
-      delay:Phaser.Math.Between(200,700),
-      loop:true,
-      callback:()=>{
-        spawnCustomer.call(this);
-        spawnEv.delay=Phaser.Math.Between(200,700);
-        const newest=GameState.wanderers[GameState.wanderers.length-1];
-        if(newest&&newest.memory){
-          newest.memory.state=CustomerState.ARROW;
-          if(newest.heartEmoji) newest.heartEmoji.setText('💘');
-        }
-      }
-    });
-
     const positiveStates = [CustomerState.MENDING, CustomerState.GROWING,
       CustomerState.SPARKLING, CustomerState.ARROW];
+
+    const present=new Set();
+    if(GameState.activeCustomer&&GameState.activeCustomer.spriteKey) present.add(GameState.activeCustomer.spriteKey);
+    GameState.queue.forEach(c=>{ if(c.spriteKey) present.add(c.spriteKey); });
+    GameState.wanderers.forEach(c=>{ if(c.spriteKey) present.add(c.spriteKey); });
+
+    const extras=Object.entries(GameState.customerMemory)
+      .filter(([k,m])=>m&&positiveStates.includes(m.state)&&!present.has(k))
+      .map(([k,m])=>({key:k,mem:m}));
 
     const moveToGirl=c=>{
       if(c&&c.sprite&&c.memory&&positiveStates.includes(c.memory.state)){
@@ -4224,11 +4216,37 @@ function dogsBarkAtFalcon(){
     GameState.queue.forEach(moveToGirl);
     GameState.wanderers.forEach(moveToGirl);
     if(GameState.activeCustomer) moveToGirl(GameState.activeCustomer);
-    this.time.delayedCall(dur(5000),()=>{
-      spawnEv.remove(false);
-      // Allow the crowd to gather around Coffee Girl for a bit
+
+    let idx=0;
+    const spawnEv=extras.length?this.time.addEvent({
+      delay:Phaser.Math.Between(200,700),
+      loop:true,
+      callback:()=>{
+        const {key,mem}=extras[idx++];
+        const sx=Phaser.Math.Between(40,440);
+        const sy=this.scale.height+40;
+        const s=this.add.sprite(sx,sy,key)
+          .setDepth(20)
+          .setScale(scaleForY(sy));
+        const heart=this.add.text(sx,sy,HEART_EMOJIS[mem.state]||'💖',{font:'28px sans-serif'})
+          .setOrigin(0.5)
+          .setDepth(21)
+          .setShadow(0,0,'#000',4);
+        const cust={sprite:s,spriteKey:key,heartEmoji:heart,memory:mem};
+        GameState.wanderers.push(cust);
+        moveToGirl(cust);
+        if(idx>=extras.length){
+          spawnEv.remove(false);
+          this.time.delayedCall(dur(5000),()=>{ showLoveVictory.call(this); });
+        }else{
+          spawnEv.delay=Phaser.Math.Between(200,700);
+        }
+      }
+    }):null;
+    if(!spawnEv){
       this.time.delayedCall(dur(5000),()=>{ showLoveVictory.call(this); });
-    });
+    }
+
   }
 
   function showLoveVictory(){
@@ -4236,7 +4254,6 @@ function dogsBarkAtFalcon(){
     scene.tweens.killAll();
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
-    cleanupHeartEmojis(scene);
     cleanupBarks();
     cleanupBursts();
     cleanupSparkles(scene);
@@ -4285,40 +4302,29 @@ function dogsBarkAtFalcon(){
       }
     };
 
-    Object.entries(GameState.customerMemory).forEach(([key, mem]) => {
-      if(mem && positiveStates.includes(mem.state)){
-        const sx = Phaser.Math.Between(40,440);
-        const sy = scene.scale.height + 40;
-        const s = scene.add.sprite(sx, sy, key)
-          .setDepth(20)
-          .setScale(scaleForY(sy));
-        const heart = scene.add.text(sx, sy,
-          HEART_EMOJIS[mem.state] || '💖', {font:'28px sans-serif'})
+    const addToCrowd = c => {
+      if(!c || !c.sprite || !c.memory || !positiveStates.includes(c.memory.state)) return;
+      crowd.push(c);
+      if(!c.heartEmoji){
+        c.heartEmoji = scene.add.text(c.sprite.x, c.sprite.y,
+          HEART_EMOJIS[c.memory.state] || '💖', {font:'28px sans-serif'})
           .setOrigin(0.5)
           .setDepth(21)
           .setShadow(0,0,'#000',4);
-        s.heartEmoji = heart;
-        crowd.push(s);
-        const g = GameState.girl;
-        const bottom = g ? g.y + g.displayHeight/2 : 340;
-        const tx = ORDER_X + Phaser.Math.Between(-20,20);
-        const ty = bottom - s.displayHeight/2 - 2;
-        scene.tweens.add({
-          targets:s,
-          x:tx,
-          y:ty,
-          duration:dur(1000),
-          onUpdate:()=>updateHeart(s),
-          onComplete:()=>emitHearts(s)
-        });
-        const ht = scene.time.addEvent({
-          delay:Phaser.Math.Between(800,1500),
-          loop:true,
-          callback:()=>emitHearts(s)
-        });
-        heartTimers.push(ht);
       }
-    });
+      c.sprite.heartEmoji = c.heartEmoji;
+      updateHeart(c.sprite);
+      const ht = scene.time.addEvent({
+        delay:Phaser.Math.Between(800,1500),
+        loop:true,
+        callback:()=>emitHearts(c.sprite)
+      });
+      heartTimers.push(ht);
+    };
+
+    GameState.queue.forEach(addToCrowd);
+    GameState.wanderers.forEach(addToCrowd);
+    if(GameState.activeCustomer) addToCrowd(GameState.activeCustomer);
 
     const updateCrowdHearts = () => { crowd.forEach(updateHeart); };
     scene.events.on('update', updateCrowdHearts);
@@ -4372,7 +4378,7 @@ function dogsBarkAtFalcon(){
           onComplete:()=>{
             scene.events.off('update', updateCrowdHearts);
             heartTimers.forEach(t=>t.remove());
-            crowd.forEach(c=>{ if(c.heartEmoji) c.heartEmoji.destroy(); if(c.destroy) c.destroy(); });
+            crowd.forEach(c=>{ if(c.heartEmoji) c.heartEmoji.destroy(); if(c.sprite && c.sprite.destroy) c.sprite.destroy(); });
             img.destroy();
             line1.destroy();
             line2.destroy();

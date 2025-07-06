@@ -335,7 +335,8 @@ function showStartScreen(scene, opts = {}){
   // Shrink overall spacing so the bottom row doesn't collide with the
   // clock-in button. Use slightly tighter gaps both horizontally and
   // vertically.
-  const marginX = baseMargin * 0.8;
+  // Reduce spacing between icons slightly
+  const marginX = Math.max(0, baseMargin * 0.8 - 5);
   // Vertical spacing is even tighter than horizontal spacing
   const marginY = marginX * 0.6;
 
@@ -346,7 +347,7 @@ function showStartScreen(scene, opts = {}){
   // just above the "Clock In" button instead of hugging the top.
   const startY =
     offsetY - bh / 2 - marginY - (rows - 1) * (slotSize + marginY) -
-    slotSize / 2 - 10;
+    slotSize / 2 - 20; // Shift slots upward slightly
   // Build slots starting from the bottom row so index 0 maps to bottom-left
   for(let r=rows-1;r>=0;r--){
     for(let c=0;c<cols;c++){

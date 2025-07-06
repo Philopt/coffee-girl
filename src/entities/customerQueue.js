@@ -5,12 +5,10 @@ import {
   SPAWN_DELAY,
   SPAWN_VARIANCE,
   RESPAWN_COOLDOWN,
-  QUEUE_SPACING,
   ORDER_X,
   ORDER_Y,
-  QUEUE_X,
-  QUEUE_OFFSET,
-  QUEUE_Y,
+  WAIT_DISTANCE,
+  WAIT_SPACING,
   WANDER_TOP,
   WANDER_BOTTOM,
   maxWanderers as customersMaxWanderers,
@@ -24,15 +22,6 @@ import { startWander, loopsForState } from './wanderers.js';
 import { DOG_TYPES, updateDog, scaleDog } from './dog.js';
 import { setDepthFromBottom } from '../ui/helpers.js';
 
-function sparkleQueueSpot(scene){
-  if(!scene) return;
-  const idx = GameState.queue.length;
-  const x = QUEUE_X - QUEUE_SPACING * idx;
-  const y = QUEUE_Y - QUEUE_OFFSET * idx;
-  const sp=scene.add.text(x,y,'✨',{font:'18px sans-serif',fill:'#fff'})
-    .setOrigin(0.5).setDepth(20);
-  scene.tweens.add({targets:sp,alpha:0,yoyo:true,repeat:1,duration:dur(300),onComplete:()=>sp.destroy()});
-}
 
 
 // Slow down queue movement to match wander speed change
@@ -147,7 +136,6 @@ export function lureNextWanderer(scene, specific) {
     }
 
     if (!c) return;
-    sparkleQueueSpot(scene);
     if (GameState.queue.some((cust, i) => i > 0 && cust.walkTween && cust.walkTween.isPlaying)) {
       if (typeof debugLog === 'function') {
         debugLog('lureNextWanderer abort: walkTween active');
@@ -184,17 +172,19 @@ export function lureNextWanderer(scene, specific) {
     GameState.activeCustomer = GameState.queue[0];
     let targetX;
     let targetY;
+    const approach = new Phaser.Math.Vector2(ORDER_X - c.sprite.x, ORDER_Y - c.sprite.y);
+    if (approach.length() === 0) approach.x = 1; // avoid zero vector
+    approach.normalize();
     if (queueIdx === 0 && !GameState.orderInProgress && !GameState.saleInProgress) {
-      // When the queue is empty, walk straight to the counter instead of
-      // stopping at the front of the line first.
+      // When the queue is empty, walk straight to the counter.
       targetX = ORDER_X;
       targetY = ORDER_Y;
       GameState.orderInProgress = true;
       c.atOrder = true;
     } else {
-      // Everyone lines up at the front of the queue first.
-      targetX = QUEUE_X - QUEUE_SPACING * queueIdx;
-      targetY = QUEUE_Y - QUEUE_OFFSET * queueIdx;
+      const dist = WAIT_DISTANCE + WAIT_SPACING * (queueIdx - 1);
+      targetX = ORDER_X - approach.x * dist;
+      targetY = ORDER_Y - approach.y * dist;
     }
     setDepthFromBottom(c.sprite, 5);
     const dir = c.dir || (c.sprite.x < targetX ? 1 : -1);
@@ -227,9 +217,17 @@ export function moveQueueForward() {
   }
 
   const busy = GameState.orderInProgress || GameState.saleInProgress;
+  GameState.queue.sort((a, b) => {
+    const da = Phaser.Math.Distance.Between(a.sprite.x, a.sprite.y, ORDER_X, ORDER_Y);
+    const db = Phaser.Math.Distance.Between(b.sprite.x, b.sprite.y, ORDER_X, ORDER_Y);
+    return da - db;
+  });
   GameState.queue.forEach((cust, idx) => {
     let tx;
     let ty;
+    const approach = new Phaser.Math.Vector2(ORDER_X - cust.sprite.x, ORDER_Y - cust.sprite.y);
+    if (approach.length() === 0) approach.x = 1;
+    approach.normalize();
     if (idx === 0) {
       if (cust.atOrder || !busy) {
         if (!cust.atOrder) {
@@ -239,13 +237,14 @@ export function moveQueueForward() {
         tx = ORDER_X;
         ty = ORDER_Y;
       } else {
-        tx = QUEUE_X;
-        ty = QUEUE_Y;
+        const dist = WAIT_DISTANCE;
+        tx = ORDER_X - approach.x * dist;
+        ty = ORDER_Y - approach.y * dist;
       }
     } else {
-      const spot = idx - (GameState.orderInProgress ? 1 : 0);
-      tx = QUEUE_X - QUEUE_SPACING * Math.max(spot, 0);
-      ty = QUEUE_Y - QUEUE_OFFSET * Math.max(spot, 0);
+      const dist = WAIT_DISTANCE + WAIT_SPACING * (idx - 1);
+      tx = ORDER_X - approach.x * dist;
+      ty = ORDER_Y - approach.y * dist;
     }
     if (cust.sprite.y !== ty || cust.sprite.x !== tx) {
       const dir = cust.dir || (cust.sprite.x < tx ? 1 : -1);
@@ -301,9 +300,17 @@ export function checkQueueSpacing(scene) {
     }
   }
   const busy = GameState.orderInProgress || GameState.saleInProgress;
+  GameState.queue.sort((a, b) => {
+    const da = Phaser.Math.Distance.Between(a.sprite.x, a.sprite.y, ORDER_X, ORDER_Y);
+    const db = Phaser.Math.Distance.Between(b.sprite.x, b.sprite.y, ORDER_X, ORDER_Y);
+    return da - db;
+  });
   GameState.queue.forEach((cust, idx) => {
     let tx;
     let ty;
+    const approach = new Phaser.Math.Vector2(ORDER_X - cust.sprite.x, ORDER_Y - cust.sprite.y);
+    if (approach.length() === 0) approach.x = 1;
+    approach.normalize();
     if (idx === 0) {
       if (cust.atOrder || !busy) {
         if (!cust.atOrder && !busy) {
@@ -313,16 +320,17 @@ export function checkQueueSpacing(scene) {
         tx = ORDER_X;
         ty = ORDER_Y;
       } else {
-        tx = QUEUE_X;
-        ty = QUEUE_Y;
+        const dist = WAIT_DISTANCE;
+        tx = ORDER_X - approach.x * dist;
+        ty = ORDER_Y - approach.y * dist;
       }
     } else {
-      const spot = idx - (GameState.orderInProgress ? 1 : 0);
-      tx = QUEUE_X - QUEUE_SPACING * Math.max(spot, 0);
-      ty = QUEUE_Y - QUEUE_OFFSET * Math.max(spot, 0);
+      const dist = WAIT_DISTANCE + WAIT_SPACING * (idx - 1);
+      tx = ORDER_X - approach.x * dist;
+      ty = ORDER_Y - approach.y * dist;
     }
-    const dist = Phaser.Math.Distance.Between(cust.sprite.x, cust.sprite.y, tx, ty);
-    if (dist > 2) {
+    const distCur = Phaser.Math.Distance.Between(cust.sprite.x, cust.sprite.y, tx, ty);
+    if (distCur > 2) {
       if (cust.walkTween) {
         if (cust.walkTween.isPlaying) {
           // Already moving toward the correct spot. Don't reset the tween,

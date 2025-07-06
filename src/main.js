@@ -1413,32 +1413,32 @@ export function setupGame(){
           const midY = truckRef ?
             truckRef.y - (truckRef.displayHeight||0)/2 - 40 :
             priceTargetY - 40;
-          const tl = this.tweens.createTimeline();
-          tl.add({
-            targets: dialogPriceContainer,
-            y: peekY,
-            scale: 0.3,
-            duration: dur(150),
-            ease: 'Sine.easeOut'
-          });
-          tl.add({
-            targets: dialogPriceContainer,
-            x: priceTargetX,
-            y: midY,
-            scale: 0.55,
-            duration: dur(300),
-            ease: 'Sine.easeOut'
-          });
-          tl.add({
-            targets: dialogPriceContainer,
-            x: priceTargetX,
-            y: priceTargetY,
-            scale: 0.8,
-            duration: dur(300),
-            ease: 'Sine.easeOut',
-            onStart: ()=> dialogPriceContainer.setDepth(frontDepth)
-          });
-          tl.setCallback('onComplete', () => {
+          const quad = (t, p0, p1, p2) => {
+            const inv = 1 - t;
+            return inv * inv * p0 + 2 * inv * t * p1 + t * t * p2;
+          };
+          const follower = { t: 0 };
+          this.tweens.add({
+            targets: follower,
+            t: 1,
+            duration: dur(700),
+            ease: 'Sine.easeInOut',
+            onStart: () => {
+              dialogPriceContainer
+                .setPosition(startX, startY)
+                .setScale(0.2);
+            },
+            onUpdate: () => {
+              const p = follower.t;
+              const y = quad(p, startY, midY, priceTargetY);
+              const s = quad(p, 0.2, 0.55, 0.8);
+              if (p >= 0.5) dialogPriceContainer.setDepth(frontDepth);
+              dialogPriceContainer
+                .setPosition(priceTargetX, y)
+                .setScale(s);
+            },
+            onComplete: () => {
+              dialogPriceContainer.setDepth(frontDepth);
             if (typeof fadeInButtons === 'function') {
               fadeInButtons.call(this, canSell);
             } else {
@@ -1453,8 +1453,8 @@ export function setupGame(){
               if (btnGive.zone && btnGive.zone.input) btnGive.zone.input.enabled = true;
               if (btnRef.zone && btnRef.zone.input) btnRef.zone.input.enabled = true;
             }
-          });
-          tl.play();
+          }
+        });
         };
         if(this.time && this.time.delayedCall){
           this.time.delayedCall(dur(250), showPrice, [], this);

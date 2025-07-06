@@ -4127,7 +4127,18 @@ function dogsBarkAtFalcon(){
       .setDepth(20);
     falcon.anims.play('falcon_fly');
     GameState.falcon = falcon;
-    this.tweens.add({targets:falcon,y:truck.y-(truck.displayHeight||0)/2-10,duration:dur(800),ease:'Sine.easeIn',onComplete:()=>{falcon.anims.stop();showHighMoneyLoss.call(this);}});
+    const landingY = truck.y - (truck.displayHeight || 0)/2 + 5;
+    this.tweens.add({
+      targets: falcon,
+      y: landingY,
+      duration: dur(800),
+      ease: 'Sine.easeIn',
+      onComplete: () => {
+        falcon.anims.stop();
+        this.tweens.add({targets:truck,x:truck.x+8,duration:dur(80),yoyo:true,repeat:3});
+        this.time.delayedCall(dur(1000),()=>{showHighMoneyLoss.call(this);});
+      }
+    });
   }
 
   function startLoveSequence(){
@@ -4241,6 +4252,10 @@ function dogsBarkAtFalcon(){
     scene.tweens.killAll();
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
+    if(GameState.falcon){
+      GameState.falcon.destroy();
+      GameState.falcon = null;
+    }
     cleanupHeartEmojis(scene);
     cleanupBarks();
     cleanupBursts();

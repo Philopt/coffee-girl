@@ -135,6 +135,11 @@ export function setupGame(){
     },[],scene);
     scene.time.delayedCall(dur(moveDur)*2,()=>{
       updateCloudStatus(scene);
+      if(!isLove && GameState.money>=FIRED_THRESHOLD && !GameState.firedSeqStarted){
+        startFiredSequence.call(scene);
+      } else if(isLove && GameState.love>=MAX_L && !GameState.loveSeqStarted){
+        startLoveSequence.call(scene);
+      }
     },[],scene);
   }
 
@@ -1928,10 +1933,13 @@ export function setupGame(){
           return;
         }
         if(GameState.money>=FIRED_THRESHOLD){
-          showHighMoneyLoss.call(this);
+          startFiredSequence.call(this);
           return;
         }
-        if(GameState.love>=MAX_L){showLoveVictory.call(this);return;}
+        if(GameState.love>=MAX_L){
+          startLoveSequence.call(this);
+          return;
+        }
         if(GameState.heartWin){
           showTrueLoveVictory.call(this, winSpriteKey);
           GameState.heartWin = null;
@@ -4101,6 +4109,54 @@ function dogsBarkAtFalcon(){
     GameState.gameOver=true;
   }
 
+  function startFiredSequence(){
+    if(GameState.firedSeqStarted || GameState.gameOver) return;
+    GameState.firedSeqStarted = true;
+    GameState.gameOver = true;
+    if(cloudDollarTween && cloudDollarTween.stop) cloudDollarTween.stop();
+    flashFill(cloudDollar, this, 0x00ff00);
+    this.tweens.add({
+      targets:cloudDollar,
+      scale:cloudDollar.scale*1.3,
+      yoyo:true,
+      repeat:3,
+      duration:dur(200)
+    });
+    const falcon=this.add.sprite(truck.x, -40, 'lady_falcon',0)
+      .setScale(1.4,1.68)
+      .setDepth(20);
+    falcon.anims.play('falcon_fly');
+    GameState.falcon = falcon;
+    this.tweens.add({targets:falcon,y:truck.y-(truck.displayHeight||0)/2-10,duration:dur(800),ease:'Sine.easeIn',onComplete:()=>{falcon.anims.stop();showHighMoneyLoss.call(this);}});
+  }
+
+  function startLoveSequence(){
+    if(GameState.loveSeqStarted || GameState.gameOver) return;
+    GameState.loveSeqStarted = true;
+    if(cloudHeartTween && cloudHeartTween.stop) cloudHeartTween.stop();
+    if(cloudHeart) cloudHeart.setTintFill(0xff69b4);
+    const spawnEv = this.time.addEvent({
+      delay:Phaser.Math.Between(200,700),
+      loop:true,
+      callback:()=>{
+        spawnCustomer.call(this);
+        spawnEv.delay=Phaser.Math.Between(200,700);
+        const newest=GameState.wanderers[GameState.wanderers.length-1];
+        if(newest&&newest.memory){
+          newest.memory.state=CustomerState.ARROW;
+          if(newest.heartEmoji) newest.heartEmoji.setText('💘');
+        }
+      }
+    });
+    const moveToGirl=c=>{
+      if(c&&c.sprite&&c.memory&&c.memory.state!==CustomerState.BROKEN){
+        this.tweens.add({targets:c.sprite,x:ORDER_X,y:ORDER_Y,duration:dur(4000)});
+      }
+    };
+    GameState.queue.forEach(moveToGirl); GameState.wanderers.forEach(moveToGirl); if(GameState.activeCustomer) moveToGirl(GameState.activeCustomer);
+    this.time.delayedCall(dur(5000),()=>{ spawnEv.remove(false); showLoveVictory.call(this); });
+  }
+
   function showLoveVictory(){
     const scene = this;
     scene.tweens.killAll();
@@ -4206,7 +4262,7 @@ function dogsBarkAtFalcon(){
     this.tweens.add({targets:[titleGame,titleOver],alpha:1,duration:dur(1200)});
 
     const img = this.add.image(240,250,'fired_end')
-      .setScale(2.4)
+      .setScale(2.1)
       .setDepth(20)
       .setAlpha(0);
     this.tweens.add({targets:img,alpha:1,duration:dur(1200),delay:dur(1000)});
@@ -4219,7 +4275,7 @@ function dogsBarkAtFalcon(){
       .setAlpha(0);
     this.tweens.add({targets:line1,alpha:1,duration:dur(1200),delay:dur(1700)});
 
-    const line2 = this.add.text(240,490,'(and then you are fired)',
+    const line2 = this.add.text(240,490,'and she fires you.',
       {font:'20px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
       .setOrigin(0.5)
       .setDepth(21)
@@ -4608,6 +4664,8 @@ function dogsBarkAtFalcon(){
     if (cloudHeart && cloudHeart.clearTint) cloudHeart.clearTint();
     updateLevelDisplay();
     updateCloudStatus(scene);
+    GameState.firedSeqStarted = false;
+    GameState.loveSeqStarted = false;
     if(GameState.activeCustomer){
       if(GameState.activeCustomer.heartEmoji){ GameState.activeCustomer.heartEmoji.destroy(); GameState.activeCustomer.heartEmoji=null; }
       GameState.activeCustomer.sprite.destroy();

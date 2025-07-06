@@ -40,6 +40,8 @@ export const GameState = {
   ,slotsRevealed: false
   ,startScreenSeen: false
   ,achievementsRevealed: false
+  ,firedSeqStarted: false
+  ,loveSeqStarted: false
 };
 
 export const floatingEmojis = [];

@@ -330,10 +330,16 @@ function showStartScreen(scene, opts = {}){
   const slotSize = 45; // 20% smaller achievement slots
   const rows = 3;
   const cols = 3;
-  const marginX = (phoneW - 24 - cols * slotSize) / (cols + 1);
-  // Vertical spacing slightly tighter than horizontal
-  const marginY = marginX * 0.8;
-  const startX = -phoneW/2 + 12 + marginX + slotSize/2;
+  const baseMargin = (phoneW - 24 - cols * slotSize) / (cols + 1);
+  // Shrink overall spacing so the bottom row doesn't collide with the
+  // clock-in button. Use slightly tighter gaps both horizontally and
+  // vertically.
+  const marginX = baseMargin * 0.8;
+  // Vertical spacing is even tighter than horizontal spacing
+  const marginY = marginX * 0.6;
+
+  const widthUsed = cols * slotSize + (cols - 1) * marginX;
+  const startX = -phoneW/2 + (phoneW - widthUsed)/2 + slotSize/2;
 
   // Align the slots relative to the bottom of the phone so they appear
   // just above the "Clock In" button instead of hugging the top.

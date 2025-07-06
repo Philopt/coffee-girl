@@ -289,7 +289,7 @@ function showStartScreen(scene){
   }
   GameState.phoneContainer = phoneContainer;
 
-  const showSlots = GameState.startScreenSeen;
+  const showSlots = GameState.startScreenSeen || GameState.badges.length > 0;
   const fadeSlots = showSlots && !GameState.slotsRevealed;
 
   // Removed animated bird sprites so the start button remains clickable
@@ -329,12 +329,8 @@ function showStartScreen(scene){
     for(let c=0;c<cols;c++){
       const x = startX + c*(slotSize+marginX);
       const y = startY + r*(slotSize+marginY);
-      const g = scene.add.graphics();
-      g.fillStyle(0xf0f0f0,1);
-      g.fillRoundedRect(-slotSize/2,-slotSize/2,slotSize,slotSize,12);
-      const slot = scene.add.container(x,y,[g]).setDepth(16);
-      // Create a mask so icons don't extend beyond the gray box
-      slot.iconMask = g.createGeometryMask();
+      const slot = scene.add.container(x,y).setDepth(16);
+      slot.setSize(slotSize, slotSize);
       // Hide until an icon is placed
       slot.setVisible(false);
       phoneContainer.add(slot);
@@ -489,9 +485,6 @@ function showStartScreen(scene){
       children.unshift(glow);
     }
     const container = scene.add.container(slot.x,slot.y,children).setDepth(16);
-    if(slot.iconMask){
-      container.setMask(slot.iconMask);
-    }
     if(GameState.badgeCounts[key] > 1){
       const txt = scene.add.text(0,0,String(GameState.badgeCounts[key]),{font:'16px sans-serif',fill:'#fff'}).setOrigin(0.5);
       container.add(txt);

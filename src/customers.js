@@ -34,6 +34,10 @@ export const ORDER_Y = 315;
 export const QUEUE_X = ORDER_X - QUEUE_SPACING - 10;
 export const QUEUE_OFFSET = 8;
 export const QUEUE_Y = ORDER_Y + 5;
+// Distance customers stop from the counter when waiting.
+export const WAIT_DISTANCE = 100;
+// Additional distance for each extra customer in the loose queue.
+export const WAIT_SPACING = 30;
 export const WANDER_TOP = ORDER_Y + 50;
 export const WANDER_BOTTOM = 580;
 // Maximum number of wandering customers that can appear at once. This value is

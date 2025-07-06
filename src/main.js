@@ -1411,8 +1411,8 @@ export function setupGame(){
           const behindDepth = truckRef && truckRef.depth ? truckRef.depth - 1 : frontDepth - 1;
           dialogPriceContainer.setDepth(behindDepth);
           const midY = truckRef ?
-            truckRef.y - (truckRef.displayHeight||0)/2 - 40 :
-            priceTargetY - 40;
+            truckRef.y - (truckRef.displayHeight||0)/2 - 90 :
+            priceTargetY - 90;
           const quad = (t, p0, p1, p2) => {
             const inv = 1 - t;
             return inv * inv * p0 + 2 * inv * t * p1 + t * t * p2;
@@ -1427,6 +1427,16 @@ export function setupGame(){
               dialogPriceContainer
                 .setPosition(startX, startY)
                 .setScale(0.2);
+              if (truckRef) {
+                this.tweens.add({
+                  targets: truckRef,
+                  angle: 10,
+                  duration: dur(150),
+                  yoyo: true,
+                  hold: dur(100),
+                  ease: 'Sine.easeInOut'
+                });
+              }
             },
             onUpdate: () => {
               const p = follower.t;
@@ -2191,6 +2201,7 @@ export function setupGame(){
       }, [], this);
       // Removed flashing movement of the price text
 
+      const showBoth = tax > 0 && tip > 0;
       let delay=dur(300);
       if(tax>0){
         this.time.delayedCall(delay,()=>{
@@ -2198,7 +2209,7 @@ export function setupGame(){
           const randFloat1 = Phaser.Math.FloatBetween || ((a,b)=>Phaser.Math.Between(a*1000,b*1000)/1000);
           taxText
             .setText('TAX')
-            .setScale(1.3 + randFloat1(-0.1, 0.1))
+            .setScale((showBoth ? 1 : 1.3) + randFloat1(-0.1, 0.1))
             .setPosition(paidStamp.x, paidStamp.y)
             .setAngle(Phaser.Math.Between(-15,15))
             .setVisible(true)
@@ -2222,7 +2233,7 @@ export function setupGame(){
               taxText.setAlpha(1);
               this.tweens.add({
                 targets: taxText,
-                x: paidStamp.x,
+                x: paidStamp.x + (showBoth ? -20 : 0),
                 y: paidStamp.y + taxText.displayHeight,
                 angle: Phaser.Math.Between(-15,15),
                 duration: dur(300),
@@ -2242,7 +2253,7 @@ export function setupGame(){
           const randFloat2 = Phaser.Math.FloatBetween || ((a,b)=>Phaser.Math.Between(a*1000,b*1000)/1000);
           tipText
             .setText('TIP')
-            .setScale(1.3 + randFloat2(-0.1, 0.1))
+            .setScale((showBoth ? 1 : 1.3) + randFloat2(-0.1, 0.1))
             .setPosition(paidStamp.x, paidStamp.y)
             .setAngle(Phaser.Math.Between(-15,15))
             .setVisible(true)
@@ -2266,7 +2277,7 @@ export function setupGame(){
               tipText.setAlpha(1);
               this.tweens.add({
                 targets: tipText,
-                x: paidStamp.x,
+                x: paidStamp.x + (showBoth ? 20 : 0),
                 y: paidStamp.y + tipText.displayHeight,
                 angle: Phaser.Math.Between(-15,15),
                 duration: dur(300),

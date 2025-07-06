@@ -339,10 +339,9 @@ function showStartScreen(scene){
 
   }
 
-  // Mini game cup appears in its own row above the achievements when all
-  // achievements are earned. Position it in the center of that row.
-  const cupRowY = startY - (slotSize + marginY);
-  const cupSlot = { x: startX + (slotSize + marginX), y: cupRowY };
+  // Mini game cup now lives in the first achievement slot instead of a
+  // separate row. Reuse slot 0 for its position.
+  const cupSlot = getSlot(0);
   const allEarned = ALL_BADGES.every(k => GameState.badges.includes(k));
   if (!miniGameCup) {
     miniGameCup = scene.add
@@ -438,7 +437,9 @@ function showStartScreen(scene){
     return 1;
   };
   const slotMap = {
-    revolt_end: 0,
+    // Customer revolt now uses the top-left slot so the mini game cup can
+    // occupy the bottom-left position.
+    revolt_end: 3,
     fired_end: 1,
     falcon_end: 2,
     falcon_victory: 4,
@@ -733,7 +734,13 @@ function showStartScreen(scene){
       font:'20px sans-serif',fill:'#000',backgroundColor:'#fff',padding:{x:10,y:5}
     }).setOrigin(0.5);
     btn.setShadow(0,0,'#000',8,true,true);
-    const c = scene.add.container(bubble.x + bubble.bw/2 + 50, bubble.y, [btn]).setDepth(17);
+    // Place the button underneath the message bubble so it appears on the phone
+    // instead of floating to the side.
+    const c = scene.add.container(
+      bubble.x,
+      bubble.y + bubble.bh/2 + 20,
+      [btn]
+    ).setDepth(17);
     c.setSize(btn.width + 10, btn.height + 10);
     c.setInteractive({ useHandCursor:true });
     c.on('pointerdown',()=>{

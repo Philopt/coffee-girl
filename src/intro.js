@@ -921,11 +921,18 @@ function showStartScreen(scene, opts = {}){
       ['remember ur value!', "don't let them take it all", 'get that job back or bounce', 'gen z would revolt']
     ];
 
+    const loveMsgs=[
+      ['everyone stan coffee girl ❤️', 'u two r goals 💑', 'literally hearts everywhere 💕'],
+      ['park gossip is all love story vibes', 'ur crush got the whole crowd cheering', 'love > money fr 😍'],
+      ['coffee tastes sweeter when ur in love ☕💖', 'they keep asking about the wedding lol', 'ur otp is trending']
+    ];
+
     msgOptions = defaultMsgs;
     if(GameState.lastEndKey === 'falcon_end') msgOptions = falconMsgs;
     else if(GameState.lastEndKey === 'falcon_victory' || GameState.lastEndKey === 'muse_victory') msgOptions = victoryMsgs;
     else if(GameState.lastEndKey === 'revolt_end') msgOptions = revoltMsgs;
     else if(GameState.lastEndKey === 'fired_end') msgOptions = firedMsgs;
+    else if(GameState.lastEndKey === 'true_love') msgOptions = loveMsgs;
 
     // scheduleStartMessages() handles message timing after the intro fades
   }

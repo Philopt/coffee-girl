@@ -4115,6 +4115,8 @@ function dogsBarkAtFalcon(){
       .setOrigin(0.5,1)
       .setScale(1.5)
       .setDepth(20);
+    awardBadge(this, spriteKey);
+    GameState.lastEndKey = 'true_love';
     const bigGirl = this.add.image(240,320,'girl')
       .setOrigin(0.5,1)
       .setScale(1.5)

@@ -730,22 +730,40 @@ function showStartScreen(scene){
   function showResetConfirm(){
     const bubble = addStartMessage('Remove Stats and Achievements?', 0xff5555);
     if(!bubble) return;
-    const btn = scene.add.text(0,0,'Reincarnate',{
-      font:'20px sans-serif',fill:'#000',backgroundColor:'#fff',padding:{x:10,y:5}
+    const pad=10;
+    const txt=scene.add.text(0,0,'Reincarnate',{
+      font:'20px sans-serif',fill:'#fff'
     }).setOrigin(0.5);
-    btn.setShadow(0,0,'#000',8,true,true);
-    // Place the button underneath the message bubble so it appears on the phone
-    // instead of floating to the side.
-    const c = scene.add.container(
+    const bw=txt.width+pad*2;
+    const bh=txt.height+pad*2;
+    const bg=scene.add.graphics();
+    bg.fillStyle(0x000000,1);
+    bg.fillRoundedRect(-bw/2,-bh/2,bw,bh,10);
+
+    const radius=Math.max(bw,bh)/2+12;
+    const glowKey=`reset_glow_${Math.round(radius)}`;
+    createGlowTexture(scene,0x000000,glowKey,radius);
+    const glow=scene.add.image(0,0,glowKey).setAlpha(0.4);
+
+    txt.setShadow(0,0,'#000',8,true,true);
+
+    const c=scene.add.container(
       bubble.x,
       bubble.y + bubble.bh/2 + 20,
-      [btn]
+      [glow,bg,txt]
     ).setDepth(17);
-    c.setSize(btn.width + 10, btn.height + 10);
+    c.setSize(bw,bh);
     c.setInteractive({ useHandCursor:true });
     c.on('pointerdown',()=>{
       if(typeof resetAchievements==='function') resetAchievements();
       showStartScreen.call(scene);
+    });
+    scene.tweens.add({
+      targets:glow,
+      alpha:{from:0.4,to:0.2},
+      duration:1200,
+      yoyo:true,
+      repeat:-1
     });
     phoneContainer.add(c);
   }

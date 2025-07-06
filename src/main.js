@@ -4130,7 +4130,11 @@ function dogsBarkAtFalcon(){
     }
     clearDialog.call(scene);
     if(endOverlay){ endOverlay.destroy(); }
-    endOverlay = this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
+    endOverlay = this.add.rectangle(240,320,480,640,0x000000)
+      .setDepth(19)
+      .setAlpha(0);
+    // Fade in the overlay slowly to give players time to take in the scene
+    this.tweens.add({targets:endOverlay,alpha:1,duration:dur(1200)});
     const lover = this.add.sprite(240,260, spriteKey)
       .setOrigin(0.5,1)
       .setScale(1.5)
@@ -4224,7 +4228,11 @@ function dogsBarkAtFalcon(){
       }
     };
     GameState.queue.forEach(moveToGirl); GameState.wanderers.forEach(moveToGirl); if(GameState.activeCustomer) moveToGirl(GameState.activeCustomer);
-    this.time.delayedCall(dur(5000),()=>{ spawnEv.remove(false); showLoveVictory.call(this); });
+    this.time.delayedCall(dur(5000),()=>{
+      spawnEv.remove(false);
+      // Allow the crowd to gather around Coffee Girl for a bit
+      this.time.delayedCall(dur(5000),()=>{ showLoveVictory.call(this); });
+    });
   }
 
   function showLoveVictory(){

@@ -16,3 +16,6 @@ export const BirdState = {
   FLEE: 'Flee',
   PERCH: 'Perch',
 };
+
+// San Francisco sales tax rate used for order calculations
+export const SALES_TAX = 0.08625;

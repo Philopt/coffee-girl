@@ -14,6 +14,7 @@ import { flashBorder, flashFill, blinkButton, applyRandomSkew, setDepthFromBotto
 
 import { keys, requiredAssets, preload as preloadAssets, receipt, emojiFor } from './assets.js';
 import { playOpening, showStartScreen, playIntro } from './intro.js';
+import { playSong } from './music.js';
 import DesaturatePipeline from './desaturatePipeline.js';
 
 export let Assets, Scene, Customers, config;
@@ -4395,6 +4396,7 @@ function dogsBarkAtFalcon(){
 
   function showHighMoneyLoss(){
     const scene = this;
+    playSong(scene, 'fired_end');
     scene.tweens.killAll();
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();

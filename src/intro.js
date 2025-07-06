@@ -6,6 +6,7 @@ import { debugLog, DEBUG } from './debug.js';
 import { dur } from './ui.js';
 import { spawnSparrow, scatterSparrows } from './sparrow.js';
 import { createGrayscaleTexture, createGlowTexture } from './ui/helpers.js';
+import { playSong, stopSong } from './music.js';
 
 let startOverlay = null;
 let startButton = null;
@@ -54,6 +55,18 @@ function hideStartScreen(){
   if(cupShadow) cupShadow.setVisible(false);
   if(classicButton) classicButton.setVisible(false);
   if(resetButton) resetButton.setVisible(false);
+}
+
+function updateSongIcons(scene){
+  scene = scene || this;
+  badgeIcons.forEach((container, idx) => {
+    const key = ALL_BADGES[idx];
+    if (!container || !container.list || !container.list[0]) return;
+    const img = container.list[0];
+    const grayKey = `${key}_gray`;
+    if (!scene.textures.exists(grayKey)) createGrayscaleTexture(scene, key, grayKey);
+    img.setTexture(GameState.currentSong === key ? key : grayKey);
+  });
 }
 
 function playOpening(scene){
@@ -548,6 +561,12 @@ function showStartScreen(scene, opts = {}){
       children.unshift(glow);
     }
     const container = scene.add.container(slot.x,slot.y,children).setDepth(16);
+    container.setSize(slotSize, slotSize);
+    container.setInteractive({ useHandCursor: true });
+    container.on('pointerdown', () => {
+      playSong(scene, key);
+      updateSongIcons(scene);
+    });
     if(GameState.badgeCounts[key] > 1){
       const txt = scene.add.text(0,0,String(GameState.badgeCounts[key]),{font:'16px sans-serif',fill:'#fff'}).setOrigin(0.5);
       container.add(txt);
@@ -577,10 +596,12 @@ function showStartScreen(scene, opts = {}){
       }
     }
     phoneContainer.add(container);
-    badgeIcons.push(container);
-    extraObjects.push({ obj: container, alpha: container.alpha });
-    container.setAlpha(0);
+  badgeIcons.push(container);
+  extraObjects.push({ obj: container, alpha: container.alpha });
+  container.setAlpha(0);
   });
+
+  updateSongIcons(scene);
 
   if(revealNew){
     GameState.achievementsRevealed = true;
@@ -1160,9 +1181,10 @@ function playIntro(scene){
   intro.play();
 }
 
-export { playOpening, showStartScreen, playIntro, hideStartMessages, hideStartScreen };
+export { playOpening, showStartScreen, playIntro, hideStartMessages, hideStartScreen, updateSongIcons };
 
 if (typeof window !== 'undefined') {
   window.hideStartMessages = hideStartMessages;
   window.hideStartScreen = hideStartScreen;
+  window.updateSongIcons = updateSongIcons;
 }

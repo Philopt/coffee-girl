@@ -394,10 +394,10 @@ function showStartScreen(scene, opts = {}){
       if(!scene.textures.exists(grayKey)) {
         createGrayscaleTexture(scene, 'coffeecup2', grayKey);
       }
-      cupShadow = scene.add
+    cupShadow = scene.add
         .image(cupSlot.x, cupSlot.y, grayKey)
         .setDepth(16)
-        .setAlpha(showSlots ? 0.3 : 0);
+        .setAlpha(0);
       const tex = scene.textures.get(grayKey);
       if (tex && tex.getSourceImage) {
         const src = tex.getSourceImage();
@@ -408,11 +408,11 @@ function showStartScreen(scene, opts = {}){
       }
     } else {
       cupShadow.setPosition(cupSlot.x, cupSlot.y);
-      cupShadow.setAlpha(showSlots ? 0.3 : 0);
+      cupShadow.setAlpha(0);
     }
     phoneContainer.add(cupShadow);
     cupShadow.setAlpha(0);
-    extraObjects.push({ obj: cupShadow, alpha: showSlots ? 0.3 : 0 });
+    extraObjects.push({ obj: cupShadow, alpha: 0.3 });
   } else if(cupShadow){
     cupShadow.destroy();
     cupShadow = null;
@@ -486,11 +486,10 @@ function showStartScreen(scene, opts = {}){
     const earned = GameState.badges.includes(key);
     const slotIdx = slotMap[key];
     const slot = getSlot(slotIdx);
-    slot.setVisible(showSlots || earned);
-    if (slot.visible) {
-      extraObjects.push({ obj: slot, alpha: 1 });
-      slot.setAlpha(0);
-    }
+    // Always create the slot but wait to fade it in until the intro finishes
+    slot.setVisible(true);
+    extraObjects.push({ obj: slot, alpha: 1 });
+    slot.setAlpha(0);
     if(showSlots && fadeSlots && !earned && !delayExtras){
       slot.setAlpha(0);
       if(scene.tweens && scene.tweens.add){

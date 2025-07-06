@@ -1093,9 +1093,9 @@ export function setupGame(){
       .setVisible(false)
       .setAlpha(1);
     lossStamp=this.add.text(0,0,'LOSS',{
-        font:'bold 28px sans-serif',
-        fill:'#ff0000',
-        stroke:'#ff0000',
+        font:'bold 25px sans-serif',
+        fill:'#ffffff',
+        stroke:'#ffffff',
         strokeThickness:2
       })
       .setOrigin(0.5)
@@ -2331,7 +2331,7 @@ export function setupGame(){
         const skewFn2 = typeof applyRandomSkew === 'function' ? applyRandomSkew :()=>{};
         lossStamp
           .setText('LOSS')
-          .setScale(1.25 + randFloat3(-0.1, 0.1))
+          .setScale(1.125 + randFloat3(-0.1, 0.1))
           .setPosition(stampX, stampYFinal)
           .setAngle(Phaser.Math.Between(-10,10))
           .setVisible(true);

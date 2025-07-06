@@ -547,6 +547,8 @@ export function cleanupDogs(scene){
           if(child.pupGlow) child.pupGlow.destroy();
           if(child.heartEmoji) child.heartEmoji.destroy();
           child.destroy();
+        } else if(DEBUG && (!child.visible || child.alpha === 0 || child.x < 0 || child.x > 480)){
+          console.log('stray dog', {x:child.x, y:child.y, visible:child.visible, alpha:child.alpha});
         }
       }
     });

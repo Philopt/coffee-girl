@@ -144,33 +144,22 @@ function playOpening(scene){
     // Emit cups in random directions around the "2" as it lands
     const ang = Phaser.Math.DegToRad(Phaser.Math.Between(0, 360));
     const dist = Phaser.Math.Between(80, 160);
-    const cup = scene.add.image(openingNumber.x, openingNumber.y, 'coffeecup2')
+    const cup = scene.add.image(openingNumber.x, openingNumber.y, "coffeecup2")
       .setDepth(17)
       .setScale(scale * 0.8)
       .setAlpha(1);
     if(phoneMask) cup.setMask(phoneMask);
 
-    const targetX = cup.x + Math.cos(ang) * dist;
-    const targetY = cup.y + Math.sin(ang) * dist + 30;
-    const tl = scene.tweens.createTimeline({
-      callbackScope: scene,
+    scene.tweens.add({
+      targets: cup,
+      x: cup.x + Math.cos(ang) * dist,
+      y: cup.y + Math.sin(ang) * dist + 30,
+      angle: Phaser.Math.Between(-360, 360),
+      alpha: 0,
+      duration: 700,
+      ease: "Cubic.easeOut",
       onComplete: () => cup.destroy()
     });
-    tl.add({
-      targets: cup,
-      x: targetX,
-      y: targetY,
-      angle: Phaser.Math.Between(-360, 360),
-      duration: 700,
-      ease: 'Cubic.easeOut'
-    });
-    tl.add({
-      targets: cup,
-      alpha: 0,
-      duration: dur(600),
-      offset: '-=600'
-    });
-    tl.play();
   };
 
   let thrustEvent = null;

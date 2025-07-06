@@ -345,7 +345,8 @@ function showStartScreen(scene, opts = {}){
   // Align the slots relative to the bottom of the phone so they appear
   // just above the "Clock In" button instead of hugging the top.
   const startY =
-    offsetY - bh / 2 - marginY - (rows - 1) * (slotSize + marginY) - slotSize / 2 - 10 + 15;
+    offsetY - bh / 2 - marginY - (rows - 1) * (slotSize + marginY) -
+    slotSize / 2 - 10;
   // Build slots starting from the bottom row so index 0 maps to bottom-left
   for(let r=rows-1;r>=0;r--){
     for(let c=0;c<cols;c++){
@@ -389,34 +390,30 @@ function showStartScreen(scene, opts = {}){
   }
   miniGameCup.setAlpha(0);
   extraObjects.push({ obj: miniGameCup, alpha: allEarned ? 1 : 0 });
-  if(!allEarned){
-    if(!cupShadow){
-      const grayKey = 'coffeecup2_gray';
-      if(!scene.textures.exists(grayKey)) {
-        createGrayscaleTexture(scene, 'coffeecup2', grayKey);
-      }
+  if(!cupShadow){
+    const grayKey = 'coffeecup2_gray';
+    if(!scene.textures.exists(grayKey)) {
+      createGrayscaleTexture(scene, 'coffeecup2', grayKey);
+    }
     cupShadow = scene.add
         .image(cupSlot.x, cupSlot.y, grayKey)
         .setDepth(16)
         .setAlpha(0);
-      const tex = scene.textures.get(grayKey);
-      if (tex && tex.getSourceImage) {
-        const src = tex.getSourceImage();
-        const cupScale = (src && src.width && src.height)
-          ? slotSize / Math.max(src.width, src.height)
-          : 1;
-        cupShadow.setScale(cupScale);
-      }
-    } else {
-      cupShadow.setPosition(cupSlot.x, cupSlot.y);
-      cupShadow.setAlpha(0);
+    const tex = scene.textures.get(grayKey);
+    if (tex && tex.getSourceImage) {
+      const src = tex.getSourceImage();
+      const cupScale = (src && src.width && src.height)
+        ? slotSize / Math.max(src.width, src.height)
+        : 1;
+      cupShadow.setScale(cupScale);
     }
-    phoneContainer.add(cupShadow);
+  } else {
+    cupShadow.setPosition(cupSlot.x, cupSlot.y);
     cupShadow.setAlpha(0);
+  }
+  phoneContainer.add(cupShadow);
+  if(!allEarned){
     extraObjects.push({ obj: cupShadow, alpha: 0.3 });
-  } else if(cupShadow){
-    cupShadow.destroy();
-    cupShadow = null;
   }
   // cupSlot is just a plain coordinate object, so calling setVisible
   // on it causes errors. Visibility is controlled by the cup and
@@ -429,33 +426,70 @@ function showStartScreen(scene, opts = {}){
     extraObjects.push({ obj: glow, alpha: 1 });
     extraObjects.push({ obj: miniGameCup, alpha: 1 });
 
-    const btnW = 70;
-    const btnH = 40;
-    const makeButton = (x, label, callback, color=0x007bff) => {
-      const bg = scene.add.graphics();
-      bg.fillStyle(color,1);
-      bg.fillRoundedRect(-btnW/2,-btnH/2,btnW,btnH,10);
-      const txt = scene.add.text(0,0,label,{font:'20px sans-serif',fill:'#fff'}).setOrigin(0.5);
-      const c = scene.add.container(x,cupSlot.y,[bg,txt]).setSize(btnW,btnH).setDepth(17);
-      c.setInteractive({ useHandCursor: true });
-      c.on('pointerdown',callback);
-      phoneContainer.add(c);
-      return c;
+    const revealCupButtons = () => {
+      const btnW = 70;
+      const btnH = 40;
+      const makeButton = (x, label, callback, color=0x007bff) => {
+        const bg = scene.add.graphics();
+        bg.fillStyle(color,1);
+        bg.fillRoundedRect(-btnW/2,-btnH/2,btnW,btnH,10);
+        const txt = scene.add.text(0,0,label,{font:'20px sans-serif',fill:'#fff'}).setOrigin(0.5);
+        const c = scene.add.container(x,cupSlot.y,[bg,txt]).setSize(btnW,btnH).setDepth(17);
+        c.setInteractive({ useHandCursor: true });
+        c.on('pointerdown',callback);
+        phoneContainer.add(c);
+        return c;
+      };
+      const topLeft = getSlot(6);
+      const topRight = getSlot(8);
+      classicButton = makeButton(cupSlot.x, 'Classic', () => {
+        if(window.showMiniGame) window.showMiniGame();
+      });
+      classicButton.setAlpha(0).setScale(0.3).setAngle(-90);
+      resetButton = makeButton(cupSlot.x, 'Reset', () => {
+        if(typeof showResetConfirm === 'function') showResetConfirm();
+      }, 0x555555);
+      resetButton.setAlpha(0).setScale(0.3).setAngle(90);
+      if(scene.tweens && scene.tweens.add){
+        scene.tweens.add({
+          targets: classicButton,
+          x: topLeft.x,
+          y: topLeft.y,
+          angle: 0,
+          scale: 1,
+          alpha: 1,
+          duration: 600,
+          ease: 'Cubic.easeOut'
+        });
+        scene.tweens.add({
+          targets: resetButton,
+          x: topRight.x,
+          y: topRight.y,
+          angle: 0,
+          scale: 1,
+          alpha: 1,
+          duration: 600,
+          delay: 100,
+          ease: 'Cubic.easeOut'
+        });
+      } else {
+        classicButton.setPosition(topLeft.x, topLeft.y).setAngle(0).setScale(1).setAlpha(1);
+        resetButton.setPosition(topRight.x, topRight.y).setAngle(0).setScale(1).setAlpha(1);
+      }
     };
-    const topLeft = getSlot(6);
-    const topRight = getSlot(8);
-    classicButton = makeButton(cupSlot.x, 'Classic', () => {
-      if(window.showMiniGame) window.showMiniGame();
+
+    miniGameCup.setInteractive({ useHandCursor: true });
+    miniGameCup.once('pointerdown', () => {
+      miniGameCup.disableInteractive();
+      if(scene.tweens && scene.tweens.add){
+        scene.tweens.add({ targets: glow, alpha: 0, duration: 200 });
+      } else {
+        glow.setAlpha(0);
+      }
+      miniGameCup.setTexture('coffeecup2_gray');
+      miniGameCup.clearTint();
+      revealCupButtons();
     });
-    classicButton.setAlpha(0).setScale(0.3).setAngle(-90);
-    buttonTargets.push({ obj: classicButton, x: topLeft.x, y: topLeft.y });
-    resetButton = makeButton(cupSlot.x, 'Reset', () => {
-      if(typeof showResetConfirm === 'function') showResetConfirm();
-    }, 0x555555);
-    resetButton.setAlpha(0).setScale(0.3).setAngle(90);
-    buttonTargets.push({ obj: resetButton, x: topRight.x, y: topRight.y });
-    extraObjects.push({ obj: classicButton, alpha: 1 });
-    extraObjects.push({ obj: resetButton, alpha: 1 });
   } else {
     miniGameCup.setAlpha(0);
   }

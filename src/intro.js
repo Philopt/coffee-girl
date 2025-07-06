@@ -847,6 +847,8 @@ function showStartScreen(scene, opts = {}){
 
       const startX = bubble.x;
       const startY = bubble.y + bubble.bh/2;
+      const slotY = getSlot(6).y; // Classic button shares this Y
+      const targetY = (startY + slotY) / 2;
       const c = scene.add.container(
         startX,
         startY,
@@ -861,7 +863,7 @@ function showStartScreen(scene, opts = {}){
       scene.tweens.add({
         targets:c,
         alpha:1,
-        y:0,
+        y:targetY,
         duration:600,
         ease:'Cubic.easeOut',
         onComplete:()=>{

@@ -1403,15 +1403,15 @@ export function setupGame(){
             targets: dialogPriceContainer,
             y: peekY,
             scale: 0.3,
-            duration: dur(100),
+            duration: dur(150),
             ease: 'Sine.easeOut'
           });
           tl.add({
             targets: dialogPriceContainer,
             x: priceTargetX,
             y: midY,
-            scale: 0.5,
-            duration: dur(250),
+            scale: 0.55,
+            duration: dur(300),
             ease: 'Sine.easeOut'
           });
           tl.add({
@@ -1419,7 +1419,7 @@ export function setupGame(){
             x: priceTargetX,
             y: priceTargetY,
             scale: 0.8,
-            duration: dur(250),
+            duration: dur(300),
             ease: 'Sine.easeOut',
             onStart: ()=> dialogPriceContainer.setDepth(frontDepth)
           });
@@ -2258,6 +2258,12 @@ export function setupGame(){
         });
         tl.add({
           targets: ticket,
+          scale: 0.9,
+          duration: dur(150),
+          ease: 'Sine.easeOut'
+        });
+        tl.add({
+          targets: ticket,
           x: destX,
           y: destY,
           angle: '+=160',
@@ -2399,9 +2405,13 @@ export function setupGame(){
           }
           tl.add({
             targets: ticket,
-            angle: '+=180',
-            duration: dur(80),
-            ease: 'Back.easeOut',
+            x: destX,
+            y: destY,
+            angle: '+=720',
+            scale: 0,
+            alpha: 0,
+            duration: dur(600),
+            ease: 'Cubic.easeIn',
             onStart: () => {
               if(!dialogPriceValue.parentContainer){
                 ticket.add(dialogPriceValue);
@@ -2413,18 +2423,6 @@ export function setupGame(){
               if(dialogDrinkEmoji){
                 dialogDrinkEmoji.clearTint();
               }
-            }
-          });
-          tl.add({
-            targets: ticket,
-            x: destX,
-            y: destY,
-            angle: '+=720',
-            scale: 0,
-            alpha: 0,
-            duration: dur(600),
-            ease: 'Cubic.easeIn',
-            onStart: () => {
               if(dialogPriceTicket && dialogPriceTicket.setTint){
                 dialogPriceTicket.setTint(0xffffff);
                 this.tweens.addCounter({

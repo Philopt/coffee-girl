@@ -1101,13 +1101,16 @@ function playIntro(scene){
       t:1,
       duration:dur(700),
       ease:'Sine.easeInOut',
-      onStart:()=>GameState.girl.setVisible(true),
+      onStart:()=>{ GameState.girl.setVisible(true); GameState.girl.setAngle(0); },
       onUpdate:()=>{
         curve.getPoint(follower.t,follower.vec);
         GameState.girl.setPosition(follower.vec.x,follower.vec.y);
+        const angle = Math.sin(follower.t * Math.PI) * 20;
+        GameState.girl.setAngle(angle);
       },
       onComplete:()=>{
         GameState.girl.setPosition(endX,endY);
+        GameState.girl.setAngle(0);
         scene.tweens.add({
           targets:GameState.girl,
           y:endY-10,

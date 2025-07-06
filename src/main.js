@@ -1428,9 +1428,14 @@ export function setupGame(){
                 .setPosition(startX, startY)
                 .setScale(0.2);
               if (truckRef) {
+                const targetScaleX = truckRef.scaleX * 0.96;
+                const targetScaleY = truckRef.scaleY * 0.96;
                 this.tweens.add({
                   targets: truckRef,
-                  angle: 10,
+                  angle: 6,
+                  y: "+=6",
+                  scaleX: targetScaleX,
+                  scaleY: targetScaleY,
                   duration: dur(150),
                   yoyo: true,
                   hold: dur(100),

@@ -363,26 +363,16 @@ export function checkQueueSpacing(scene) {
 }
 
 export function startDogWaitTimer(scene, owner) {
-  if (!scene || !owner || !scene.time || !scene.time.addEvent) return;
+  // Older versions of the game allowed a dog's owner to walk away
+  // if the player took too long. The latest design removes this
+  // time limit, so we simply clear any existing timer without
+  // creating a new one. This preserves compatibility with callers
+  // that still invoke `startDogWaitTimer`.
+  if (!owner) return;
   if (owner.dogWaitEvent) {
     owner.dogWaitEvent.remove(false);
     owner.dogWaitEvent = null;
   }
-  owner.dogWaitEvent = scene.time.addEvent({
-    delay: dur(4000),
-    callback: () => {
-      owner.dogWaitEvent = null;
-      if (owner.waitingForDog) {
-        owner.waitingForDog = false;
-        if (typeof checkQueueSpacing === 'function') checkQueueSpacing(scene);
-        if (owner.exitHandler) {
-          const fn = owner.exitHandler;
-          owner.exitHandler = null;
-          fn();
-        }
-      }
-    }
-  });
 }
 
 function registerArrival(scene, cust) {

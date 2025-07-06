@@ -22,6 +22,8 @@ let miniGameCup = null;
 let cupShadow = null;
 let classicButton = null;
 let resetButton = null;
+let phoneMask = null;
+let phoneMaskShape = null;
 
 // Achievement keys used throughout the intro and main game
 const ALL_BADGES = [
@@ -146,6 +148,7 @@ function playOpening(scene){
       .setDepth(17)
       .setScale(scale * 0.8)
       .setAlpha(1);
+    if(phoneMask) cup.setMask(phoneMask);
 
     const targetX = cup.x + Math.cos(ang) * dist;
     const targetY = cup.y + Math.sin(ang) * dist + 30;
@@ -164,7 +167,7 @@ function playOpening(scene){
     tl.add({
       targets: cup,
       alpha: 0,
-      duration: 200
+      duration: dur(600)
     });
     tl.play();
   };
@@ -228,6 +231,7 @@ function showStartScreen(scene){
   if(startButton){ startButton.destroy(); startButton = null; }
   if(classicButton){ classicButton.destroy(); classicButton = null; }
   if(resetButton){ resetButton.destroy(); resetButton = null; }
+  if(phoneMaskShape){ phoneMaskShape.destroy(); phoneMaskShape = null; phoneMask = null; }
   if(typeof phoneContainer !== 'undefined' && phoneContainer){
     if(scene.tweens && scene.tweens.killTweensOf){
       scene.tweens.killTweensOf(phoneContainer);
@@ -281,6 +285,14 @@ function showStartScreen(scene){
     .setSize(phoneW + 20, phoneH + 20)
     .setInteractive({ useHandCursor: true })
     .setScale(2);
+
+  phoneMaskShape = scene.add.graphics();
+  phoneMaskShape.fillStyle(0xffffff,1);
+  phoneMaskShape.fillRoundedRect(-phoneW/2+6,-phoneH/2+6,phoneW-12,phoneH-12,24);
+  phoneMaskShape.setPosition(240, containerY);
+  phoneMaskShape.setScale(2);
+  phoneMaskShape.setVisible(false);
+  phoneMask = phoneMaskShape.createGeometryMask();
   if(scene.children && scene.children.bringToTop){
     scene.children.bringToTop(phoneContainer);
   }

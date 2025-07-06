@@ -167,7 +167,8 @@ function playOpening(scene){
     tl.add({
       targets: cup,
       alpha: 0,
-      duration: dur(600)
+      duration: dur(600),
+      offset: '-=600'
     });
     tl.play();
   };

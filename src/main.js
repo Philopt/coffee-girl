@@ -4177,6 +4177,69 @@ function dogsBarkAtFalcon(){
     if(endOverlay){ endOverlay.destroy(); }
     endOverlay = this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
 
+    const crowd = [];
+    const positiveStates = [CustomerState.MENDING, CustomerState.GROWING,
+      CustomerState.SPARKLING, CustomerState.ARROW];
+
+    const updateHeart = obj => {
+      if(obj && obj.heartEmoji && obj.heartEmoji.scene){
+        const hy = obj.y + (obj.displayHeight || 0) * 0.30;
+        obj.heartEmoji
+          .setPosition(obj.x, hy)
+          .setScale(scaleForY(obj.y) * 0.8)
+          .setDepth(obj.depth + 1);
+      }
+    };
+
+    const emitHearts = target => {
+      for(let i=0;i<3;i++){
+        const hx = target.x + Phaser.Math.Between(-10,10);
+        const hy = target.y - Phaser.Math.Between(10,20);
+        const h = scene.add.text(hx, hy, '💖', {font:'20px sans-serif'})
+          .setOrigin(0.5)
+          .setDepth(22);
+        addFloatingEmoji(h);
+        scene.tweens.add({
+          targets:h,
+          y:hy-40,
+          alpha:0,
+          delay:dur(i*150),
+          duration:dur(Phaser.Math.Between(800,1200)),
+          onComplete:()=>{ removeFloatingEmoji(h); h.destroy(); }
+        });
+      }
+    };
+
+    Object.entries(GameState.customerMemory).forEach(([key, mem]) => {
+      if(mem && positiveStates.includes(mem.state)){
+        const sx = Phaser.Math.Between(40,440);
+        const sy = scene.scale.height + 40;
+        const s = scene.add.sprite(sx, sy, key)
+          .setDepth(20)
+          .setScale(scaleForY(sy));
+        const heart = scene.add.text(sx, sy,
+          HEART_EMOJIS[mem.state] || '💖', {font:'28px sans-serif'})
+          .setOrigin(0.5)
+          .setDepth(21)
+          .setShadow(0,0,'#000',4);
+        s.heartEmoji = heart;
+        crowd.push(s);
+        const tx = Phaser.Math.Between(180,300);
+        const ty = 340;
+        scene.tweens.add({
+          targets:s,
+          x:tx,
+          y:ty,
+          duration:dur(1000),
+          onUpdate:()=>updateHeart(s),
+          onComplete:()=>emitHearts(s)
+        });
+      }
+    });
+
+    const updateCrowdHearts = () => { crowd.forEach(updateHeart); };
+    scene.events.on('update', updateCrowdHearts);
+
     const img = this.add.image(240,250,'muse_victory')
       .setScale(2.4)
       .setDepth(20)
@@ -4224,6 +4287,8 @@ function dogsBarkAtFalcon(){
           duration:300,
           ease:'Cubic.easeOut',
           onComplete:()=>{
+            scene.events.off('update', updateCrowdHearts);
+            crowd.forEach(c=>{ if(c.heartEmoji) c.heartEmoji.destroy(); if(c.destroy) c.destroy(); });
             img.destroy();
             line1.destroy();
             line2.destroy();

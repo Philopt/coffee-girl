@@ -42,6 +42,8 @@ export const GameState = {
   ,achievementsRevealed: false
   ,firedSeqStarted: false
   ,loveSeqStarted: false
+  ,currentSong: null
+  ,songInstance: null
 };
 
 export const floatingEmojis = [];

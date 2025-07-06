@@ -91,6 +91,8 @@ export function preload(){
   loader.spritesheet('lady_falcon','assets/lady_falcon.png',{frameWidth:64,frameHeight:64});
   loader.image('falcon_end','assets/ladyfalconend.png');
   loader.image('fired_end','assets/firedend.png');
+  loader.audio('fired_intro',"assets/music/you're_fired_intro.mp3");
+  loader.audio('fired_loop',"assets/music/you're_fired_loop.mp3");
   // Correct file extension and name for falcon victory asset
   loader.image('falcon_victory','assets/falcon_victory.gif');
   loader.image('muse_victory','assets/musevictory.png');

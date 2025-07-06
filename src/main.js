@@ -2258,7 +2258,7 @@ export function setupGame(){
         });
         tl.add({
           targets: ticket,
-          scale: 0.9,
+          scale: 0.8,
           duration: dur(150),
           ease: 'Sine.easeOut'
         });

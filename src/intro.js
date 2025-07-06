@@ -826,50 +826,64 @@ function showStartScreen(scene, opts = {}){
     hideStartMessages();
     const bubble = addStartMessage('Remove Stats and Achievements?', 0xff5555);
     if(!bubble) return;
-    const pad=10;
-    const txt=scene.add.text(0,0,'Reincarnate',{
-      font:'20px sans-serif',fill:'#fff'
-    }).setOrigin(0.5);
-    const bw=txt.width+pad*2;
-    const bh=txt.height+pad*2;
-    const bg=scene.add.graphics();
-    bg.fillStyle(0x000000,1);
-    bg.fillRoundedRect(-bw/2,-bh/2,bw,bh,10);
 
-    const radius=Math.max(bw,bh)/2+12;
-    const glowKey=`reset_glow_${Math.round(radius)}`;
-    createGlowTexture(scene,0x000000,glowKey,radius);
-    const glow=scene.add.image(0,0,glowKey).setAlpha(0.6);
+    scene.time.delayedCall(1000, () => {
+      const pad = 10;
+      const txt = scene.add.text(0,0,'Reincarnate',{
+        font:'20px sans-serif',fill:'#fff'
+      }).setOrigin(0.5);
+      const bw = txt.width + pad*2;
+      const bh = txt.height + pad*2;
+      const bg = scene.add.graphics();
+      bg.fillStyle(0x000000,1);
+      bg.fillRoundedRect(-bw/2,-bh/2,bw,bh,10);
 
-    txt.setShadow(0,0,'#000',8,true,true);
+      const radius = Math.max(bw,bh)/2 + 12;
+      const glowKey = `reset_glow_${Math.round(radius)}`;
+      createGlowTexture(scene,0x000000,glowKey,radius);
+      const glow = scene.add.image(0,0,glowKey).setAlpha(0.6);
 
-    const c=scene.add.container(
-      bubble.x - bubble.bw/2 + bw/2,
-      bubble.y + bubble.bh/2 + 30,
-      [glow,bg,txt]
-    ).setDepth(17);
-    c.setSize(bw,bh);
-    c.setInteractive({ useHandCursor:true });
-    c.on('pointerdown',()=>{
-      if(typeof resetAchievements==='function') resetAchievements();
-      showStartScreen(scene);
-    });
-    scene.tweens.add({
-      targets:glow,
-      alpha:{from:0.6,to:0.1},
-      duration:1000,
-      yoyo:true,
-      repeat:-1
-    });
-    scene.tweens.add({
-      targets:c,
-      y:c.y - 3,
-      duration:1500,
-      ease:'Sine.easeInOut',
-      yoyo:true,
-      repeat:-1
-    });
-    phoneContainer.add(c);
+      txt.setShadow(0,0,'#000',8,true,true);
+
+      const startX = bubble.x;
+      const startY = bubble.y + bubble.bh/2;
+      const c = scene.add.container(
+        startX,
+        startY,
+        [glow,bg,txt]
+      ).setDepth(17).setAlpha(0);
+      c.setSize(bw,bh);
+      c.setInteractive({ useHandCursor:true });
+      c.on('pointerdown',()=>{
+        if(typeof resetAchievements==='function') resetAchievements();
+        showStartScreen(scene);
+      });
+      scene.tweens.add({
+        targets:c,
+        alpha:1,
+        y:0,
+        duration:600,
+        ease:'Cubic.easeOut',
+        onComplete:()=>{
+          scene.tweens.add({
+            targets:c,
+            y:c.y - 3,
+            duration:1500,
+            ease:'Sine.easeInOut',
+            yoyo:true,
+            repeat:-1
+          });
+        }
+      });
+      scene.tweens.add({
+        targets:glow,
+        alpha:{from:0.6,to:0.1},
+        duration:1000,
+        yoyo:true,
+        repeat:-1
+      });
+      phoneContainer.add(c);
+    }, [], scene);
   }
 
   if(scene.time && scene.time.delayedCall){

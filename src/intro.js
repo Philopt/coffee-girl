@@ -202,7 +202,7 @@ function playOpening(scene){
     alpha: 0,
     duration: 600,
     onStart: () => {
-      showStartScreen.call(scene);
+      showStartScreen.call(scene, { delayExtras: true });
       if (scene.children && scene.children.bringToTop) {
         scene.children.bringToTop(startWhite);
       }
@@ -211,8 +211,9 @@ function playOpening(scene){
   tl.play();
 }
 
-function showStartScreen(scene){
+function showStartScreen(scene, opts = {}){
   scene = scene || this;
+  const delayExtras = !!opts.delayExtras;
   if (typeof debugLog === 'function') debugLog('showStartScreen called');
   // `cupShadow` is destroyed when the phone container is removed but the
   // variable persists between runs. If we try to re-add the old destroyed
@@ -242,6 +243,8 @@ function showStartScreen(scene){
   startMsgBubbles.forEach(b => b.destroy());
   startMsgBubbles = [];
   let msgOptions = [];
+  const extraObjects = [];
+  const buttonTargets = [];
   startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.75)
     .setDepth(13);
 
@@ -313,17 +316,17 @@ function showStartScreen(scene){
   iconSlots = [];
   // Slightly smaller icons
   const slotSize = 45; // 20% smaller achievement slots
-  const rows = 2;
+  const rows = 3;
   const cols = 3;
   const marginX = (phoneW - 24 - cols * slotSize) / (cols + 1);
-  // Vertical spacing matches the horizontal margin
-  const marginY = marginX;
+  // Vertical spacing slightly tighter than horizontal
+  const marginY = marginX * 0.8;
   const startX = -phoneW/2 + 12 + marginX + slotSize/2;
 
   // Align the slots relative to the bottom of the phone so they appear
   // just above the "Clock In" button instead of hugging the top.
   const startY =
-    offsetY - bh / 2 - marginY - (rows - 1) * (slotSize + marginY) - slotSize / 2 - 10;
+    offsetY - bh / 2 - marginY - (rows - 1) * (slotSize + marginY) - slotSize / 2 - 10 + 15;
   // Build slots starting from the bottom row so index 0 maps to bottom-left
   for(let r=rows-1;r>=0;r--){
     for(let c=0;c<cols;c++){
@@ -365,6 +368,8 @@ function showStartScreen(scene){
     miniGameCup.setPosition(cupSlot.x, cupSlot.y);
     phoneContainer.add(miniGameCup);
   }
+  miniGameCup.setAlpha(0);
+  extraObjects.push({ obj: miniGameCup, alpha: allEarned ? 1 : 0 });
   if(!allEarned){
     if(!cupShadow){
       const grayKey = 'coffeecup2_gray';
@@ -388,6 +393,8 @@ function showStartScreen(scene){
       cupShadow.setAlpha(showSlots ? 0.3 : 0);
     }
     phoneContainer.add(cupShadow);
+    cupShadow.setAlpha(0);
+    extraObjects.push({ obj: cupShadow, alpha: showSlots ? 0.3 : 0 });
   } else if(cupShadow){
     cupShadow.destroy();
     cupShadow = null;
@@ -400,7 +407,8 @@ function showStartScreen(scene){
     if(!scene.textures.exists(glowKey)) createGlowTexture(scene,0xffd700,glowKey,slotSize);
     const glow = scene.add.image(cupSlot.x, cupSlot.y, glowKey).setDepth(16).setAlpha(0);
     phoneContainer.add(glow);
-    scene.tweens.add({ targets: [miniGameCup, glow], alpha: 1, duration: 600, ease: 'Sine.easeIn' });
+    extraObjects.push({ obj: glow, alpha: 1 });
+    extraObjects.push({ obj: miniGameCup, alpha: 1 });
 
     const btnW = 70;
     const btnH = 40;
@@ -415,12 +423,20 @@ function showStartScreen(scene){
       phoneContainer.add(c);
       return c;
     };
-    classicButton = makeButton(cupSlot.x - (slotSize + marginX), 'Classic', () => {
+    const topLeft = getSlot(6);
+    const topRight = getSlot(8);
+    classicButton = makeButton(cupSlot.x, 'Classic', () => {
       if(window.showMiniGame) window.showMiniGame();
     });
-    resetButton = makeButton(cupSlot.x + (slotSize + marginX), 'Reset', () => {
+    classicButton.setAlpha(0).setScale(0.3).setAngle(-90);
+    buttonTargets.push({ obj: classicButton, x: topLeft.x, y: topLeft.y });
+    resetButton = makeButton(cupSlot.x, 'Reset', () => {
       if(typeof showResetConfirm === 'function') showResetConfirm();
     }, 0x555555);
+    resetButton.setAlpha(0).setScale(0.3).setAngle(90);
+    buttonTargets.push({ obj: resetButton, x: topRight.x, y: topRight.y });
+    extraObjects.push({ obj: classicButton, alpha: 1 });
+    extraObjects.push({ obj: resetButton, alpha: 1 });
   } else {
     miniGameCup.setAlpha(0);
   }
@@ -453,7 +469,11 @@ function showStartScreen(scene){
     const slotIdx = slotMap[key];
     const slot = getSlot(slotIdx);
     slot.setVisible(showSlots || earned);
-    if(showSlots && fadeSlots && !earned){
+    if (slot.visible) {
+      extraObjects.push({ obj: slot, alpha: 1 });
+      slot.setAlpha(0);
+    }
+    if(showSlots && fadeSlots && !earned && !delayExtras){
       slot.setAlpha(0);
       if(scene.tweens && scene.tweens.add){
         scene.tweens.add({targets:slot,alpha:1,duration:600,ease:'Sine.easeOut'});
@@ -496,20 +516,30 @@ function showStartScreen(scene){
         if(sourceSlot){
           container.setPosition(sourceSlot.x, sourceSlot.y);
         }
-        scene.tweens.add({
-          targets: container,
-          x: slot.x,
-          y: slot.y,
-          alpha: 0.25,
-          duration: 800,
-          ease: 'Sine.easeOut'
-        });
+        if(!delayExtras && scene.tweens && scene.tweens.add){
+          scene.tweens.add({
+            targets: container,
+            x: slot.x,
+            y: slot.y,
+            alpha: 0.25,
+            duration: 800,
+            ease: 'Sine.easeOut'
+          });
+        } else {
+          container.x = slot.x;
+          container.y = slot.y;
+          extraObjects.push({ obj: container, alpha: 0.25 });
+        }
       } else {
         container.setAlpha(GameState.badges.length ? 0.25 : 0.25);
       }
     }
     phoneContainer.add(container);
     badgeIcons.push(container);
+    if(!revealNew || !delayExtras){
+      extraObjects.push({ obj: container, alpha: container.alpha });
+    }
+    container.setAlpha(0);
   });
 
   if(revealNew){
@@ -625,6 +655,27 @@ function showStartScreen(scene){
     });
   };
 
+  const revealExtras = () => {
+    extraObjects.forEach(e => {
+      if(!e.obj || !e.obj.scene) return;
+      scene.tweens.add({ targets: e.obj, alpha: e.alpha, duration: 600, ease: 'Sine.easeOut' });
+    });
+    buttonTargets.forEach((b, idx) => {
+      if(!b.obj || !b.obj.scene) return;
+      scene.tweens.add({
+        targets: b.obj,
+        x: b.x,
+        y: b.y,
+        angle: 0,
+        scale: 1,
+        alpha: 1,
+        duration: 600,
+        delay: idx * 100,
+        ease: 'Cubic.easeOut'
+      });
+    });
+  };
+
   const dismissIntro = () => {
     if (introDismissed) return;
     introDismissed = true;
@@ -635,9 +686,13 @@ function showStartScreen(scene){
         targets,
         alpha: 0,
         duration: 600,
-        onComplete: () => scheduleStartMessages(0)
+        onComplete: () => {
+          revealExtras();
+          scheduleStartMessages(0);
+        }
       });
     } else {
+      revealExtras();
       scheduleStartMessages(0);
     }
   };
@@ -794,6 +849,9 @@ function showStartScreen(scene){
     // scheduleStartMessages() handles message timing after the intro fades
   }
   GameState.startScreenSeen = true;
+  if(!delayExtras) {
+    revealExtras();
+  }
   startZone.on('pointerdown',()=>{
     // Disable further clicks as soon as the intro begins
     startZone.disableInteractive();

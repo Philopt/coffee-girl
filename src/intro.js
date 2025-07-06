@@ -554,9 +554,7 @@ function showStartScreen(scene, opts = {}){
     }
     phoneContainer.add(container);
     badgeIcons.push(container);
-    if(!revealNew || !delayExtras){
-      extraObjects.push({ obj: container, alpha: container.alpha });
-    }
+    extraObjects.push({ obj: container, alpha: container.alpha });
     container.setAlpha(0);
   });
 

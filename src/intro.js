@@ -205,7 +205,7 @@ function playOpening(scene){
     alpha: 0,
     duration: 600,
     onStart: () => {
-      showStartScreen.call(scene, { delayExtras: true });
+      showStartScreen(scene, { delayExtras: true });
       if (scene.children && scene.children.bringToTop) {
         scene.children.bringToTop(startWhite);
       }
@@ -823,7 +823,7 @@ function showStartScreen(scene, opts = {}){
     c.setInteractive({ useHandCursor:true });
     c.on('pointerdown',()=>{
       if(typeof resetAchievements==='function') resetAchievements();
-      showStartScreen.call(scene);
+      showStartScreen(scene);
     });
     scene.tweens.add({
       targets:glow,

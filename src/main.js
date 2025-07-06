@@ -28,6 +28,10 @@ const DART_MAX_SPEED = (560 / 6) * 3;
 // Lowered by 10px so the drink doesn't land on top of their head
 const DRINK_HOLD_OFFSET = { x: 0, y: -10 };
 
+// Offset for the dollar sign relative to the money value
+// Moves slightly right and up so it sits closer to the number
+const MONEY_DOLLAR_OFFSET = { x: 2, y: -2 };
+
 // Cloud display positions
 // When money reaches $200 the dollar cloud sits at the top value.
 // Hearts use a similar scale based on the MAX_L constant.
@@ -185,8 +189,8 @@ export function setupGame(){
       moneyText.setPosition(centerX, centerY);
       if(moneyDollar){
         moneyDollar.setPosition(
-          centerX - moneyText.displayWidth/2 - moneyDollar.displayWidth/2,
-          centerY
+          centerX - moneyText.displayWidth/2 - moneyDollar.displayWidth/2 + MONEY_DOLLAR_OFFSET.x,
+          centerY + MONEY_DOLLAR_OFFSET.y
         );
       }
     }

@@ -4,7 +4,7 @@ import { ORDER_X, ORDER_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_
 import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer, startDogWaitTimer } from './entities/customerQueue.js';
 import { baseConfig } from "./scene.js";
 import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji, saveAchievements } from "./state.js";
-import { CustomerState } from './constants.js';
+import { CustomerState, SALES_TAX } from './constants.js';
 
 import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows, scatterSparrows } from './sparrow.js';
 import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog, dogTruckRuckus, dogRefuseJumpBark, dogBarkAt, animateDogPowerUp, barkProps, PUP_CUP_TINT } from './entities/dog.js';
@@ -302,6 +302,7 @@ export function setupGame(){
     if(reportLine2) reportLine2.setVisible(false);
     if(reportLine3) reportLine3.setVisible(false);
     if(tipText) tipText.setVisible(false);
+    if(taxText) taxText.setVisible(false);
     if(paidStamp) paidStamp.setVisible(false);
     if(lossStamp) lossStamp.setVisible(false);
   }
@@ -568,7 +569,7 @@ export function setupGame(){
       dialogDrinkEmoji, dialogPriceContainer, dialogPriceTicket, dialogPriceShadow, dialogPupCup,
       ticketShadowMask,
       btnSell, btnGive, btnRef;
-  let reportLine1, reportLine2, reportLine3, tipText;
+  let reportLine1, reportLine2, reportLine3, tipText, taxText;
   let paidStamp, lossStamp;
   let priceValueYOffset = 15;
   let truck, girl;
@@ -1079,6 +1080,11 @@ export function setupGame(){
       .setDepth(12)
       .setVisible(false)
       .setAlpha(1);
+    taxText=this.add.text(0,0,'',{font:'bold 24px sans-serif',fill:'#fff',strokeThickness:0})
+      .setOrigin(0.5)
+      .setDepth(12)
+      .setVisible(false)
+      .setAlpha(1);
     paidStamp=this.add.text(0,0,'SOLD',{
         font:'bold 32px sans-serif',
         fill:'#fff',
@@ -1454,7 +1460,8 @@ export function setupGame(){
       }
     });
 
-      tipText.setVisible(false);
+    tipText.setVisible(false);
+    taxText.setVisible(false);
       if (typeof debugLog === 'function') debugLog('showDialog end');
 
     }
@@ -1506,6 +1513,7 @@ export function setupGame(){
     btnRef.setVisible(false);
     if (btnRef.zone && btnRef.zone.input) btnRef.zone.input.enabled = false;
     tipText.setVisible(false);
+    taxText.setVisible(false);
 
   }
 
@@ -1629,9 +1637,11 @@ export function setupGame(){
 
     const totalCost=current.orders.reduce((s,o)=>s+o.price*o.qty,0);
 
-    let mD=0, lD=0, tip=0;
+    let mD=0, lD=0, tip=0, tax=0;
     if(type==='sell'){
       mD=totalCost;
+      tax = +(totalCost * SALES_TAX).toFixed(2);
+      mD += tax;
     } else if(type==='give'){
       mD=-totalCost;
     }
@@ -2178,6 +2188,50 @@ export function setupGame(){
       // Removed flashing movement of the price text
 
       let delay=dur(300);
+      if(tax>0){
+        this.time.delayedCall(delay,()=>{
+          const oldLeft = t.x - t.displayWidth/2;
+          const randFloat1 = Phaser.Math.FloatBetween || ((a,b)=>Phaser.Math.Between(a*1000,b*1000)/1000);
+          taxText
+            .setText('TAX')
+            .setScale(1.3 + randFloat1(-0.1, 0.1))
+            .setPosition(paidStamp.x, paidStamp.y)
+            .setAngle(Phaser.Math.Between(-15,15))
+            .setVisible(true)
+            .setDepth(paidStamp.depth);
+          skewFn(taxText);
+          const blinkTween = this.tweens.add({
+            targets: taxText,
+            alpha: 0,
+            duration: dur(80),
+            yoyo: true,
+            repeat: -1
+          });
+          this.tweens.add({
+            targets: taxText,
+            x: t.x,
+            y: t.y,
+            duration: dur(200),
+            ease: 'Back.easeOut',
+            onComplete: () => {
+              blinkTween.stop();
+              taxText.setAlpha(1);
+              this.tweens.add({
+                targets: taxText,
+                x: paidStamp.x,
+                y: paidStamp.y + taxText.displayHeight,
+                angle: Phaser.Math.Between(-15,15),
+                duration: dur(300),
+                ease: 'Bounce.easeOut'
+              });
+            }
+          });
+          countPrice(t, this, totalCost, totalCost + tax, oldLeft, t.y);
+        },[],this);
+        delay+=dur(300);
+      } else {
+        taxText.setVisible(false);
+      }
       if(tip>0){
         this.time.delayedCall(delay,()=>{
           const oldLeft = t.x - t.displayWidth/2;
@@ -2216,7 +2270,7 @@ export function setupGame(){
               });
             }
           });
-          countPrice(t, this, totalCost, totalCost + tip, oldLeft, t.y);
+          countPrice(t, this, totalCost + tax, totalCost + tax + tip, oldLeft, t.y);
           // Removed blinkPriceBorder; price text stays static
           // no scaling or flash animation for price text
         },[],this);
@@ -2228,6 +2282,7 @@ export function setupGame(){
       this.time.delayedCall(delay,()=>{
         paidStamp.setVisible(false);
         tipText.setVisible(false);
+        taxText.setVisible(false);
         const tl=this.tweens.createTimeline({callbackScope:this,onComplete:()=>{
             stopSellGlowSparkle.call(this, () => {
               clearDialog.call(this);
@@ -4724,6 +4779,7 @@ function dogsBarkAtFalcon(){
     reportLine2.setVisible(false);
     reportLine3.setVisible(false);
     tipText.setVisible(false);
+    taxText.setVisible(false);
     paidStamp.setVisible(false);
     lossStamp.setVisible(false);
     // reset truck and girl to their initial off-screen positions

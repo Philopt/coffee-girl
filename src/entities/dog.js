@@ -4,6 +4,7 @@ import { CustomerState } from '../constants.js';
 import { dur, scaleForY } from '../ui.js';
 import { setDepthFromBottom, createGlowTexture } from '../ui/helpers.js';
 import { scatterSparrows } from '../sparrow.js';
+import { DEBUG } from '../debug.js';
 
 export const DOG_MIN_Y = ORDER_Y + 20;
 export const DOG_SPEED = 120; // base movement speed for the dog

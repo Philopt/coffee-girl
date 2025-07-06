@@ -2854,50 +2854,13 @@ export function setupGame(){
 
         const runOff=()=>scene.tweens.add({targets:c.sprite,x:targetX,duration:dur(WALK_OFF_BASE/1.2),onComplete:()=>{c.sprite.destroy();remaining--;if(remaining===0&&done)done();}});
 
-        if(state===CustomerState.BROKEN){
+        if(state===CustomerState.BROKEN || state===CustomerState.MENDING || state===CustomerState.NORMAL){
           runOff();
           if(c.dog){
             if(c.dog.followEvent) c.dog.followEvent.remove(false);
             const ddir=c.dog.x<ORDER_X?-1:1;
             const dx=ddir===1?520:-40;
             sendDogOffscreen.call(scene,c.dog,dx,c.dog.y);
-          }
-          return;
-        }
-
-        if(state===CustomerState.NORMAL){
-          const tl=scene.tweens.createTimeline();
-          for(let i=0;i<5;i++){
-            tl.add({targets:c.sprite,x:Phaser.Math.Between(40,440),y:Phaser.Math.Between(WANDER_TOP,WANDER_BOTTOM),duration:dur(Phaser.Math.Between(300,500)),ease:'Sine.easeInOut'});
-          }
-          tl.add({targets:c.sprite,x:targetX,duration:dur(WALK_OFF_BASE/1.2),onStart:()=>{if(c.dog){scene.tweens.killTweensOf(c.dog);if(c.dog.followEvent)c.dog.followEvent.remove(false);}},onComplete:()=>{c.sprite.destroy();remaining--;if(remaining===0&&done)done();}});
-          tl.play();
-          if(c.dog){
-            const dog=c.dog;
-            if(!dog) { return; }
-            if(dog.followEvent) dog.followEvent.remove(false);
-            const { scale, rise } = barkProps(dog);
-            const bark=scene.add.sprite(dog.x,dog.y-20,'dog1',3).setOrigin(0.5).setDepth(dog.depth+1).setScale(Math.abs(dog.scaleX)*scale,Math.abs(dog.scaleY)*scale);
-            scene.tweens.add({targets:bark,y:`-=${rise}`,alpha:0,duration:dur(600),onComplete:()=>bark.destroy()});
-            const dTl=scene.tweens.createTimeline();
-            for(let j=0;j<4;j++){
-              const ang=Phaser.Math.FloatBetween(0,Math.PI*2);
-              const r=Phaser.Math.Between(40,60);
-              const dx=girl.x+Math.cos(ang)*r;
-              const dy=girl.y+Math.sin(ang)*r;
-              dTl.add({targets:dog,x:dx,y:dy,duration:dur(Phaser.Math.Between(300,450)),ease:'Sine.easeInOut'});
-            }
-            dTl.setCallback('onUpdate',()=>{
-              if(dog.prevX===undefined) dog.prevX=dog.x;
-              const dx=dog.x-dog.prevX;
-              if(Math.abs(dx)>3){ dog.dir=dx>0?1:-1; }
-              dog.prevX=dog.x;
-              const s=scaleForY(dog.y)*0.5;
-              dog.setScale(s*(dog.dir||1), s);
-            }, []);
-            dTl.setCallback('onComplete',()=>{ if(dog) dog.setFrame(1); }, []);
-            if(dog && dog.anims && dog.play){ dog.play('dog_walk'); }
-            dTl.play();
           }
           return;
         }

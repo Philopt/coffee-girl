@@ -2231,12 +2231,16 @@ export function setupGame(){
               done();
             });
           }});
+        const midX = (ticket.x + destX) / 2;
+        const midY = ticket.y - 60;
         tl.add({
           targets: ticket,
-          y: '-=60',
-          angle: '-=10',
-          duration: dur(80),
-          ease: 'Cubic.easeOut',
+          x: midX,
+          y: midY,
+          angle: '+=20',
+          scale: 0.8,
+          duration: dur(200),
+          ease: 'Quad.easeOut',
           onStart: () => {
             if(!dialogPriceValue.parentContainer){
               ticket.add(dialogPriceValue);
@@ -2254,13 +2258,13 @@ export function setupGame(){
         });
         tl.add({
           targets: ticket,
-          props: {
-            x: { value: destX, ease: 'Sine.easeIn' },
-            y: { value: destY, ease: 'Quad.easeIn' }
-          },
-          angle: '-=10',
+          x: destX,
+          y: destY,
+          angle: '+=160',
           scale: 0,
-          duration: dur(400)
+          alpha: 0,
+          duration: dur(500),
+          ease: 'Quad.easeIn'
         });
         tl.play();
       },[],this);
@@ -2395,10 +2399,9 @@ export function setupGame(){
           }
           tl.add({
             targets: ticket,
-            x: '-=80',
-            angle: '-=90',
+            angle: '+=180',
             duration: dur(80),
-            ease: 'Cubic.easeOut',
+            ease: 'Back.easeOut',
             onStart: () => {
               if(!dialogPriceValue.parentContainer){
                 ticket.add(dialogPriceValue);
@@ -2414,14 +2417,13 @@ export function setupGame(){
           });
           tl.add({
             targets: ticket,
-            props: {
-              x: { value: destX, ease: 'Sine.easeIn' },
-              y: { value: destY, ease: 'Quad.easeIn' }
-            },
-            angle: '-=270',
+            x: destX,
+            y: destY,
+            angle: '+=720',
             scale: 0,
             alpha: 0,
             duration: dur(600),
+            ease: 'Cubic.easeIn',
             onStart: () => {
               if(dialogPriceTicket && dialogPriceTicket.setTint){
                 dialogPriceTicket.setTint(0xffffff);

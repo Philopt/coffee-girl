@@ -20,38 +20,23 @@ export function sparrowSpawnDelay(love) {
 
 function randomTarget(scene){
   const { width } = scene.scale;
-  const options = [
-    // ground near the middle
-    new Phaser.Math.Vector2(
-      Phaser.Math.Between(180,300),
-      Phaser.Math.Between(260,300)
-    ),
-    // top of the truck
-    (() => {
-      const truck = GameState.truck;
-      const moving = truck && scene.tweens && scene.tweens.isTweening && scene.tweens.isTweening(truck);
-      if (truck && !moving && truck.getTopCenter) {
-        const top = truck.getTopCenter();
-        const y = top.y + 25 * truck.scaleY;
-        const left = truck.x - truck.displayWidth / 2 + 40 * truck.scaleX;
-        const right = truck.x + truck.displayWidth / 2 - 33 * truck.scaleX;
-        return new Phaser.Math.Vector2(
-          Phaser.Math.Between(left, right),
-          y
-        );
-      }
-      return new Phaser.Math.Vector2(
-        Phaser.Math.Between(220, 260),
-        217
-      );
-    })(),
-    // offscreen above
-    new Phaser.Math.Vector2(
-      Phaser.Math.Between(-40,width+40),
-      -40
-    )
-  ];
-  return Phaser.Utils.Array.GetRandom(options);
+  const truck = GameState.truck;
+  const moving = truck && scene.tweens && scene.tweens.isTweening && scene.tweens.isTweening(truck);
+  if (truck && !moving && truck.getTopCenter) {
+    const top = truck.getTopCenter();
+    const y = top.y + 25 * truck.scaleY;
+    const left = truck.x - truck.displayWidth / 2 + 40 * truck.scaleX;
+    const right = truck.x + truck.displayWidth / 2 - 33 * truck.scaleX;
+    return new Phaser.Math.Vector2(
+      Phaser.Math.Between(left, right),
+      y
+    );
+  }
+  // offscreen above
+  return new Phaser.Math.Vector2(
+    Phaser.Math.Between(-40, width + 40),
+    -40
+  );
 }
 
 export class Sparrow {

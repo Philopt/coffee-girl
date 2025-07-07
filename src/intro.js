@@ -221,6 +221,12 @@ function showStartScreen(scene, opts = {}){
   scene = scene || this;
   const delayExtras = !!opts.delayExtras;
   if (typeof debugLog === 'function') debugLog('showStartScreen called');
+  if (GameState.carryPortrait) {
+    if (GameState.carryPortrait.scene) {
+      GameState.carryPortrait.destroy();
+    }
+    GameState.carryPortrait = null;
+  }
   // `cupShadow` is destroyed when the phone container is removed but the
   // variable persists between runs. If we try to re-add the old destroyed
   // object, Phaser throws a "Cannot read properties of undefined" error when

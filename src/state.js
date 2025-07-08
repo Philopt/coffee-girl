@@ -69,6 +69,11 @@ export function loadAchievements() {
     if (data.badgeCounts && typeof data.badgeCounts === 'object') {
       GameState.badgeCounts = { ...data.badgeCounts };
     }
+    if (data.achievementsRevealed) GameState.achievementsRevealed = !!data.achievementsRevealed;
+    if (data.slotsRevealed) GameState.slotsRevealed = !!data.slotsRevealed;
+    if (typeof data.lastEndKey === 'string' || data.lastEndKey === null) {
+      GameState.lastEndKey = data.lastEndKey;
+    }
   } catch (err) {
     // ignore malformed storage
   }
@@ -77,7 +82,13 @@ export function loadAchievements() {
 export function saveAchievements() {
   if (typeof window === 'undefined' || !window.localStorage) return;
   try {
-    const data = { badges: GameState.badges, badgeCounts: GameState.badgeCounts };
+    const data = {
+      badges: GameState.badges,
+      badgeCounts: GameState.badgeCounts,
+      achievementsRevealed: GameState.achievementsRevealed,
+      slotsRevealed: GameState.slotsRevealed,
+      lastEndKey: GameState.lastEndKey,
+    };
     window.localStorage.setItem('coffeeGirlAchievements', JSON.stringify(data));
   } catch (err) {
     // ignore quota errors
@@ -87,6 +98,9 @@ export function saveAchievements() {
 export function resetAchievements() {
   GameState.badges = [];
   GameState.badgeCounts = {};
+  GameState.achievementsRevealed = false;
+  GameState.slotsRevealed = false;
+  GameState.lastEndKey = null;
   if (typeof window !== 'undefined' && window.localStorage) {
     try {
       window.localStorage.removeItem('coffeeGirlAchievements');

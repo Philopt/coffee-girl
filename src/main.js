@@ -1433,7 +1433,7 @@ export function setupGame(){
                 const targetScaleY = truckRef.scaleY * 0.96;
                 this.tweens.add({
                   targets: truckRef,
-                  angle: 6,
+                  angle: 1.2,
                   y: "+=6",
                   scaleX: targetScaleX,
                   scaleY: targetScaleY,

@@ -431,6 +431,8 @@ export function updateDog(owner) {
 
 export function sendDogOffscreen(dog, x, y) {
   if (!dog) return;
+  // Mark immediately so other logic stops trying to interact with this dog
+  dog.dead = true;
   if (dog.followEvent) dog.followEvent.remove(false);
   // ensure any previous tweens don't fight with the exit tween
   this.tweens.killTweensOf(dog);

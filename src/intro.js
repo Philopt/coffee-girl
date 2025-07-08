@@ -219,12 +219,6 @@ function showStartScreen(scene, opts = {}){
   scene = scene || this;
   const delayExtras = !!opts.delayExtras;
   if (typeof debugLog === 'function') debugLog('showStartScreen called');
-  if (GameState.carryPortrait) {
-    if (GameState.carryPortrait.scene) {
-      GameState.carryPortrait.destroy();
-    }
-    GameState.carryPortrait = null;
-  }
   if (miniGameCup && !miniGameCup.scene) {
     miniGameCup = null;
   }

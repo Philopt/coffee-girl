@@ -30,7 +30,6 @@ export const GameState = {
   ,falconStunned: false
   ,badges: []
   ,badgeCounts: {}
-  ,carryPortrait: null
   ,lastEndKey: null
   ,phoneContainer: null
   ,activeBarks: []

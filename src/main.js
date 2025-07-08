@@ -4367,7 +4367,6 @@ function dogsBarkAtFalcon(){
     this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
     btn.on('pointerdown',()=>{
         btn.disableInteractive();
-        GameState.carryPortrait = img.setDepth(25);
         btn.setVisible(false);
         createGlowTexture(this,0xffffff,'screen_flash',256);
         const overlayG = this.add.image(btn.x,btn.y,'screen_flash').setDepth(23);
@@ -4459,7 +4458,6 @@ function dogsBarkAtFalcon(){
     this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
     btn.on('pointerdown',()=>{
         btn.disableInteractive();
-        GameState.carryPortrait = img.setDepth(25);
         btn.setVisible(false);
         createGlowTexture(this,0xffffff,'screen_flash',256);
         const overlayG = this.add.image(btn.x,btn.y,'screen_flash').setDepth(23);
@@ -4549,7 +4547,6 @@ function dogsBarkAtFalcon(){
     this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
     btn.on('pointerdown',()=>{
         btn.disableInteractive();
-        GameState.carryPortrait = img.setDepth(25);
         btn.setVisible(false);
         createGlowTexture(this,0xffffff,'screen_flash',256);
         const overlayG = this.add.image(btn.x,btn.y,'screen_flash').setDepth(23);
@@ -4658,7 +4655,6 @@ function dogsBarkAtFalcon(){
 
     btn.on('pointerdown',()=>{
         btn.disableInteractive();
-        GameState.carryPortrait = img.setDepth(25);
         btn.setVisible(false);
         if(overlay){ this.tweens.add({targets:overlay,alpha:0,duration:dur(600)}); }
         createGlowTexture(this,0xffffff,'screen_flash',256);
@@ -4753,7 +4749,6 @@ function dogsBarkAtFalcon(){
 
     btn.on('pointerdown',()=>{
         btn.disableInteractive();
-        GameState.carryPortrait = img.setDepth(25);
         btn.setVisible(false);
         createGlowTexture(this,0xffffff,'screen_flash',256);
         const overlayG = this.add.image(btn.x,btn.y,'screen_flash').setDepth(23);

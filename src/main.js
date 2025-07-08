@@ -4148,6 +4148,7 @@ function dogsBarkAtFalcon(){
         txt.destroy();
         btn.destroy();
         if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
+        if(GameState.victoryOverlay){ GameState.victoryOverlay.destroy(); GameState.victoryOverlay=null; }
         restartGame.call(this);
       });
     GameState.gameOver=true;
@@ -4388,6 +4389,7 @@ function dogsBarkAtFalcon(){
             line2.destroy();
             btn.destroy();
             if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
+            if(GameState.victoryOverlay){ GameState.victoryOverlay.destroy(); GameState.victoryOverlay=null; }
             restartGame.call(this, overlayG);
           }
         });
@@ -4478,6 +4480,7 @@ function dogsBarkAtFalcon(){
             line2.destroy();
             btn.destroy();
             if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
+            if(GameState.victoryOverlay){ GameState.victoryOverlay.destroy(); GameState.victoryOverlay=null; }
             restartGame.call(this, overlayG);
           }
         });
@@ -4567,6 +4570,7 @@ function dogsBarkAtFalcon(){
             line2.destroy();
             btn.destroy();
             if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
+            if(GameState.victoryOverlay){ GameState.victoryOverlay.destroy(); GameState.victoryOverlay=null; }
             restartGame.call(this, overlayG);
           }
         });
@@ -4769,6 +4773,7 @@ function dogsBarkAtFalcon(){
             line2.destroy();
             btn.destroy();
             if(endOverlay){ endOverlay.destroy(); endOverlay=null; }
+            if(GameState.victoryOverlay){ GameState.victoryOverlay.destroy(); GameState.victoryOverlay=null; }
             restartGame.call(this, overlayG);
           }
         });
@@ -4779,6 +4784,10 @@ function dogsBarkAtFalcon(){
 
   function restartGame(overlay){
     const scene=this;
+    if(GameState.victoryOverlay){
+      GameState.victoryOverlay.destroy();
+      GameState.victoryOverlay=null;
+    }
     scene.tweens.killAll();
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();

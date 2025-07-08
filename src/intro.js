@@ -24,6 +24,7 @@ let classicButton = null;
 let resetButton = null;
 let phoneMask = null;
 let phoneMaskShape = null;
+let flyingBadges = [];
 
 // Achievement keys used throughout the intro and main game
 const ALL_BADGES = [
@@ -53,6 +54,7 @@ function hideStartScreen(){
   if(miniGameCup) miniGameCup.setVisible(false);
   if(classicButton) classicButton.setVisible(false);
   if(resetButton) resetButton.setVisible(false);
+  flyingBadges.forEach(b => b.setVisible(false));
 }
 
 function updateSongIcons(scene){
@@ -225,6 +227,8 @@ function showStartScreen(scene, opts = {}){
   if(startButton){ startButton.destroy(); startButton = null; }
   if(classicButton){ classicButton.destroy(); classicButton = null; }
   if(resetButton){ resetButton.destroy(); resetButton = null; }
+  flyingBadges.forEach(b => b.destroy());
+  flyingBadges = [];
   if(phoneMaskShape){ phoneMaskShape.destroy(); phoneMaskShape = null; phoneMask = null; }
   if(typeof phoneContainer !== 'undefined' && phoneContainer){
     if(scene.tweens && scene.tweens.killTweensOf){
@@ -590,6 +594,7 @@ function showStartScreen(scene, opts = {}){
       const startY = phoneContainer.y + openingNumber.y * (phoneContainer.scaleY || phoneContainer.scale || 1);
       const icon = scene.add.image(startX,startY,GameState.lastEndKey).setDepth(17).setScale(scale);
       scene.children.bringToTop(icon);
+      flyingBadges.push(icon);
       scene.tweens.add({
         targets:icon,
         x:destX,
@@ -597,7 +602,11 @@ function showStartScreen(scene, opts = {}){
         alpha:0,
         duration:600,
         ease:'Sine.easeIn',
-        onComplete:()=>{ icon.destroy(); }
+        onComplete:()=>{
+          const idx = flyingBadges.indexOf(icon);
+          if(idx !== -1) flyingBadges.splice(idx,1);
+          icon.destroy();
+        }
       });
       scene.tweens.add({
         targets:badgeIcons[idx],
@@ -955,6 +964,8 @@ function showStartScreen(scene, opts = {}){
       if(openingDog){ openingDog.destroy(); openingDog=null; }
       badgeIcons.forEach(i=>i.destroy());
       badgeIcons=[];
+      flyingBadges.forEach(i=>i.destroy());
+      flyingBadges=[];
       if (phoneContainer) {
         phoneContainer.destroy();
         phoneContainer = null;

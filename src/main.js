@@ -2010,7 +2010,7 @@ export function setupGame(){
         this.tweens.add({
           targets: sprite,
           x: waitX,
-          duration: dur(300),
+          duration: dur(600),
           onUpdate: (tw, t) => {
             if (current.heartEmoji && current.heartEmoji.scene && current.heartEmoji.active) {
               const hy = t.y + t.displayHeight * 0.30;
@@ -2639,7 +2639,7 @@ export function setupGame(){
           y:destY(),
           scaleX:0,
           scaleY:1.2,
-          duration:dur(200),
+          duration:dur(400),
           onComplete:()=>{
             GameState.love += isPos?1:-1;
             loveText.setText(String(GameState.love));
@@ -2696,7 +2696,7 @@ export function setupGame(){
           y: destY(),
           scale: 0,
           alpha: 0,
-          duration: dur(300),
+          duration: dur(600),
           onComplete: () => {
             bark.destroy();
             GameState.love -= 1;
@@ -3669,6 +3669,7 @@ function dogsBarkAtFalcon(){
           y:startY+Math.sin(ang)*dist,
           angle:Phaser.Math.Between(-180,180),
           alpha:0,
+          scale:0,
           duration:dur(800),
           ease:'Cubic.easeOut',
           onComplete:()=>{ const i=GameState.activeBursts.indexOf(cup); if(i!==-1) GameState.activeBursts.splice(i,1); cup.destroy(); }
@@ -3693,6 +3694,7 @@ function dogsBarkAtFalcon(){
           y:startY+Math.sin(ang)*dist,
           angle:Phaser.Math.Between(-180,180),
           alpha:0,
+          scale:0,
           duration:dur(500),
           ease:'Cubic.easeOut',
           onComplete:()=>{ const i=GameState.activeBursts.indexOf(cup); if(i!==-1) GameState.activeBursts.splice(i,1); cup.destroy(); }

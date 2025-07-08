@@ -20,7 +20,6 @@ let openingDog = null;
 let badgeIcons = [];
 let iconSlots = [];
 let miniGameCup = null;
-let cupShadow = null;
 let classicButton = null;
 let resetButton = null;
 let phoneMask = null;
@@ -52,7 +51,6 @@ function hideStartScreen(){
   hideStartMessages();
   badgeIcons.forEach(b => b.setVisible(false));
   if(miniGameCup) miniGameCup.setVisible(false);
-  if(cupShadow) cupShadow.setVisible(false);
   if(classicButton) classicButton.setVisible(false);
   if(resetButton) resetButton.setVisible(false);
 }
@@ -227,14 +225,6 @@ function showStartScreen(scene, opts = {}){
     }
     GameState.carryPortrait = null;
   }
-  // `cupShadow` is destroyed when the phone container is removed but the
-  // variable persists between runs. If we try to re-add the old destroyed
-  // object, Phaser throws a "Cannot read properties of undefined" error when
-  // it attempts to access `sys` on the dead game object. Guard against this by
-  // clearing any lingering reference before creating the new start screen.
-  if (cupShadow && !cupShadow.scene) {
-    cupShadow = null;
-  }
   if (miniGameCup && !miniGameCup.scene) {
     miniGameCup = null;
   }
@@ -399,31 +389,7 @@ function showStartScreen(scene, opts = {}){
   }
   miniGameCup.setAlpha(0);
   extraObjects.push({ obj: miniGameCup, alpha: allEarned ? 1 : 0 });
-  if(!cupShadow){
-    const grayKey = 'coffeecup2_gray';
-    if(!scene.textures.exists(grayKey)) {
-      createGrayscaleTexture(scene, 'coffeecup2', grayKey);
-    }
-    cupShadow = scene.add
-        .image(cupSlot.x, cupSlot.y, grayKey)
-        .setDepth(16)
-        .setAlpha(0);
-    const tex = scene.textures.get(grayKey);
-    if (tex && tex.getSourceImage) {
-      const src = tex.getSourceImage();
-      const cupScale = (src && src.width && src.height)
-        ? slotSize / Math.max(src.width, src.height)
-        : 1;
-      cupShadow.setScale(cupScale);
-    }
-  } else {
-    cupShadow.setPosition(cupSlot.x, cupSlot.y);
-    cupShadow.setAlpha(0);
-  }
-  phoneContainer.add(cupShadow);
-  if(!allEarned){
-    extraObjects.push({ obj: cupShadow, alpha: 0.3 });
-  }
+  // Removed grayscale shadow behind the mini game cup
   // cupSlot is just a plain coordinate object, so calling setVisible
   // on it causes errors. Visibility is controlled by the cup and
   // shadow sprites instead.

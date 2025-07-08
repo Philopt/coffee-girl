@@ -668,6 +668,10 @@ function showStartScreen(scene, opts = {}){
   let introDismissed = false;
   let introFadeEvent = null;
 
+  // Called after the intro ends to queue text bubbles on the phone
+  // when the player returns to the start screen. The specific
+  // messages come from msgOptions, which was chosen according to
+  // GameState.lastEndKey.
   const scheduleStartMessages = (initialDelay = 0) => {
     // Begin showing text messages 1-2 seconds after the intro fades.
     let delay = initialDelay + Phaser.Math.Between(1000, 2000);

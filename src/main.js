@@ -4420,15 +4420,15 @@ function dogsBarkAtFalcon(){
     endOverlay = this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
 
     const titleGame = this.add.text(240,170,'GAME',{
-      font:'80px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
-    }).setOrigin(0.5).setDepth(20).setAlpha(0);
+      font:'100px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
+    }).setOrigin(0.5).setDepth(21).setAlpha(0);
     const titleOver = this.add.text(240,250,'OVER',{
-      font:'80px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
-    }).setOrigin(0.5).setDepth(20).setAlpha(0);
+      font:'100px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
+    }).setOrigin(0.5).setDepth(21).setAlpha(0);
     this.tweens.add({targets:[titleGame,titleOver],alpha:1,duration:dur(1200)});
 
     const img = this.add.image(240,250,'fired_end')
-      .setScale(2.1)
+      .setScale(1.8)
       .setDepth(20)
       .setAlpha(0);
     this.tweens.add({targets:img,alpha:1,duration:dur(1200),delay:dur(1000)});
@@ -4506,11 +4506,11 @@ function dogsBarkAtFalcon(){
     endOverlay = this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
 
     const titleGame = this.add.text(240,170,'GAME',{
-      font:'80px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
-    }).setOrigin(0.5).setDepth(20).setAlpha(0);
+      font:'100px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
+    }).setOrigin(0.5).setDepth(21).setAlpha(0);
     const titleOver = this.add.text(240,250,'OVER',{
-      font:'80px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
-    }).setOrigin(0.5).setDepth(20).setAlpha(0);
+      font:'100px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
+    }).setOrigin(0.5).setDepth(21).setAlpha(0);
     this.tweens.add({targets:[titleGame,titleOver],alpha:1,duration:dur(1200)});
 
     const img = this.add.image(240,250,'falcon_end')
@@ -4708,11 +4708,11 @@ function dogsBarkAtFalcon(){
     endOverlay = this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
 
     const titleGame = this.add.text(240,170,'GAME',{
-      font:'80px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
-    }).setOrigin(0.5).setDepth(20).setAlpha(0);
+      font:'100px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
+    }).setOrigin(0.5).setDepth(21).setAlpha(0);
     const titleOver = this.add.text(240,250,'OVER',{
-      font:'80px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
-    }).setOrigin(0.5).setDepth(20).setAlpha(0);
+      font:'100px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
+    }).setOrigin(0.5).setDepth(21).setAlpha(0);
     this.tweens.add({targets:[titleGame,titleOver],alpha:1,duration:dur(1200)});
 
     const img = this.add.image(240,250,'revolt_end')

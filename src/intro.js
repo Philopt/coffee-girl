@@ -392,12 +392,8 @@ function showStartScreen(scene, opts = {}){
   // on it causes errors. Visibility is controlled by the cup and
   // shadow sprites instead.
   if (allEarned) {
-    const glowKey = `gold_glow_${slotSize}`;
-    if(!scene.textures.exists(glowKey)) createGlowTexture(scene,0xffd700,glowKey,slotSize);
-    const glow = scene.add.image(cupSlot.x, cupSlot.y, glowKey).setDepth(16).setAlpha(0);
-    phoneContainer.add(glow);
-    extraObjects.push({ obj: glow, alpha: 1 });
-    extraObjects.push({ obj: miniGameCup, alpha: 1 });
+    // Display the mini game cup without a glow to avoid rendering
+    // artifacts that caused a duplicate sprite to appear on mobile
 
     const revealCupButtons = () => {
       const btnW = 70;
@@ -454,11 +450,6 @@ function showStartScreen(scene, opts = {}){
     miniGameCup.setInteractive({ useHandCursor: true });
     miniGameCup.once('pointerdown', () => {
       miniGameCup.disableInteractive();
-      if(scene.tweens && scene.tweens.add){
-        scene.tweens.add({ targets: glow, alpha: 0, duration: 200 });
-      } else {
-        glow.setAlpha(0);
-      }
       miniGameCup.setTexture('coffeecup2_gray');
       miniGameCup.clearTint();
       revealCupButtons();
@@ -516,20 +507,8 @@ function showStartScreen(scene, opts = {}){
     scaleMap[key] = iconScale;
     const iconImg = scene.add.image(0,0,texKey).setScale(iconScale);
     const children=[iconImg];
-    if(earned && GameState.lastEndKey === key){
-      const glowColors = {
-        falcon_victory: 0xffd700,
-        muse_victory: 0xff3300,
-        fired_end: 0x00a000,
-        revolt_end: 0xff0000,
-        falcon_end: 0x8b4513
-      };
-      const color = glowColors[key] || 0xffd700;
-      const glowKey = `glow_${color.toString(16)}_${slotSize}`;
-      if(!scene.textures.exists(glowKey)) createGlowTexture(scene,color,glowKey,slotSize);
-      const glow = scene.add.image(0,0,glowKey).setScale(1).setDepth(-1);
-      children.unshift(glow);
-    }
+    // Disabled glow effect for the most recently earned badge to
+    // prevent a duplicate sprite from appearing on mobile devices.
     const container = scene.add.container(slot.x,slot.y,children).setDepth(16);
     container.setSize(slotSize, slotSize);
     container.setInteractive({ useHandCursor: true });

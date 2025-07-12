@@ -224,13 +224,32 @@ export function setupGame(){
     const cx = cloudDollar.x + cloudDollar.displayWidth/2;
     const cy = cloudDollar.y + cloudDollar.displayHeight/2;
     const txt = Math.random()<0.5 ? '💵' : '💨';
-    const t = scene.add.text(cx + Phaser.Math.Between(-10,10), cy, txt,
-      {font:'16px sans-serif'})
+    const t = scene.add.text(cx, cy, txt,{font:'16px sans-serif'})
       .setOrigin(0.5)
       .setDepth(cloudDollar.depth+1);
     highMoneyEmojis.push(t);
-    scene.tweens.add({targets:t,y:cy-20,alpha:0,duration:dur(600),
-      onComplete:()=>{ const i=highMoneyEmojis.indexOf(t); if(i!==-1) highMoneyEmojis.splice(i,1); t.destroy(); }});
+
+    const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+    const dist = Phaser.Math.Between(20, 40);
+    const dx = Math.cos(angle) * dist;
+    const dy = Math.sin(angle) * dist;
+    const tweenProps = {
+      x: cx + dx,
+      y: cy + dy,
+      alpha: 0,
+      duration: dur(600),
+      onComplete: () => {
+        const i = highMoneyEmojis.indexOf(t);
+        if(i!==-1) highMoneyEmojis.splice(i,1);
+        t.destroy();
+      }
+    };
+    if(txt==='💵'){
+      tweenProps.angle = 360;
+    }else{
+      t.setAngle(Phaser.Math.RadToDeg(angle));
+    }
+    scene.tweens.add({targets:t, ...tweenProps});
   }
 
   function updateHighMoneyEffects(scene){
@@ -4474,19 +4493,22 @@ function dogsBarkAtFalcon(){
     if(endOverlay){ endOverlay.destroy(); }
     endOverlay = this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
 
-    const titleGame = this.add.text(240,170,'GAME',{
+    const titleGame = this.add.text(240,190,'GAME',{
       font:'100px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
     }).setOrigin(0.5).setDepth(21).setAlpha(0);
-    const titleOver = this.add.text(240,250,'OVER',{
+    const titleOver = this.add.text(240,300,'OVER',{
       font:'100px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
     }).setOrigin(0.5).setDepth(21).setAlpha(0);
-    this.tweens.add({targets:[titleGame,titleOver],alpha:1,duration:dur(1200)});
+    this.tweens.add({targets:titleGame,alpha:1,duration:dur(1800)});
+    this.tweens.add({targets:titleOver,alpha:1,duration:dur(1800),delay:dur(1800)});
+    const fadeOutDelay = dur(3600);
+    this.tweens.add({targets:[titleGame,titleOver],alpha:0,duration:dur(600),delay:fadeOutDelay});
 
     const img = this.add.image(240,250,'fired_end')
       .setScale(1.8)
       .setDepth(20)
       .setAlpha(0);
-    this.tweens.add({targets:img,alpha:1,duration:dur(1200),delay:dur(1000)});
+    this.tweens.add({targets:img,alpha:1,duration:dur(2400),delay:fadeOutDelay});
     awardBadge(this, img.texture.key);
 
     const line1 = this.add.text(240,450,'LADY FALCON WINS',
@@ -4560,19 +4582,22 @@ function dogsBarkAtFalcon(){
     if(endOverlay){ endOverlay.destroy(); }
     endOverlay = this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
 
-    const titleGame = this.add.text(240,170,'GAME',{
+    const titleGame = this.add.text(240,190,'GAME',{
       font:'100px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
     }).setOrigin(0.5).setDepth(21).setAlpha(0);
-    const titleOver = this.add.text(240,250,'OVER',{
+    const titleOver = this.add.text(240,300,'OVER',{
       font:'100px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
     }).setOrigin(0.5).setDepth(21).setAlpha(0);
-    this.tweens.add({targets:[titleGame,titleOver],alpha:1,duration:dur(1200)});
+    this.tweens.add({targets:titleGame,alpha:1,duration:dur(1800)});
+    this.tweens.add({targets:titleOver,alpha:1,duration:dur(1800),delay:dur(1800)});
+    const fadeOutDelay = dur(3600);
+    this.tweens.add({targets:[titleGame,titleOver],alpha:0,duration:dur(600),delay:fadeOutDelay});
 
     const img = this.add.image(240,250,'falcon_end')
       .setScale(1.2)
       .setDepth(20)
       .setAlpha(0);
-    this.tweens.add({targets:img,alpha:1,duration:dur(1200),delay:dur(1000)});
+    this.tweens.add({targets:img,alpha:1,duration:dur(2400),delay:fadeOutDelay});
     awardBadge(this, img.texture.key);
 
     const line1 = this.add.text(240,450,'YOU LOST ALL THE MONEY',
@@ -4762,19 +4787,22 @@ function dogsBarkAtFalcon(){
     if(endOverlay){ endOverlay.destroy(); }
     endOverlay = this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
 
-    const titleGame = this.add.text(240,170,'GAME',{
+    const titleGame = this.add.text(240,190,'GAME',{
       font:'100px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
     }).setOrigin(0.5).setDepth(21).setAlpha(0);
-    const titleOver = this.add.text(240,250,'OVER',{
+    const titleOver = this.add.text(240,300,'OVER',{
       font:'100px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
     }).setOrigin(0.5).setDepth(21).setAlpha(0);
-    this.tweens.add({targets:[titleGame,titleOver],alpha:1,duration:dur(1200)});
+    this.tweens.add({targets:titleGame,alpha:1,duration:dur(1800)});
+    this.tweens.add({targets:titleOver,alpha:1,duration:dur(1800),delay:dur(1800)});
+    const fadeOutDelay = dur(3600);
+    this.tweens.add({targets:[titleGame,titleOver],alpha:0,duration:dur(600),delay:fadeOutDelay});
 
     const img = this.add.image(240,250,'revolt_end')
       .setScale(1.2)
       .setDepth(20)
       .setAlpha(0);
-    this.tweens.add({targets:img,alpha:1,duration:dur(1200),delay:dur(1000)});
+    this.tweens.add({targets:img,alpha:1,duration:dur(2400),delay:fadeOutDelay});
     awardBadge(this, img.texture.key);
 
     const line1 = this.add.text(240,450,'THE CUSTOMERS REVOLT!',

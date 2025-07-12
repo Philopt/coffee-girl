@@ -6,7 +6,7 @@ import { debugLog, DEBUG } from './debug.js';
 import { dur } from './ui.js';
 import { spawnSparrow, scatterSparrows } from './sparrow.js';
 import { createGrayscaleTexture, createGlowTexture } from './ui/helpers.js';
-import { playSong, stopSong } from './music.js';
+import { playSong, stopSong, setDrumVolume } from './music.js';
 
 let startOverlay = null;
 let startButton = null;
@@ -221,6 +221,7 @@ function showStartScreen(scene, opts = {}){
   scene = scene || this;
   const delayExtras = !!opts.delayExtras;
   if (typeof debugLog === 'function') debugLog('showStartScreen called');
+  playSong(scene, 'lady_falcon_theme');
   if (miniGameCup && !miniGameCup.scene) {
     miniGameCup = null;
   }
@@ -934,6 +935,7 @@ function showStartScreen(scene, opts = {}){
     startMsgTimers.forEach(t=>t.remove(false));
     startMsgTimers=[];
     startMsgBubbles=[];
+    setDrumVolume(1);
     for(let i=0;i<2;i++){
       spawnSparrow(scene,{ground:true});
     }

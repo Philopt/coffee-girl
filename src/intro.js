@@ -71,26 +71,19 @@ function updateSongIcons(scene){
 
 function playOpening(scene){
   scene = scene || this;
-  // Start Lady Falcon theme immediately with the opening animation
-  playSong(scene, 'lady_falcon_theme');
-  startWhite = scene.add.rectangle(240,320,480,640,0xffffff,1)
-    .setDepth(14);
 
-  // Title card image starts large so it can shrink with the phone later
   openingTitle = scene.add.image(240,320,'titlecard')
     .setOrigin(0.5)
     .setDepth(15)
     .setAlpha(0)
     .setScale(2);
 
-  // Girl and dog initially hidden behind the title card
   openingDog = scene.add.image(240,320,'girldog')
     .setOrigin(0.5)
     .setDepth(14)
     .setAlpha(0)
     .setScale(1.5);
 
-  // Number 2 graphic enters like a shooting star
   const startX = (scene.scale && scene.scale.width) ? -80 : -80;
   const startY = -80;
   openingNumber = scene.add.image(startX, startY, 'title2')
@@ -100,41 +93,32 @@ function playOpening(scene){
     .setScale(2.6)
     .setAngle(-45);
 
+  scene.tweens.add({targets:openingTitle,alpha:1,duration:400,ease:'Sine.easeOut'});
+
+  scene.input.once('pointerdown', () => startOpeningAnimation(scene));
+}
+
+function startOpeningAnimation(scene){
+  scene = scene || this;
+  playSong(scene, 'lady_falcon_theme');
+  startWhite = scene.add.rectangle(240,320,480,640,0xffffff,1)
+    .setDepth(14);
+
   const tl = scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
     if (startWhite) { startWhite.destroy(); startWhite = null; }
   }});
-
-  // Reveal the title card with a burst of coffee cups
-  tl.add({targets:openingTitle,alpha:1,duration:400,ease:'Sine.easeOut',delay:100});
-  tl.setCallback('onStart',()=>{
-    for(let i=0;i<8;i++){
-      const angle = Phaser.Math.DegToRad(Phaser.Math.Between(0,360));
-      const dist = Phaser.Math.Between(80,200);
-      const cup = scene.add.image(openingTitle.x,openingTitle.y,'coffeecup2')
-        .setDepth(17)
-        .setScale(1.2);
-      scene.tweens.add({
-        targets:cup,
-        x:openingTitle.x + Math.cos(angle)*dist,
-        y:openingTitle.y + Math.sin(angle)*dist,
-        angle:Phaser.Math.Between(-360,360),
-        alpha:0,
-        duration:1000,
-        ease:'Cubic.easeOut',
-        onComplete:()=>cup.destroy()
-      });
-    }
-  }, []);
 
   tl.add({
     targets: openingDog,
     alpha: 1,
     scale: 2,
     y: openingTitle.y - 101,
-    duration: 600,
+    duration: 1000,
     ease: 'Sine.easeOut',
     onComplete: () => openingDog.setDepth(16)
   });
+
+  tl.add({ targets: {}, duration: 400 });
 
   // Shift the landing position slightly so the 2 settles a bit further
   // to the right and lower on the title card. Round the coordinates to

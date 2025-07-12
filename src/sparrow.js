@@ -380,13 +380,29 @@ export function scatterSparrows(scene){
   const birds = scene.gameState.sparrows;
   if(!Array.isArray(birds)) return;
   const { width } = scene.scale;
-  birds.forEach(bird => {
+  const gs = scene.gameState || GameState;
+  // duplicate list so we can remove birds while iterating
+  birds.slice().forEach((bird, idx) => {
     if(!bird || !bird.sprite) return;
     const target = new Phaser.Math.Vector2(
       Phaser.Math.Between(-40, width + 40),
       -40
     );
     bird.flyAway(target);
+    // Remove the bird shortly after it exits the screen
+    const destroyDelay = Phaser.Math.Between(900, 1200);
+    scene.time.delayedCall(destroyDelay, () => {
+      const i = birds.indexOf(bird);
+      if(i !== -1) birds.splice(i, 1);
+      if(bird.destroy) bird.destroy();
+      // Bring the bird back quickly but not all at once
+      const spawnDelay = Phaser.Math.Between(200, 400) * (idx + 1);
+      scene.time.delayedCall(spawnDelay, () => {
+        if(birds.length < maxSparrows(gs.love)) {
+          spawnSparrow(scene);
+        }
+      }, [], scene);
+    }, [], scene);
   });
 }
 

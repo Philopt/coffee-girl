@@ -71,6 +71,8 @@ function updateSongIcons(scene){
 
 function playOpening(scene){
   scene = scene || this;
+  // Start Lady Falcon theme immediately with the opening animation
+  playSong(scene, 'lady_falcon_theme');
   startWhite = scene.add.rectangle(240,320,480,640,0xffffff,1)
     .setDepth(14);
 
@@ -221,7 +223,6 @@ function showStartScreen(scene, opts = {}){
   scene = scene || this;
   const delayExtras = !!opts.delayExtras;
   if (typeof debugLog === 'function') debugLog('showStartScreen called');
-  playSong(scene, 'lady_falcon_theme');
   if (miniGameCup && !miniGameCup.scene) {
     miniGameCup = null;
   }

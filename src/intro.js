@@ -72,11 +72,14 @@ function updateSongIcons(scene){
 function playOpening(scene){
   scene = scene || this;
 
+  startWhite = scene.add.rectangle(240,320,480,640,0xffffff,1)
+    .setDepth(13);
+
   openingTitle = scene.add.image(240,320,'titlecard')
     .setOrigin(0.5)
     .setDepth(15)
     .setAlpha(0)
-    .setScale(2);
+    .setScale(1);
 
   openingDog = scene.add.image(240,320,'girldog')
     .setOrigin(0.5)
@@ -101,19 +104,27 @@ function playOpening(scene){
 function startOpeningAnimation(scene){
   scene = scene || this;
   playSong(scene, 'lady_falcon_theme');
-  startWhite = scene.add.rectangle(240,320,480,640,0xffffff,1)
-    .setDepth(14);
+  if (startWhite) {
+    startWhite.setAlpha(1).setVisible(true);
+  }
 
   const tl = scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
     if (startWhite) { startWhite.destroy(); startWhite = null; }
   }});
 
   tl.add({
+    targets: openingTitle,
+    scale: 2,
+    duration: 3900,
+    ease: 'Sine.easeOut'
+  });
+
+  tl.add({
     targets: openingDog,
     alpha: 1,
     scale: 2,
     y: openingTitle.y - 101,
-    duration: 1000,
+    duration: 1330,
     ease: 'Sine.easeOut',
     onComplete: () => openingDog.setDepth(16)
   });
@@ -124,15 +135,17 @@ function startOpeningAnimation(scene){
   // to the right and lower on the title card. Round the coordinates to
   // avoid fractional positions that sometimes caused the sprite to land
   // inconsistently relative to the phone container.
+  const finalWidth = openingTitle.width * 2;
+  const finalHeight = openingTitle.height * 2;
   const finalX = Math.round(
     openingTitle.x +
-    openingTitle.displayWidth / 2 -
+    finalWidth / 2 -
     openingNumber.displayWidth / 2 +
     25
   ); // shift further right
   const finalY = Math.round(
     openingTitle.y +
-    openingTitle.displayHeight / 2 -
+    finalHeight / 2 -
     openingNumber.displayHeight / 2 +
     10
   );

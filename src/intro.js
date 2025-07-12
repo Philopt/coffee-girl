@@ -129,7 +129,8 @@ function startOpeningAnimation(scene){
     onComplete: () => openingDog.setDepth(16)
   });
 
-  tl.add({ targets: {}, duration: 400 });
+  // Begin the number drop slightly before the dog finishes so it lands
+  // right as the dog animation completes
 
   // Shift the landing position slightly so the 2 settles a bit further
   // to the right and lower on the title card. Round the coordinates to
@@ -182,6 +183,9 @@ function startOpeningAnimation(scene){
     angle: -20,
     duration: 800,
     ease: 'Cubic.easeIn',
+    // Start before the previous tween ends so the landing finishes
+    // right after the dog settles
+    offset: '-=1100',
     onStart: () => {
       thrustEvent = scene.time.addEvent({ delay: 80, loop: true, callback: spawnThrust });
     },

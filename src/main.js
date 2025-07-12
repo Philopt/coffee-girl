@@ -178,6 +178,7 @@ export function setupGame(){
     };
     cloudHeartTween=makeTween(cloudHeartTween,[cloudHeart,loveText],amps[loveIdx],durs[loveIdx]);
     cloudDollarTween=makeTween(cloudDollarTween,[cloudDollar,moneyText,moneyDollar],amps[moneyIdx],durs[moneyIdx]);
+    updateHighMoneyEffects(scene);
   }
 
   function updateCloudPositions(){
@@ -203,6 +204,50 @@ export function setupGame(){
         cloudHeart.x - cloudHeart.displayWidth/2,
         newY + cloudHeart.displayHeight/2
       );
+    }
+  }
+
+  function stopHighMoneyEffects(){
+    if(highMoneyTween){
+      if(highMoneyTween.remove) highMoneyTween.remove();
+      else if(highMoneyTween.stop) highMoneyTween.stop();
+      highMoneyTween=null;
+    }
+    if(highMoneyEvent){ highMoneyEvent.remove(false); highMoneyEvent=null; }
+    highMoneyEmojis.slice().forEach(e=>{ if(e&&e.destroy) e.destroy(); });
+    highMoneyEmojis.length=0;
+    if(cloudDollar) cloudDollar.clearTint();
+  }
+
+  function emitMoneyEmoji(scene){
+    if(!scene || !cloudDollar) return;
+    const cx = cloudDollar.x + cloudDollar.displayWidth/2;
+    const cy = cloudDollar.y + cloudDollar.displayHeight/2;
+    const txt = Math.random()<0.5 ? '💵' : '💨';
+    const t = scene.add.text(cx + Phaser.Math.Between(-10,10), cy, txt,
+      {font:'16px sans-serif'})
+      .setOrigin(0.5)
+      .setDepth(cloudDollar.depth+1);
+    highMoneyEmojis.push(t);
+    scene.tweens.add({targets:t,y:cy-20,alpha:0,duration:dur(600),
+      onComplete:()=>{ const i=highMoneyEmojis.indexOf(t); if(i!==-1) highMoneyEmojis.splice(i,1); t.destroy(); }});
+  }
+
+  function updateHighMoneyEffects(scene){
+    if(!scene || !cloudDollar) return;
+    const money = GameState.money || 0;
+    if(money < 80){ stopHighMoneyEffects(); return; }
+    const ratio = Math.min(1,(money-80)/20);
+    const color = 0x00ff00;
+    if(!highMoneyTween){
+      highMoneyTween = scene.tweens.add({targets:cloudDollar,alpha:{from:0.6,to:1},duration:dur(300),yoyo:true,repeat:-1});
+      if(cloudDollar.setTint) cloudDollar.setTint(color);
+    }
+    const delay = Phaser.Math.Linear(1200,300,ratio);
+    if(!highMoneyEvent){
+      highMoneyEvent = scene.time.addEvent({delay,loop:true,callback:()=>emitMoneyEmoji(scene)});
+    }else{
+      highMoneyEvent.delay = delay;
     }
   }
 
@@ -582,6 +627,8 @@ export function setupGame(){
   let sideCAlpha=0;
   let sideCFadeTween=null;
   let cloudHeartTween=null, cloudDollarTween=null;
+  let highMoneyTween=null, highMoneyEvent=null;
+  const highMoneyEmojis=[];
   let endOverlay=null;
   // hearts or anger symbols currently animating
 
@@ -2752,6 +2799,10 @@ export function setupGame(){
     const scene=this;
     scene.tweens.killAll();
     scene.time.removeAllEvents();
+    stopHighMoneyEffects();
+    if(cloudDollar){ cloudDollar.setVisible(false); }
+    if(moneyText){ moneyText.setVisible(false); }
+    if(moneyDollar){ moneyDollar.setVisible(false); }
     cleanupFloatingEmojis();
     cleanupBarks();
     cleanupBursts();
@@ -4159,6 +4210,10 @@ function dogsBarkAtFalcon(){
     GameState.firedSeqStarted = true;
     GameState.gameOver = true;
     if(cloudDollarTween && cloudDollarTween.stop) cloudDollarTween.stop();
+    stopHighMoneyEffects();
+    if(cloudDollar){ cloudDollar.setVisible(false); }
+    if(moneyText){ moneyText.setVisible(false); }
+    if(moneyDollar){ moneyDollar.setVisible(false); }
     flashFill(cloudDollar, this, 0x00ff00);
     this.tweens.add({
       targets:cloudDollar,
@@ -4830,6 +4885,10 @@ function dogsBarkAtFalcon(){
     loveText.setText(String(GameState.love));
     moneyText.setColor('#fff');
     loveText.setColor('#fff');
+    if(cloudDollar){ cloudDollar.setVisible(true); }
+    if(moneyText){ moneyText.setVisible(true); }
+    if(moneyDollar){ moneyDollar.setVisible(true); }
+    stopHighMoneyEffects();
     if (cloudDollar && cloudDollar.clearTint) cloudDollar.clearTint();
     if (cloudHeart && cloudHeart.clearTint) cloudHeart.clearTint();
     updateLevelDisplay();

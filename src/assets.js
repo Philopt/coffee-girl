@@ -93,6 +93,10 @@ export function preload(){
   loader.image('fired_end','assets/firedend.png');
   loader.audio('fired_intro',"assets/music/you're_fired_intro.mp3");
   loader.audio('fired_loop',"assets/music/you're_fired_loop.mp3");
+  loader.audio('falcon_intro','assets/music/LadyFalconTheme-intro.m4a');
+  loader.audio('falcon_bass','assets/music/LadyFalconTheme-bass.m4a');
+  loader.audio('falcon_drums','assets/music/LadyFalconTheme-drums.m4a');
+  loader.audio('falcon_synth','assets/music/LadyFalconTheme-Synth.m4a');
   // Correct file extension and name for falcon victory asset
   loader.image('falcon_victory','assets/falcon_victory.gif');
   loader.image('muse_victory','assets/musevictory.png');

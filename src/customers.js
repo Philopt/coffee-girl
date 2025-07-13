@@ -35,7 +35,9 @@ export const QUEUE_X = ORDER_X - QUEUE_SPACING - 10;
 export const QUEUE_OFFSET = 8;
 export const QUEUE_Y = ORDER_Y + 5;
 // Distance customers stop from the counter when waiting.
-export const WAIT_DISTANCE = 100;
+// Customers can stand much closer to the counter while waiting.
+// Reduce the distance from 100 to 25 so the line forms nearer the register.
+export const WAIT_DISTANCE = 25;
 // Additional distance for each extra customer in the loose queue.
 export const WAIT_SPACING = 30;
 export const WANDER_TOP = ORDER_Y + 50;

@@ -1028,6 +1028,7 @@ function showStartScreen(scene, opts = {}){
         GameState.userName = userName;
 
 
+
         addStartMessage(userName);
 
 
@@ -1035,6 +1036,7 @@ function showStartScreen(scene, opts = {}){
     } catch (err) {
       void err;
     }
+
 
 
     const nameComma = GameState.userName ? ', ' + GameState.userName : '';

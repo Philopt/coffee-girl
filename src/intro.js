@@ -22,6 +22,7 @@ let phoneContainer = null;
 let startWhite = null;
 let startMsgTimers = [];
 let startMsgBubbles = [];
+let startMsgY = 0;
 let openingTitle = null;
 let openingNumber = null;
 let openingDog = null;
@@ -862,7 +863,7 @@ function showStartScreen(scene, opts = {}){
     openingNumber.on('pointerdown', dismissIntro);
   }
 
-  let startMsgY = -phoneH/2 + 20;
+  startMsgY = -phoneH/2 + 20;
 
   const MAX_MSGS = 3;
 

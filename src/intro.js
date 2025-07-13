@@ -190,7 +190,7 @@ function startOpeningAnimation(scene){
       const x = Phaser.Math.Between(40, width - 40);
       const cup = scene.add.image(x, -20, 'coffeecup2')
         .setDepth(18)
-        .setScale(Phaser.Math.FloatBetween(0.25, 0.4))
+        .setScale(Phaser.Math.FloatBetween(0.5, 0.8))
         .setAngle(Phaser.Math.Between(-180, 180));
       scene.tweens.add({
         targets: cup,
@@ -239,6 +239,7 @@ function startOpeningAnimation(scene){
       // Trigger the big coffee burst immediately as the "2" lands
       for (let i = 0; i < 8; i++) spawnThrust(3);
       startCoffeeConfetti();
+      showStartScreen(scene, { delayExtras: true });
     }
   });
   tl.add({
@@ -246,7 +247,6 @@ function startOpeningAnimation(scene){
     alpha: 0,
     duration: 600,
     onStart: () => {
-      showStartScreen(scene, { delayExtras: true });
       if (scene.children && scene.children.bringToTop) {
         scene.children.bringToTop(startWhite);
       }
@@ -447,7 +447,7 @@ function showStartScreen(scene, opts = {}){
       const tl = scene.tweens.createTimeline();
       tl.add({
         targets: miniGameCup,
-        x: startX + 40,
+        x: startX - 40,
         y: startY - 160,
         angle: -540,
         alpha: 1,

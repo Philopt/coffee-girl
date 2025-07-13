@@ -2682,6 +2682,7 @@ export function setupGame(){
       let h;
       if(idx===0 && emojiObj){
         h = emojiObj;
+        if(h.setShadow) h.setShadow(0,0,'#000',0);
       } else {
         const face = showFace();
         h = this.add.text(sx, sy, face, {font:'24px sans-serif', fill:'#fff'})

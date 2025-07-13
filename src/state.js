@@ -45,6 +45,7 @@ export const GameState = {
   ,songInstance: null
   ,musicLoops: []
   ,drumLoop: null
+  ,volume: 1
 };
 
 export const floatingEmojis = [];
@@ -109,5 +110,21 @@ export function resetAchievements() {
     } catch (err) {
       // ignore quota errors
     }
+  }
+}
+
+export function loadVolume() {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  const raw = window.localStorage.getItem('coffeeGirlVolume');
+  const val = parseFloat(raw);
+  if (!isNaN(val)) GameState.volume = Math.min(1, Math.max(0, val));
+}
+
+export function saveVolume() {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  try {
+    window.localStorage.setItem('coffeeGirlVolume', String(GameState.volume));
+  } catch (err) {
+    // ignore quota errors
   }
 }

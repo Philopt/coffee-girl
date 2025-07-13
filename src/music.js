@@ -21,6 +21,7 @@ export function stopSong() {
 
 export function playSong(scene, key) {
   if (!scene || !scene.sound) return;
+  scene.sound.volume = GameState.volume;
   stopSong();
   GameState.currentSong = key;
   let intro;

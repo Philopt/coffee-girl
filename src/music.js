@@ -19,8 +19,9 @@ export function stopSong() {
   GameState.currentSong = null;
 }
 
-export function playSong(scene, key) {
+export function playSong(scene, key, onLoopStart = null) {
   if (!scene || !scene.sound) return;
+  GameState.onSongLoopStart = onLoopStart || GameState.onSongLoopStart;
   stopSong();
   GameState.currentSong = key;
   let intro;
@@ -33,6 +34,9 @@ export function playSong(scene, key) {
       if (GameState.songInstance === intro) {
         GameState.songInstance = loop;
         loop.play();
+        if (typeof onLoopStart === 'function') onLoopStart();
+        else if (typeof GameState.onSongLoopStart === 'function') GameState.onSongLoopStart();
+        GameState.onSongLoopStart = null;
       }
     });
     intro.play();
@@ -50,11 +54,17 @@ export function playSong(scene, key) {
         bass.play();
         drums.play();
         synth.play();
+        if (typeof onLoopStart === 'function') onLoopStart();
+        else if (typeof GameState.onSongLoopStart === 'function') GameState.onSongLoopStart();
+        GameState.onSongLoopStart = null;
       }
     });
     intro.play();
   } else {
     GameState.songInstance = null;
+    if (typeof onLoopStart === 'function') onLoopStart();
+    else if (typeof GameState.onSongLoopStart === 'function') GameState.onSongLoopStart();
+    GameState.onSongLoopStart = null;
   }
 }
 

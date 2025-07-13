@@ -45,6 +45,7 @@ export const GameState = {
   ,songInstance: null
   ,musicLoops: []
   ,drumLoop: null
+  ,onSongLoopStart: null
 };
 
 export const floatingEmojis = [];

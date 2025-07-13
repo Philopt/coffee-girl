@@ -1023,18 +1023,22 @@ function showStartScreen(scene, opts = {}){
       }
       if (userName) {
         GameState.userName = userName;
+
+        addStartMessage(userName);
+
       }
     } catch (err) {
       void err;
     }
 
     const nameComma = GameState.userName ? ', ' + GameState.userName : '';
-    const nameBang = GameState.userName ? GameState.userName + '! ' : '';
+
     const defaultMsgs=[
       [`u coming in${nameComma}? 🤔`, `where u at${nameComma}??`, 'mornin ☀️'],
       ['better not still be in bed 😜', 'yo coffee girl ☕', `stop ghostin me${nameComma}`],
-      ['late night? 🥱💃', `${nameBang}phone dead again? 🔋`, 'omg wait till u hear about this guy 😏'],
-      ['u good?', 'hope everythin\'s chill', `…sry${nameComma}`]
+      ['late night? 🥱💃', 'phone dead again? 🔋', 'omg wait till u hear about this guy 😏'],
+      ['u good?', 'hope everythin\'s chill', '…sry 😬']
+
     ];
 
     const falconMsgs=[

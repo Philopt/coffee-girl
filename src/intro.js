@@ -772,7 +772,13 @@ function showStartScreen(scene, opts = {}){
   // when the player returns to the start screen. The specific
   // messages come from msgOptions, which was chosen according to
   // GameState.lastEndKey.
-  const scheduleStartMessages = (initialDelay = 0) => {
+  const scheduleStartMessages = (opts = {}) => {
+    const {
+      initialDelayMin = 1000,
+      initialDelayMax = 2000,
+      nextDelayMin = 5000,
+      nextDelayMax = 15000,
+    } = opts;
     // Prevent overlapping timers when called multiple times
     startMsgTimers.forEach(t => t.remove(false));
     startMsgTimers = [];
@@ -780,11 +786,11 @@ function showStartScreen(scene, opts = {}){
     startMsgBubbles = [];
     startMsgY = -phoneH/2 + 20;
 
-    // Begin showing text messages 1-2 seconds after the intro fades.
-    let delay = initialDelay + Phaser.Math.Between(1000, 2000);
+    // Begin showing text messages after a randomized delay.
+    let delay = Phaser.Math.Between(initialDelayMin, initialDelayMax);
     msgOptions.forEach((opts, idx) => {
       if (idx > 0) {
-        delay += Phaser.Math.Between(5000, 15000);
+        delay += Phaser.Math.Between(nextDelayMin, nextDelayMax);
       }
       const msgFunc = Phaser.Utils.Array.GetRandom(opts);
       startMsgTimers.push(
@@ -796,7 +802,11 @@ function showStartScreen(scene, opts = {}){
     });
   };
   if (GameState.currentSong === 'lady_falcon_theme') {
-    GameState.onSongLoopStart = () => scheduleStartMessages(0);
+    GameState.onSongLoopStart = () =>
+      scheduleStartMessages({
+        initialDelayMin: 0,
+        initialDelayMax: 0,
+      });
   }
 
   const revealExtras = () => {
@@ -833,14 +843,24 @@ function showStartScreen(scene, opts = {}){
         onComplete: () => {
           revealExtras();
           if (GameState.currentSong !== 'lady_falcon_theme') {
-            scheduleStartMessages(0);
+            scheduleStartMessages({
+              initialDelayMin: 1000,
+              initialDelayMax: 1000,
+              nextDelayMin: 1000,
+              nextDelayMax: 3000,
+            });
           }
         }
       });
     } else {
       revealExtras();
       if (GameState.currentSong !== 'lady_falcon_theme') {
-        scheduleStartMessages(0);
+        scheduleStartMessages({
+          initialDelayMin: 1000,
+          initialDelayMax: 1000,
+          nextDelayMin: 1000,
+          nextDelayMax: 3000,
+        });
       }
     }
   };
@@ -1110,8 +1130,13 @@ function showStartScreen(scene, opts = {}){
       });
     });
     if (GameState.startScreenSeen) {
-      scene.time.delayedCall(START_SCREEN_DELAY + 2000, () => {
-        scheduleStartMessages(0);
+      scene.time.delayedCall(1000, () => {
+        scheduleStartMessages({
+          initialDelayMin: 0,
+          initialDelayMax: 0,
+          nextDelayMin: 1000,
+          nextDelayMax: 3000,
+        });
       }, [], scene);
     }
   }

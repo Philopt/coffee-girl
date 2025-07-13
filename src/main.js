@@ -5048,6 +5048,9 @@ function dogsBarkAtFalcon(){
     });
     GameState.queue=[];
     GameState.wanderers=[];
+    GameState.orderInProgress = false;
+    GameState.dialogActive = false;
+    GameState.girlReady = false;
     Object.keys(GameState.customerMemory).forEach(k=>{ delete GameState.customerMemory[k]; });
     GameState.heartWin = null;
     GameState.servedCount=0;

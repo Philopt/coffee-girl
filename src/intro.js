@@ -1026,106 +1026,61 @@ function showStartScreen(scene, opts = {}){
       }
       if (userName) {
         GameState.userName = userName;
+
+
+
+        addStartMessage(userName);
+
+
       }
     } catch (err) {
       void err;
     }
 
-    const nicknames = ['girl','bro','dude','gang','fam','bestie','bby','pal'];
-    const getNickname = () => Phaser.Utils.Array.GetRandom(nicknames);
-    const nameComma = () => ', ' + (GameState.userName || getNickname());
-    const nameBang = () => (GameState.userName || getNickname()) + '! ';
+
+
+    const nameComma = GameState.userName ? ', ' + GameState.userName : '';
 
     const defaultMsgs=[
-      [() => `u coming in${nameComma()}? 🤔`,
-       () => `where u at${nameComma()}??`,
-       () => 'mornin ☀️'],
-      [() => 'better not still be in bed 😜',
-       () => 'yo coffee girl ☕',
-       () => `stop ghostin me${nameComma()}`],
-      [() => 'late night? 🥱💃',
-       () => `${nameBang()}phone dead again? 🔋`,
-       () => 'omg wait till u hear about this guy 😏'],
-      [() => 'u good?',
-       () => 'hope everythin\'s chill',
-       () => `…sry${nameComma()}`]
+      [`u coming in${nameComma}? 🤔`, `where u at${nameComma}??`, 'mornin ☀️'],
+      ['better not still be in bed 😜', 'yo coffee girl ☕', `stop ghostin me${nameComma}`],
+      ['late night? 🥱💃', 'phone dead again? 🔋', 'omg wait till u hear about this guy 😏'],
+      ['u good?', 'hope everythin\'s chill', '…sry 😬']
+
     ];
 
     const falconMsgs=[
-      [() => 'falc-a-doodle-doo?',
-       () => `${nameBang()}wtf?!?`,
-       () => '☕🩸🦅',
-       () => 'skreeee 🦅',
-       () => '**poke**'],
-      [() => 'what happened yesterday?',
-       () => `angel saw falcons in the park last night${nameComma()}`,
-       () => 'elanor said the falcon got u!!',
-       () => '🪶💥🪶 🪶💥🪶'],
-      [() => 'was that THE lady falcon?',
-       () => 'is Lady Falcon... royalty?',
-       () => "don't lose ALL the money",
-       () => "...she's from another dimension"],
-      [() => 'better keep an eye on the register',
-       () => 'stop giving so much away, bruh',
-       () => `at least have enough money${nameComma()}...`,
-       () => 'balance, girl',
-       () => "you're not a sparrow"]
+      ['falc-a-doodle-doo?', `${nameBang}wtf?!?`, '☕🩸🦅', 'skreeee 🦅', '**poke**'],
+      ['what happened yesterday?', `angel saw falcons in the park last night`, 'elanor said the falcon got u!!', '🪶💥🪶 🪶💥🪶'],
+      ['was that THE lady falcon?', 'is Lady Falcon... royalty?', "don't lose ALL the money", "...she's from another dimension"],
+      ['better keep an eye on the register', 'stop giving so much away, bruh', `at least have enough money${nameComma}...`, 'balance, girl', "you're not a sparrow"]
     ];
 
     const victoryMsgs=[
-      [() => `run it ur way${nameComma()} 🚚✨`],
-      [() => `give every drink away if u want${nameComma()} ☕❤️`],
-      [() => 'cash can drop negative, no worries 💸🤙']
+      [`run it ur way${nameComma} 🚚✨`],
+      [`give every drink away if u want${nameComma} ☕❤️`],
+      ['cash can drop negative, no worries 💸🤙']
     ];
 
     const revoltMsgs=[
-      [() => `they got the truck back${nameComma()}`,
-       () => 'ppl been whisperin bout a revolt?',
-       () => 'heard the crowd went wild',
-       () => 'yeah...'],
-      [() => 'dude u pissed off the park',
-       () => `everyone was mad yesterday${nameComma()}`,
-       () => 'maybe chill a bit',
-       () => 'word is u bailed on them'],
-      [() => 'try showin some love',
-       () => 'remember when service mattered?',
-       () => `hand out a few smiles${nameComma()}`,
-       () => "don't treat folks like dirt"],
-      [() => 'keep em happy or they\'ll riot again',
-       () => 'learn and be chill next shift',
-       () => 'better vibes or bust',
-       () => `make ppl happy${nameComma()} or they won't be happy...`]
+      [`they got the truck back${nameComma}`, 'ppl been whisperin bout a revolt?', 'heard the crowd went wild', 'yeah...'],
+      ['dude u pissed off the park', `everyone was mad yesterday${nameComma}`, 'maybe chill a bit', 'word is u bailed on them'],
+      ['try showin some love', 'remember when service mattered?', `hand out a few smiles${nameComma}`, "don't treat folks like dirt"],
+      ['keep em happy or they\'ll riot again', 'learn and be chill next shift', 'better vibes or bust', `make ppl happy${nameComma} or they won't be happy...`]
     ];
 
     const firedMsgs=[
-      [() => 'u really handed the corp all ur $$',
-       () => 'overlord vibes much?',
-       () => `did they at least say thx${nameComma()}?`,
-       () => 'you got fired for making money?'],
-      [() => 'keep some of that cash for urself',
-       () => 'stop feeding the corporate machine',
-       () => `seriously did u ask for ur job back${nameComma()}?`,
-       () => "can't just give away all ur worth"],
-      [() => 'capitalism 101: hoard ur coins',
-       () => 'no more freebies 4 the boss',
-       () => 'share the love?',
-       () => `so, did they rehire u${nameComma()}?`],
-      [() => 'remember ur value!',
-       () => "don't let them take it all",
-       () => `get that job back or bounce${nameComma()}`,
-       () => "you're entitled to that job!"]
+      ['u really handed the corp all ur $$', 'overlord vibes much?', `did they at least say thx${nameComma}?`, 'you got fired for making money?'],
+      ['keep some of that cash for urself', 'stop feeding the corporate machine', `seriously did u ask for ur job back${nameComma}?`, "can't just give away all ur worth"],
+      ['capitalism 101: hoard ur coins', 'no more freebies 4 the boss', 'share the love?', `so, did they rehire u${nameComma}?`],
+      ['remember ur value!', "don't let them take it all", `get that job back or bounce${nameComma}`, "you're entitled to that job!"]
     ];
 
     const loveMsgs=[
-      [() => `everyone stan coffee girl${nameComma()} ❤️`,
-       () => ' 💑💑💑',
-       () => 'literally hearts 💕'],
-      [() => 'park gossip is all love songs',
-       () => `u got the whole crowd cheering${nameComma()}`,
-       () => 'love > money fr 😍'],
-      [() => 'coffee tastes sweeter when ur in love ☕💖',
-       () => `they keep asking about you${nameComma()} 💖`,
-       () => 'ur trending']
+      [`everyone stan coffee girl${nameComma} ❤️`, ' 💑💑💑', 'literally hearts 💕'],
+      ['park gossip is all love songs', `u got the whole crowd cheering${nameComma}`, 'love > money fr 😍'],
+      ['coffee tastes sweeter when ur in love ☕💖', `they keep asking about you${nameComma} 💖`, 'ur trending']
+
     ];
 
     msgOptions = defaultMsgs;

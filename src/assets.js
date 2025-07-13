@@ -97,6 +97,10 @@ export function preload(){
   loader.audio('falcon_bass','assets/music/LadyFalconTheme-bass.m4a');
   loader.audio('falcon_drums','assets/music/LadyFalconTheme-drums.m4a');
   loader.audio('falcon_synth','assets/music/LadyFalconTheme-Synth.m4a');
+  loader.audio('revolt_intro','assets/music/Customer_revolt_intro.m4a');
+  loader.audio('revolt_drums','assets/music/Customer_revolt_loop-drums.m4a');
+  loader.audio('revolt_bass','assets/music/Customer_revolt_loop-guitar-bass.m4a');
+  loader.audio('revolt_synth','assets/music/Customer_revolt_loop-synth.m4a');
   // Correct file extension and name for falcon victory asset
   loader.image('falcon_victory','assets/falcon_victory.gif');
   loader.image('muse_victory','assets/musevictory.png');

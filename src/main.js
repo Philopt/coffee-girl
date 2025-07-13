@@ -14,7 +14,7 @@ import { flashBorder, flashFill, blinkButton, applyRandomSkew, setDepthFromBotto
 
 import { keys, requiredAssets, preload as preloadAssets, receipt, emojiFor } from './assets.js';
 import { playOpening, showStartScreen, playIntro } from './intro.js';
-import { playSong } from './music.js';
+import { playSong, updateRevoltMusicVolume } from './music.js';
 import DesaturatePipeline from './desaturatePipeline.js';
 
 export let Assets, Scene, Customers, config;
@@ -140,6 +140,7 @@ export function setupGame(){
     },[],scene);
     scene.time.delayedCall(dur(moveDur)*2,()=>{
       updateCloudStatus(scene);
+      updateRevoltMusicVolume();
       if(!isLove && GameState.money>=FIRED_THRESHOLD && !GameState.firedSeqStarted){
         startFiredSequence.call(scene);
       } else if(isLove && GameState.love>=MAX_L && !GameState.loveSeqStarted){
@@ -3839,6 +3840,8 @@ function dogsBarkAtFalcon(){
     const scene=this;
     scene.tweens.killAll();
     scene.time.removeAllEvents();
+    playSong(scene, 'customer_revolt');
+    updateRevoltMusicVolume();
     cleanupFloatingEmojis();
     cleanupBarks();
     cleanupBursts();
@@ -3988,6 +3991,83 @@ function dogsBarkAtFalcon(){
     spawnReinforcements();
     scene.events.on('update', updateAttackerHearts);
 
+    attackers.forEach(a=>{
+      const dir=a.x<ORDER_X?-1:1;
+      const off=dir===1?520:-40;
+      scene.tweens.add({targets:a,x:off,duration:dur(WALK_OFF_BASE),onUpdate:()=>updateHeart(a)});
+      a.offX=off;
+    });
+    attackerDogs.forEach(dog=>{
+      const dir=dog.x<ORDER_X?-1:1;
+      const off=dir===1?520:-40;
+      scene.tweens.add({targets:dog,x:off,duration:dur(WALK_OFF_BASE),onUpdate:()=>{const s=scaleForY(dog.y)*0.5;dog.setScale(s*(dog.dir||1),s);if(dog.heartEmoji) dog.heartEmoji.setPosition(dog.x,dog.y).setScale(scaleForY(dog.y)*0.8).setDepth(dog.depth);}});
+      dog.offX=off;
+    });
+
+    scene.time.delayedCall(dur(13000),()=>{ rushAttackers(); },[],scene);
+
+    function rushAttackers(){
+      let firstArrived=false;
+      attackers.forEach((a,i)=>{
+        const ang=(Math.PI*2*i)/attackers.length;
+        const r=40;
+        const tx=girl.x+Math.cos(ang)*r;
+        let ty=Math.max(girl.y+Math.sin(ang)*r, gatherStartY-10);
+        const arrive=()=>{
+          if(!firstArrived){
+            firstArrived=true;
+            firstAttacker=a;
+            scene.time.delayedCall(dur(1000),()=>attack(a),[],scene);
+            scene.time.delayedCall(dur(5000),escalateIfNotEnoughDamage,[],scene);
+          }else{ attack(a); }
+        };
+        scene.tweens.add({targets:a,x:tx,y:ty,scale:scaleForY(ty),duration:dur(800),delay:i*50,onComplete:arrive});
+      });
+
+      attackerDogs.forEach((dog,i)=>{
+        const ang=(Math.PI*2*(attackers.length+i))/(attackers.length+attackerDogs.length);
+        const r=60;
+        const tx=girl.x+Math.cos(ang)*r;
+        const ty=Math.max(girl.y+Math.sin(ang)*r, gatherStartY-10);
+        const harass=()=>{
+          if(finished) return;
+          const ang2=Phaser.Math.FloatBetween(0,Math.PI*2);
+          const dx=girl.x+Math.cos(ang2)*r;
+          let dy=Math.max(girl.y+Math.sin(ang2)*r, gatherStartY-10);
+        scene.tweens.add({
+          targets: dog,
+          x: dx,
+          y: dy,
+          duration: dur(600),
+          onUpdate: () => {
+            const s = scaleForY(dog.y) * 0.5;
+            dog.setScale(s * (dog.dir || 1), s);
+            if (dog.heartEmoji) dog.heartEmoji.setPosition(dog.x, dog.y).setScale(scaleForY(dog.y) * 0.8).setDepth(dog.depth);
+          },
+          onComplete: () => {
+            const bark = dogRefuseJumpBark.call(scene, dog, false);
+            if (bark) {
+              GameState.activeBarks.push(bark);
+              scene.tweens.add({
+                targets: bark,
+                y: '-=20',
+                alpha: 0,
+                duration: dur(600),
+                onComplete: () => {
+                  const idx = GameState.activeBarks.indexOf(bark);
+                  if (idx !== -1) GameState.activeBarks.splice(idx, 1);
+                  bark.destroy();
+                }
+              });
+            }
+            scene.time.delayedCall(dur(200), harass, [], scene);
+          }
+        });
+        };
+        scene.tweens.add({targets:dog,x:tx,y:ty,duration:dur(800),delay:i*50,onUpdate:()=>{const s=scaleForY(dog.y)*0.5;dog.setScale(s*(dog.dir||1),s);},onComplete:harass});
+      });
+    }
+
 
 
     const loops=new Map();
@@ -4075,7 +4155,7 @@ function dogsBarkAtFalcon(){
         const radius = bigHop ? Phaser.Math.Between(50,80) : Phaser.Math.Between(10,30);
         const ang = Phaser.Math.FloatBetween(0, Math.PI * 2);
         const tx = girl.x + Math.cos(ang) * radius;
-        const ty = Math.max(girl.y + Math.sin(ang) * radius, gatherStartY);
+        const ty = Math.max(girl.y + Math.sin(ang) * radius, gatherStartY - 10);
         const hopHeight = bigHop ? Phaser.Math.Between(20,30) : 0;
         const durMs = bigHop ? 300 : 200;
         scene.tweens.add({
@@ -4083,7 +4163,7 @@ function dogsBarkAtFalcon(){
           x:tx,
           y:ty - hopHeight,
           duration:dur(durMs),
-          yoyo: !!hopHeight,
+          yoyo:false,
           ease: hopHeight ? 'Sine.easeInOut' : 'Linear',
           onUpdate:()=>updateHeart(a),
           onComplete:()=>{
@@ -4098,7 +4178,7 @@ function dogsBarkAtFalcon(){
       const ang = (Math.PI * 2 * i) / attackers.length;
       const r = 40;
       const tx = girl.x + Math.cos(ang) * r;
-      let ty = Math.max(girl.y + Math.sin(ang) * r, gatherStartY);
+      let ty = Math.max(girl.y + Math.sin(ang) * r, gatherStartY - 10);
       const arrive = () => {
         if(!firstArrived){
           firstArrived = true;
@@ -4123,7 +4203,7 @@ function dogsBarkAtFalcon(){
       const ang = (Math.PI * 2 * (attackers.length + i)) / (attackers.length + attackerDogs.length);
       const r = 60;
       const tx = girl.x + Math.cos(ang) * r;
-      const ty = Math.max(girl.y + Math.sin(ang) * r, gatherStartY);
+      const ty = Math.max(girl.y + Math.sin(ang) * r, gatherStartY - 10);
       const harass = ()=>{
         if(finished) return;
         const ang2 = Phaser.Math.FloatBetween(0, Math.PI*2);

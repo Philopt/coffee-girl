@@ -53,6 +53,23 @@ export function playSong(scene, key) {
       }
     });
     intro.play();
+  } else if (key === 'customer_revolt') {
+    intro = scene.sound.add('revolt_intro');
+    const bass = scene.sound.add('revolt_bass', { loop: true, volume: 0.6 });
+    const drums = scene.sound.add('revolt_drums', { loop: true, volume: 0.6 });
+    const synth = scene.sound.add('revolt_synth', { loop: true, volume: 0.6 });
+    GameState.songInstance = intro;
+    GameState.musicLoops = [bass, drums, synth];
+    GameState.drumLoop = drums;
+    intro.once('complete', () => {
+      if (GameState.songInstance === intro) {
+        GameState.songInstance = null;
+        bass.play();
+        drums.play();
+        synth.play();
+      }
+    });
+    intro.play();
   } else {
     GameState.songInstance = null;
   }
@@ -61,5 +78,26 @@ export function playSong(scene, key) {
 export function setDrumVolume(vol) {
   if (GameState.drumLoop && GameState.drumLoop.setVolume) {
     GameState.drumLoop.setVolume(vol);
+  }
+}
+
+export function updateRevoltMusicVolume() {
+  if (GameState.currentSong !== 'customer_revolt') return;
+  const [bass, drums, synth] = GameState.musicLoops || [];
+  const money = GameState.money || 0;
+  const love = GameState.love || 0;
+  if (drums && drums.setVolume) {
+    const dVol = Math.min(1, Math.max(0, money / 10)) * 0.6;
+    drums.setVolume(dVol);
+  }
+  if (bass && bass.setVolume) {
+    const bVol = Math.min(1, Math.max(0, love / 3)) * 0.6;
+    bass.setVolume(bVol);
+  }
+  if (synth && synth.setVolume) {
+    const mFac = Math.min(1, Math.max(0, (money - 10) / 10));
+    const lFac = Math.min(1, Math.max(0, (love - 10) / 10));
+    const sVol = mFac * lFac * 0.6;
+    synth.setVolume(sVol);
   }
 }

@@ -14,7 +14,7 @@ import { flashBorder, flashFill, blinkButton, applyRandomSkew, setDepthFromBotto
 
 import { keys, requiredAssets, preload as preloadAssets, receipt, emojiFor } from './assets.js';
 import { playOpening, showStartScreen, playIntro } from './intro.js';
-import { playSong, updateRevoltMusicVolume } from './music.js';
+import { playSong, updateRevoltMusicVolume, fadeDrums } from './music.js';
 import DesaturatePipeline from './desaturatePipeline.js';
 
 export let Assets, Scene, Customers, config;
@@ -1256,6 +1256,7 @@ export function setupGame(){
       // or while another dialog is already visible
       return;
     }
+    fadeDrums(this, 0.2, 800);
     if (typeof debugLog === 'function') {
       debugLog('showDialog start', GameState.queue.length, GameState.wanderers.length, GameState.activeCustomer);
     }
@@ -1709,6 +1710,7 @@ export function setupGame(){
   }
 
   function handleAction(type){
+    fadeDrums(this, 1, 800);
     const current=GameState.activeCustomer;
     if (current) {
       GameState.saleInProgress = true;

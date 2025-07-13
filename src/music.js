@@ -82,6 +82,16 @@ export function setDrumVolume(vol) {
   }
 }
 
+export function fadeDrums(scene, vol, duration = 600) {
+  if (!scene || !GameState.drumLoop || !scene.tweens) return;
+  scene.tweens.add({
+    targets: GameState.drumLoop,
+    volume: vol,
+    duration,
+    ease: 'Linear',
+  });
+}
+
 export function updateRevoltMusicVolume() {
   if (GameState.currentSong !== 'customer_revolt') return;
   const [bass, drums, synth] = GameState.musicLoops || [];

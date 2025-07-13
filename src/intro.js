@@ -10,6 +10,10 @@ import { playSong, stopSong, setDrumVolume } from './music.js';
 
 const FALCON_INTRO_DURATION = 15744;
 const BUTTON_FADE_TIME = 5000;
+// Delay before fading in the start button and extras. Showing the button
+// immediately helps players begin the game without waiting through the
+// entire intro sequence.
+const START_SCREEN_DELAY = 600;
 
 let startOverlay = null;
 let startButton = null;
@@ -357,7 +361,7 @@ function showStartScreen(scene, opts = {}){
       targets: startButton,
       alpha: 1,
       duration: BUTTON_FADE_TIME,
-      delay: FALCON_INTRO_DURATION - BUTTON_FADE_TIME,
+      delay: START_SCREEN_DELAY,
       ease: 'Linear'
     });
   }
@@ -1020,7 +1024,7 @@ function showStartScreen(scene, opts = {}){
         targets: e.obj,
         alpha: e.alpha,
         duration: BUTTON_FADE_TIME,
-        delay: FALCON_INTRO_DURATION - BUTTON_FADE_TIME,
+        delay: START_SCREEN_DELAY,
         ease: 'Linear'
       });
     });

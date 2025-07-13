@@ -8,8 +8,8 @@ import { spawnSparrow, scatterSparrows } from './sparrow.js';
 import { createGrayscaleTexture, createGlowTexture } from './ui/helpers.js';
 import { playSong, stopSong, setDrumVolume } from './music.js';
 
-// Slightly longer so the title fully fades before the music loop
-const FALCON_INTRO_DURATION = 16000;
+// Fade out the title before the music loop restarts
+const FALCON_INTRO_DURATION = 15000;
 const BUTTON_FADE_TIME = 5000;
 // Delay before fading in the start button and extras. Showing the button
 // immediately helps players begin the game without waiting through the
@@ -232,6 +232,8 @@ function startOpeningAnimation(scene){
     angle: 0,
     duration: 300,
     ease: 'Bounce.easeOut',
+    // Start slightly before the drop ends to remove the landing pause
+    offset: '-=100',
     onStart: () => {
       for (let i = 0; i < 4; i++) spawnThrust();
       // Trigger the big coffee burst immediately as the "2" lands

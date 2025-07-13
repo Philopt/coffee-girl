@@ -2880,7 +2880,7 @@ export function setupGame(){
       reinDogs.forEach(updateHeart);
     };
 
-    const groundLevel = () => Math.max(WANDER_TOP, girl.y + 60);
+    const groundLevel = () => Math.max(WANDER_TOP, girl.y + 50);
     const ensureOnGround = obj => {
       if(!obj || !obj.y) return;
       const isDog = obj.texture && obj.texture.key === 'dog1';
@@ -3185,7 +3185,7 @@ function dogsBarkAtFalcon(){
               duration:dur(250),
               ease:'Sine.easeIn',
               onComplete:()=>{
-                const gY = Math.max(WANDER_TOP, girl.y + 60);
+                const gY = Math.max(WANDER_TOP, girl.y + 50);
                 scene.tweens.add({
                   targets:h,
                   y:gY,
@@ -3225,7 +3225,7 @@ function dogsBarkAtFalcon(){
                         duration:dur(150),
                         onComplete:()=>{
                           const newX = Phaser.Math.Between(girl.x-80, girl.x+80);
-                          const groundLevel = Math.max(WANDER_TOP, girl.y + 60);
+                          const groundLevel = Math.max(WANDER_TOP, girl.y + 50);
                           const groundY = Math.max(h.baseY, groundLevel);
                           const maxY = Math.min(WANDER_BOTTOM, groundY + 20);
                           const newY = Phaser.Math.Between(groundY, maxY);
@@ -3884,7 +3884,7 @@ function dogsBarkAtFalcon(){
       attackers.forEach(updateHeart);
       attackerDogs.forEach(updateHeart);
     };
-    const gatherStartY = Math.max(WANDER_TOP, girl.y + 60);
+    const gatherStartY = Math.max(WANDER_TOP, girl.y + 50);
     const gather=(arr)=>{
       arr.forEach(c=>{
         if(!c.memory || c.memory.state !== CustomerState.BROKEN) {
@@ -4710,23 +4710,23 @@ function dogsBarkAtFalcon(){
     const pad = 10;
     const bw = bubbleText.width + pad*2;
     const bh = bubbleText.height + pad*2;
-    const bubbleY = -cup.displayHeight/2 - bh/2 - 8;
+    const bubbleX = cup.displayWidth/2 + bw/2 + 8;
     bubble.fillStyle(0xffffff,1);
     bubble.lineStyle(2,0x000000,1);
-    bubble.fillRoundedRect(-bw/2,bubbleY-bh/2,bw,bh,16);
-    bubble.strokeRoundedRect(-bw/2,bubbleY-bh/2,bw,bh,16);
-    bubble.fillTriangle(-8,bubbleY+bh/2,8,bubbleY+bh/2,0,bubbleY+bh/2+10);
+    bubble.fillRoundedRect(-bw/2 + bubbleX,-bh/2,bw,bh,16);
+    bubble.strokeRoundedRect(-bw/2 + bubbleX,-bh/2,bw,bh,16);
+    bubble.fillTriangle(-bw/2 + bubbleX,-5,-bw/2 + bubbleX,5,-bw/2 + bubbleX-10,0);
     bubble.beginPath();
-    bubble.moveTo(-8,bubbleY+bh/2);
-    bubble.lineTo(0,bubbleY+bh/2+10);
-    bubble.lineTo(8,bubbleY+bh/2);
+    bubble.moveTo(-bw/2 + bubbleX,-5);
+    bubble.lineTo(-bw/2 + bubbleX-10,0);
+    bubble.lineTo(-bw/2 + bubbleX,5);
     bubble.strokePath();
-    bubbleText.setPosition(0,bubbleY);
+    bubbleText.setPosition(bubbleX,0);
 
     const btn = this.add.container(240,550,[cup,bubble,bubbleText])
       .setDepth(22)
       .setAlpha(0);
-    btn.setSize(Math.max(cup.displayWidth,bw), cup.displayHeight + bh + 10);
+    btn.setSize(cup.displayWidth + bw + 10, Math.max(cup.displayHeight,bh) + 10);
     const btnZone = this.add.zone(0,0,btn.width,btn.height).setOrigin(0.5);
     btnZone.setInteractive({ useHandCursor:true });
     btn.add(btnZone);

@@ -8,6 +8,9 @@ import { spawnSparrow, scatterSparrows } from './sparrow.js';
 import { createGrayscaleTexture, createGlowTexture } from './ui/helpers.js';
 import { playSong, stopSong, setDrumVolume } from './music.js';
 
+const FALCON_INTRO_DURATION = 15744;
+const BUTTON_FADE_TIME = 5000;
+
 let startOverlay = null;
 let startButton = null;
 let phoneContainer = null;
@@ -341,13 +344,23 @@ function showStartScreen(scene, opts = {}){
   startButton = scene.add.container(0, offsetY, [btnBg, btnLabel])
     .setSize(bw, bh)
     .setVisible(true)
-    .setAlpha(1);
+    .setAlpha(GameState.currentSong === 'lady_falcon_theme' ? 0 : 1);
 
   const startZone = scene.add.zone(0, 0, bw, bh).setOrigin(0.5);
   startZone.setInteractive({ useHandCursor: true });
   startButton.add(startZone);
 
   phoneContainer.add(startButton);
+
+  if (GameState.currentSong === 'lady_falcon_theme' && scene.tweens) {
+    scene.tweens.add({
+      targets: startButton,
+      alpha: 1,
+      duration: BUTTON_FADE_TIME,
+      delay: FALCON_INTRO_DURATION - BUTTON_FADE_TIME,
+      ease: 'Linear'
+    });
+  }
 
   // Lazily create gray icon slots on the phone screen as needed
   iconSlots.forEach(s => s.destroy());
@@ -734,6 +747,9 @@ function showStartScreen(scene, opts = {}){
       );
     });
   };
+  if (GameState.currentSong === 'lady_falcon_theme') {
+    GameState.onSongLoopStart = () => scheduleStartMessages(0);
+  }
 
   const revealExtras = () => {
     extraObjects.forEach(e => {
@@ -768,12 +784,16 @@ function showStartScreen(scene, opts = {}){
         duration: 600,
         onComplete: () => {
           revealExtras();
-          scheduleStartMessages(0);
+          if (GameState.currentSong !== 'lady_falcon_theme') {
+            scheduleStartMessages(0);
+          }
         }
       });
     } else {
       revealExtras();
-      scheduleStartMessages(0);
+      if (GameState.currentSong !== 'lady_falcon_theme') {
+        scheduleStartMessages(0);
+      }
     }
   };
 
@@ -781,7 +801,17 @@ function showStartScreen(scene, opts = {}){
     if (!openingTitle && !openingNumber && !openingDog) {
       dismissIntro();
     } else {
-      introFadeEvent = scene.time.delayedCall(5000, dismissIntro, [], scene);
+      if (GameState.currentSong === 'lady_falcon_theme') {
+        scene.tweens.add({
+          targets: [openingTitle, openingNumber, openingDog].filter(Boolean),
+          alpha: 0,
+          duration: FALCON_INTRO_DURATION,
+          ease: 'Linear'
+        });
+        introFadeEvent = scene.time.delayedCall(FALCON_INTRO_DURATION, dismissIntro, [], scene);
+      } else {
+        introFadeEvent = scene.time.delayedCall(5000, dismissIntro, [], scene);
+      }
     }
   }
 
@@ -981,6 +1011,19 @@ function showStartScreen(scene, opts = {}){
   GameState.startScreenSeen = true;
   if(!delayExtras) {
     revealExtras();
+  }
+  if (GameState.currentSong === 'lady_falcon_theme' && scene.tweens) {
+    extraObjects.forEach(e => {
+      if (!e.obj) return;
+      e.obj.setAlpha(0);
+      scene.tweens.add({
+        targets: e.obj,
+        alpha: e.alpha,
+        duration: BUTTON_FADE_TIME,
+        delay: FALCON_INTRO_DURATION - BUTTON_FADE_TIME,
+        ease: 'Linear'
+      });
+    });
   }
   startZone.on('pointerdown',()=>{
     // Disable further clicks as soon as the intro begins

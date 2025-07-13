@@ -10,6 +10,8 @@ import { playSong, stopSong, setDrumVolume } from './music.js';
 
 // Fade out the title before the music loop restarts
 const FALCON_INTRO_DURATION = 15000;
+const INTRO_FADE_DELAY = 2000;
+const INTRO_FADE_DURATION = 3000;
 const BUTTON_FADE_TIME = 5000;
 // Delay before fading in the start button and extras. Showing the button
 // immediately helps players begin the game without waiting through the
@@ -236,6 +238,10 @@ function startOpeningAnimation(scene){
     // Start slightly before the drop ends to remove the landing pause
     offset: '-=100',
     onStart: () => {
+      if (thrustEvent) {
+        thrustEvent.remove(false);
+        thrustEvent = null;
+      }
       for (let i = 0; i < 4; i++) spawnThrust();
       // Trigger the big coffee burst immediately as the "2" lands
       for (let i = 0; i < 8; i++) spawnThrust(3);
@@ -728,6 +734,7 @@ function showStartScreen(scene, opts = {}){
     openingNumber
       .setPosition(localX, localY)
       .setScale(openingNumber.scale / pcScale)
+      .setAngle(0)
       .setDepth(16)
       .setAlpha(1);
     phoneContainer.add(openingNumber);
@@ -845,7 +852,14 @@ function showStartScreen(scene, opts = {}){
         });
         introFadeEvent = scene.time.delayedCall(FALCON_INTRO_DURATION, dismissIntro, [], scene);
       } else {
-        introFadeEvent = scene.time.delayedCall(5000, dismissIntro, [], scene);
+        scene.tweens.add({
+          targets: [openingTitle, openingNumber, openingDog].filter(Boolean),
+          alpha: 0,
+          delay: INTRO_FADE_DELAY,
+          duration: INTRO_FADE_DURATION,
+          ease: 'Linear'
+        });
+        introFadeEvent = scene.time.delayedCall(INTRO_FADE_DELAY + INTRO_FADE_DURATION, dismissIntro, [], scene);
       }
     }
   }

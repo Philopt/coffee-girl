@@ -175,6 +175,30 @@ function startOpeningAnimation(scene){
     });
   };
 
+  const startCoffeeConfetti = () => {
+    const spawn = () => {
+      const width = (scene.scale && scene.scale.width) ? scene.scale.width : 480;
+      const height = (scene.scale && scene.scale.height) ? scene.scale.height : 640;
+      const x = Phaser.Math.Between(40, width - 40);
+      const cup = scene.add.image(x, -20, 'coffeecup2')
+        .setDepth(18)
+        .setScale(Phaser.Math.FloatBetween(0.25, 0.4))
+        .setAngle(Phaser.Math.Between(-180, 180));
+      scene.tweens.add({
+        targets: cup,
+        y: height + 20,
+        angle: cup.angle + Phaser.Math.Between(-90, 90),
+        alpha: 0,
+        duration: Phaser.Math.Between(2000, 3000),
+        ease: 'Linear',
+        onComplete: () => cup.destroy()
+      });
+    };
+    for(let i=0;i<20;i++){
+      scene.time.delayedCall(i*120, spawn, [], scene);
+    }
+  };
+
   let thrustEvent = null;
   tl.add({
     targets: openingNumber,
@@ -204,6 +228,7 @@ function startOpeningAnimation(scene){
       for (let i = 0; i < 4; i++) spawnThrust();
       // Trigger the big coffee burst immediately as the "2" lands
       for (let i = 0; i < 8; i++) spawnThrust(3);
+      startCoffeeConfetti();
     }
   });
   tl.add({

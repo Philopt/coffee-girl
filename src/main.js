@@ -4675,11 +4675,12 @@ function dogsBarkAtFalcon(){
     const fadeOutDelay = dur(3600);
     this.tweens.add({targets:[titleGame,titleOver],alpha:0,duration:dur(600),delay:fadeOutDelay});
 
+    const imgFadeDur = dur(2400);
     const img = this.add.image(240,250,'falcon_end')
       .setScale(1.2)
       .setDepth(20)
       .setAlpha(0);
-    this.tweens.add({targets:img,alpha:1,duration:dur(2400),delay:fadeOutDelay});
+    this.tweens.add({targets:img,alpha:1,duration:imgFadeDur,delay:fadeOutDelay});
     awardBadge(this, img.texture.key);
 
     const line1 = this.add.text(240,450,'YOU LOST ALL THE MONEY',
@@ -4687,31 +4688,52 @@ function dogsBarkAtFalcon(){
       .setOrigin(0.5)
       .setDepth(21)
       .setAlpha(0);
-    this.tweens.add({targets:line1,alpha:1,duration:dur(1200),delay:dur(1700)});
+    const line1Delay = fadeOutDelay + imgFadeDur;
+    this.tweens.add({targets:line1,alpha:1,duration:dur(1200),delay:line1Delay});
 
+    const wrapWidth = img.displayWidth - 20;
     const line2 = this.add.text(240,490,'Lady Falcon reclaims her coffee truck',
-      {font:'20px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
+      {font:'20px sans-serif',fill:'#fff',align:'center',wordWrap:{width:wrapWidth}})
       .setOrigin(0.5)
       .setDepth(21)
       .setAlpha(0);
-    this.tweens.add({targets:line2,alpha:1,duration:dur(600),delay:dur(2400)});
+    const line2Delay = line1Delay + dur(1200);
+    this.tweens.add({targets:line2,alpha:1,duration:dur(600),delay:line2Delay});
 
-    const btn = this.add.text(240,550,'Try Again',{
-      font:'20px sans-serif',
-      fill:'#000',
-      backgroundColor:'#ffffff',
-      padding:{x:14,y:8}
-    }).setOrigin(0.5).setDepth(22).setAlpha(0)
-      .setInteractive({ useHandCursor:true });
+    const maxTextWidth = wrapWidth;
+    if(line1.width > maxTextWidth) line1.setScale(maxTextWidth / line1.width);
+    if(line2.width > maxTextWidth) line2.setScale(maxTextWidth / line2.width);
+    const cup = this.add.image(0,0,'coffeecup2').setScale(0.8);
+    const bubble = this.add.graphics();
+    const bubbleText = this.add.text(0,0,'Try Again',{font:'20px sans-serif',fill:'#000'}).setOrigin(0.5);
+    const pad = 10;
+    const bw = bubbleText.width + pad*2;
+    const bh = bubbleText.height + pad*2;
+    const bubbleY = -cup.displayHeight/2 - bh/2 - 8;
+    bubble.fillStyle(0xffffff,1);
+    bubble.lineStyle(2,0x000000,1);
+    bubble.fillRoundedRect(-bw/2,bubbleY-bh/2,bw,bh,16);
+    bubble.strokeRoundedRect(-bw/2,bubbleY-bh/2,bw,bh,16);
+    bubble.fillTriangle(-8,bubbleY+bh/2,8,bubbleY+bh/2,0,bubbleY+bh/2+10);
+    bubble.beginPath();
+    bubble.moveTo(-8,bubbleY+bh/2);
+    bubble.lineTo(0,bubbleY+bh/2+10);
+    bubble.lineTo(8,bubbleY+bh/2);
+    bubble.strokePath();
+    bubbleText.setPosition(0,bubbleY);
 
+    const btn = this.add.container(240,550,[cup,bubble,bubbleText])
+      .setDepth(22)
+      .setAlpha(0);
+    btn.setSize(Math.max(cup.displayWidth,bw), cup.displayHeight + bh + 10);
+    const btnZone = this.add.zone(0,0,btn.width,btn.height).setOrigin(0.5);
+    btnZone.setInteractive({ useHandCursor:true });
+    btn.add(btnZone);
 
-    // Align the interactive zone with the button text
-    // Removed outdated reference to btnZone/btnText which are no longer defined
-
-    const showBtnDelay = dur(2400) + dur(600) + 1000;
+    const showBtnDelay = line2Delay + dur(600) + 1000;
     this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
-    btn.on('pointerdown',()=>{
-        btn.disableInteractive();
+    btnZone.on('pointerdown',()=>{
+        btnZone.disableInteractive();
         btn.setVisible(false);
         createGlowTexture(this,0xffffff,'screen_flash',256);
         const overlayG = this.add.image(btn.x,btn.y,'screen_flash').setDepth(23);

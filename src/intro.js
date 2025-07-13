@@ -8,7 +8,8 @@ import { spawnSparrow, scatterSparrows } from './sparrow.js';
 import { createGrayscaleTexture, createGlowTexture } from './ui/helpers.js';
 import { playSong, stopSong, setDrumVolume } from './music.js';
 
-const FALCON_INTRO_DURATION = 15744;
+// Slightly longer so the title fully fades before the music loop
+const FALCON_INTRO_DURATION = 16000;
 const BUTTON_FADE_TIME = 5000;
 // Delay before fading in the start button and extras. Showing the button
 // immediately helps players begin the game without waiting through the
@@ -345,10 +346,11 @@ function showStartScreen(scene, opts = {}){
   // Using setInteractive on the container caused misaligned hit areas on some
   // mobile browsers. Create a separate zone for input instead so the clickable
   // region always matches the visible button graphics.
+  const fadeButton = GameState.currentSong === 'lady_falcon_theme' && !GameState.startScreenSeen;
   startButton = scene.add.container(0, offsetY, [btnBg, btnLabel])
     .setSize(bw, bh)
     .setVisible(true)
-    .setAlpha(GameState.currentSong === 'lady_falcon_theme' ? 0 : 1);
+    .setAlpha(fadeButton ? 0 : 1);
 
   const startZone = scene.add.zone(0, 0, bw, bh).setOrigin(0.5);
   startZone.setInteractive({ useHandCursor: true });
@@ -356,7 +358,7 @@ function showStartScreen(scene, opts = {}){
 
   phoneContainer.add(startButton);
 
-  if (GameState.currentSong === 'lady_falcon_theme' && scene.tweens) {
+  if (fadeButton && scene.tweens) {
     scene.tweens.add({
       targets: startButton,
       alpha: 1,
@@ -439,16 +441,35 @@ function showStartScreen(scene, opts = {}){
     const startX = (openingNumber.finalPos.x - m.tx) / m.a;
     const startY = (openingNumber.finalPos.y - m.ty) / m.d;
     miniGameCup.setPosition(startX, startY).setAngle(-180);
-    if(scene.tweens && scene.tweens.add){
-      scene.tweens.add({
+    if(scene.tweens && scene.tweens.createTimeline){
+      const tl = scene.tweens.createTimeline();
+      tl.add({
+        targets: miniGameCup,
+        x: startX + 40,
+        y: startY - 160,
+        angle: -540,
+        alpha: 1,
+        duration: 500,
+        ease: 'Cubic.easeOut'
+      });
+      tl.add({
         targets: miniGameCup,
         x: cupSlot.x,
         y: cupSlot.y,
         angle: 0,
-        alpha: 1,
-        duration: 800,
-        ease: 'Cubic.easeOut'
+        duration: 700,
+        ease: 'Bounce.easeOut',
+        onComplete: () => {
+          scene.tweens.add({
+            targets: miniGameCup,
+            angle: { from: -10, to: 10 },
+            duration: 200,
+            yoyo: true,
+            repeat: 1
+          });
+        }
       });
+      tl.play();
     } else {
       miniGameCup.setPosition(cupSlot.x, cupSlot.y).setAngle(0).setAlpha(1);
     }
@@ -1028,6 +1049,11 @@ function showStartScreen(scene, opts = {}){
         ease: 'Linear'
       });
     });
+    if (GameState.startScreenSeen) {
+      scene.time.delayedCall(START_SCREEN_DELAY + 2000, () => {
+        scheduleStartMessages(0);
+      }, [], scene);
+    }
   }
   startZone.on('pointerdown',()=>{
     // Disable further clicks as soon as the intro begins

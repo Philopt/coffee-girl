@@ -786,9 +786,12 @@ function showStartScreen(scene, opts = {}){
       if (idx > 0) {
         delay += Phaser.Math.Between(5000, 15000);
       }
-      const msg = Phaser.Utils.Array.GetRandom(opts);
+      const msgFunc = Phaser.Utils.Array.GetRandom(opts);
       startMsgTimers.push(
-        scene.time.delayedCall(delay, () => addStartMessage(msg), [], scene)
+        scene.time.delayedCall(delay, () => {
+          const text = (typeof msgFunc === 'function') ? msgFunc() : msgFunc;
+          addStartMessage(text);
+        }, [], scene)
       );
     });
   };
@@ -1024,12 +1027,15 @@ function showStartScreen(scene, opts = {}){
       if (userName) {
         GameState.userName = userName;
 
+
         addStartMessage(userName);
+
 
       }
     } catch (err) {
       void err;
     }
+
 
     const nameComma = GameState.userName ? ', ' + GameState.userName : '';
 
@@ -1043,7 +1049,7 @@ function showStartScreen(scene, opts = {}){
 
     const falconMsgs=[
       ['falc-a-doodle-doo?', `${nameBang}wtf?!?`, '☕🩸🦅', 'skreeee 🦅', '**poke**'],
-      ['what happened yesterday?', `angel saw falcons in the park last night${nameComma}`, 'elanor said the falcon got u!!', '🪶💥🪶 🪶💥🪶'],
+      ['what happened yesterday?', `angel saw falcons in the park last night`, 'elanor said the falcon got u!!', '🪶💥🪶 🪶💥🪶'],
       ['was that THE lady falcon?', 'is Lady Falcon... royalty?', "don't lose ALL the money", "...she's from another dimension"],
       ['better keep an eye on the register', 'stop giving so much away, bruh', `at least have enough money${nameComma}...`, 'balance, girl', "you're not a sparrow"]
     ];
@@ -1072,6 +1078,7 @@ function showStartScreen(scene, opts = {}){
       [`everyone stan coffee girl${nameComma} ❤️`, ' 💑💑💑', 'literally hearts 💕'],
       ['park gossip is all love songs', `u got the whole crowd cheering${nameComma}`, 'love > money fr 😍'],
       ['coffee tastes sweeter when ur in love ☕💖', `they keep asking about you${nameComma} 💖`, 'ur trending']
+
     ];
 
     msgOptions = defaultMsgs;

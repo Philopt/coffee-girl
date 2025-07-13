@@ -311,7 +311,7 @@ export function updateSparrows(scene, delta){
     bird.update(dt);
     if(!bird.sprite) continue;
     const y = bird.sprite.y;
-    if(y < -50 || y > scene.scale.height + 50){
+    if(y < -80 || y > scene.scale.height + 80){
       if(bird.threatCheck && bird.threatCheck.remove){
         bird.threatCheck.remove(false);
       }
@@ -396,7 +396,7 @@ export function scatterSparrows(scene){
       if(i !== -1) birds.splice(i, 1);
       if(bird.destroy) bird.destroy();
       // Bring the bird back quickly but not all at once
-      const spawnDelay = Phaser.Math.Between(200, 400) * (idx + 1);
+      const spawnDelay = Phaser.Math.Between(1000, 4000) * (idx + 1);
       scene.time.delayedCall(spawnDelay, () => {
         if(birds.length < maxSparrows(gs.love)) {
           spawnSparrow(scene);

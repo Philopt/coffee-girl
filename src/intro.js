@@ -1011,9 +1011,28 @@ function showStartScreen(scene, opts = {}){
   }
 
   if(scene.time && scene.time.delayedCall){
+    // Display a custom message from the URL path or a "name" query string
+    // like "/?name=Sam". The last path segment also works when served from a
+    // single-page router (e.g. "/Sam").
+    try {
+      const url = new URL(window.location.href);
+      let userName = url.searchParams.get('name');
+      if (!userName) {
+        const p = url.pathname.replace(/^\//, '').replace(/index\.html$/, '');
+        if (p) userName = decodeURIComponent(p);
+      }
+      if (userName) {
+        GameState.userName = userName;
+        addStartMessage(userName);
+      }
+    } catch (err) {
+      void err;
+    }
+
+    const nameComma = GameState.userName ? ', ' + GameState.userName : '';
     const defaultMsgs=[
-      ['u coming in? 🤔', 'where u at??', 'mornin ☀️'],
-      ['better not still be in bed 😜', 'yo coffee girl ☕', 'stop ghostin me'],
+      [`u coming in${nameComma}? 🤔`, `where u at${nameComma}??`, 'mornin ☀️'],
+      ['better not still be in bed 😜', 'yo coffee girl ☕', `stop ghostin me${nameComma}`],
       ['late night? 🥱💃', 'phone dead again? 🔋', 'omg wait till u hear about this guy 😏'],
       ['u good?', 'hope everythin\'s chill', '…sry 😬']
     ];

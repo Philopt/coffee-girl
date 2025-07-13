@@ -347,7 +347,10 @@ function showStartScreen(scene, opts = {}){
   }
   GameState.phoneContainer = phoneContainer;
 
-  const showSlots = GameState.startScreenSeen || GameState.badges.length > 0;
+  // Only display locked achievement slots after the player has
+  // earned at least two badges. This keeps the start screen clean
+  // when no achievements are unlocked yet.
+  const showSlots = GameState.badges.length > 1;
   const fadeSlots = showSlots && !GameState.slotsRevealed;
 
   // Removed animated bird sprites so the start button remains clickable

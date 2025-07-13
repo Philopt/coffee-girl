@@ -1098,7 +1098,10 @@ function showStartScreen(scene, opts = {}){
     }
     const tl=scene.tweens.createTimeline({callbackScope:scene,onComplete:()=>{
       if (window.hideMiniGame) window.hideMiniGame();
-      if(startButton) startButton.destroy();
+      if(startButton){
+        startButton.destroy();
+        startButton = null;
+      }
       if(startOverlay){startOverlay.destroy(); startOverlay=null;}
       if(startWhite){startWhite.destroy(); startWhite=null;}
       if(openingTitle){ openingTitle.destroy(); openingTitle=null; }

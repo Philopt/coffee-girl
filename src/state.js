@@ -47,6 +47,7 @@ export const GameState = {
   ,drumLoop: null
 
   ,volume: 1
+  ,userName: null
 
 };
 

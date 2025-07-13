@@ -1328,9 +1328,31 @@ export function setupGame(){
       const itemStr=c.orders.map(o=>{
         return o.qty>1 ? `${o.qty} ${o.req}` : o.req;
       }).join(' and ');
-      wantLine=(c.orders.length===1 && c.orders[0].qty===1)
+      const orderLine=(c.orders.length===1 && c.orders[0].qty===1)
         ? `I want ${articleFor(c.orders[0].req)} ${c.orders[0].req}`
         : `I want ${itemStr}`;
+
+      const name = GameState.userName;
+      const state = (c.memory && c.memory.state) || CustomerState.NORMAL;
+      if(name){
+        if(state === CustomerState.GROWING){
+          const opts=[`listen ${name}`, `hey, ${name}, right?`];
+          const greet=Phaser.Utils.Array.GetRandom(opts);
+          wantLine=`${greet}\n${orderLine}`;
+        }else if(state === CustomerState.SPARKLING){
+          const opts=[`${name}, looking good`, `${name}, good to see you`, `hey ${name}, how's it going?`];
+          const greet=Phaser.Utils.Array.GetRandom(opts);
+          wantLine=`${greet}\n${orderLine}`;
+        }else if(state === CustomerState.ARROW){
+          const opts=[`${name}-senpai...`, '😳😳', '///'];
+          const greet=Phaser.Utils.Array.GetRandom(opts);
+          wantLine=`${greet}\n${orderLine}`;
+        }else{
+          wantLine=orderLine;
+        }
+      }else{
+        wantLine=orderLine;
+      }
     }
 
 

@@ -1032,6 +1032,7 @@ function showStartScreen(scene, opts = {}){
     }
 
     const nameComma = GameState.userName ? ', ' + GameState.userName : '';
+    const nameBang = GameState.userName ? GameState.userName + '! ' : '';
 
     const defaultMsgs=[
       [`u coming in${nameComma}? 🤔`, `where u at${nameComma}??`, 'mornin ☀️'],

@@ -796,6 +796,9 @@ export function setupGame(){
     this.gameState = GameState;
     this.dur = dur;
     setSpeedMultiplier(1);
+    if (typeof window !== 'undefined' && window.hideLoadingScreen) {
+      window.hideLoadingScreen();
+    }
     if (DEBUG) addSpeedControl(this);
     const missing=requiredAssets.filter(key=>!this.textures.exists(key));
     if(missing.length){

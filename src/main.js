@@ -4021,7 +4021,7 @@ function dogsBarkAtFalcon(){
             firstArrived=true;
             firstAttacker=a;
             scene.time.delayedCall(dur(1000),()=>attack(a),[],scene);
-            scene.time.delayedCall(dur(5000),escalateIfNotEnoughDamage,[],scene);
+            scene.time.delayedCall(dur(10000),escalateIfNotEnoughDamage,[],scene);
           }else{ attack(a); }
         };
         scene.tweens.add({targets:a,x:tx,y:ty,scale:scaleForY(ty),duration:dur(800),delay:i*50,onComplete:arrive});
@@ -4084,7 +4084,7 @@ function dogsBarkAtFalcon(){
 
     function escalateIfNotEnoughDamage(){
       if(finished) return;
-      if(GameState.girlHP>5){
+      if(GameState.girlHP>2){
         finished=true;
         const driver = firstAttacker || attackers[0];
         if(driver) sendDriver(driver);
@@ -4144,7 +4144,7 @@ function dogsBarkAtFalcon(){
             GameState.girlHP = Math.max(0, GameState.girlHP - 0.5);
             girlHpBar.setHp(GameState.girlHP);
             blinkGirl();
-            if(GameState.girlHP<=5){
+            if(GameState.girlHP<=2){
               finished=true;
               sendDriver(a);
             } else {
@@ -4187,7 +4187,7 @@ function dogsBarkAtFalcon(){
           firstArrived = true;
           firstAttacker = a;
           scene.time.delayedCall(dur(1000), ()=>attack(a), [], scene);
-          scene.time.delayedCall(dur(5000), escalateIfNotEnoughDamage, [], scene);
+          scene.time.delayedCall(dur(10000), escalateIfNotEnoughDamage, [], scene);
         } else {
           attack(a);
         }

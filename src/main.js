@@ -1256,7 +1256,7 @@ export function setupGame(){
       // or while another dialog is already visible
       return;
     }
-    fadeDrums(this, 0.2, 800);
+    fadeDrums(this, 0.6, 800);
     if (typeof debugLog === 'function') {
       debugLog('showDialog start', GameState.queue.length, GameState.wanderers.length, GameState.activeCustomer);
     }

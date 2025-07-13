@@ -992,36 +992,36 @@ function showStartScreen(scene, opts = {}){
     ];
 
     const falconMsgs=[
-      ['what happened yesterday?', 'wtf?!?', '🦅🩸☕', 'skreeee 🦅'],
-      ['what happened yesterday? ppl saw falcons in the park last night', 'elanor said the falcon got u!!', '🪶💥🪶'],
-      ['was that THE lady falcon?', 'is the lady some kinda royalty?', 'she won\'t let you lose ALL the money', "ada said lady falcon's from another dimension"],
-      ['u better keep an eye on the register', 'stop giving so much coffee away', 'what u gonna do with all the free love u earn giving away coffee?', "don't be a sparrow"]
+      ['falc-a-doodle-doo?', 'wtf?!?', '☕🩸🦅', 'skreeee 🦅', '**poke**'],
+      ['what happened yesterday?', 'angel saw falcons in the park last night', 'elanor said the falcon got u!!', '🪶💥🪶 🪶💥🪶'],
+      ['was that THE lady falcon?', 'is Lady Falcon... royalty?', "don't lose ALL the money", "...she's from another dimension"],
+      ['better keep an eye on the register', 'stop giving so much away, bruh', 'at least have enough money...', 'balance, girl', "you're not a sparrow"]
     ];
 
     const victoryMsgs=[
-      ['no boss around, run it ur way 🚚✨'],
+      ['run it ur way 🚚✨'],
       ['give every drink away if u want ☕❤️'],
       ['cash can drop negative, no worries 💸🤙']
     ];
 
     const revoltMsgs=[
-      ['anyone see the truck this morning?', 'ppl whisperin bout a revolt?', 'heard the crowd went wild', 'where did u disappear to?'],
-      ['dude u pissed off the park', 'everyone was mad yesterday', "maybe don't blow em off next time", 'word is u bailed on them'],
+      ['they got the truck back', 'ppl been whisperin bout a revolt?', 'heard the crowd went wild', 'yeah...'],
+      ['dude u pissed off the park', 'everyone was mad yesterday', 'maybe chill a bit', 'word is u bailed on them'],
       ['try showin some love', 'remember when service mattered?', 'hand out a few smiles', "don't treat folks like dirt"],
-      ['keep em happy or they\'ll riot again', 'learn and be cooler next shift', 'better customer vibes or bust', 'make ppl happy, avoid another revolt']
+      ['keep em happy or they\'ll riot again', 'learn and be chill next shift', 'better vibes or bust', "make ppl happy, or they won't be happy..."]
     ];
 
     const firedMsgs=[
-      ['u really handed the corp all ur $$', 'overlord vibes much?', 'did they at least say thx?', 'bro you got fired at 100'],
+      ['u really handed the corp all ur $$', 'overlord vibes much?', 'did they at least say thx?', 'you got fired for making money?'],
       ['keep some of that cash for urself', 'stop feeding the corporate machine', 'seriously did u ask for ur job back?', "can't just give away all ur worth"],
-      ['capitalism 101: hoard ur coins', 'no more freebies 4 the boss', 'maybe start ur own thing?', 'so, did they rehire u?'],
-      ['remember ur value!', "don't let them take it all", 'get that job back or bounce', 'gen z would revolt']
+      ['capitalism 101: hoard ur coins', 'no more freebies 4 the boss', 'share the love?', 'so, did they rehire u?'],
+      ['remember ur value!', "don't let them take it all", 'get that job back or bounce', "you're entitled to that job!"]
     ];
 
     const loveMsgs=[
-      ['everyone stan coffee girl ❤️', 'u two r goals 💑', 'literally hearts everywhere 💕'],
-      ['park gossip is all love story vibes', 'ur crush got the whole crowd cheering', 'love > money fr 😍'],
-      ['coffee tastes sweeter when ur in love ☕💖', 'they keep asking about the wedding lol', 'ur otp is trending']
+      ['everyone stan coffee girl ❤️', ' 💑💑💑', 'literally hearts 💕'],
+      ['park gossip is all love songs', 'u got the whole crowd cheering', 'love > money fr 😍'],
+      ['coffee tastes sweeter when ur in love ☕💖', 'they keep asking about you 💖', 'ur trending']
     ];
 
     msgOptions = defaultMsgs;

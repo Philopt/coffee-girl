@@ -1,7 +1,7 @@
 import { START_PHONE_W, START_PHONE_H } from './ui.js';
 import { lureNextWanderer, scheduleNextSpawn, queueLimit } from './entities/customerQueue.js';
 import { resumeWanderer } from './entities/wanderers.js';
-import { GameState, resetAchievements } from './state.js';
+import { GameState, resetAchievements, saveVolume } from './state.js';
 import { debugLog, DEBUG } from './debug.js';
 import { dur } from './ui.js';
 import { spawnSparrow, scatterSparrows } from './sparrow.js';
@@ -178,6 +178,30 @@ function startOpeningAnimation(scene){
     });
   };
 
+  const startCoffeeConfetti = () => {
+    const spawn = () => {
+      const width = (scene.scale && scene.scale.width) ? scene.scale.width : 480;
+      const height = (scene.scale && scene.scale.height) ? scene.scale.height : 640;
+      const x = Phaser.Math.Between(40, width - 40);
+      const cup = scene.add.image(x, -20, 'coffeecup2')
+        .setDepth(18)
+        .setScale(Phaser.Math.FloatBetween(0.25, 0.4))
+        .setAngle(Phaser.Math.Between(-180, 180));
+      scene.tweens.add({
+        targets: cup,
+        y: height + 20,
+        angle: cup.angle + Phaser.Math.Between(-90, 90),
+        alpha: 0,
+        duration: Phaser.Math.Between(2000, 3000),
+        ease: 'Linear',
+        onComplete: () => cup.destroy()
+      });
+    };
+    for(let i=0;i<20;i++){
+      scene.time.delayedCall(i*120, spawn, [], scene);
+    }
+  };
+
   let thrustEvent = null;
   tl.add({
     targets: openingNumber,
@@ -207,6 +231,7 @@ function startOpeningAnimation(scene){
       for (let i = 0; i < 4; i++) spawnThrust();
       // Trigger the big coffee burst immediately as the "2" lands
       for (let i = 0; i < 8; i++) spawnThrust(3);
+      startCoffeeConfetti();
     }
   });
   tl.add({
@@ -226,6 +251,7 @@ function startOpeningAnimation(scene){
 function showStartScreen(scene, opts = {}){
   scene = scene || this;
   const delayExtras = !!opts.delayExtras;
+  if(scene && scene.sound) scene.sound.volume = GameState.volume;
   if (typeof debugLog === 'function') debugLog('showStartScreen called');
   if (miniGameCup && !miniGameCup.scene) {
     miniGameCup = null;
@@ -383,7 +409,6 @@ function showStartScreen(scene, opts = {}){
     miniGameCup = scene.add
       .image(cupSlot.x, cupSlot.y, 'coffeecup2')
       .setDepth(17)
-      .setTint(0xffd700)
       .setAlpha(0);
     const tex = scene.textures.get('coffeecup2');
     if (tex && tex.getSourceImage) {
@@ -397,21 +422,38 @@ function showStartScreen(scene, opts = {}){
     // that, so disable interaction on the cup itself.
     miniGameCup.disableInteractive();
     phoneContainer.add(miniGameCup);
+    if(allEarned) miniGameCup.setTint(0xffd700); else miniGameCup.clearTint();
   } else {
     miniGameCup.setPosition(cupSlot.x, cupSlot.y);
     phoneContainer.add(miniGameCup);
+    if(allEarned) miniGameCup.setTint(0xffd700); else miniGameCup.clearTint();
   }
   miniGameCup.setAlpha(0);
-  extraObjects.push({ obj: miniGameCup, alpha: allEarned ? 1 : 0 });
+  extraObjects.push({ obj: miniGameCup, alpha: 1 });
+  if(openingNumber && openingNumber.finalPos){
+    const m = phoneContainer.getWorldTransformMatrix();
+    const startX = (openingNumber.finalPos.x - m.tx) / m.a;
+    const startY = (openingNumber.finalPos.y - m.ty) / m.d;
+    miniGameCup.setPosition(startX, startY).setAngle(-180);
+    if(scene.tweens && scene.tweens.add){
+      scene.tweens.add({
+        targets: miniGameCup,
+        x: cupSlot.x,
+        y: cupSlot.y,
+        angle: 0,
+        alpha: 1,
+        duration: 800,
+        ease: 'Cubic.easeOut'
+      });
+    } else {
+      miniGameCup.setPosition(cupSlot.x, cupSlot.y).setAngle(0).setAlpha(1);
+    }
+  }
   // Removed grayscale shadow behind the mini game cup
   // cupSlot is just a plain coordinate object, so calling setVisible
   // on it causes errors. Visibility is controlled by the cup and
   // shadow sprites instead.
-  if (allEarned) {
-    // Display the mini game cup without a glow to avoid rendering
-    // artifacts that caused a duplicate sprite to appear on mobile
-
-    const revealCupButtons = () => {
+  const revealCupButtons = () => {
       const btnW = 70;
       const btnH = 40;
       const makeButton = (x, label, callback, color=0x007bff) => {
@@ -426,53 +468,69 @@ function showStartScreen(scene, opts = {}){
         return c;
       };
       const topLeft = getSlot(6);
+      const topMid = getSlot(7);
       const topRight = getSlot(8);
-      classicButton = makeButton(cupSlot.x, 'Classic', () => {
-        if(window.showMiniGame) window.showMiniGame();
-      });
-      classicButton.setAlpha(0).setScale(0.3).setAngle(-90);
-      resetButton = makeButton(cupSlot.x, 'Reset', () => {
-        if(typeof showResetConfirm === 'function') showResetConfirm();
-      }, 0x555555);
-      resetButton.setAlpha(0).setScale(0.3).setAngle(90);
+
+      if(allEarned){
+        classicButton = makeButton(cupSlot.x, 'Classic', () => {
+          if(window.showMiniGame) window.showMiniGame();
+        });
+        classicButton.setAlpha(0).setScale(0.3).setAngle(-90);
+        resetButton = makeButton(cupSlot.x, 'Reset', () => {
+          if(typeof showResetConfirm === 'function') showResetConfirm();
+        }, 0x555555);
+        resetButton.setAlpha(0).setScale(0.3).setAngle(90);
+      }
+
+      const volLabel = scene.sound.volume > 0 ? 'Mute' : 'Unmute';
+      const volButton = makeButton(cupSlot.x, volLabel, () => {
+        GameState.volume = GameState.volume > 0 ? 0 : 1;
+        scene.sound.volume = GameState.volume;
+        if(typeof saveVolume==='function') saveVolume();
+        const txt = volButton.list[1];
+        if(txt && txt.setText) txt.setText(GameState.volume>0 ? 'Mute' : 'Unmute');
+      }, 0x333333);
+      volButton.setAlpha(0).setScale(0.3).setAngle(0);
+
       if(scene.tweens && scene.tweens.add){
-        scene.tweens.add({
-          targets: classicButton,
-          x: topLeft.x,
-          y: topLeft.y,
-          angle: 0,
-          scale: 1,
-          alpha: 1,
-          duration: 600,
-          ease: 'Cubic.easeOut'
-        });
-        scene.tweens.add({
-          targets: resetButton,
-          x: topRight.x,
-          y: topRight.y,
-          angle: 0,
-          scale: 1,
-          alpha: 1,
-          duration: 600,
-          delay: 100,
-          ease: 'Cubic.easeOut'
-        });
+        if(allEarned){
+          scene.tweens.add({ targets: classicButton, x: topLeft.x, y: topLeft.y, angle:0, scale:1, alpha:1, duration:600, ease:'Cubic.easeOut' });
+          scene.tweens.add({ targets: resetButton, x: topRight.x, y: topRight.y, angle:0, scale:1, alpha:1, duration:600, delay:100, ease:'Cubic.easeOut' });
+          scene.tweens.add({ targets: volButton, x: topMid.x, y: topMid.y, angle:0, scale:1, alpha:1, duration:600, delay:200, ease:'Cubic.easeOut' });
+        } else {
+          scene.tweens.add({ targets: volButton, x: topMid.x, y: topMid.y, angle:0, scale:1, alpha:1, duration:600, ease:'Cubic.easeOut' });
+        }
       } else {
-        classicButton.setPosition(topLeft.x, topLeft.y).setAngle(0).setScale(1).setAlpha(1);
-        resetButton.setPosition(topRight.x, topRight.y).setAngle(0).setScale(1).setAlpha(1);
+        if(allEarned){
+          classicButton.setPosition(topLeft.x, topLeft.y).setAngle(0).setScale(1).setAlpha(1);
+          resetButton.setPosition(topRight.x, topRight.y).setAngle(0).setScale(1).setAlpha(1);
+          volButton.setPosition(topMid.x, topMid.y).setAngle(0).setScale(1).setAlpha(1);
+        } else {
+          volButton.setPosition(topMid.x, topMid.y).setAngle(0).setScale(1).setAlpha(1);
+        }
       }
     };
 
-    miniGameCup.setInteractive({ useHandCursor: true });
-    miniGameCup.once('pointerdown', () => {
-      miniGameCup.disableInteractive();
-      miniGameCup.setTexture('coffeecup2_gray');
-      miniGameCup.clearTint();
-      revealCupButtons();
+  miniGameCup.setInteractive({ useHandCursor: true });
+  miniGameCup.once('pointerdown', () => {
+    miniGameCup.disableInteractive();
+    if(!scene.textures.exists('coffeecup2_gray')) createGrayscaleTexture(scene,'coffeecup2','coffeecup2_gray');
+    scene.tweens.add({
+      targets: miniGameCup,
+      alpha: 0,
+      duration: 150,
+      onComplete: () => {
+        miniGameCup.setTexture('coffeecup2_gray');
+        miniGameCup.clearTint();
+        scene.tweens.add({
+          targets: miniGameCup,
+          alpha: 1,
+          duration: 150,
+          onComplete: revealCupButtons
+        });
+      }
     });
-  } else {
-    miniGameCup.setAlpha(0);
-  }
+  });
 
   badgeIcons.forEach(i=>i.destroy());
   badgeIcons=[];

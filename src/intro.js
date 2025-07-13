@@ -760,6 +760,13 @@ function showStartScreen(scene, opts = {}){
   // messages come from msgOptions, which was chosen according to
   // GameState.lastEndKey.
   const scheduleStartMessages = (initialDelay = 0) => {
+    // Prevent overlapping timers when called multiple times
+    startMsgTimers.forEach(t => t.remove(false));
+    startMsgTimers = [];
+    startMsgBubbles.forEach(b => b.destroy());
+    startMsgBubbles = [];
+    startMsgY = -phoneH/2 + 20;
+
     // Begin showing text messages 1-2 seconds after the intro fades.
     let delay = initialDelay + Phaser.Math.Between(1000, 2000);
     msgOptions.forEach((opts, idx) => {

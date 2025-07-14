@@ -1021,8 +1021,16 @@ function showStartScreen(scene, opts = {}){
       const url = new URL(window.location.href);
       let userName = url.searchParams.get('name');
       if (!userName) {
-        const p = url.pathname.replace(/^\//, '').replace(/index\.html$/, '');
-        if (p) userName = decodeURIComponent(p);
+        const segments = url.pathname.split('/').filter(Boolean);
+        if (segments.length === 1) {
+          const seg = segments[0].replace(/index\.html$/, '');
+          if (seg && seg !== 'coffee-girl') {
+            userName = decodeURIComponent(seg);
+          }
+        } else if (segments.length > 1) {
+          const seg = segments[segments.length - 1].replace(/index\.html$/, '');
+          if (seg) userName = decodeURIComponent(seg);
+        }
       }
       if (userName) {
         GameState.userName = userName;

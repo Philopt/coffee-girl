@@ -1319,6 +1319,10 @@ export function setupGame(){
       });
       return;
     }
+    const totalCost=c.isDog?0:c.orders.reduce((s,o)=>s+o.price*o.qty,0);
+    const canAfford = c.isDog ? true : (c.orders[0].coins >= totalCost);
+    const canSell = !c.isDog && canAfford;
+
     let wantLine;
     if(c.isDog){
       const sounds=['woof woof!','bark bark!','arf arf!','ruff ruff!','awoo!','🐶🐶'];
@@ -1334,22 +1338,22 @@ export function setupGame(){
 
       const name = GameState.userName;
       const state = (c.memory && c.memory.state) || CustomerState.NORMAL;
+      let compliment='';
       if(name){
         if(state === CustomerState.GROWING){
           const opts=[`listen ${name}`, `hey, ${name}, right?`];
-          const greet=Phaser.Utils.Array.GetRandom(opts);
-          wantLine=`${greet}\n${orderLine}`;
+          compliment=Phaser.Utils.Array.GetRandom(opts);
         }else if(state === CustomerState.SPARKLING){
           const opts=[`${name}, looking good`, `${name}, good to see you`, `hey ${name}, how's it going?`];
-          const greet=Phaser.Utils.Array.GetRandom(opts);
-          wantLine=`${greet}\n${orderLine}`;
+          compliment=Phaser.Utils.Array.GetRandom(opts);
         }else if(state === CustomerState.ARROW){
           const opts=[`${name}-senpai...`, '😳😳', '///'];
-          const greet=Phaser.Utils.Array.GetRandom(opts);
-          wantLine=`${greet}\n${orderLine}`;
-        }else{
-          wantLine=orderLine;
+          compliment=Phaser.Utils.Array.GetRandom(opts);
         }
+      }
+
+      if(canAfford && compliment){
+        wantLine=`${compliment}\n${orderLine}`;
       }else{
         wantLine=orderLine;
       }
@@ -1360,20 +1364,19 @@ export function setupGame(){
       .setOrigin(0.5)
       .setStyle({fontSize:'24px'})
       .setText(wantLine)
-      .setVisible(true);
-
-      const totalCost=c.isDog?0:c.orders.reduce((s,o)=>s+o.price*o.qty,0);
-      const canAfford = c.isDog ? true : (c.orders[0].coins >= totalCost);
-      const canSell = !c.isDog && canAfford;
+      .setVisible(true)
+      .setLineSpacing(lineGap);
     let coinLine='';
     if(!c.isDog){
       if (!canAfford) {
+        const name = GameState.userName;
+        const nComma = name ? `, ${name}` : '';
         const options = [
-          "I forgot my wallet",
-          "I'll pay you tomorrow",
-          "My card got declined",
-          "Can I Venmo you later?",
-          "I'm good for it, promise"
+          `I forgot my wallet${nComma}`,
+          `I'll pay you tomorrow${nComma}`,
+          `My card got declined${nComma}`,
+          `Can I Venmo you later${nComma}?`,
+          `I'm good for it${nComma} promise`
         ];
         coinLine = Phaser.Utils.Array.GetRandom(options);
       }

@@ -1360,6 +1360,7 @@ export function setupGame(){
     }
 
 
+    const lineGap = 10;
     dialogText
       .setOrigin(0.5)
       .setStyle({fontSize:'24px'})
@@ -1391,7 +1392,6 @@ export function setupGame(){
     const maxW = Math.max(dialogText.width, coinW);
     const hMargin = 20;
     const vMargin = 15;
-    const lineGap = 10;
     dialogBg.width = Math.max(maxW + hMargin * 2, 160);
     dialogBg.height = dialogText.height + (coinLine ? dialogCoins.height + lineGap : 0) + vMargin * 2;
 

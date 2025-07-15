@@ -169,7 +169,7 @@ function startOpeningAnimation(scene){
     const ang = Phaser.Math.DegToRad(Phaser.Math.Between(0, 360));
     const dist = Phaser.Math.Between(80, 160);
     const cup = scene.add.image(openingNumber.x, openingNumber.y, "coffeecup2")
-      .setDepth(17)
+      .setDepth(22)
       .setScale(scale * 0.8)
       .setAlpha(1);
     if(phoneMask) cup.setMask(phoneMask);
@@ -192,7 +192,7 @@ function startOpeningAnimation(scene){
       const height = (scene.scale && scene.scale.height) ? scene.scale.height : 640;
       const x = Phaser.Math.Between(40, width - 40);
       const cup = scene.add.image(x, -20, 'coffeecup2')
-        .setDepth(18)
+        .setDepth(22)
         .setScale(Phaser.Math.FloatBetween(0.5, 0.8))
         .setAngle(Phaser.Math.Between(-180, 180));
       scene.tweens.add({

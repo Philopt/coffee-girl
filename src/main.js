@@ -4359,6 +4359,23 @@ function dogsBarkAtFalcon(){
     cleanupSparkles(scene);
     cleanupDogs(scene);
     cleanupSparrows(scene);
+    cleanupHeartEmojis(scene);
+    [...GameState.queue, ...GameState.wanderers].forEach(c=>{
+      if(c.shuffleEvent) c.shuffleEvent.remove(false);
+      if(c.walkTween){ if(c.walkTween.isPlaying && c.walkTween.stop) c.walkTween.stop(); if(c.walkTween.remove) c.walkTween.remove(); }
+      if(c.heartEmoji){ c.heartEmoji.destroy(); c.heartEmoji=null; }
+      if(c.sprite&&c.sprite.destroy) c.sprite.destroy();
+    });
+    GameState.queue.length=0;
+    GameState.wanderers.length=0;
+    if(GameState.activeCustomer){
+      const ac=GameState.activeCustomer;
+      if(ac.shuffleEvent) ac.shuffleEvent.remove(false);
+      if(ac.walkTween){ if(ac.walkTween.isPlaying && ac.walkTween.stop) ac.walkTween.stop(); if(ac.walkTween.remove) ac.walkTween.remove(); }
+      if(ac.heartEmoji){ ac.heartEmoji.destroy(); ac.heartEmoji=null; }
+      if(ac.sprite&&ac.sprite.destroy) ac.sprite.destroy();
+      GameState.activeCustomer=null;
+    }
     hideOverlayTexts();
     if (GameState.spawnTimer) {
       GameState.spawnTimer.remove(false);
@@ -4554,7 +4571,8 @@ function dogsBarkAtFalcon(){
               this.tweens.add({targets:c.sprite,x:c.sprite.x+off,duration:dur(200),yoyo:true});
             }
           });
-          this.tweens.add({targets:c.sprite,x:targetX,y:targetY,duration:dur(6000),onComplete:()=>shuffle.remove(false)});
+          c.shuffleEvent = shuffle;
+          this.tweens.add({targets:c.sprite,x:targetX,y:targetY,duration:dur(13000)});
         }
       } else if(c && c.sprite){
         const dir=c.sprite.x<ORDER_X?-1:1;
@@ -4573,8 +4591,14 @@ function dogsBarkAtFalcon(){
       loop:true,
       callback:()=>{
         const {key,mem}=extras[idx++];
-        const sx=Phaser.Math.Between(40,440);
-        const sy=this.scale.height+40;
+        let sx, sy;
+        if(Phaser.Math.Between(0,1)){
+          sx = Phaser.Math.Between(40,440);
+          sy = this.scale.height + 40;
+        }else{
+          sx = Phaser.Math.Between(0,1) ? -40 : 520;
+          sy = Phaser.Math.Between(WANDER_TOP, WANDER_BOTTOM);
+        }
         const s=this.add.sprite(sx,sy,key)
           .setDepth(20)
           .setScale(scaleForY(sy));
@@ -4771,22 +4795,7 @@ function dogsBarkAtFalcon(){
     GameState.wanderers.forEach(addToCrowd);
     if(GameState.activeCustomer) addToCrowd(GameState.activeCustomer);
 
-    if(crowd.length === 0){
-      const spawnSome = scene.time.addEvent({
-        delay: dur(1000),
-        loop: true,
-        callback: () => {
-          const prev = GameState.gameOver;
-          GameState.gameOver = false;
-          spawnCustomer.call(scene);
-          GameState.gameOver = prev;
-          addToCrowd(GameState.wanderers[GameState.wanderers.length-1]);
-          if(crowd.length > 0){
-            spawnSome.remove(false);
-          }
-        }
-      });
-    }
+    // Do not spawn additional crowd members once the screen is covered
 
     const updateCrowdHearts = () => { crowd.forEach(updateHeart); };
     scene.events.on('update', updateCrowdHearts);
@@ -4802,7 +4811,7 @@ function dogsBarkAtFalcon(){
       .setScale(2.4)
       .setDepth(21)
       .setAlpha(0);
-    this.time.delayedCall(dur(2000), () => {
+    this.time.delayedCall(dur(4000), () => {
       this.tweens.add({targets:zombieImg,alpha:1,duration:dur(3000)});
     });
 
@@ -4849,6 +4858,7 @@ function dogsBarkAtFalcon(){
             heartTimers.forEach(t=>t.remove());
             crowd.forEach(c=>{ if(c.heartEmoji) c.heartEmoji.destroy(); if(c.sprite && c.sprite.destroy) c.sprite.destroy(); });
             img.destroy();
+            zombieImg.destroy();
             line1.destroy();
             line2.destroy();
             btn.destroy();

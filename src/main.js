@@ -3762,8 +3762,9 @@ function dogsBarkAtFalcon(){
         const dist = Phaser.Math.Between(10,40);
         const cup = s.add.image(startX,startY,'coffeecup2')
           .setOrigin(0.5)
-          .setDepth(21)
+          .setDepth(22)
           .setScale(0.36);
+        if (s.children && s.children.bringToTop) s.children.bringToTop(cup);
         GameState.activeBursts.push(cup);
         s.tweens.add({
           targets:cup,
@@ -3787,8 +3788,9 @@ function dogsBarkAtFalcon(){
         const dist = Phaser.Math.Between(20,80);
         const cup = s.add.image(startX,startY,'coffeecup2')
           .setOrigin(0.5)
-          .setDepth(21)
+          .setDepth(22)
           .setScale(0.5);
+        if (s.children && s.children.bringToTop) s.children.bringToTop(cup);
         GameState.activeBursts.push(cup);
         s.tweens.add({
           targets:cup,

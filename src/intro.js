@@ -36,6 +36,7 @@ let resetButton = null;
 let phoneMask = null;
 let phoneMaskShape = null;
 let flyingBadges = [];
+let introFadeEvent = null;
 
 // Achievement keys used throughout the intro and main game
 const ALL_BADGES = [
@@ -134,7 +135,8 @@ function startOpeningAnimation(scene){
     targets: openingDog,
     alpha: 1,
     scale: 2,
-    y: openingTitle.y - 101,
+    // Position the dog so its bottom lines up with the top of the titlecard
+    y: openingTitle.y - (openingTitle.height + openingDog.height),
     duration: 1330,
     ease: 'Sine.easeOut',
     onComplete: () => openingDog.setDepth(16)
@@ -247,6 +249,9 @@ function startOpeningAnimation(scene){
       for (let i = 0; i < 8; i++) spawnThrust(3);
       startCoffeeConfetti();
       showStartScreen(scene, { delayExtras: true });
+    },
+    onComplete: () => {
+      scene.time.delayedCall(2000, () => dropOpeningNumber(scene));
     }
   });
   tl.add({
@@ -260,6 +265,35 @@ function startOpeningAnimation(scene){
     }
   });
   tl.play();
+}
+
+function dropOpeningNumber(scene){
+  scene = scene || this;
+  if(!openingNumber || !openingNumber.scene) return;
+  const fallTl = scene.tweens.createTimeline();
+  fallTl.add({ targets: openingNumber, angle: 15, duration: 300, ease: 'Sine.easeOut' });
+  fallTl.add({ targets: openingNumber, angle: -10, duration: 300, ease: 'Sine.easeInOut' });
+  fallTl.add({ targets: openingNumber, angle: 20, duration: 300, ease: 'Sine.easeInOut' });
+  fallTl.add({
+    targets: openingNumber,
+    y: scene.scale.height + openingNumber.displayHeight,
+    angle: 90,
+    duration: 600,
+    ease: 'Cubic.easeIn'
+  });
+  fallTl.setCallback('onComplete', () => {
+    if(openingNumber){ openingNumber.destroy(); openingNumber = null; }
+    if(introFadeEvent) introFadeEvent.remove(false);
+    const targets = [openingTitle, openingDog].filter(Boolean);
+    if(targets.length){
+      scene.tweens.add({
+        targets,
+        alpha: 0,
+        duration: 400
+      });
+    }
+  });
+  fallTl.play();
 }
 
 function showStartScreen(scene, opts = {}){
@@ -766,7 +800,6 @@ function showStartScreen(scene, opts = {}){
   }
 
   let introDismissed = false;
-  let introFadeEvent = null;
 
   // Called after the intro ends to queue text bubbles on the phone
   // when the player returns to the start screen. The specific

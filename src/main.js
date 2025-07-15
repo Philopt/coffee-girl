@@ -3808,7 +3808,7 @@ function dogsBarkAtFalcon(){
         const cup = s.add.image(startX,startY,'coffeecup2')
           .setOrigin(0.5)
           .setDepth(22)
-          .setScale(0.36);
+          .setScale(0.72); // bigger coffee confetti
         if (s.children && s.children.bringToTop) s.children.bringToTop(cup);
         GameState.activeBursts.push(cup);
         s.tweens.add({
@@ -3834,7 +3834,7 @@ function dogsBarkAtFalcon(){
         const cup = s.add.image(startX,startY,'coffeecup2')
           .setOrigin(0.5)
           .setDepth(22)
-          .setScale(0.5);
+          .setScale(1.0); // bigger coffee confetti
         if (s.children && s.children.bringToTop) s.children.bringToTop(cup);
         GameState.activeBursts.push(cup);
         s.tweens.add({
@@ -4464,7 +4464,7 @@ function dogsBarkAtFalcon(){
     }
 
     // Start the victory music immediately
-    playSong(this, 'muse_theme');
+    playSong(this, 'muse_theme', null, {fadeDuration: 10000});
     updateMuseMusicVolume();
 
     const heartTimers = [];
@@ -4649,8 +4649,8 @@ function dogsBarkAtFalcon(){
 
   function showLoveVictory(){
     const scene = this;
-    GameState.gameOver = true;
-    playSong(scene, 'muse_theme');
+
+    playSong(scene, 'muse_theme', null, {fadeDuration: 10000});
     updateMuseMusicVolume();
     scene.tweens.killAll();
     scene.time.removeAllEvents();

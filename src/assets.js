@@ -85,7 +85,7 @@ export function preload(){
   loader.image('truck','assets/truck.png');
   loader.image('girl','assets/coffeegirl.png');
   loader.image('girldog','assets/girldog.png');
-  loader.image('coffeecup2','assets/coffeecup2.png');
+  loader.image('coffeecup2','assets/coffeecup-small.png');
   loader.image('titlecard','assets/titlecard.png');
   loader.image('title2','assets/title2.png');
   loader.spritesheet('lady_falcon','assets/lady_falcon.png',{frameWidth:64,frameHeight:64});

@@ -194,7 +194,7 @@ function startOpeningAnimation(scene){
     const dist = Phaser.Math.Between(80, 160);
     const cup = scene.add.image(openingNumber.x, openingNumber.y, "coffeecup2")
       .setDepth(22)
-      .setScale(scale * 1.6) // doubled size
+      .setScale(scale * 3.2) // compensate for smaller sprite
       .setAlpha(1);
     if(phoneMask) cup.setMask(phoneMask);
 
@@ -217,7 +217,7 @@ function startOpeningAnimation(scene){
       const x = Phaser.Math.Between(40, width - 40);
       const cup = scene.add.image(x, -20, 'coffeecup2')
         .setDepth(22)
-        .setScale(Phaser.Math.FloatBetween(1.0, 1.6)) // bigger coffee confetti
+        .setScale(Phaser.Math.FloatBetween(1.0, 1.6) * 2) // bigger coffee confetti
         .setAngle(Phaser.Math.Between(-180, 180));
       scene.tweens.add({
         targets: cup,

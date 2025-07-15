@@ -3812,7 +3812,7 @@ function dogsBarkAtFalcon(){
         const cup = s.add.image(startX,startY,'coffeecup2')
           .setOrigin(0.5)
           .setDepth(22)
-          .setScale(0.72); // bigger coffee confetti
+          .setScale(1.44); // adjust for smaller sprite
         if (s.children && s.children.bringToTop) s.children.bringToTop(cup);
         GameState.activeBursts.push(cup);
         s.tweens.add({
@@ -3838,7 +3838,7 @@ function dogsBarkAtFalcon(){
         const cup = s.add.image(startX,startY,'coffeecup2')
           .setOrigin(0.5)
           .setDepth(22)
-          .setScale(1.0); // bigger coffee confetti
+          .setScale(2.0); // adjust for smaller sprite
         if (s.children && s.children.bringToTop) s.children.bringToTop(cup);
         GameState.activeBursts.push(cup);
         s.tweens.add({
@@ -5011,7 +5011,7 @@ function dogsBarkAtFalcon(){
     const maxTextWidth = wrapWidth;
     if(line1.width > maxTextWidth) line1.setScale(maxTextWidth / line1.width);
     if(line2.width > maxTextWidth) line2.setScale(maxTextWidth / line2.width);
-    const cup = this.add.image(0,0,'coffeecup2').setScale(0.8);
+    const cup = this.add.image(0,0,'coffeecup2').setScale(1.6);
     const bubble = this.add.graphics();
     const bubbleText = this.add.text(0,0,'Try Again',{font:'20px sans-serif',fill:'#000'}).setOrigin(0.5);
     const pad = 10;

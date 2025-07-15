@@ -10,9 +10,9 @@ import { playSong, playBadgeSong, stopSong, setDrumVolume } from './music.js';
 import { showVolumeSlider, hideVolumeSlider } from './ui/volumeSlider.js';
 
 // Fade out the title before the music loop restarts
-const FALCON_INTRO_DURATION = 15000;
-const INTRO_FADE_DELAY = 2000;
-const INTRO_FADE_DURATION = 3000;
+const FALCON_INTRO_DURATION = 12000;
+const INTRO_FADE_DELAY = 0;
+const INTRO_FADE_DURATION = 2000;
 const BUTTON_FADE_TIME = 5000;
 // Delay before fading in the start button and extras. Showing the button
 // immediately helps players begin the game without waiting through the
@@ -531,13 +531,15 @@ function showStartScreen(scene, opts = {}){
         angle: 0,
         duration: 700,
         ease: 'Bounce.easeOut',
+        shortestPath: false,
         onComplete: () => {
           scene.tweens.add({
             targets: miniGameCup,
             angle: { from: -10, to: 10 },
             duration: 200,
             yoyo: true,
-            repeat: 1
+            repeat: 1,
+            onComplete: () => miniGameCup.setAngle(0)
           });
         }
       });

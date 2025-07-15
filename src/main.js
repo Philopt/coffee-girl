@@ -4709,6 +4709,14 @@ function dogsBarkAtFalcon(){
     this.tweens.add({targets:img,alpha:1,duration:dur(1200*END_FADE_MULT)});
     awardBadge(this, img.texture.key);
 
+    const zombieImg = this.add.image(240,250,'muse_victory_zombie')
+      .setScale(2.4)
+      .setDepth(21)
+      .setAlpha(0);
+    this.time.delayedCall(dur(2000), () => {
+      this.tweens.add({targets:zombieImg,alpha:1,duration:dur(3000)});
+    });
+
     const line1 = this.add.text(240,450,'YOU ARE THE MUSE',
       {font:'28px sans-serif',fill:'#fff'})
       .setOrigin(0.5)

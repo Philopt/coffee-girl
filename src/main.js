@@ -4650,8 +4650,10 @@ function dogsBarkAtFalcon(){
   function showLoveVictory(){
     const scene = this;
 
-    playSong(scene, 'muse_theme', null, {fadeDuration: 10000});
-    updateMuseMusicVolume();
+    if (GameState.currentSong !== 'muse_theme') {
+      playSong(scene, 'muse_theme', null, {fadeDuration: 10000});
+      updateMuseMusicVolume();
+    }
     scene.tweens.killAll();
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();

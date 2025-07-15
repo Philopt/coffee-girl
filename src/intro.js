@@ -18,8 +18,9 @@ const BUTTON_FADE_TIME = 5000;
 // immediately helps players begin the game without waiting through the
 // entire intro sequence.
 const START_SCREEN_DELAY = 600;
-// Slight vertical offset when positioning the dog above the titlecard
-const DOG_OFFSET_Y = -10;
+
+const OPENING_DROP_DELAY = 3000;
+
 
 let startOverlay = null;
 let startButton = null;
@@ -40,6 +41,7 @@ let phoneMask = null;
 let phoneMaskShape = null;
 let flyingBadges = [];
 let introFadeEvent = null;
+let introFadeTween = null;
 
 // Achievement keys used throughout the intro and main game
 const ALL_BADGES = [
@@ -266,7 +268,7 @@ function startOpeningAnimation(scene){
       showStartScreen(scene, { delayExtras: true });
     },
     onComplete: () => {
-      scene.time.delayedCall(2000, () => dropOpeningNumber(scene));
+      scene.time.delayedCall(OPENING_DROP_DELAY, () => dropOpeningNumber(scene));
     }
   });
   tl.add({
@@ -285,6 +287,10 @@ function startOpeningAnimation(scene){
 function dropOpeningNumber(scene){
   scene = scene || this;
   if(!openingNumber || !openingNumber.scene) return;
+  if (introFadeTween) {
+    introFadeTween.stop();
+    introFadeTween = null;
+  }
   const fallTl = scene.tweens.createTimeline();
   fallTl.add({ targets: openingNumber, angle: 15, duration: 300, ease: 'Sine.easeOut' });
   fallTl.add({ targets: openingNumber, angle: -10, duration: 300, ease: 'Sine.easeInOut' });
@@ -886,6 +892,10 @@ function showStartScreen(scene, opts = {}){
     if (introDismissed) return;
     introDismissed = true;
     if (introFadeEvent) introFadeEvent.remove(false);
+    if (introFadeTween) {
+      introFadeTween.stop();
+      introFadeTween = null;
+    }
     const targets = [openingTitle, openingNumber, openingDog].filter(Boolean);
     if (targets.length) {
       scene.tweens.add({
@@ -922,20 +932,22 @@ function showStartScreen(scene, opts = {}){
       dismissIntro();
     } else {
       if (GameState.currentSong === 'lady_falcon_theme') {
-        scene.tweens.add({
+        introFadeTween = scene.tweens.add({
           targets: [openingTitle, openingNumber, openingDog].filter(Boolean),
           alpha: 0,
           duration: FALCON_INTRO_DURATION,
-          ease: 'Linear'
+          ease: 'Linear',
+          onComplete: () => { introFadeTween = null; }
         });
         introFadeEvent = scene.time.delayedCall(FALCON_INTRO_DURATION, dismissIntro, [], scene);
       } else {
-        scene.tweens.add({
+        introFadeTween = scene.tweens.add({
           targets: [openingTitle, openingNumber, openingDog].filter(Boolean),
           alpha: 0,
           delay: INTRO_FADE_DELAY,
           duration: INTRO_FADE_DURATION,
-          ease: 'Linear'
+          ease: 'Linear',
+          onComplete: () => { introFadeTween = null; }
         });
         introFadeEvent = scene.time.delayedCall(INTRO_FADE_DELAY + INTRO_FADE_DURATION, dismissIntro, [], scene);
       }
@@ -1421,7 +1433,7 @@ function playIntro(scene){
   intro.play();
 }
 
-export { playOpening, showStartScreen, playIntro, hideStartMessages, hideStartScreen, updateSongIcons };
+export { OPENING_DROP_DELAY, playOpening, showStartScreen, playIntro, hideStartMessages, hideStartScreen, updateSongIcons };
 
 if (typeof window !== 'undefined') {
   window.hideStartMessages = hideStartMessages;

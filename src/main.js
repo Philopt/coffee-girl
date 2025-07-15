@@ -4447,6 +4447,24 @@ function dogsBarkAtFalcon(){
     if(cloudHeartTween && cloudHeartTween.stop) cloudHeartTween.stop();
     if(cloudHeart) cloudHeart.setTintFill(0xff69b4);
 
+    // Clean up any lingering UI or dialogs
+    hideOverlayTexts();
+    clearDialog.call(this);
+    cleanupFloatingEmojis();
+    cleanupBarks();
+    cleanupBursts();
+    cleanupSparkles(this);
+    cleanupDogs(this);
+    cleanupSparrows(this);
+    if (GameState.spawnTimer) {
+      GameState.spawnTimer.remove(false);
+      GameState.spawnTimer = null;
+    }
+
+    // Start the victory music immediately
+    playSong(this, 'muse_theme');
+    updateMuseMusicVolume();
+
     const heartTimers = [];
     const emitHeart = target => {
       const hx = target.x + Phaser.Math.Between(-10,10);

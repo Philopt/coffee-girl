@@ -4469,6 +4469,7 @@ function dogsBarkAtFalcon(){
     GameState.loveSeqStarted = true;
     GameState.gameOver = true; // prevent new orders
     GameState.orderInProgress = true;
+    GameState.zombieMode = true;
     if(cloudHeartTween && cloudHeartTween.stop) cloudHeartTween.stop();
     if(cloudHeart) cloudHeart.setTintFill(0xff69b4);
 
@@ -4557,13 +4558,15 @@ function dogsBarkAtFalcon(){
           const bottom = g.y + g.displayHeight/2;
           const targetY = bottom - c.sprite.displayHeight/2 - 2;
           const targetX = ORDER_X + Phaser.Math.Between(-20,20);
+          const shuffleDelay = GameState.zombieMode ? Phaser.Math.Between(1000,1500) : Phaser.Math.Between(300,600);
           const shuffle = this.time.addEvent({
-            delay:Phaser.Math.Between(300,600),
+            delay: shuffleDelay,
             loop:true,
             callback:()=>{
               if(!c.sprite || !c.sprite.scene){ shuffle.remove(false); return; }
-              const off = Phaser.Math.Between(-6,6);
-              this.tweens.add({targets:c.sprite,x:c.sprite.x+off,duration:dur(200),yoyo:true});
+              const off = GameState.zombieMode ? Phaser.Math.Between(-12,12) : Phaser.Math.Between(-6,6);
+              const stepDur = GameState.zombieMode ? dur(400) : dur(200);
+              this.tweens.add({targets:c.sprite,x:c.sprite.x+off,duration:stepDur,yoyo:true});
               emitHeart(c.sprite);
             }
           });

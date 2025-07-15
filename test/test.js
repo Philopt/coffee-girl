@@ -884,10 +884,11 @@ function testSparrowRemovalOffscreen() {
   const updateSparrows = context.result.updateSparrows;
 
   const scene = {
-    add: { sprite(x, y) { return { x, y, setDepth() { return this; }, setScale() { return this; }, setPosition(x2, y2) { this.x = x2; this.y = y2; return this; }, anims: { play() {} }, destroy() { this.destroyed = true; } }; } },
+    add: { sprite(x, y) { return { x, y, alpha: 1, scale: 0.5, setDepth() { return this; }, setScale(s) { this.scale = s; return this; }, setPosition(x2, y2) { this.x = x2; this.y = y2; return this; }, anims: { play() {} }, destroy() { this.destroyed = true; } }; } },
     scale: { width: 480, height: 640 },
     gameState: context.GameState,
-    time: { delayedCall() { return { remove() {} }; } }
+    tweens: { add(cfg) { scene.lastTween = cfg; if (cfg.onComplete) cfg.onComplete(); return {}; } },
+    time: { delayedCall(d, cb, args, s) { if (cb) cb.apply(s || this, args || []); return { remove() {} }; } }
   };
 
   const bird = spawnSparrow(scene);
@@ -897,10 +898,10 @@ function testSparrowRemovalOffscreen() {
 
   updateSparrows(scene, 16);
 
-  assert.strictEqual(scene.gameState.sparrows.length, 0, 'sparrow not removed when offscreen');
-  assert.ok(bird.threatCheck.removed, 'threatCheck not removed');
-  assert.ok(bird.timerEvent.removed, 'timerEvent not removed');
+  assert.strictEqual(scene.lastTween.targets, bird.sprite, 'tween not applied to sprite');
+  assert.strictEqual(scene.lastTween.alpha, 0, 'tween alpha not 0');
   assert.ok(bird.sprite.destroyed, 'sprite not destroyed');
+  assert.strictEqual(scene.gameState.sparrows.length, 0, 'sparrow not removed when offscreen');
   console.log('updateSparrows offscreen removal test passed');
 }
 

@@ -18,6 +18,7 @@ const BUTTON_FADE_TIME = 5000;
 // immediately helps players begin the game without waiting through the
 // entire intro sequence.
 const START_SCREEN_DELAY = 600;
+const OPENING_DROP_DELAY = 3000;
 
 let startOverlay = null;
 let startButton = null;
@@ -265,7 +266,7 @@ function startOpeningAnimation(scene){
       showStartScreen(scene, { delayExtras: true });
     },
     onComplete: () => {
-      scene.time.delayedCall(2000, () => dropOpeningNumber(scene));
+      scene.time.delayedCall(OPENING_DROP_DELAY, () => dropOpeningNumber(scene));
     }
   });
   tl.add({
@@ -1430,7 +1431,7 @@ function playIntro(scene){
   intro.play();
 }
 
-export { playOpening, showStartScreen, playIntro, hideStartMessages, hideStartScreen, updateSongIcons };
+export { OPENING_DROP_DELAY, playOpening, showStartScreen, playIntro, hideStartMessages, hideStartScreen, updateSongIcons };
 
 if (typeof window !== 'undefined') {
   window.hideStartMessages = hideStartMessages;

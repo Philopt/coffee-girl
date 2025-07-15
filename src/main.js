@@ -14,7 +14,7 @@ import { flashBorder, flashFill, blinkButton, applyRandomSkew, setDepthFromBotto
 
 import { keys, requiredAssets, preload as preloadAssets, receipt, emojiFor } from './assets.js';
 import { playOpening, showStartScreen, playIntro } from './intro.js';
-import { playSong, updateRevoltMusicVolume, updateMuseMusicVolume, fadeDrums } from './music.js';
+import { playSong, updateRevoltMusicVolume, updateMuseMusicVolume, fadeDrums, fadeOutCurrentSong } from './music.js';
 import DesaturatePipeline from './desaturatePipeline.js';
 
 export let Assets, Scene, Customers, config;
@@ -51,6 +51,9 @@ const HEART_EMOJIS = {
   [CustomerState.SPARKLING]: '💖',
   [CustomerState.ARROW]: '💘'
 };
+
+// Heart emojis used during the Muse victory sequence
+const MUSE_HEARTS = ['💖','💗','💓','💞','💕','💘','💝'];
 
 // Reactions when a customer receives a drink
 const HAPPY_FACE_EMOJIS = ['🙂','😊','😃','😄','😆'];
@@ -682,6 +685,7 @@ export function setupGame(){
   let endOverlay=null;
   // Overlay used during the love victory transition
   let museFadeOverlay=null;
+  let museOverlay1=null, museOverlay2=null;
   // hearts or anger symbols currently animating
 
 
@@ -4446,6 +4450,8 @@ function dogsBarkAtFalcon(){
   function startLoveSequence(){
     if(GameState.loveSeqStarted || GameState.gameOver) return;
     GameState.loveSeqStarted = true;
+    GameState.gameOver = true; // prevent new orders
+    GameState.orderInProgress = true;
     if(cloudHeartTween && cloudHeartTween.stop) cloudHeartTween.stop();
     if(cloudHeart) cloudHeart.setTintFill(0xff69b4);
 
@@ -4463,15 +4469,16 @@ function dogsBarkAtFalcon(){
       GameState.spawnTimer = null;
     }
 
-    // Start the victory music immediately
-    playSong(this, 'muse_theme', null, {fadeDuration: 10000});
-    updateMuseMusicVolume();
+    // Fade out the current song, then start the Muse theme at full volume
+    fadeOutCurrentSong(this, 10000);
+    playSong(this, 'muse_theme');
 
     const heartTimers = [];
     const emitHeart = target => {
       const hx = target.x + Phaser.Math.Between(-10,10);
       const hy = target.y - Phaser.Math.Between(10,20);
-      const h = this.add.text(hx, hy, '💖', {font:'20px sans-serif'})
+      const emoji = Phaser.Utils.Array.GetRandom(MUSE_HEARTS);
+      const h = this.add.text(hx, hy, emoji, {font:'20px sans-serif'})
         .setOrigin(0.5)
         .setDepth(22);
       addFloatingEmoji(h);
@@ -4486,14 +4493,15 @@ function dogsBarkAtFalcon(){
 
     const addHeartEmitter = c => {
       if(!c || !c.sprite) return;
+      const emoji = Phaser.Utils.Array.GetRandom(MUSE_HEARTS);
       if(!c.heartEmoji){
-        c.heartEmoji = this.add.text(c.sprite.x,c.sprite.y,'💖',{font:'28px sans-serif'})
+        c.heartEmoji = this.add.text(c.sprite.x,c.sprite.y,emoji,{font:'28px sans-serif'})
           .setOrigin(0.5)
           .setDepth(21)
           .setShadow(0,0,'#000',4);
         c.sprite.heartEmoji = c.heartEmoji;
       }else{
-        c.heartEmoji.setText('💖').setVisible(true);
+        c.heartEmoji.setText(emoji).setVisible(true);
       }
       const update = () => {
         if(c.heartEmoji && c.heartEmoji.scene){
@@ -4520,9 +4528,15 @@ function dogsBarkAtFalcon(){
     GameState.queue.forEach(c=>{ if(c.spriteKey) present.add(c.spriteKey); });
     GameState.wanderers.forEach(c=>{ if(c.spriteKey) present.add(c.spriteKey); });
 
-    const extras=Object.entries(GameState.customerMemory)
+    let extras=Object.entries(GameState.customerMemory)
       .filter(([k,m])=>m&&positiveStates.includes(m.state)&&!present.has(k))
       .map(([k,m])=>({key:k,mem:m}));
+    const MIN_EXTRAS = 12;
+    while(extras.length < MIN_EXTRAS){
+      const key = Phaser.Utils.Array.GetRandom(keys);
+      const mem = { state: Phaser.Utils.Array.GetRandom(positiveStates) };
+      extras.push({key, mem});
+    }
 
     const moveToGirl=c=>{
       if(c&&c.sprite&&c.memory&&positiveStates.includes(c.memory.state)){
@@ -4531,7 +4545,16 @@ function dogsBarkAtFalcon(){
           const bottom = g.y + g.displayHeight/2;
           const targetY = bottom - c.sprite.displayHeight/2 - 2;
           const targetX = ORDER_X + Phaser.Math.Between(-20,20);
-          this.tweens.add({targets:c.sprite,x:targetX,y:targetY,duration:dur(3000)});
+          const shuffle = this.time.addEvent({
+            delay:Phaser.Math.Between(300,600),
+            loop:true,
+            callback:()=>{
+              if(!c.sprite || !c.sprite.scene){ shuffle.remove(false); return; }
+              const off = Phaser.Math.Between(-6,6);
+              this.tweens.add({targets:c.sprite,x:c.sprite.x+off,duration:dur(200),yoyo:true});
+            }
+          });
+          this.tweens.add({targets:c.sprite,x:targetX,y:targetY,duration:dur(6000),onComplete:()=>shuffle.remove(false)});
         }
       } else if(c && c.sprite){
         const dir=c.sprite.x<ORDER_X?-1:1;
@@ -4555,7 +4578,8 @@ function dogsBarkAtFalcon(){
         const s=this.add.sprite(sx,sy,key)
           .setDepth(20)
           .setScale(scaleForY(sy));
-        const heart=this.add.text(sx,sy,HEART_EMOJIS[mem.state]||'💖',{font:'28px sans-serif'})
+        const emoji2 = Phaser.Utils.Array.GetRandom(MUSE_HEARTS);
+        const heart=this.add.text(sx,sy,HEART_EMOJIS[mem.state]||emoji2,{font:'28px sans-serif'})
           .setOrigin(0.5)
           .setDepth(21)
           .setShadow(0,0,'#000',4);
@@ -4585,7 +4609,8 @@ function dogsBarkAtFalcon(){
           for(let i=0;i<cloudIntensity;i++){
             const hx = cloudHeart.x + Phaser.Math.Between(-20,20);
             const hy = cloudHeart.y + Phaser.Math.Between(-10,10);
-            const h = this.add.text(hx,hy,'💖',{font:'20px sans-serif'})
+            const emoji3 = Phaser.Utils.Array.GetRandom(MUSE_HEARTS);
+            const h = this.add.text(hx,hy,emoji3,{font:'20px sans-serif'})
               .setOrigin(0.5)
               .setDepth(23);
             addFloatingEmoji(h);
@@ -4612,7 +4637,8 @@ function dogsBarkAtFalcon(){
           const dist = Phaser.Math.Between(20,60);
           const hx = cloudHeart.x + Math.cos(ang)*dist;
           const hy = cloudHeart.y + Math.sin(ang)*dist;
-          const h = this.add.text(cloudHeart.x,cloudHeart.y,'💖',{font:'20px sans-serif'})
+          const emoji4 = Phaser.Utils.Array.GetRandom(MUSE_HEARTS);
+          const h = this.add.text(cloudHeart.x,cloudHeart.y,emoji4,{font:'20px sans-serif'})
             .setOrigin(0.5)
             .setDepth(23);
           addFloatingEmoji(h);
@@ -4622,11 +4648,11 @@ function dogsBarkAtFalcon(){
         cloudHeart=null;
       }
 
-      const overlay1 = this.add.rectangle(240,320,480,640,0xffc0cb).setDepth(24).setAlpha(0);
-      this.tweens.add({targets:overlay1,alpha:1,duration:dur(LOVE_FADE_DURATION/2)});
+      museOverlay1 = this.add.rectangle(240,320,480,640,0xffc0cb).setDepth(24).setAlpha(0);
+      this.tweens.add({targets:museOverlay1,alpha:1,duration:dur(LOVE_FADE_DURATION/2)});
       this.time.delayedCall(dur(LOVE_FADE_DURATION/2),()=>{
-        const overlay2 = this.add.rectangle(240,320,480,640,0xff0000).setDepth(25).setAlpha(0);
-        this.tweens.add({targets:overlay2,alpha:1,duration:dur(LOVE_FADE_DURATION/4)});
+        museOverlay2 = this.add.rectangle(240,320,480,640,0xff0000).setDepth(25).setAlpha(0);
+        this.tweens.add({targets:museOverlay2,alpha:1,duration:dur(LOVE_FADE_DURATION/4)});
         this.time.delayedCall(dur(LOVE_FADE_DURATION/4),()=>{
           const overlay3 = this.add.rectangle(240,320,480,640,0x000000)
             .setDepth(26).setAlpha(0);
@@ -4635,7 +4661,7 @@ function dogsBarkAtFalcon(){
             targets:overlay3,
             alpha:1,
             duration:dur(LOVE_FADE_DURATION/4),
-            onComplete:()=>{ overlay1.destroy(); overlay2.destroy(); }
+            onComplete:()=>{ if(museOverlay1){ museOverlay1.destroy(); museOverlay1=null; } if(museOverlay2){ museOverlay2.destroy(); museOverlay2=null; } }
           });
         });
       });
@@ -4650,10 +4676,12 @@ function dogsBarkAtFalcon(){
   function showLoveVictory(){
     const scene = this;
 
+
     if (GameState.currentSong !== 'muse_theme') {
       playSong(scene, 'muse_theme', null, {fadeDuration: 10000});
       updateMuseMusicVolume();
     }
+
     scene.tweens.killAll();
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();
@@ -4678,6 +4706,8 @@ function dogsBarkAtFalcon(){
         onComplete:()=>{ museFadeOverlay.destroy(); museFadeOverlay=null; }
       });
     }
+    if(museOverlay1){ museOverlay1.destroy(); museOverlay1=null; }
+    if(museOverlay2){ museOverlay2.destroy(); museOverlay2=null; }
 
     const crowd = [];
     const heartTimers = [];
@@ -4698,7 +4728,8 @@ function dogsBarkAtFalcon(){
       for(let i=0;i<3;i++){
         const hx = target.x + Phaser.Math.Between(-10,10);
         const hy = target.y - Phaser.Math.Between(10,20);
-        const h = scene.add.text(hx, hy, '💖', {font:'20px sans-serif'})
+        const emoji5 = Phaser.Utils.Array.GetRandom(MUSE_HEARTS);
+        const h = scene.add.text(hx, hy, emoji5, {font:'20px sans-serif'})
           .setOrigin(0.5)
           .setDepth(22);
         addFloatingEmoji(h);
@@ -4716,12 +4747,15 @@ function dogsBarkAtFalcon(){
     const addToCrowd = c => {
       if(!c || !c.sprite || !c.memory || !positiveStates.includes(c.memory.state)) return;
       crowd.push(c);
+      const emoji6 = Phaser.Utils.Array.GetRandom(MUSE_HEARTS);
       if(!c.heartEmoji){
         c.heartEmoji = scene.add.text(c.sprite.x, c.sprite.y,
-          HEART_EMOJIS[c.memory.state] || '💖', {font:'28px sans-serif'})
+          HEART_EMOJIS[c.memory.state] || emoji6, {font:'28px sans-serif'})
           .setOrigin(0.5)
           .setDepth(21)
           .setShadow(0,0,'#000',4);
+      } else {
+        c.heartEmoji.setText(HEART_EMOJIS[c.memory.state] || emoji6).setVisible(true);
       }
       c.sprite.heartEmoji = c.heartEmoji;
       updateHeart(c.sprite);

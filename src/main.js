@@ -215,6 +215,13 @@ export function setupGame(){
     }
   }
 
+  function applyHeartScale(vol){
+    if(cloudHeart && cloudHeart.setScale){
+      const scale = cloudHeartBaseScale * (1 + 0.1 * vol);
+      cloudHeart.setScale(scale);
+    }
+  }
+
   function stopHighMoneyEffects(){
     if(highMoneyTween){
       if(highMoneyTween.remove) highMoneyTween.remove();
@@ -667,6 +674,7 @@ export function setupGame(){
   let moneyText, moneyDollar, loveText, cloudHeart, cloudDollar, queueLevelText;
   let moneyStatusText, moneyStatusTween = null;
   let cloudHeartBaseX = 0, cloudDollarBaseX = 0;
+  let cloudHeartBaseScale = 2.4;
   let dialogBg, dialogText, dialogCoins,
       dialogPriceLabel, dialogPriceValue, dialogPriceBox,
       dialogDrinkEmoji, dialogPriceContainer, dialogPriceTicket, dialogPriceShadow, dialogPupCup,
@@ -890,10 +898,11 @@ export function setupGame(){
       .setBlendMode(Phaser.BlendModes.NEGATIVE)
       .setAlpha(0);
     updateMoneyDisplay();
+    cloudHeartBaseScale = 2.4;
     cloudHeart=this.add.sprite(0,35,'cloudHeart')
       .setOrigin(1,0)
       .setDepth(1)
-      .setScale(2.4)
+      .setScale(cloudHeartBaseScale)
       // Use screen blend for lighter overlay
       .setBlendMode(Phaser.BlendModes.SCREEN)
 
@@ -906,6 +915,8 @@ export function setupGame(){
 
     cloudHeart.x = 320 + cloudHeart.displayWidth/2;
     cloudHeartBaseX = cloudHeart.x;
+    GameState.heartCloud = cloudHeart;
+    GameState.heartCloudBaseScale = cloudHeartBaseScale;
     loveText=this.add.text(0,0,GameState.love,{font:'26px Arial, sans-serif',fill:'#fff'})
       .setOrigin(0.5)
       .setDepth(2)

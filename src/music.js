@@ -162,6 +162,10 @@ export function setDrumVolume(vol) {
   if (GameState.drumLoop && GameState.drumLoop.setVolume) {
     GameState.drumLoop.setVolume(vol);
   }
+  if (GameState.heartCloud && GameState.heartCloud.setScale) {
+    const base = GameState.heartCloudBaseScale || GameState.heartCloud.scale;
+    GameState.heartCloud.setScale(base * (1 + 0.1 * vol));
+  }
 }
 
 export function fadeDrums(scene, vol, duration = 600) {
@@ -172,6 +176,15 @@ export function fadeDrums(scene, vol, duration = 600) {
     duration,
     ease: 'Linear',
   });
+  if (GameState.heartCloud && GameState.heartCloud.setScale) {
+    const base = GameState.heartCloudBaseScale || GameState.heartCloud.scale;
+    scene.tweens.add({
+      targets: GameState.heartCloud,
+      scale: base * (1 + 0.1 * vol),
+      duration,
+      ease: 'Linear',
+    });
+  }
 }
 
 export function updateRevoltMusicVolume() {

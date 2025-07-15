@@ -24,7 +24,7 @@ const DROP_FADE_DURATION = 200;
 // Slight vertical offset when positioning the dog above the titlecard
 const DOG_OFFSET_Y = -10;
 
-const OPENING_DROP_DELAY = 3000;
+const OPENING_DROP_DELAY = 2000;
 
 
 let startOverlay = null;
@@ -296,15 +296,23 @@ function dropOpeningNumber(scene){
     introFadeTween.stop();
     introFadeTween = null;
   }
+  // Pivot around the bottom-left corner so the number appears "nailed" in place
+  const bottomLeftX = openingNumber.x - openingNumber.displayWidth * openingNumber.originX;
+  const bottomLeftY = openingNumber.y + openingNumber.displayHeight * (1 - openingNumber.originY);
+  openingNumber.setOrigin(0, 1);
+  openingNumber.setPosition(bottomLeftX, bottomLeftY);
+
   const fallTl = scene.tweens.createTimeline();
-  fallTl.add({ targets: openingNumber, angle: 15, duration: 300, ease: 'Sine.easeOut' });
-  fallTl.add({ targets: openingNumber, angle: -10, duration: 300, ease: 'Sine.easeInOut' });
-  fallTl.add({ targets: openingNumber, angle: 20, duration: 300, ease: 'Sine.easeInOut' });
+  fallTl.add({ targets: openingNumber, angle: 45, duration: 400, ease: 'Sine.easeIn' });
+  fallTl.add({ targets: openingNumber, angle: 25, duration: 250, ease: 'Sine.easeOut' });
+  fallTl.add({ targets: openingNumber, angle: 55, duration: 250, ease: 'Sine.easeInOut' });
+  fallTl.add({ targets: openingNumber, angle: 35, duration: 250, ease: 'Sine.easeInOut' });
+  fallTl.add({ targets: openingNumber, angle: 70, duration: 300, ease: 'Sine.easeIn' });
   fallTl.add({
     targets: openingNumber,
     y: scene.scale.height + openingNumber.displayHeight,
     angle: 90,
-    duration: 600,
+    duration: 700,
     ease: 'Cubic.easeIn'
   });
   fallTl.setCallback('onComplete', () => {

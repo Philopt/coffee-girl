@@ -18,6 +18,8 @@ const BUTTON_FADE_TIME = 5000;
 // immediately helps players begin the game without waiting through the
 // entire intro sequence.
 const START_SCREEN_DELAY = 600;
+// Fade duration when the opening assets disappear
+const DROP_FADE_DURATION = 200;
 
 let startOverlay = null;
 let startButton = null;
@@ -299,11 +301,11 @@ function dropOpeningNumber(scene){
     if(introFadeEvent) introFadeEvent.remove(false);
     const targets = [openingTitle, openingDog].filter(Boolean);
     if(targets.length){
-      scene.tweens.add({
-        targets,
-        alpha: 0,
-        duration: 400
-      });
+        scene.tweens.add({
+          targets,
+          alpha: 0,
+          duration: DROP_FADE_DURATION
+        });
     }
   });
   fallTl.play();

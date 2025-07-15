@@ -684,6 +684,7 @@ export function setupGame(){
   let cloudHeartBaseX = 0, cloudDollarBaseX = 0;
 
   let cloudHeartBaseScale = 2.4;
+  let cloudDollarBaseScale = 2.4;
   let dialogBg, dialogText, dialogCoins,
       dialogPriceLabel, dialogPriceValue, dialogPriceBox,
       dialogDrinkEmoji, dialogPriceContainer, dialogPriceTicket, dialogPriceShadow, dialogPupCup,

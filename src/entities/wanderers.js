@@ -62,7 +62,8 @@ export function startWander(scene, c, targetX, exitAfter){
   const amp = Phaser.Math.Between(15,30);
   const freq = Phaser.Math.FloatBetween ? Phaser.Math.FloatBetween(1.5,4.5) : Phaser.Math.Between(15,45)/10;
   // Slower wander speed now that the line is working
-  const walkDuration = Phaser.Math.Between(10000,14000);
+  let walkDuration = Phaser.Math.Between(10000,14000);
+  if(GameState.zombieMode) walkDuration *= 1.5;
   c.walkData={startX,startY,targetX,amp,freq,duration:walkDuration,exitAfter};
   if(scene && scene.tweens && scene.tweens.add && c.sprite){
     c.walkTween = scene.tweens.add({
@@ -86,7 +87,8 @@ export function resumeWanderer(scene, c){
   const {targetX,startX,startY,amp,freq,duration,exitAfter} = c.walkData;
   const totalDist = Math.abs(targetX - startX);
   const remaining = Math.abs(targetX - c.sprite.x);
-  const walkDuration = totalDist>0 ? duration * (remaining/totalDist) : duration;
+  let walkDuration = totalDist>0 ? duration * (remaining/totalDist) : duration;
+  if(GameState.zombieMode) walkDuration *= 1.5;
   if(scene && scene.tweens && scene.tweens.add && c.sprite){
     c.walkTween = scene.tweens.add({
       targets:c.sprite,

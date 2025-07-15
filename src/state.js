@@ -25,6 +25,8 @@ export const GameState = {
   truck: null,
   falcon: null,
   girl: null
+  ,heartCloud: null
+  ,heartCloudBaseScale: 2.4
   ,girlHP: 10
   ,falconHP: 10
   ,falconStunned: false
@@ -47,6 +49,8 @@ export const GameState = {
   ,musicLoops: []
   ,drumLoop: null
   ,drumMeter: null
+
+  ,zombieMode: false
 
   ,volume: 1
   ,userName: null

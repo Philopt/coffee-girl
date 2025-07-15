@@ -223,6 +223,13 @@ export function setupGame(){
     }
   }
 
+  function applyHeartScale(vol){
+    if(cloudHeart && cloudHeart.setScale){
+      const scale = cloudHeartBaseScale * (1 + 0.1 * vol);
+      cloudHeart.setScale(scale);
+    }
+  }
+
   function stopHighMoneyEffects(){
     if(highMoneyTween){
       if(highMoneyTween.remove) highMoneyTween.remove();
@@ -675,7 +682,8 @@ export function setupGame(){
   let moneyText, moneyDollar, loveText, cloudHeart, cloudDollar, queueLevelText;
   let moneyStatusText, moneyStatusTween = null;
   let cloudHeartBaseX = 0, cloudDollarBaseX = 0;
-  let cloudHeartBaseScale = 1, cloudDollarBaseScale = 1;
+
+  let cloudHeartBaseScale = 2.4;
   let dialogBg, dialogText, dialogCoins,
       dialogPriceLabel, dialogPriceValue, dialogPriceBox,
       dialogDrinkEmoji, dialogPriceContainer, dialogPriceTicket, dialogPriceShadow, dialogPupCup,
@@ -900,10 +908,11 @@ export function setupGame(){
       .setBlendMode(Phaser.BlendModes.NEGATIVE)
       .setAlpha(0);
     updateMoneyDisplay();
+    cloudHeartBaseScale = 2.4;
     cloudHeart=this.add.sprite(0,35,'cloudHeart')
       .setOrigin(1,0)
       .setDepth(1)
-      .setScale(2.4)
+      .setScale(cloudHeartBaseScale)
       // Use screen blend for lighter overlay
       .setBlendMode(Phaser.BlendModes.SCREEN)
 
@@ -917,6 +926,8 @@ export function setupGame(){
 
     cloudHeart.x = 320 + cloudHeart.displayWidth/2;
     cloudHeartBaseX = cloudHeart.x;
+    GameState.heartCloud = cloudHeart;
+    GameState.heartCloudBaseScale = cloudHeartBaseScale;
     loveText=this.add.text(0,0,GameState.love,{font:'26px Arial, sans-serif',fill:'#fff'})
       .setOrigin(0.5)
       .setDepth(2)
@@ -4481,6 +4492,7 @@ function dogsBarkAtFalcon(){
     GameState.loveSeqStarted = true;
     GameState.gameOver = true; // prevent new orders
     GameState.orderInProgress = true;
+    GameState.zombieMode = true;
     if(cloudHeartTween && cloudHeartTween.stop) cloudHeartTween.stop();
     if(cloudHeart) cloudHeart.setTintFill(0xff69b4);
 
@@ -4569,13 +4581,15 @@ function dogsBarkAtFalcon(){
           const bottom = g.y + g.displayHeight/2;
           const targetY = bottom - c.sprite.displayHeight/2 - 2;
           const targetX = ORDER_X + Phaser.Math.Between(-20,20);
+          const shuffleDelay = GameState.zombieMode ? Phaser.Math.Between(1000,1500) : Phaser.Math.Between(300,600);
           const shuffle = this.time.addEvent({
-            delay:Phaser.Math.Between(300,600),
+            delay: shuffleDelay,
             loop:true,
             callback:()=>{
               if(!c.sprite || !c.sprite.scene){ shuffle.remove(false); return; }
-              const off = Phaser.Math.Between(-6,6);
-              this.tweens.add({targets:c.sprite,x:c.sprite.x+off,duration:dur(200),yoyo:true});
+              const off = GameState.zombieMode ? Phaser.Math.Between(-12,12) : Phaser.Math.Between(-6,6);
+              const stepDur = GameState.zombieMode ? dur(400) : dur(200);
+              this.tweens.add({targets:c.sprite,x:c.sprite.x+off,duration:stepDur,yoyo:true});
               emitHeart(c.sprite);
             }
           });

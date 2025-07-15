@@ -1,5 +1,24 @@
 import { GameState } from './state.js';
 
+export const badgeSongMap = {
+  revolt_end: 'customer_revolt',
+  falcon_end: 'lady_falcon_theme',
+  falcon_victory: 'lady_falcon_theme',
+  muse_victory: 'muse_theme',
+  fired_end: 'fired_end'
+};
+
+export function songForBadge(badge){
+  return badgeSongMap[badge] || badge;
+}
+
+export function badgeForSong(song){
+  for(const [b,s] of Object.entries(badgeSongMap)){
+    if(s===song) return b;
+  }
+  return null;
+}
+
 export function stopSong() {
   if (Array.isArray(GameState.musicLoops)) {
     GameState.musicLoops.forEach(s => {
@@ -17,6 +36,7 @@ export function stopSong() {
   }
   GameState.songInstance = null;
   GameState.currentSong = null;
+  GameState.currentBadgeSong = null;
 }
 
 export function playSong(scene, key, onLoopStart = null) {
@@ -26,6 +46,7 @@ export function playSong(scene, key, onLoopStart = null) {
 
   stopSong();
   GameState.currentSong = key;
+  GameState.currentBadgeSong = badgeForSong(key);
   let intro;
   let loop;
   if (key === 'fired_end') {
@@ -160,4 +181,10 @@ export function updateMuseMusicVolume() {
     const vVol = mFac * lFac * 0.6;
     vocals.setVolume(vVol);
   }
+}
+
+export function playBadgeSong(scene, badgeKey, onLoopStart = null){
+  const songKey = songForBadge(badgeKey);
+  playSong(scene, songKey, onLoopStart);
+  GameState.currentBadgeSong = badgeKey;
 }

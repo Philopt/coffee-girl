@@ -39,12 +39,45 @@ export function stopSong() {
   GameState.currentBadgeSong = null;
 }
 
-export function playSong(scene, key, onLoopStart = null) {
+export function fadeOutCurrentSong(scene, duration = 1000) {
+  if (!scene || !scene.tweens) {
+    stopSong();
+    return;
+  }
+  const loops = Array.isArray(GameState.musicLoops) ? GameState.musicLoops.slice() : [];
+  const inst = GameState.songInstance;
+  const sounds = loops.slice();
+  if (inst) {
+    sounds.push(inst.intro && inst.intro.stop ? inst.intro : inst);
+  }
+  GameState.musicLoops = [];
+  GameState.drumLoop = null;
+  GameState.songInstance = null;
+  GameState.currentSong = null;
+  GameState.currentBadgeSong = null;
+  if (!sounds.length) return;
+  scene.tweens.add({
+    targets: sounds,
+    volume: 0,
+    duration,
+    ease: 'Linear',
+    onComplete: () => {
+      loops.forEach(s => { if (s && s.stop) s.stop(); });
+      if (inst) {
+        if (inst.stop) inst.stop();
+        else if (inst.intro && inst.intro.stop) inst.intro.stop();
+      }
+    }
+  });
+}
+
+export function playSong(scene, key, onLoopStart = null, opts = {}) {
   if (!scene || !scene.sound) return;
 
   scene.sound.volume = GameState.volume;
 
-  stopSong();
+  if (opts && opts.fadeDuration) fadeOutCurrentSong(scene, opts.fadeDuration);
+  else stopSong();
   GameState.currentSong = key;
   GameState.currentBadgeSong = badgeForSong(key);
   let intro;

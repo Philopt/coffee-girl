@@ -4462,7 +4462,7 @@ function dogsBarkAtFalcon(){
     }
 
     // Start the victory music immediately
-    playSong(this, 'muse_theme');
+    playSong(this, 'muse_theme', null, {fadeDuration: 10000});
     updateMuseMusicVolume();
 
     const heartTimers = [];
@@ -4640,7 +4640,7 @@ function dogsBarkAtFalcon(){
 
   function showLoveVictory(){
     const scene = this;
-    playSong(scene, 'muse_theme');
+    playSong(scene, 'muse_theme', null, {fadeDuration: 10000});
     updateMuseMusicVolume();
     scene.tweens.killAll();
     scene.time.removeAllEvents();

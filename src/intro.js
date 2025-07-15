@@ -18,6 +18,8 @@ const BUTTON_FADE_TIME = 5000;
 // immediately helps players begin the game without waiting through the
 // entire intro sequence.
 const START_SCREEN_DELAY = 600;
+// Slight vertical offset when positioning the dog above the titlecard
+const DOG_OFFSET_Y = -10;
 
 let startOverlay = null;
 let startButton = null;
@@ -106,7 +108,7 @@ function playOpening(scene){
     .setAlpha(0)
     .setScale(1);
 
-  openingDog = scene.add.image(240,320,'girldog')
+  openingDog = scene.add.image(240,320 + DOG_OFFSET_Y,'girldog')
     .setOrigin(0.5)
     .setDepth(14)
     .setAlpha(0)
@@ -149,7 +151,7 @@ function startOpeningAnimation(scene){
     alpha: 1,
     scale: 2,
     // Position the dog so its bottom lines up with the top of the titlecard
-    y: openingTitle.y - (openingTitle.height + openingDog.height),
+    y: openingTitle.y - (openingTitle.height + openingDog.height) + DOG_OFFSET_Y,
     duration: 1330,
     ease: 'Sine.easeOut',
     onComplete: () => openingDog.setDepth(16)

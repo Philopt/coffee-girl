@@ -680,6 +680,8 @@ export function setupGame(){
   let highMoneyTween=null, highMoneyEvent=null;
   const highMoneyEmojis=[];
   let endOverlay=null;
+  // Overlay used during the love victory transition
+  let museFadeOverlay=null;
   // hearts or anger symbols currently animating
 
 
@@ -4626,8 +4628,15 @@ function dogsBarkAtFalcon(){
         const overlay2 = this.add.rectangle(240,320,480,640,0xff0000).setDepth(25).setAlpha(0);
         this.tweens.add({targets:overlay2,alpha:1,duration:dur(LOVE_FADE_DURATION/4)});
         this.time.delayedCall(dur(LOVE_FADE_DURATION/4),()=>{
-          const overlay3 = this.add.rectangle(240,320,480,640,0x000000).setDepth(26).setAlpha(0);
-          this.tweens.add({targets:overlay3,alpha:1,duration:dur(LOVE_FADE_DURATION/4),onComplete:()=>{ overlay1.destroy(); overlay2.destroy(); }});
+          const overlay3 = this.add.rectangle(240,320,480,640,0x000000)
+            .setDepth(26).setAlpha(0);
+          museFadeOverlay = overlay3;
+          this.tweens.add({
+            targets:overlay3,
+            alpha:1,
+            duration:dur(LOVE_FADE_DURATION/4),
+            onComplete:()=>{ overlay1.destroy(); overlay2.destroy(); }
+          });
         });
       });
 
@@ -4640,6 +4649,7 @@ function dogsBarkAtFalcon(){
 
   function showLoveVictory(){
     const scene = this;
+    GameState.gameOver = true;
     playSong(scene, 'muse_theme');
     updateMuseMusicVolume();
     scene.tweens.killAll();
@@ -4658,6 +4668,14 @@ function dogsBarkAtFalcon(){
     clearDialog.call(scene);
     if(endOverlay){ endOverlay.destroy(); }
     endOverlay = this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
+    if(museFadeOverlay){
+      this.tweens.add({
+        targets:museFadeOverlay,
+        alpha:0,
+        duration:dur(800),
+        onComplete:()=>{ museFadeOverlay.destroy(); museFadeOverlay=null; }
+      });
+    }
 
     const crowd = [];
     const heartTimers = [];
@@ -4716,6 +4734,23 @@ function dogsBarkAtFalcon(){
     GameState.queue.forEach(addToCrowd);
     GameState.wanderers.forEach(addToCrowd);
     if(GameState.activeCustomer) addToCrowd(GameState.activeCustomer);
+
+    if(crowd.length === 0){
+      const spawnSome = scene.time.addEvent({
+        delay: dur(1000),
+        loop: true,
+        callback: () => {
+          const prev = GameState.gameOver;
+          GameState.gameOver = false;
+          spawnCustomer.call(scene);
+          GameState.gameOver = prev;
+          addToCrowd(GameState.wanderers[GameState.wanderers.length-1]);
+          if(crowd.length > 0){
+            spawnSome.remove(false);
+          }
+        }
+      });
+    }
 
     const updateCrowdHearts = () => { crowd.forEach(updateHeart); };
     scene.events.on('update', updateCrowdHearts);

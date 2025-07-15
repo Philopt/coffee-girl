@@ -1,4 +1,5 @@
 import { GameState } from './state.js';
+import { makeAudioMeter } from './audioMeter.js';
 
 export const badgeSongMap = {
   revolt_end: 'customer_revolt',
@@ -27,6 +28,7 @@ export function stopSong() {
   }
   GameState.musicLoops = [];
   GameState.drumLoop = null;
+  GameState.drumMeter = null;
   if (GameState.songInstance) {
     if (GameState.songInstance.stop) {
       GameState.songInstance.stop();
@@ -52,6 +54,7 @@ export function fadeOutCurrentSong(scene, duration = 1000) {
   }
   GameState.musicLoops = [];
   GameState.drumLoop = null;
+  GameState.drumMeter = null;
   GameState.songInstance = null;
   GameState.currentSong = null;
   GameState.currentBadgeSong = null;
@@ -104,6 +107,7 @@ export function playSong(scene, key, onLoopStart = null, opts = {}) {
     GameState.songInstance = intro;
     GameState.musicLoops = [bass, drums, synth];
     GameState.drumLoop = drums;
+    GameState.drumMeter = makeAudioMeter(drums);
     intro.once('complete', () => {
       if (GameState.songInstance === intro) {
         GameState.songInstance = null;
@@ -124,6 +128,7 @@ export function playSong(scene, key, onLoopStart = null, opts = {}) {
     GameState.songInstance = intro;
     GameState.musicLoops = [bass, drums, synth];
     GameState.drumLoop = drums;
+    GameState.drumMeter = makeAudioMeter(drums);
     intro.once('complete', () => {
       if (GameState.songInstance === intro) {
         GameState.songInstance = null;
@@ -141,6 +146,7 @@ export function playSong(scene, key, onLoopStart = null, opts = {}) {
     GameState.songInstance = intro;
     GameState.musicLoops = [drums, synth, vocals];
     GameState.drumLoop = drums;
+    GameState.drumMeter = makeAudioMeter(drums);
     intro.once('complete', () => {
       if (GameState.songInstance === intro) {
         GameState.songInstance = null;

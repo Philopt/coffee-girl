@@ -46,6 +46,7 @@ export const GameState = {
   ,songInstance: null
   ,musicLoops: []
   ,drumLoop: null
+  ,drumMeter: null
 
   ,volume: 1
   ,userName: null

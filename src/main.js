@@ -40,6 +40,9 @@ const MONEY_TOP_Y = 5;
 const MONEY_BOTTOM_Y = 35;
 const LOVE_TOP_Y = 5;
 const LOVE_BOTTOM_Y = 35;
+const HEART_BUILDUP_DURATION = 15000;
+const LOVE_FADE_DURATION = 5000;
+const END_FADE_MULT = 2;
 const HEART_EMOJIS = {
   [CustomerState.NORMAL]: null,
   [CustomerState.BROKEN]: '💔',
@@ -144,7 +147,7 @@ export function setupGame(){
       updateMuseMusicVolume();
       if(!isLove && GameState.money>=FIRED_THRESHOLD && !GameState.falconDefeated && !GameState.firedSeqStarted){
         startFiredSequence.call(scene);
-      } else if(isLove && GameState.love>=MAX_L && !GameState.loveSeqStarted){
+      } else if(isLove && GameState.love>MAX_L && !GameState.loveSeqStarted){
         startLoveSequence.call(scene);
       }
     },[],scene);
@@ -2096,7 +2099,7 @@ export function setupGame(){
           startFiredSequence.call(this);
           return;
         }
-        if(GameState.love>=MAX_L){
+        if(GameState.love>MAX_L){
           startLoveSequence.call(this);
           return;
         }
@@ -4443,6 +4446,52 @@ function dogsBarkAtFalcon(){
     GameState.loveSeqStarted = true;
     if(cloudHeartTween && cloudHeartTween.stop) cloudHeartTween.stop();
     if(cloudHeart) cloudHeart.setTintFill(0xff69b4);
+
+    const heartTimers = [];
+    const emitHeart = target => {
+      const hx = target.x + Phaser.Math.Between(-10,10);
+      const hy = target.y - Phaser.Math.Between(10,20);
+      const h = this.add.text(hx, hy, '💖', {font:'20px sans-serif'})
+        .setOrigin(0.5)
+        .setDepth(22);
+      addFloatingEmoji(h);
+      this.tweens.add({
+        targets:h,
+        y:hy-40,
+        alpha:0,
+        duration:dur(Phaser.Math.Between(800,1200)),
+        onComplete:()=>{ removeFloatingEmoji(h); h.destroy(); }
+      });
+    };
+
+    const addHeartEmitter = c => {
+      if(!c || !c.sprite) return;
+      if(!c.heartEmoji){
+        c.heartEmoji = this.add.text(c.sprite.x,c.sprite.y,'💖',{font:'28px sans-serif'})
+          .setOrigin(0.5)
+          .setDepth(21)
+          .setShadow(0,0,'#000',4);
+        c.sprite.heartEmoji = c.heartEmoji;
+      }else{
+        c.heartEmoji.setText('💖').setVisible(true);
+      }
+      const update = () => {
+        if(c.heartEmoji && c.heartEmoji.scene){
+          const hy = c.sprite.y + c.sprite.displayHeight*0.30;
+          c.heartEmoji
+            .setPosition(c.sprite.x, hy)
+            .setScale(scaleForY(c.sprite.y)*0.8)
+            .setDepth(c.sprite.depth+1);
+        }
+      };
+      const ht = this.time.addEvent({
+        delay:Phaser.Math.Between(800,1500),
+        loop:true,
+        callback:()=>emitHeart(c.sprite)
+      });
+      heartTimers.push(ht);
+      update();
+    };
     const positiveStates = [CustomerState.MENDING, CustomerState.GROWING,
       CustomerState.SPARKLING, CustomerState.ARROW];
 
@@ -4471,9 +4520,9 @@ function dogsBarkAtFalcon(){
       }
     };
 
-    GameState.queue.forEach(moveToGirl);
-    GameState.wanderers.forEach(moveToGirl);
-    if(GameState.activeCustomer) moveToGirl(GameState.activeCustomer);
+    GameState.queue.forEach(c=>{ moveToGirl(c); addHeartEmitter(c); });
+    GameState.wanderers.forEach(c=>{ moveToGirl(c); addHeartEmitter(c); });
+    if(GameState.activeCustomer){ moveToGirl(GameState.activeCustomer); addHeartEmitter(GameState.activeCustomer); }
 
     let idx=0;
     const spawnEv=extras.length?this.time.addEvent({
@@ -4493,17 +4542,81 @@ function dogsBarkAtFalcon(){
         const cust={sprite:s,spriteKey:key,heartEmoji:heart,memory:mem};
         GameState.wanderers.push(cust);
         moveToGirl(cust);
+        addHeartEmitter(cust);
         if(idx>=extras.length){
           spawnEv.remove(false);
-          this.time.delayedCall(dur(5000),()=>{ showLoveVictory.call(this); });
         }else{
           spawnEv.delay=Phaser.Math.Between(200,700);
         }
       }
     }):null;
+
     if(!spawnEv){
-      this.time.delayedCall(dur(5000),()=>{ showLoveVictory.call(this); });
+      // no extras to spawn but still show hearts
     }
+
+    // emit hearts from the cloud with increasing intensity
+    let cloudIntensity = 1;
+    const cloudEvent = this.time.addEvent({
+      delay:200,
+      loop:true,
+      callback:()=>{
+        if(cloudHeart && cloudHeart.scene){
+          for(let i=0;i<cloudIntensity;i++){
+            const hx = cloudHeart.x + Phaser.Math.Between(-20,20);
+            const hy = cloudHeart.y + Phaser.Math.Between(-10,10);
+            const h = this.add.text(hx,hy,'💖',{font:'20px sans-serif'})
+              .setOrigin(0.5)
+              .setDepth(23);
+            addFloatingEmoji(h);
+            this.tweens.add({targets:h,y:hy-60,alpha:0,duration:dur(Phaser.Math.Between(800,1200)),onComplete:()=>{ removeFloatingEmoji(h); h.destroy(); }});
+          }
+        }
+      }
+    });
+    const intensityEvent = this.time.addEvent({
+      delay:3000,
+      repeat:4,
+      callback:()=>{ cloudIntensity++; }
+    });
+
+    const endBuildup = ()=>{
+      heartTimers.forEach(t=>t.remove());
+      if(cloudEvent) cloudEvent.remove(false);
+      if(intensityEvent) intensityEvent.remove(false);
+      if(spawnEv) spawnEv.remove(false);
+
+      if(cloudHeart){
+        for(let i=0;i<20;i++){
+          const ang = Phaser.Math.FloatBetween(0,Math.PI*2);
+          const dist = Phaser.Math.Between(20,60);
+          const hx = cloudHeart.x + Math.cos(ang)*dist;
+          const hy = cloudHeart.y + Math.sin(ang)*dist;
+          const h = this.add.text(cloudHeart.x,cloudHeart.y,'💖',{font:'20px sans-serif'})
+            .setOrigin(0.5)
+            .setDepth(23);
+          addFloatingEmoji(h);
+          this.tweens.add({targets:h,x:hx,y:hy,alpha:0,duration:dur(800),onComplete:()=>{ removeFloatingEmoji(h); h.destroy(); }});
+        }
+        cloudHeart.destroy();
+        cloudHeart=null;
+      }
+
+      const overlay1 = this.add.rectangle(240,320,480,640,0xffc0cb).setDepth(24).setAlpha(0);
+      this.tweens.add({targets:overlay1,alpha:1,duration:dur(LOVE_FADE_DURATION/2)});
+      this.time.delayedCall(dur(LOVE_FADE_DURATION/2),()=>{
+        const overlay2 = this.add.rectangle(240,320,480,640,0xff0000).setDepth(25).setAlpha(0);
+        this.tweens.add({targets:overlay2,alpha:1,duration:dur(LOVE_FADE_DURATION/4)});
+        this.time.delayedCall(dur(LOVE_FADE_DURATION/4),()=>{
+          const overlay3 = this.add.rectangle(240,320,480,640,0x000000).setDepth(26).setAlpha(0);
+          this.tweens.add({targets:overlay3,alpha:1,duration:dur(LOVE_FADE_DURATION/4),onComplete:()=>{ overlay1.destroy(); overlay2.destroy(); }});
+        });
+      });
+
+      this.time.delayedCall(dur(LOVE_FADE_DURATION),()=>{ showLoveVictory.call(this); });
+    };
+
+    this.time.delayedCall(dur(HEART_BUILDUP_DURATION), endBuildup);
 
   }
 
@@ -4593,7 +4706,7 @@ function dogsBarkAtFalcon(){
       .setScale(2.4)
       .setDepth(20)
       .setAlpha(0);
-    this.tweens.add({targets:img,alpha:1,duration:dur(1200)});
+    this.tweens.add({targets:img,alpha:1,duration:dur(1200*END_FADE_MULT)});
     awardBadge(this, img.texture.key);
 
     const line1 = this.add.text(240,450,'YOU ARE THE MUSE',
@@ -4601,14 +4714,14 @@ function dogsBarkAtFalcon(){
       .setOrigin(0.5)
       .setDepth(21)
       .setAlpha(0);
-    this.tweens.add({targets:line1,alpha:1,duration:dur(1200),delay:dur(1700)});
+    this.tweens.add({targets:line1,alpha:1,duration:dur(1200*END_FADE_MULT),delay:dur(1700*END_FADE_MULT)});
 
     const line2 = this.add.text(240,490,'You are an inspiration!',
       {font:'20px sans-serif',fill:'#fff',align:'center',wordWrap:{width:440}})
       .setOrigin(0.5)
       .setDepth(21)
       .setAlpha(0);
-    this.tweens.add({targets:line2,alpha:1,duration:dur(600),delay:dur(2400)});
+    this.tweens.add({targets:line2,alpha:1,duration:dur(600*END_FADE_MULT),delay:dur(2400*END_FADE_MULT)});
 
     const btn = this.add.text(240,550,'Play Again?',{
       font:'20px sans-serif',
@@ -4618,8 +4731,8 @@ function dogsBarkAtFalcon(){
     }).setOrigin(0.5).setDepth(22).setAlpha(0)
       .setInteractive({ useHandCursor:true });
 
-    const showBtnDelay = dur(2400) + dur(600) + 1000;
-    this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
+    const showBtnDelay = dur(2400*END_FADE_MULT) + dur(600*END_FADE_MULT) + 1000;
+    this.tweens.add({targets:btn,alpha:1,duration:dur(600*END_FADE_MULT),delay:showBtnDelay});
     btn.on('pointerdown',()=>{
         btn.disableInteractive();
         btn.setVisible(false);

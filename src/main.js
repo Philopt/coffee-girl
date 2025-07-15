@@ -189,6 +189,14 @@ export function setupGame(){
     updateHighMoneyEffects(scene);
   }
 
+  function updateCloudPulse(){
+    if (!GameState.drumMeter) return;
+    const level = GameState.drumMeter();
+    const scale = 1 + level * 0.5;
+    if (cloudDollar) cloudDollar.setScale(cloudDollarBaseScale * scale);
+    if (cloudHeart) cloudHeart.setScale(cloudHeartBaseScale * scale);
+  }
+
   function updateCloudPositions(){
     if(cloudDollar){
       const ratio=Math.min(MAX_M,Math.max(0,GameState.money))/MAX_M;
@@ -674,6 +682,7 @@ export function setupGame(){
   let moneyText, moneyDollar, loveText, cloudHeart, cloudDollar, queueLevelText;
   let moneyStatusText, moneyStatusTween = null;
   let cloudHeartBaseX = 0, cloudDollarBaseX = 0;
+
   let cloudHeartBaseScale = 2.4;
   let dialogBg, dialogText, dialogCoins,
       dialogPriceLabel, dialogPriceValue, dialogPriceBox,
@@ -883,6 +892,7 @@ export function setupGame(){
     const dollarPipeline = cloudDollar.getPostPipeline(DesaturatePipeline);
     if (dollarPipeline) dollarPipeline.amount = 0.5;
 
+    cloudDollarBaseScale = cloudDollar.scaleX;
     cloudDollar.x = 160 - cloudDollar.displayWidth/2;
     cloudDollarBaseX = cloudDollar.x;
     const moneyStr = receipt(GameState.money);
@@ -912,6 +922,7 @@ export function setupGame(){
 
     const heartPipeline = cloudHeart.getPostPipeline(DesaturatePipeline);
     if (heartPipeline) heartPipeline.amount = 0.5;
+    cloudHeartBaseScale = cloudHeart.scaleX;
 
     cloudHeart.x = 320 + cloudHeart.displayWidth/2;
     cloudHeartBaseX = cloudHeart.x;
@@ -1241,6 +1252,7 @@ export function setupGame(){
       enforceCustomerScaling();
       updateDrinkEmojiPosition();
       updateSparrows(this, dt);
+      updateCloudPulse();
     });
 
 

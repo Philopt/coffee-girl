@@ -1735,9 +1735,10 @@ export function setupGame(){
       emo.setScale(1);
       emo.setVisible(true).setAlpha(1).setScale(24/28);
       if(emo.base && emo.base.setScale) emo.base.setScale(1);
+      if(emo.setDepth) emo.setDepth(12);
     }else{
       emo = this.add.text(rx, ry, face, {font:'24px sans-serif', fill:'#fff'})
-        .setOrigin(0.5).setDepth(11);
+        .setOrigin(0.5).setDepth(12);
     }
 
     this.time.delayedCall(dur(delay), () => {
@@ -2745,7 +2746,7 @@ export function setupGame(){
       } else {
         const face = showFace();
         h = this.add.text(sx, sy, face, {font:'24px sans-serif', fill:'#fff'})
-          .setOrigin(0.5).setDepth(10);
+          .setOrigin(0.5).setDepth(12);
       }
       this.time.delayedCall(dur(delay), () => {
         const tl = this.tweens.createTimeline({callbackScope:this});
@@ -2780,7 +2781,7 @@ export function setupGame(){
               if(!emojiObj || h!==emojiObj) h.destroy();
               if(idx < count-1){
                 const n = this.add.text(sx, sy, NEUTRAL_FACE_EMOJIS[0], {font:'24px sans-serif', fill:'#fff'})
-                  .setOrigin(0.5).setDepth(10);
+                  .setOrigin(0.5).setDepth(12);
                 this.time.delayedCall(dur(80), () => { n.destroy(); popOne(idx+1); }, [], this);
               } else {
                 popOne(idx+1);
@@ -2802,6 +2803,7 @@ export function setupGame(){
       if(idx >= count){ if(cb) cb(); return; }
       const bark = dogRefuseJumpBark.call(this, sprite, idx===0);
       if(!bark){ doOne(idx+1); return; }
+      if(bark.setDepth) bark.setDepth(12);
       this.tweens.add({
         targets: bark,
         y: '-=20',
@@ -2823,16 +2825,22 @@ export function setupGame(){
           targets: bark,
           x: destX(),
           y: destY(),
-          scale: 0,
-          alpha: 0,
           duration: dur(600),
           onComplete: () => {
-            bark.destroy();
-            GameState.love -= 1;
-            loveText.setText(String(GameState.love));
-            updateLevelDisplay();
-            animateStatChange(loveText, this, -1, true);
-            this.time.delayedCall(dur(80), () => doOne(idx+1), [], this);
+            this.tweens.add({
+              targets: bark,
+              scale: 0,
+              alpha: 0,
+              duration: dur(150),
+              onComplete: () => {
+                bark.destroy();
+                GameState.love -= 1;
+                loveText.setText(String(GameState.love));
+                updateLevelDisplay();
+                animateStatChange(loveText, this, -1, true);
+                this.time.delayedCall(dur(80), () => doOne(idx+1), [], this);
+              }
+            });
           }
         });
       }, [], this);

@@ -303,6 +303,41 @@ export function scheduleSparrowSpawn(scene){
   }, [], scene);
 }
 
+function fadeOutBird(scene, bird, onComplete){
+  if(!bird || !bird.sprite || bird.fading) return;
+  bird.fading = true;
+  if(bird.threatCheck && bird.threatCheck.remove){
+    bird.threatCheck.remove(false);
+    bird.threatCheck = null;
+  }
+  if(bird.timerEvent && bird.timerEvent.remove){
+    bird.timerEvent.remove(false);
+    bird.timerEvent = null;
+  }
+  const spr = bird.sprite;
+  if(scene.tweens){
+    scene.tweens.add({
+      targets: spr,
+      alpha: 0,
+      scale: 0.1,
+      duration: 800,
+      onComplete: () => {
+        if(bird.destroy) bird.destroy();
+        const birds = scene.gameState.sparrows;
+        const idx = birds.indexOf(bird);
+        if(idx !== -1) birds.splice(idx,1);
+        if(onComplete) onComplete();
+      }
+    });
+  }else{
+    if(bird.destroy) bird.destroy();
+    const birds = scene.gameState.sparrows;
+    const idx = birds.indexOf(bird);
+    if(idx !== -1) birds.splice(idx,1);
+    if(onComplete) onComplete();
+  }
+}
+
 export function updateSparrows(scene, delta){
   const dt = delta/1000;
   const birds = scene.gameState.sparrows;
@@ -312,17 +347,7 @@ export function updateSparrows(scene, delta){
     if(!bird.sprite) continue;
     const y = bird.sprite.y;
     if(y < -80 || y > scene.scale.height + 80){
-      if(bird.threatCheck && bird.threatCheck.remove){
-        bird.threatCheck.remove(false);
-      }
-      if(bird.timerEvent && bird.timerEvent.remove){
-        bird.timerEvent.remove(false);
-      }
-      if(bird.destroy){
-        bird.destroy();
-      }
-      const idx = birds.indexOf(bird);
-      if(idx !== -1) birds.splice(idx,1);
+      fadeOutBird(scene, bird);
     }
   }
   // encourage birds to avoid overlapping without pushing each other
@@ -389,19 +414,16 @@ export function scatterSparrows(scene){
       -40
     );
     bird.flyAway(target);
-    // Remove the bird shortly after it exits the screen
     const destroyDelay = Phaser.Math.Between(900, 1200);
     scene.time.delayedCall(destroyDelay, () => {
-      const i = birds.indexOf(bird);
-      if(i !== -1) birds.splice(i, 1);
-      if(bird.destroy) bird.destroy();
-      // Bring the bird back quickly but not all at once
-      const spawnDelay = Phaser.Math.Between(1000, 4000) * (idx + 1);
-      scene.time.delayedCall(spawnDelay, () => {
-        if(birds.length < maxSparrows(gs.love)) {
-          spawnSparrow(scene);
-        }
-      }, [], scene);
+      fadeOutBird(scene, bird, () => {
+        const spawnDelay = Phaser.Math.Between(1000, 4000) * (idx + 1);
+        scene.time.delayedCall(spawnDelay, () => {
+          if(birds.length < maxSparrows(gs.love)) {
+            spawnSparrow(scene);
+          }
+        }, [], scene);
+      });
     }, [], scene);
   });
 }

@@ -38,6 +38,7 @@ let phoneMask = null;
 let phoneMaskShape = null;
 let flyingBadges = [];
 let introFadeEvent = null;
+let introFadeTween = null;
 
 // Achievement keys used throughout the intro and main game
 const ALL_BADGES = [
@@ -283,6 +284,10 @@ function startOpeningAnimation(scene){
 function dropOpeningNumber(scene){
   scene = scene || this;
   if(!openingNumber || !openingNumber.scene) return;
+  if (introFadeTween) {
+    introFadeTween.stop();
+    introFadeTween = null;
+  }
   const fallTl = scene.tweens.createTimeline();
   fallTl.add({ targets: openingNumber, angle: 15, duration: 300, ease: 'Sine.easeOut' });
   fallTl.add({ targets: openingNumber, angle: -10, duration: 300, ease: 'Sine.easeInOut' });
@@ -884,6 +889,10 @@ function showStartScreen(scene, opts = {}){
     if (introDismissed) return;
     introDismissed = true;
     if (introFadeEvent) introFadeEvent.remove(false);
+    if (introFadeTween) {
+      introFadeTween.stop();
+      introFadeTween = null;
+    }
     const targets = [openingTitle, openingNumber, openingDog].filter(Boolean);
     if (targets.length) {
       scene.tweens.add({
@@ -920,20 +929,22 @@ function showStartScreen(scene, opts = {}){
       dismissIntro();
     } else {
       if (GameState.currentSong === 'lady_falcon_theme') {
-        scene.tweens.add({
+        introFadeTween = scene.tweens.add({
           targets: [openingTitle, openingNumber, openingDog].filter(Boolean),
           alpha: 0,
           duration: FALCON_INTRO_DURATION,
-          ease: 'Linear'
+          ease: 'Linear',
+          onComplete: () => { introFadeTween = null; }
         });
         introFadeEvent = scene.time.delayedCall(FALCON_INTRO_DURATION, dismissIntro, [], scene);
       } else {
-        scene.tweens.add({
+        introFadeTween = scene.tweens.add({
           targets: [openingTitle, openingNumber, openingDog].filter(Boolean),
           alpha: 0,
           delay: INTRO_FADE_DELAY,
           duration: INTRO_FADE_DURATION,
-          ease: 'Linear'
+          ease: 'Linear',
+          onComplete: () => { introFadeTween = null; }
         });
         introFadeEvent = scene.time.delayedCall(INTRO_FADE_DELAY + INTRO_FADE_DURATION, dismissIntro, [], scene);
       }

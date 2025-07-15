@@ -4529,12 +4529,7 @@ function dogsBarkAtFalcon(){
             .setDepth(c.sprite.depth+1);
         }
       };
-      const ht = this.time.addEvent({
-        delay:Phaser.Math.Between(800,1500),
-        loop:true,
-        callback:()=>emitHeart(c.sprite)
-      });
-      heartTimers.push(ht);
+      // Hearts will emit when the wanderer shuffles forward
       update();
     };
     const positiveStates = [CustomerState.MENDING, CustomerState.GROWING,
@@ -4569,10 +4564,11 @@ function dogsBarkAtFalcon(){
               if(!c.sprite || !c.sprite.scene){ shuffle.remove(false); return; }
               const off = Phaser.Math.Between(-6,6);
               this.tweens.add({targets:c.sprite,x:c.sprite.x+off,duration:dur(200),yoyo:true});
+              emitHeart(c.sprite);
             }
           });
           c.shuffleEvent = shuffle;
-          this.tweens.add({targets:c.sprite,x:targetX,y:targetY,duration:dur(13000)});
+          this.tweens.add({targets:c.sprite,x:targetX,y:targetY,duration:dur(26000)});
         }
       } else if(c && c.sprite){
         const dir=c.sprite.x<ORDER_X?-1:1;

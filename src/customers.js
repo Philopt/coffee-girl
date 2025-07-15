@@ -45,7 +45,9 @@ export const WANDER_BOTTOM = 580;
 // Maximum number of wandering customers that can appear at once. This value is
 // fixed rather than scaling with the player's love.
 export const MAX_WANDERERS = 5;
-export const WALK_OFF_BASE = 800;
+// Base duration (ms) for customers walking off screen.
+// Increased so leaving characters move more slowly during ending scenes.
+export const WALK_OFF_BASE = 1600;
 export const MAX_M = 200;
 export const MAX_L = 100;
 // Money threshold that triggers the fired ending

@@ -1121,11 +1121,12 @@ function showStartScreen(scene, opts = {}){
 
     // scheduleStartMessages() handles message timing after the intro fades
   }
-  GameState.startScreenSeen = true;
-  if(!delayExtras) {
-    revealExtras();
-  }
-  if (GameState.currentSong === 'lady_falcon_theme' && scene.tweens) {
+    const startScreenAlreadySeen = GameState.startScreenSeen;
+    GameState.startScreenSeen = true;
+    if(!delayExtras) {
+      revealExtras();
+    }
+    if (GameState.currentSong === 'lady_falcon_theme' && scene.tweens) {
     extraObjects.forEach(e => {
       if (!e.obj) return;
       e.obj.setAlpha(0);
@@ -1136,17 +1137,17 @@ function showStartScreen(scene, opts = {}){
         delay: START_SCREEN_DELAY,
         ease: 'Linear'
       });
-    });
-    if (GameState.startScreenSeen) {
-      scene.time.delayedCall(1000, () => {
-        scheduleStartMessages({
-          initialDelayMin: 0,
-          initialDelayMax: 0,
-          nextDelayMin: 1000,
-          nextDelayMax: 3000,
-        });
-      }, [], scene);
-    }
+      });
+      if (startScreenAlreadySeen) {
+        scene.time.delayedCall(1000, () => {
+          scheduleStartMessages({
+            initialDelayMin: 0,
+            initialDelayMax: 0,
+            nextDelayMin: 1000,
+            nextDelayMax: 3000,
+          });
+        }, [], scene);
+      }
   }
   startZone.on('pointerdown',()=>{
     // Disable further clicks as soon as the intro begins

@@ -141,7 +141,7 @@ export function setupGame(){
     scene.time.delayedCall(dur(moveDur)*2,()=>{
       updateCloudStatus(scene);
       updateRevoltMusicVolume();
-      if(!isLove && GameState.money>=FIRED_THRESHOLD && !GameState.firedSeqStarted){
+      if(!isLove && GameState.money>=FIRED_THRESHOLD && !GameState.falconDefeated && !GameState.firedSeqStarted){
         startFiredSequence.call(scene);
       } else if(isLove && GameState.love>=MAX_L && !GameState.loveSeqStarted){
         startLoveSequence.call(scene);
@@ -277,6 +277,31 @@ export function setupGame(){
     moneyDollar.setText(val.charAt(0));
     moneyText.setText(val.slice(1));
     updateCloudPositions();
+    updateMoneyStatus(this);
+  }
+
+  function updateMoneyStatus(scene){
+    if(!scene || !moneyStatusText) return;
+    if(!GameState.falconDefeated){
+      if(moneyStatusTween){ moneyStatusTween.stop(); moneyStatusTween = null; }
+      moneyStatusText.setVisible(false).setAlpha(0);
+      return;
+    }
+    let msg='';
+    if(GameState.money<0){ msg='NO OVERSIGHT'; }
+    else if(GameState.money>=200){ msg='NO END'; }
+    else if(GameState.money>100){ msg='NO LIMIT'; }
+    if(msg){
+      moneyStatusText.setText(msg)
+        .setPosition(moneyText.x, moneyText.y + 20)
+        .setVisible(true);
+      if(!moneyStatusTween){
+        moneyStatusTween = scene.tweens.add({targets:moneyStatusText,alpha:{from:0.5,to:1},duration:dur(800),yoyo:true,repeat:-1});
+      }
+    }else{
+      if(moneyStatusTween){ moneyStatusTween.stop(); moneyStatusTween=null; }
+      moneyStatusText.setVisible(false).setAlpha(0);
+    }
   }
 
   function countPrice(text, scene, from, to, baseLeft, baseY=15){
@@ -633,6 +658,7 @@ export function setupGame(){
 
 
   let moneyText, moneyDollar, loveText, cloudHeart, cloudDollar, queueLevelText;
+  let moneyStatusText, moneyStatusTween = null;
   let cloudHeartBaseX = 0, cloudDollarBaseX = 0;
   let dialogBg, dialogText, dialogCoins,
       dialogPriceLabel, dialogPriceValue, dialogPriceBox,
@@ -896,6 +922,11 @@ export function setupGame(){
       updateLevelDisplay();
       animateStatChange(loveText, this, 1, true);
     });
+
+    moneyStatusText = this.add.text(0,0,'',{font:'18px sans-serif',fill:'#fff'})
+      .setOrigin(0.5)
+      .setDepth(2)
+      .setAlpha(0);
 
     // gentle cloud animations handled by updateCloudStatus
     updateCloudStatus(this);
@@ -2059,7 +2090,7 @@ export function setupGame(){
           });
           return;
         }
-        if(GameState.money>=FIRED_THRESHOLD){
+        if(GameState.money>=FIRED_THRESHOLD && !GameState.falconDefeated){
           startFiredSequence.call(this);
           return;
         }
@@ -3832,8 +3863,31 @@ function dogsBarkAtFalcon(){
         if(d.chewEvent) d.chewEvent.remove(false);
         if(d.wiggleTween) d.wiggleTween.stop();
         d.attacking=false;
+        dropLatchedDog(d);
       });
       latchedDogs.length=0;
+      reinHumans.forEach(h=>{
+        const gY = Math.max(WANDER_TOP, girl.y + 50);
+        scene.tweens.add({targets:h,y:gY,angle:0,scale:scaleForY(gY),duration:dur(300),ease:'Sine.easeIn',onComplete:()=>{ensureOnGround(h);h.attacking=false;}});
+        if(h.heartEmoji) scene.tweens.add({targets:h.heartEmoji,y:gY,scale:scaleForY(gY)*0.8,duration:dur(300),ease:'Sine.easeIn'});
+      });
+      reinDogs.forEach(d=>{
+        scene.tweens.add({targets:d,y:DOG_MIN_Y,angle:0,duration:dur(300),ease:'Sine.easeIn',onUpdate:()=>{const s=scaleForY(d.y)*0.5;d.setScale(s*(d.dir||1),s);if(d.heartEmoji) d.heartEmoji.setPosition(d.x,d.y).setScale(scaleForY(d.y)*0.8).setDepth(d.depth);},onComplete:()=>{ensureOnGround(d);d.attacking=false;}});
+      });
+
+      featherTrail = scene.time.addEvent({
+        delay: dur(150),
+        loop: true,
+        callback: () => {
+          const fx = falcon.x + Phaser.Math.Between(-10,10);
+          const fy = falcon.y + Phaser.Math.Between(-10,10);
+          const f = scene.add.text(fx, fy, '🪶',{font:'16px sans-serif'})
+            .setOrigin(0.5)
+            .setDepth(22)
+            .setAngle(Phaser.Math.Between(0,360));
+          scene.tweens.add({targets:f,x:fx+Phaser.Math.Between(-20,20),y:fy-Phaser.Math.Between(20,40),alpha:0,angle:`+=${Phaser.Math.Between(-180,180)}`,duration:dur(1000),onComplete:()=>f.destroy()});
+        }
+      });
       falcon.setTintFill(0xff0000);
       scene.tweens.add({
         targets:falcon,
@@ -3857,6 +3911,7 @@ function dogsBarkAtFalcon(){
           scene.tweens.add({targets:GameState.victoryOverlay,alpha:1,duration:dur(600)});
           if(falcon && falcon.anims) falcon.anims.stop();
           scene.time.delayedCall(2000,()=>{
+            if(featherTrail){ featherTrail.remove(false); featherTrail=null; }
             setSpeedMultiplier(1);
             endAttack();
           });
@@ -4812,6 +4867,7 @@ function dogsBarkAtFalcon(){
     endOverlay = this.add.rectangle(240,320,480,640,0x000000).setDepth(19);
 
     GameState.falconDefeated = true;
+    updateMoneyStatus(scene);
 
     const overlay = GameState.victoryOverlay;
     if(overlay){

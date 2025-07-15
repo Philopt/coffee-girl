@@ -6,7 +6,8 @@ import { debugLog, DEBUG } from './debug.js';
 import { dur } from './ui.js';
 import { spawnSparrow, scatterSparrows } from './sparrow.js';
 import { createGrayscaleTexture, createGlowTexture } from './ui/helpers.js';
-import { playSong, stopSong, setDrumVolume } from './music.js';
+import { playSong, playBadgeSong, stopSong, setDrumVolume } from './music.js';
+import { showVolumeSlider, hideVolumeSlider } from './ui/volumeSlider.js';
 
 // Fade out the title before the music loop restarts
 const FALCON_INTRO_DURATION = 15000;
@@ -66,6 +67,7 @@ function hideStartScreen(){
   if(classicButton) classicButton.setVisible(false);
   if(resetButton) resetButton.setVisible(false);
   flyingBadges.forEach(b => b.setVisible(false));
+  hideVolumeSlider();
 }
 
 function updateSongIcons(scene){
@@ -76,7 +78,18 @@ function updateSongIcons(scene){
     const img = container.list[0];
     const grayKey = `${key}_gray`;
     if (!scene.textures.exists(grayKey)) createGrayscaleTexture(scene, key, grayKey);
-    img.setTexture(GameState.currentSong === key ? key : grayKey);
+    img.setTexture(GameState.currentBadgeSong === key ? key : grayKey);
+    let tag = container.soundTag;
+    if(GameState.currentBadgeSong === key){
+      if(!tag){
+        tag = scene.add.text(0,0,'\uD83C\uDFB5',{font:'16px sans-serif',fill:'#fff'}).setOrigin(0.5);
+        container.add(tag);
+        container.soundTag = tag;
+      }
+      tag.setVisible(true);
+    }else if(tag){
+      tag.setVisible(false);
+    }
   });
 }
 
@@ -519,13 +532,17 @@ function showStartScreen(scene, opts = {}){
         resetButton.setAlpha(0).setScale(0.3).setAngle(90);
       }
 
-      const volLabel = scene.sound.volume > 0 ? 'Mute' : 'Unmute';
-      const volButton = makeButton(cupSlot.x, volLabel, () => {
-        GameState.volume = GameState.volume > 0 ? 0 : 1;
-        scene.sound.volume = GameState.volume;
-        if(typeof saveVolume==='function') saveVolume();
-        const txt = volButton.list[1];
-        if(txt && txt.setText) txt.setText(GameState.volume>0 ? 'Mute' : 'Unmute');
+      const volButton = makeButton(cupSlot.x, 'Volume', () => {
+        const showing = typeof document!=='undefined' && document.getElementById('volume-slider') && document.getElementById('volume-slider').style.display==='block';
+        if(showing){
+          hideVolumeSlider();
+        }else{
+          showVolumeSlider(GameState.volume, val=>{
+            GameState.volume=val;
+            scene.sound.volume=val;
+            if(typeof saveVolume==='function') saveVolume();
+          });
+        }
       }, 0x333333);
       volButton.setAlpha(0).setScale(0.3).setAngle(0);
 
@@ -624,7 +641,7 @@ function showStartScreen(scene, opts = {}){
     container.setSize(slotSize, slotSize);
     container.setInteractive({ useHandCursor: true });
     container.on('pointerdown', () => {
-      playSong(scene, key);
+      playBadgeSong(scene, key);
       updateSongIcons(scene);
     });
     if(GameState.badgeCounts[key] > 1){

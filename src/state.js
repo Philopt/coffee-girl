@@ -42,6 +42,7 @@ export const GameState = {
   ,firedSeqStarted: false
   ,loveSeqStarted: false
   ,currentSong: null
+  ,currentBadgeSong: null
   ,songInstance: null
   ,musicLoops: []
   ,drumLoop: null

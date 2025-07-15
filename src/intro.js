@@ -21,6 +21,9 @@ const START_SCREEN_DELAY = 600;
 // Fade duration when the opening assets disappear
 const DROP_FADE_DURATION = 200;
 
+// Slight vertical offset when positioning the dog above the titlecard
+const DOG_OFFSET_Y = -10;
+
 const OPENING_DROP_DELAY = 3000;
 
 

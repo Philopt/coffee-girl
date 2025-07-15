@@ -79,6 +79,23 @@ export function playSong(scene, key, onLoopStart = null) {
       }
     });
     intro.play();
+  } else if (key === 'muse_theme') {
+    intro = scene.sound.add('muse_intro');
+    const drums = scene.sound.add('muse_drum', { loop: true, volume: 0.6 });
+    const synth = scene.sound.add('muse_synth', { loop: true, volume: 0.6 });
+    const vocals = scene.sound.add('muse_vocals', { loop: true, volume: 0.6 });
+    GameState.songInstance = intro;
+    GameState.musicLoops = [drums, synth, vocals];
+    GameState.drumLoop = drums;
+    intro.once('complete', () => {
+      if (GameState.songInstance === intro) {
+        GameState.songInstance = null;
+        drums.play();
+        synth.play();
+        vocals.play();
+      }
+    });
+    intro.play();
   } else {
     GameState.songInstance = null;
     if (typeof onLoopStart === 'function') onLoopStart();
@@ -121,5 +138,26 @@ export function updateRevoltMusicVolume() {
     const lFac = Math.min(1, Math.max(0, (love - 10) / 10));
     const sVol = mFac * lFac * 0.6;
     synth.setVolume(sVol);
+  }
+}
+
+export function updateMuseMusicVolume() {
+  if (GameState.currentSong !== 'muse_theme') return;
+  const [drums, synth, vocals] = GameState.musicLoops || [];
+  const money = GameState.money || 0;
+  const love = GameState.love || 0;
+  if (drums && drums.setVolume) {
+    const dVol = Math.min(1, Math.max(0, money / 10)) * 0.6;
+    drums.setVolume(dVol);
+  }
+  if (synth && synth.setVolume) {
+    const sVol = Math.min(1, Math.max(0, love / 3)) * 0.6;
+    synth.setVolume(sVol);
+  }
+  if (vocals && vocals.setVolume) {
+    const mFac = Math.min(1, Math.max(0, (money - 10) / 10));
+    const lFac = Math.min(1, Math.max(0, (love - 10) / 10));
+    const vVol = mFac * lFac * 0.6;
+    vocals.setVolume(vVol);
   }
 }

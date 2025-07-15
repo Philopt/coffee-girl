@@ -14,7 +14,7 @@ import { flashBorder, flashFill, blinkButton, applyRandomSkew, setDepthFromBotto
 
 import { keys, requiredAssets, preload as preloadAssets, receipt, emojiFor } from './assets.js';
 import { playOpening, showStartScreen, playIntro } from './intro.js';
-import { playSong, updateRevoltMusicVolume, fadeDrums } from './music.js';
+import { playSong, updateRevoltMusicVolume, updateMuseMusicVolume, fadeDrums } from './music.js';
 import DesaturatePipeline from './desaturatePipeline.js';
 
 export let Assets, Scene, Customers, config;
@@ -141,6 +141,7 @@ export function setupGame(){
     scene.time.delayedCall(dur(moveDur)*2,()=>{
       updateCloudStatus(scene);
       updateRevoltMusicVolume();
+      updateMuseMusicVolume();
       if(!isLove && GameState.money>=FIRED_THRESHOLD && !GameState.falconDefeated && !GameState.firedSeqStarted){
         startFiredSequence.call(scene);
       } else if(isLove && GameState.love>=MAX_L && !GameState.loveSeqStarted){
@@ -3928,6 +3929,7 @@ function dogsBarkAtFalcon(){
     scene.time.removeAllEvents();
     playSong(scene, 'customer_revolt');
     updateRevoltMusicVolume();
+    updateMuseMusicVolume();
     cleanupFloatingEmojis();
     cleanupBarks();
     cleanupBursts();
@@ -4497,6 +4499,8 @@ function dogsBarkAtFalcon(){
 
   function showLoveVictory(){
     const scene = this;
+    playSong(scene, 'muse_theme');
+    updateMuseMusicVolume();
     scene.tweens.killAll();
     scene.time.removeAllEvents();
     cleanupFloatingEmojis();

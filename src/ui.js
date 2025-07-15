@@ -23,10 +23,8 @@ export function dur(v) {
 }
 
 export function scaleForY(y) {
-  const minY = ORDER_Y;
-  const maxY = WANDER_BOTTOM;
-  const t = Phaser.Math.Clamp((y - minY) / (maxY - minY), 0, 1);
-  return 0.7 + t * 0.4;
+  // Perspective scaling disabled; always return a scale factor of 1
+  return 1;
 }
 
 export function articleFor(name) {

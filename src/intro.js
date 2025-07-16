@@ -5,7 +5,7 @@ import { GameState, resetAchievements, saveVolume } from './state.js';
 import { debugLog, DEBUG } from './debug.js';
 import { dur } from './ui.js';
 import { spawnSparrow, scatterSparrows } from './sparrow.js';
-import { createGrayscaleTexture, createGlowTexture } from './ui/helpers.js';
+import { createGrayscaleTexture, createGlowTexture, pulseText } from './ui/helpers.js';
 import { playSong, playBadgeSong, stopSong, setDrumVolume } from './music.js';
 import { showVolumeSlider, hideVolumeSlider } from './ui/volumeSlider.js';
 
@@ -986,6 +986,14 @@ function showStartScreen(scene, opts = {}){
 
   const MAX_MSGS = 3;
 
+  const nicknames = ['girl','bro','dude','gang','fam','bestie','bby','pal'];
+  if(!GameState.userName && !GameState.nickname){
+    GameState.nickname = Phaser.Utils.Array.GetRandom(nicknames);
+  }
+  const currentName = () => GameState.userName || GameState.nickname || '';
+  const nameComma = () => currentName() ? ', ' + currentName() : '';
+  const nameBang = () => currentName() ? currentName() + '! ' : '';
+
   const repositionMessages=()=>{
     let y = -phoneH/2 + 20;
     startMsgBubbles.forEach(b=>{
@@ -1029,6 +1037,16 @@ function showStartScreen(scene, opts = {}){
       startMsgBubbles.push(bubble);
       startMsgY += bh + 10;
       scene.tweens.add({targets:bubble,alpha:1,duration:300,ease:'Cubic.easeOut'});
+      const name = currentName();
+      if(name && text.includes(name)){
+        const meas = scene.add.text(0,0,text.split(name)[0],{font:'20px sans-serif',wordWrap:{width:wrapWidth}}).setOrigin(0,0.5).setVisible(false);
+        const off = meas.width;
+        meas.destroy();
+        const pulse = scene.add.text(-bw/2 + pad + off,0,name,{font:'20px sans-serif',fill:textColor})
+          .setOrigin(0,0.5);
+        bubble.add(pulse);
+        pulseText(pulse, GameState.loveLevel);
+      }
       repositionMessages();
       return bubble;
     };
@@ -1142,48 +1160,45 @@ function showStartScreen(scene, opts = {}){
 
 
 
-    const nameComma = GameState.userName ? ', ' + GameState.userName : '';
-    const nameBang = GameState.userName ? GameState.userName + '! ' : '';
-
     const defaultMsgs=[
-      [`u coming in${nameComma}? 🤔`, `where u at${nameComma}??`, 'mornin ☀️'],
-      ['better not still be in bed 😜', 'yo coffee girl ☕', `stop ghostin me${nameComma}`],
+      [`u coming in${nameComma()}? 🤔`, `where u at${nameComma()}??`, 'mornin ☀️'],
+      ['better not still be in bed 😜', 'yo coffee girl ☕', `stop ghostin me${nameComma()}`],
       ['late night? 🥱💃', 'phone dead again? 🔋', 'omg wait till u hear about this guy 😏'],
       ['u good?', 'hope everythin\'s chill', '…sry 😬']
 
     ];
 
     const falconMsgs=[
-      ['falc-a-doodle-doo?', `${nameBang}wtf?!?`, '☕🩸🦅', 'skreeee 🦅', '**poke**'],
+      ['falc-a-doodle-doo?', `${nameBang()}wtf?!?`, '☕🩸🦅', 'skreeee 🦅', '**poke**'],
       ['what happened yesterday?', `angel saw falcons in the park last night`, 'elanor said the falcon got u!!', '🪶💥🪶 🪶💥🪶'],
       ['was that THE lady falcon?', 'is Lady Falcon... royalty?', "don't lose ALL the money", "...she's from another dimension"],
-      ['better keep an eye on the register', 'stop giving so much away, bruh', `at least have enough money${nameComma}...`, 'balance, girl', "you're not a sparrow"]
+      ['better keep an eye on the register', 'stop giving so much away, bruh', `at least have enough money${nameComma()}...`, 'balance, girl', "you're not a sparrow"]
     ];
 
     const victoryMsgs=[
-      [`run it ur way${nameComma} 🚚✨`],
-      [`give every drink away if u want${nameComma} ☕❤️`],
+      [`run it ur way${nameComma()} 🚚✨`],
+      [`give every drink away if u want${nameComma()} ☕❤️`],
       ['cash can drop negative, no worries 💸🤙']
     ];
 
     const revoltMsgs=[
-      [`they got the truck back${nameComma}`, 'ppl been whisperin bout a revolt?', 'heard the crowd went wild', 'yeah...'],
-      ['dude u pissed off the park', `everyone was mad yesterday${nameComma}`, 'maybe chill a bit', 'word is u bailed on them'],
-      ['try showin some love', 'remember when service mattered?', `hand out a few smiles${nameComma}`, "don't treat folks like dirt"],
-      ['keep em happy or they\'ll riot again', 'learn and be chill next shift', 'better vibes or bust', `make ppl happy${nameComma} or they won't be happy...`]
+      [`they got the truck back${nameComma()}`, 'ppl been whisperin bout a revolt?', 'heard the crowd went wild', 'yeah...'],
+      ['dude u pissed off the park', `everyone was mad yesterday${nameComma()}`, 'maybe chill a bit', 'word is u bailed on them'],
+      ['try showin some love', 'remember when service mattered?', `hand out a few smiles${nameComma()}`, "don't treat folks like dirt"],
+      ['keep em happy or they\'ll riot again', 'learn and be chill next shift', 'better vibes or bust', `make ppl happy${nameComma()} or they won't be happy...`]
     ];
 
     const firedMsgs=[
-      ['u really handed the corp all ur $$', 'overlord vibes much?', `did they at least say thx${nameComma}?`, 'you got fired for making money?'],
-      ['keep some of that cash for urself', 'stop feeding the corporate machine', `seriously did u ask for ur job back${nameComma}?`, "can't just give away all ur worth"],
-      ['capitalism 101: hoard ur coins', 'no more freebies 4 the boss', 'share the love?', `so, did they rehire u${nameComma}?`],
-      ['remember ur value!', "don't let them take it all", `get that job back or bounce${nameComma}`, "you're entitled to that job!"]
+      ['u really handed the corp all ur $$', 'overlord vibes much?', `did they at least say thx${nameComma()}?`, 'you got fired for making money?'],
+      ['keep some of that cash for urself', 'stop feeding the corporate machine', `seriously did u ask for ur job back${nameComma()}?`, "can't just give away all ur worth"],
+      ['capitalism 101: hoard ur coins', 'no more freebies 4 the boss', 'share the love?', `so, did they rehire u${nameComma()}?`],
+      ['remember ur value!', "don't let them take it all", `get that job back or bounce${nameComma()}`, "you're entitled to that job!"]
     ];
 
     const loveMsgs=[
-      [`everyone stan coffee girl${nameComma} ❤️`, ' 💑💑💑', 'literally hearts 💕'],
-      ['park gossip is all love songs', `u got the whole crowd cheering${nameComma}`, 'love > money fr 😍'],
-      ['coffee tastes sweeter when ur in love ☕💖', `they keep asking about you${nameComma} 💖`, 'ur trending']
+      [`everyone stan coffee girl${nameComma()} ❤️`, ' 💑💑💑', 'literally hearts 💕'],
+      ['park gossip is all love songs', `u got the whole crowd cheering${nameComma()}`, 'love > money fr 😍'],
+      ['coffee tastes sweeter when ur in love ☕💖', `they keep asking about you${nameComma()} 💖`, 'ur trending']
 
     ];
 

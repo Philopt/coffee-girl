@@ -54,6 +54,7 @@ export const GameState = {
 
   ,volume: 1
   ,userName: null
+  ,nickname: null
 
 };
 

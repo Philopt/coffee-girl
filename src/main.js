@@ -259,8 +259,8 @@ export function setupGame(){
 
   function cloudExplosion(scene, cloud, count=8){
     if(!scene || !cloud) return;
-    const cx = cloud.x + cloud.displayWidth/2;
-    const cy = cloud.y + cloud.displayHeight/2;
+    const cx = cloud.x + cloud.displayWidth * (0.5 - (cloud.originX || 0));
+    const cy = cloud.y + cloud.displayHeight * (0.5 - (cloud.originY || 0));
     for(let i=0;i<count;i++){
       const puff = createCloudPuff(scene, cx, cy);
       const ang = Phaser.Math.FloatBetween(0, Math.PI*2);

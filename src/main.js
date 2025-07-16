@@ -262,7 +262,9 @@ export function setupGame(){
     const cx = cloud.x + cloud.displayWidth * (0.5 - (cloud.originX || 0));
     const cy = cloud.y + cloud.displayHeight * (0.5 - (cloud.originY || 0));
     for(let i=0;i<count;i++){
-      const puff = createCloudPuff(scene, cx, cy);
+      const startX = cx + Phaser.Math.Between(-6,6);
+      const startY = cy + Phaser.Math.Between(-6,6);
+      const puff = createCloudPuff(scene, startX, startY);
       const ang = Phaser.Math.FloatBetween(0, Math.PI*2);
       const dist = Phaser.Math.Between(15, 40);
       scene.tweens.add({
@@ -1399,7 +1401,12 @@ export function setupGame(){
 
     let wantLine;
     if(c.isDog){
-      const sounds=['woof woof!','bark bark!','arf arf!','ruff ruff!','awoo!','🐶🐶'];
+      const n=currentName();
+      const sounds=[
+        'woof woof!','bark bark!','arf arf!','ruff ruff!','awoo!','🐶🐶',
+        n?`sniff sniff, ${n}?`:'sniff sniff',
+        'wag wag!'
+      ];
       const sound=Phaser.Utils.Array.GetRandom(sounds);
       wantLine=sound;
     } else {
@@ -4953,9 +4960,8 @@ function dogsBarkAtFalcon(){
     const titleOver = this.add.text(240,300,'OVER',{
       font:'100px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
     }).setOrigin(0.5).setDepth(21).setAlpha(0);
-    this.tweens.add({targets:titleGame,alpha:1,duration:dur(1800)});
-    this.tweens.add({targets:titleOver,alpha:1,duration:dur(1800),delay:dur(1800)});
-    const fadeOutDelay = dur(3600);
+    this.tweens.add({targets:[titleGame,titleOver],alpha:1,duration:dur(1800)});
+    const fadeOutDelay = dur(1800);
     this.tweens.add({targets:[titleGame,titleOver],alpha:0,duration:dur(600),delay:fadeOutDelay});
 
     const img = this.add.image(240,250,'fired_end')
@@ -5042,9 +5048,8 @@ function dogsBarkAtFalcon(){
     const titleOver = this.add.text(240,300,'OVER',{
       font:'100px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
     }).setOrigin(0.5).setDepth(21).setAlpha(0);
-    this.tweens.add({targets:titleGame,alpha:1,duration:dur(1800)});
-    this.tweens.add({targets:titleOver,alpha:1,duration:dur(1800),delay:dur(1800)});
-    const fadeOutDelay = dur(3600);
+    this.tweens.add({targets:[titleGame,titleOver],alpha:1,duration:dur(1800)});
+    const fadeOutDelay = dur(1800);
     this.tweens.add({targets:[titleGame,titleOver],alpha:0,duration:dur(600),delay:fadeOutDelay});
 
     const imgFadeDur = dur(2400);
@@ -5075,37 +5080,18 @@ function dogsBarkAtFalcon(){
     const maxTextWidth = wrapWidth;
     if(line1.width > maxTextWidth) line1.setScale(maxTextWidth / line1.width);
     if(line2.width > maxTextWidth) line2.setScale(maxTextWidth / line2.width);
-    const cup = this.add.image(0,0,'coffeecup2').setScale(1.6);
-    const bubble = this.add.graphics();
-    const bubbleText = this.add.text(0,0,'Try Again',{font:'20px sans-serif',fill:'#000'}).setOrigin(0.5);
-    const pad = 10;
-    const bw = bubbleText.width + pad*2;
-    const bh = bubbleText.height + pad*2;
-    const bubbleX = cup.displayWidth/2 + bw/2 + 8;
-    bubble.fillStyle(0xffffff,1);
-    bubble.lineStyle(2,0x000000,1);
-    bubble.fillRoundedRect(-bw/2 + bubbleX,-bh/2,bw,bh,16);
-    bubble.strokeRoundedRect(-bw/2 + bubbleX,-bh/2,bw,bh,16);
-    bubble.fillTriangle(-bw/2 + bubbleX,-5,-bw/2 + bubbleX,5,-bw/2 + bubbleX-10,0);
-    bubble.beginPath();
-    bubble.moveTo(-bw/2 + bubbleX,-5);
-    bubble.lineTo(-bw/2 + bubbleX-10,0);
-    bubble.lineTo(-bw/2 + bubbleX,5);
-    bubble.strokePath();
-    bubbleText.setPosition(bubbleX,0);
-
-    const btn = this.add.container(240,550,[cup,bubble,bubbleText])
-      .setDepth(22)
-      .setAlpha(0);
-    btn.setSize(cup.displayWidth + bw + 10, Math.max(cup.displayHeight,bh) + 10);
-    const btnZone = this.add.zone(0,0,btn.width,btn.height).setOrigin(0.5);
-    btnZone.setInteractive({ useHandCursor:true });
-    btn.add(btnZone);
+    const btn = this.add.text(240,550,'Try Again',{
+      font:'20px sans-serif',
+      fill:'#000',
+      backgroundColor:'#ffffff',
+      padding:{x:14,y:8}
+    }).setOrigin(0.5).setDepth(22).setAlpha(0);
+    btn.setInteractive({ useHandCursor:true });
 
     const showBtnDelay = line2Delay + dur(600) + 1000;
     this.tweens.add({targets:btn,alpha:1,duration:dur(600),delay:showBtnDelay});
-    btnZone.on('pointerdown',()=>{
-        btnZone.disableInteractive();
+    btn.on('pointerdown',()=>{
+        btn.disableInteractive();
         btn.setVisible(false);
         createGlowTexture(this,0xffffff,'screen_flash',256);
         const overlayG = this.add.image(btn.x,btn.y,'screen_flash').setDepth(23);
@@ -5270,9 +5256,8 @@ function dogsBarkAtFalcon(){
     const titleOver = this.add.text(240,300,'OVER',{
       font:'100px sans-serif',fill:'#f00',stroke:'#000',strokeThickness:8
     }).setOrigin(0.5).setDepth(21).setAlpha(0);
-    this.tweens.add({targets:titleGame,alpha:1,duration:dur(1800)});
-    this.tweens.add({targets:titleOver,alpha:1,duration:dur(1800),delay:dur(1800)});
-    const fadeOutDelay = dur(3600);
+    this.tweens.add({targets:[titleGame,titleOver],alpha:1,duration:dur(1800)});
+    const fadeOutDelay = dur(1800);
     this.tweens.add({targets:[titleGame,titleOver],alpha:0,duration:dur(600),delay:fadeOutDelay});
 
     const img = this.add.image(240,250,'revolt_end')
@@ -5392,7 +5377,8 @@ function dogsBarkAtFalcon(){
     loveText.setText(String(GameState.love));
     moneyText.setColor('#fff');
     loveText.setColor('#fff');
-    if(cloudDollar){ cloudDollar.setVisible(true); }
+    if(cloudDollar){ cloudDollar.setVisible(true).setAlpha(1); }
+    if(cloudHeart){ cloudHeart.setVisible(true).setAlpha(1); }
     if(moneyText){ moneyText.setVisible(true); }
     if(moneyDollar){ moneyDollar.setVisible(true); }
     stopHighMoneyEffects();

@@ -414,17 +414,15 @@ export function scatterSparrows(scene){
       -40
     );
     bird.flyAway(target);
-    const destroyDelay = Phaser.Math.Between(900, 1200);
-    scene.time.delayedCall(destroyDelay, () => {
-      fadeOutBird(scene, bird, () => {
-        const spawnDelay = Phaser.Math.Between(1000, 4000) * (idx + 1);
-        scene.time.delayedCall(spawnDelay, () => {
-          if(birds.length < maxSparrows(gs.love)) {
-            spawnSparrow(scene);
-          }
-        }, [], scene);
-      });
-    }, [], scene);
+    fadeOutBird(scene, bird, () => {
+      const baseDelay = Phaser.Math.Between(2000, 4000);
+      const spawnDelay = baseDelay + idx * Phaser.Math.Between(1000,2000);
+      scene.time.delayedCall(spawnDelay, () => {
+        if(birds.length < maxSparrows(gs.love)) {
+          spawnSparrow(scene);
+        }
+      }, [], scene);
+    });
   });
 }
 

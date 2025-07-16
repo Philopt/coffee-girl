@@ -1,5 +1,5 @@
 import { debugLog, DEBUG } from './debug.js';
-import { dur, scaleForY, articleFor, flashMoney, BUTTON_Y, DIALOG_Y, setSpeedMultiplier } from "./ui.js";
+import { dur, scaleForY, articleFor, flashMoney, BUTTON_Y, DIALOG_Y, setSpeedMultiplier, tweenSpeedMultiplier } from "./ui.js";
 import { ORDER_X, ORDER_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_L, FIRED_THRESHOLD, queueLimit, RESPAWN_COOLDOWN } from "./customers.js";
 import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer, startDogWaitTimer } from './entities/customerQueue.js';
 import { baseConfig } from "./scene.js";
@@ -3902,7 +3902,7 @@ function dogsBarkAtFalcon(){
         if(falconDeathStarted) return;
         falconDeathStarted = true;
         if(!falcon) return;
-      setSpeedMultiplier(0.25);
+      tweenSpeedMultiplier(scene, 0.25, 800);
       scene.tweens.killAll();
       scene.time.removeAllEvents();
       reinHumanEvents.forEach(ev=>{ if(ev) ev.remove(false); });
@@ -3963,7 +3963,7 @@ function dogsBarkAtFalcon(){
           if(falcon && falcon.anims) falcon.anims.stop();
           scene.time.delayedCall(2000,()=>{
             if(featherTrail){ featherTrail.remove(false); featherTrail=null; }
-            setSpeedMultiplier(1);
+            tweenSpeedMultiplier(scene, 1, 600);
             endAttack();
           });
         }

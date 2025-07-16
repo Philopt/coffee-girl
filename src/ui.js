@@ -22,6 +22,22 @@ export function dur(v) {
   return v / speedMultiplier;
 }
 
+export function tweenSpeedMultiplier(scene, to = 1, duration = 600) {
+  if (!scene || !scene.tweens) {
+    setSpeedMultiplier(to);
+    return;
+  }
+  const obj = { val: speedMultiplier };
+  scene.tweens.add({
+    targets: obj,
+    val: to,
+    duration,
+    onUpdate: () => {
+      speedMultiplier = obj.val;
+    }
+  });
+}
+
 export function scaleForY(y) {
   // Perspective scaling disabled; always return a scale factor of 1
   return 1;

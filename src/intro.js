@@ -1042,10 +1042,11 @@ function showStartScreen(scene, opts = {}){
         const meas = scene.add.text(0,0,text.split(name)[0],{font:'20px sans-serif',wordWrap:{width:wrapWidth}}).setOrigin(0,0.5).setVisible(false);
         const off = meas.width;
         meas.destroy();
-        const pulse = scene.add.text(-bw/2 + pad + off,0,name,{font:'20px sans-serif',fill:textColor})
-          .setOrigin(0,0.5);
+        const pulse = scene.add.text(0,0,name,{font:'20px sans-serif',fill:textColor})
+          .setOrigin(0.5,0.5);
+        pulse.x = -bw/2 + pad + off + pulse.width/2;
         bubble.add(pulse);
-        pulseText(pulse, GameState.loveLevel);
+        if(GameState.loveLevel > 1) pulseText(pulse, GameState.loveLevel);
       }
       repositionMessages();
       return bubble;

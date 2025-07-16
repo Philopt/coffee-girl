@@ -158,4 +158,25 @@ export function createHpBar(scene, width=40, height=6, maxHp=10){
   return container;
 }
 
-export { blinkButton as default };
+export function heartbeatDuration(level=1){
+  if(level>=4) return 400;
+  if(level>=3) return 500;
+  if(level>=2) return 700;
+  return 900;
+}
+
+export function pulseText(textObj, level=1){
+  if(!textObj || !textObj.scene || !textObj.scene.tweens) return;
+  const scene=textObj.scene;
+  const dur=heartbeatDuration(level);
+  scene.tweens.add({
+    targets:textObj,
+    scale:1.1,
+    duration:dur/2,
+    yoyo:true,
+    repeat:-1,
+    ease:'Sine.easeInOut'
+  });
+}
+
+export { blinkButton as default, heartbeatDuration, pulseText };

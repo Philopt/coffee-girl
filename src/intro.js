@@ -536,7 +536,7 @@ function showStartScreen(scene, opts = {}){
         targets: miniGameCup,
         x: cupSlot.x,
         y: cupSlot.y,
-        angle: 0,
+        angle: -900, // continue spinning counter-clockwise
         duration: 700,
         ease: 'Bounce.easeOut',
         shortestPath: false,

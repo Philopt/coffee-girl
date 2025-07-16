@@ -65,6 +65,9 @@ const NEUTRAL_FACE_EMOJIS = ['🙂'];
 
 const UPSET_EMOJIS = ['😠','🤬','😡','😤','😭','😢','😱','😖','😫'];
 
+// Returns the player's chosen name if available, falling back to a nickname
+const currentName = () => GameState.userName || GameState.nickname || '';
+
 function nextMood(state){
   switch(state){
     case CustomerState.BROKEN: return CustomerState.MENDING;
@@ -1405,7 +1408,7 @@ export function setupGame(){
         ? `I want ${articleFor(c.orders[0].req)} ${c.orders[0].req}`
         : `I want ${itemStr}`;
 
-      const name = GameState.userName;
+      const name = currentName();
       const state = (c.memory && c.memory.state) || CustomerState.NORMAL;
       let compliment='';
       if(name){
@@ -1439,7 +1442,7 @@ export function setupGame(){
     let coinLine='';
     if(!c.isDog){
       if (!canAfford) {
-        const name = GameState.userName;
+        const name = currentName();
         const nComma = name ? `, ${name}` : '';
         const options = [
           `I forgot my wallet${nComma}`,
@@ -5337,6 +5340,8 @@ function dogsBarkAtFalcon(){
       GameState.dogBarkEvent.remove(false);
       GameState.dogBarkEvent = null;
     }
+    GameState.userName = null;
+    GameState.nickname = null;
     GameState.falconActive = false;
     clearDialog.call(scene);
     dialogDrinkEmoji.attachedTo = null;

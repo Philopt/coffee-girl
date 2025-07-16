@@ -1,5 +1,6 @@
 import { GameState } from '../state.js';
 import { dur, scaleForY } from '../ui.js';
+import { CUSTOMER_SCALE } from '../constants.js';
 import { sendDogOffscreen } from './dog.js';
 import { ORDER_X } from '../customers.js';
 
@@ -74,7 +75,7 @@ export function startWander(scene, c, targetX, exitAfter){
       onUpdate:(tw,t)=>{
         const p=tw.progress;
         t.y=startY+Math.sin(p*Math.PI*freq)*amp;
-        t.setScale(scaleForY(t.y));
+        t.setScale(scaleForY(t.y) * CUSTOMER_SCALE);
       },
       onComplete:()=>{ exitAfter ? removeWanderer(scene,c) : handleWanderComplete(scene,c); }
     });
@@ -98,7 +99,7 @@ export function resumeWanderer(scene, c){
       onUpdate:(tw,t)=>{
         const p=tw.progress;
         t.y=startY+Math.sin(p*Math.PI*freq)*amp;
-        t.setScale(scaleForY(t.y));
+        t.setScale(scaleForY(t.y) * CUSTOMER_SCALE);
       },
       onComplete:()=>{ exitAfter ? removeWanderer(scene,c) : handleWanderComplete(scene,c); }
     });

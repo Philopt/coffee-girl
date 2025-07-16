@@ -15,7 +15,7 @@ import {
   queueLimit as customersQueueLimit
 } from '../customers.js';
 import { GameState } from '../state.js';
-import { CustomerState } from '../constants.js';
+import { CustomerState, CUSTOMER_SCALE, DOG_DEFAULT_SCALE } from '../constants.js';
 
 import { showDialog, Assets } from '../main.js';
 import { startWander, loopsForState } from './wanderers.js';
@@ -424,12 +424,12 @@ function approachTarget(scene, sprite, dir, targetX, targetY, onComplete, speed 
     }
     sprite.x += vx * dt;
     sprite.y += vy * dt;
-    sprite.setScale(scaleForY(sprite.y));
+    sprite.setScale(scaleForY(sprite.y) * CUSTOMER_SCALE);
   };
   const finish = () => {
     mover.isPlaying = false;
     sprite.setPosition(targetX, targetY);
-    sprite.setScale(scaleForY(targetY));
+    sprite.setScale(scaleForY(targetY) * CUSTOMER_SCALE);
     if (onComplete) onComplete();
     if (!skipSpacingCheck && typeof checkQueueSpacing === 'function') {
       checkQueueSpacing(scene);
@@ -556,7 +556,7 @@ export function spawnCustomer() {
   c.dir = dir;
   c.loopsRemaining = loopsForState(c.memory.state);
   const startY = Phaser.Math.Between(WANDER_TOP, WANDER_BOTTOM);
-  const distScale = scaleForY(startY);
+  const distScale = scaleForY(startY) * CUSTOMER_SCALE;
   c.orders.push(order);
   c.atOrder = false;
   c.sprite = this.add.sprite(startX, startY, k).setScale(distScale);
@@ -568,7 +568,7 @@ export function spawnCustomer() {
   }
   setDepthFromBottom(c.sprite, 5);
   const hy = startY + c.sprite.displayHeight * 0.30;
-  const hs = scaleForY(startY) * 0.8;
+  const hs = scaleForY(startY) * 0.8 * CUSTOMER_SCALE;
   c.heartEmoji = this.add.text(startX, hy, HEART_EMOJIS[c.memory.state] || '', { font: '28px sans-serif' })
     .setOrigin(0.5)
     .setScale(hs)
@@ -599,7 +599,7 @@ export function spawnCustomer() {
         if (memory.dogMemory) memory.dogMemory.state = cycleMood(memory.dogMemory.state);
       });
     }
-    dog.baseScaleFactor = dogType.scale || 0.6;
+    dog.baseScaleFactor = dogType.scale || DOG_DEFAULT_SCALE;
     dog.scaleFactor = dog.baseScaleFactor;
     dog.dir = 1;
     dog.prevX = dog.x;
@@ -631,7 +631,7 @@ export function spawnCustomer() {
     c.dogCustomer = dogCust;
 
     const dhy = dog.y + dog.displayHeight * 0.30;
-    const dhs = scaleForY(dog.y) * 0.8;
+    const dhs = scaleForY(dog.y) * 0.8 * CUSTOMER_SCALE;
     dogCust.heartEmoji = this.add.text(dog.x, dhy, HEART_EMOJIS[dogCust.memory.state] || '', { font: '28px sans-serif' })
       .setOrigin(0.5)
       .setScale(dhs)

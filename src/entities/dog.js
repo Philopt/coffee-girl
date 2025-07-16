@@ -1,6 +1,6 @@
 import { ORDER_X, ORDER_Y } from '../customers.js';
 import { GameState } from '../state.js';
-import { CustomerState } from '../constants.js';
+import { CustomerState, CUSTOMER_SCALE, DOG_DEFAULT_SCALE } from '../constants.js';
 import { dur, scaleForY } from '../ui.js';
 import { setDepthFromBottom, createGlowTexture } from '../ui/helpers.js';
 import { scatterSparrows } from '../sparrow.js';
@@ -17,7 +17,7 @@ export const DOG_TYPES = [
   // scale represents relative size compared to a customer sprite
 
   // all dogs are smaller and share the same look now
-  { type: 'standard', emoji: '🐶', tint: 0x996633, scale: 0.4 }
+  { type: 'standard', emoji: '🐶', tint: 0x996633, scale: 0.4 * CUSTOMER_SCALE }
 
 ];
 
@@ -67,7 +67,7 @@ export function barkStunDuration(dog){
 
 export function scaleDog(d) {
   if (!d) return;
-  const factor = d.scaleFactor || 0.6;
+  const factor = d.scaleFactor || DOG_DEFAULT_SCALE;
   const s = scaleForY(d.y) * factor;
   const dir = d.dir || 1;
   d.setScale(s * dir, s);
@@ -83,7 +83,7 @@ export function scaleDog(d) {
 export function animateDogGrowth(scene, dog, cb) {
   if (!scene || !dog) { if(cb) cb(); return; }
   // apply any pending scale changes now that the power-up has started
-  const finalFactor = dog.pendingScaleFactor || dog.scaleFactor || 0.6;
+  const finalFactor = dog.pendingScaleFactor || dog.scaleFactor || DOG_DEFAULT_SCALE;
   dog.scaleFactor = finalFactor;
   dog.pendingScaleFactor = null;
   const dir = dog.dir || 1;
@@ -322,11 +322,11 @@ export function updateDog(owner) {
           dog.dir = dx > 0 ? 1 : -1;
         }
         dog.prevX = dog.x;
-        const s = scaleForY(dog.y) * (dog.scaleFactor || 0.6);
+        const s = scaleForY(dog.y) * (dog.scaleFactor || DOG_DEFAULT_SCALE);
         dog.setScale(s * (dog.dir || 1), s);
       if (dog.heartEmoji && dog.heartEmoji.scene && dog.heartEmoji.active) {
         const hy = dog.y + dog.displayHeight * 0.30;
-        const hs = scaleForY(dog.y) * 0.8;
+        const hs = scaleForY(dog.y) * 0.8 * CUSTOMER_SCALE;
         dog.heartEmoji
           .setPosition(dog.x, hy)
           .setScale(hs)
@@ -414,7 +414,7 @@ export function updateDog(owner) {
       scaleDog(t);
       if (dog.heartEmoji && dog.heartEmoji.scene && dog.heartEmoji.active) {
         const hy = t.y + t.displayHeight * 0.30;
-        const hs = scaleForY(t.y) * 0.8;
+        const hs = scaleForY(t.y) * 0.8 * CUSTOMER_SCALE;
         dog.heartEmoji
           .setPosition(t.x, hy)
           .setScale(hs)
@@ -459,7 +459,7 @@ export function sendDogOffscreen(dog, x, y) {
       scaleDog(t);
       if (dog.heartEmoji && dog.heartEmoji.scene && dog.heartEmoji.active) {
         const hy = t.y + t.displayHeight * 0.30;
-        const hs = scaleForY(t.y) * 0.8;
+        const hs = scaleForY(t.y) * 0.8 * CUSTOMER_SCALE;
         dog.heartEmoji
           .setPosition(t.x, hy)
           .setScale(hs)

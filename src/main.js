@@ -4,7 +4,7 @@ import { ORDER_X, ORDER_Y, WANDER_TOP, WANDER_BOTTOM, WALK_OFF_BASE, MAX_M, MAX_
 import { lureNextWanderer, moveQueueForward, scheduleNextSpawn, spawnCustomer, startDogWaitTimer } from './entities/customerQueue.js';
 import { baseConfig } from "./scene.js";
 import { GameState, floatingEmojis, addFloatingEmoji, removeFloatingEmoji, saveAchievements } from "./state.js";
-import { CustomerState, SALES_TAX } from './constants.js';
+import { CustomerState, SALES_TAX, CUSTOMER_SCALE } from './constants.js';
 
 import { scheduleSparrowSpawn, updateSparrows, cleanupSparrows, scatterSparrows } from './sparrow.js';
 import { DOG_TYPES, DOG_MIN_Y, DOG_COUNTER_RADIUS, sendDogOffscreen, scaleDog, cleanupDogs, updateDog, dogTruckRuckus, dogRefuseJumpBark, dogBarkAt, animateDogPowerUp, barkProps, PUP_CUP_TINT } from './entities/dog.js';
@@ -735,7 +735,7 @@ export function setupGame(){
         }
         if(c.heartEmoji && c.heartEmoji.scene && c.heartEmoji.active){
           const y = c.sprite.y + c.sprite.displayHeight * 0.30;
-          const scale = scaleForY(c.sprite.y)*0.8;
+          const scale = scaleForY(c.sprite.y)*0.8*CUSTOMER_SCALE;
           c.heartEmoji
             .setText(HEART_EMOJIS[state] || '')
             .setPosition(c.sprite.x, y)
@@ -748,14 +748,14 @@ export function setupGame(){
         }
       };
     GameState.queue.forEach(c=>{
-      if(c.sprite){ c.sprite.setScale(scaleForY(c.sprite.y)); setDepthFromBottom(c.sprite,5); }
+      if(c.sprite){ c.sprite.setScale(scaleForY(c.sprite.y)*CUSTOMER_SCALE); setDepthFromBottom(c.sprite,5); }
       if(c.dog) scaleDog(c.dog);
       if(c.isDog) scaleDog(c.sprite);
       updateHeart(c);
       if(c.dogCustomer) updateHeart(c.dogCustomer);
     });
     GameState.wanderers.forEach(c=>{
-      if(c.sprite){ c.sprite.setScale(scaleForY(c.sprite.y)); setDepthFromBottom(c.sprite,5); }
+      if(c.sprite){ c.sprite.setScale(scaleForY(c.sprite.y)*CUSTOMER_SCALE); setDepthFromBottom(c.sprite,5); }
       if(c.dog) scaleDog(c.dog);
       if(c.isDog) scaleDog(c.sprite);
       updateHeart(c);
@@ -2084,10 +2084,10 @@ export function setupGame(){
           current.exitX=owner.exitX;
           current.exitY=owner.exitY;
           this.tweens.add({targets:owner.sprite,y:targetY,duration:dur(6000),callbackScope:this,
-            onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+p*distanceX+Math.sin(p*Math.PI*freq)*amp; t.setScale(scaleForY(t.y));
+            onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+p*distanceX+Math.sin(p*Math.PI*freq)*amp; t.setScale(scaleForY(t.y)*CUSTOMER_SCALE);
               if(owner.heartEmoji && owner.heartEmoji.scene && owner.heartEmoji.active){
                 const hy=t.y+t.displayHeight*0.30;
-                const hs=scaleForY(t.y)*0.8;
+                const hs=scaleForY(t.y)*0.8*CUSTOMER_SCALE;
                 owner.heartEmoji
                   .setPosition(t.x, hy)
                   .setScale(hs)
@@ -2181,7 +2181,7 @@ export function setupGame(){
           onUpdate: (tw, t) => {
             if (current.heartEmoji && current.heartEmoji.scene && current.heartEmoji.active) {
               const hy = t.y + t.displayHeight * 0.30;
-              const hs = scaleForY(t.y) * 0.8;
+              const hs = scaleForY(t.y) * 0.8 * CUSTOMER_SCALE;
               current.heartEmoji
                 .setPosition(t.x, hy)
                 .setScale(hs)
@@ -2228,10 +2228,10 @@ export function setupGame(){
         current.exitX=owner.exitX;
         current.exitY=owner.exitY;
         this.tweens.add({targets:owner.sprite,y:targetY,duration:dur(6000),callbackScope:this,
-          onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+p*distanceX+Math.sin(p*Math.PI*freq)*amp; t.setScale(scaleForY(t.y));
+          onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+p*distanceX+Math.sin(p*Math.PI*freq)*amp; t.setScale(scaleForY(t.y)*CUSTOMER_SCALE);
             if(owner.heartEmoji && owner.heartEmoji.scene && owner.heartEmoji.active){
               const hy=t.y+t.displayHeight*0.30;
-              const hs=scaleForY(t.y)*0.8;
+              const hs=scaleForY(t.y)*0.8*CUSTOMER_SCALE;
               owner.heartEmoji
                 .setPosition(t.x, hy)
                 .setScale(hs)
@@ -2266,10 +2266,10 @@ export function setupGame(){
           onUpdate: (tw, t) => {
             const p = tw.progress;
             t.x = startX + p * distanceX + Math.sin(p * Math.PI * freq) * amp;
-            t.setScale(scaleForY(t.y) * (t.scaleFactor || 1));
+            t.setScale(scaleForY(t.y) * (t.scaleFactor || 1) * CUSTOMER_SCALE);
             if(current.heartEmoji && current.heartEmoji.scene && current.heartEmoji.active){
               const hy = t.y + t.displayHeight * 0.30;
-              const hs = scaleForY(t.y) * 0.8;
+              const hs = scaleForY(t.y) * 0.8 * CUSTOMER_SCALE;
               current.heartEmoji
                 .setPosition(t.x, hy)
                 .setScale(hs)
@@ -2289,10 +2289,10 @@ export function setupGame(){
         current.exitX = startX + distanceX;
         current.exitY = targetY;
         this.tweens.add({targets:sprite,y:targetY,duration:dur(6000),callbackScope:this,
-          onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+p*distanceX+Math.sin(p*Math.PI*freq)*amp; t.setScale(scaleForY(t.y) * (t.scaleFactor || 1));
+          onUpdate:(tw,t)=>{const p=tw.progress; t.x=startX+p*distanceX+Math.sin(p*Math.PI*freq)*amp; t.setScale(scaleForY(t.y) * (t.scaleFactor || 1) * CUSTOMER_SCALE);
             if(current.heartEmoji && current.heartEmoji.scene && current.heartEmoji.active){
               const hy = t.y + t.displayHeight * 0.30;
-              const hs = scaleForY(t.y) * 0.8;
+              const hs = scaleForY(t.y) * 0.8 * CUSTOMER_SCALE;
               current.heartEmoji
                 .setPosition(t.x, hy)
                 .setScale(hs)
@@ -2961,7 +2961,7 @@ export function setupGame(){
       latchedDogs.forEach(d=>{
         const wiggle = d.wiggleOffset || 0;
         d.setPosition(falcon.x + d.offsetX, falcon.y + d.offsetY + wiggle);
-        const s=scaleForY(d.y)*0.5;
+        const s=scaleForY(d.y)*0.4;
         d.setScale(s*(d.dir||1), s);
         d.setDepth(falcon.depth + 1);
         if(d.heartEmoji){
@@ -3116,7 +3116,7 @@ function dogsBarkAtFalcon(){
           const dx=dog.x-dog.prevX;
           if(Math.abs(dx)>3){ dog.dir=dx>0?1:-1; }
           dog.prevX=dog.x;
-          const s=scaleForY(dog.y)*0.5;
+          const s=scaleForY(dog.y)*0.4;
           dog.setScale(s*(dog.dir||1), s);
         }, []);
         dTl.setCallback('onComplete',()=>{
@@ -3380,7 +3380,7 @@ function dogsBarkAtFalcon(){
             angle:dir>0?720:-720,
             duration:dur(400),
             ease:'Sine.easeIn',
-            onUpdate:()=>{ const s=scaleForY(dog.y)*0.5; dog.setScale(s*(dog.dir||1),s); },
+            onUpdate:()=>{ const s=scaleForY(dog.y)*0.4; dog.setScale(s*(dog.dir||1),s); },
             onComplete:()=>{
               scene.tweens.add({
                 targets:dog,
@@ -3419,7 +3419,7 @@ function dogsBarkAtFalcon(){
             angle: dir>0?720:-720,
             duration: dur(400),
             ease: 'Sine.easeIn',
-            onUpdate: () => { const s = scaleForY(dog.y)*0.5; dog.setScale(s*(dog.dir||1), s); },
+            onUpdate: () => { const s = scaleForY(dog.y)*0.4; dog.setScale(s*(dog.dir||1), s); },
             onComplete: () => {
               scene.tweens.add({
                 targets: dog,
@@ -3574,7 +3574,7 @@ function dogsBarkAtFalcon(){
                   if(dog.heartEmoji){
                     dog.heartEmoji
                       .setPosition(dog.x, dog.y)
-                      .setScale(scaleForY(dog.y) * 0.8)
+                      .setScale(scaleForY(dog.y) * 0.8 * CUSTOMER_SCALE)
                       .setDepth(dog.depth);
                   }
                 },
@@ -3663,7 +3663,7 @@ function dogsBarkAtFalcon(){
               x:girl.x+Phaser.Math.Between(-80,80),
               y:girl.y+Phaser.Math.Between(40,60),
               duration:dur(800),
-              onUpdate:()=>{const s=scaleForY(dog.y)*0.5;dog.setScale(s*(dog.dir||1),s);},
+              onUpdate:()=>{const s=scaleForY(dog.y)*0.4;dog.setScale(s*(dog.dir||1),s);},
               onComplete:()=>{dog.barkReady = true;}
             });
           },[],scene);
@@ -3920,7 +3920,7 @@ function dogsBarkAtFalcon(){
         if(h.heartEmoji) scene.tweens.add({targets:h.heartEmoji,y:gY,scale:scaleForY(gY)*0.8,duration:dur(300),ease:'Sine.easeIn'});
       });
       reinDogs.forEach(d=>{
-        scene.tweens.add({targets:d,y:DOG_MIN_Y,angle:0,duration:dur(300),ease:'Sine.easeIn',onUpdate:()=>{const s=scaleForY(d.y)*0.5;d.setScale(s*(d.dir||1),s);if(d.heartEmoji) d.heartEmoji.setPosition(d.x,d.y).setScale(scaleForY(d.y)*0.8).setDepth(d.depth);},onComplete:()=>{ensureOnGround(d);d.attacking=false;}});
+        scene.tweens.add({targets:d,y:DOG_MIN_Y,angle:0,duration:dur(300),ease:'Sine.easeIn',onUpdate:()=>{const s=scaleForY(d.y)*0.4;d.setScale(s*(d.dir||1),s);if(d.heartEmoji) d.heartEmoji.setPosition(d.x,d.y).setScale(scaleForY(d.y)*0.8*CUSTOMER_SCALE).setDepth(d.depth);},onComplete:()=>{ensureOnGround(d);d.attacking=false;}});
       });
 
       featherTrail = scene.time.addEvent({
@@ -4135,7 +4135,7 @@ function dogsBarkAtFalcon(){
     attackerDogs.forEach(dog=>{
       const dir=dog.x<ORDER_X?-1:1;
       const off=dir===1?520:-40;
-      scene.tweens.add({targets:dog,x:off,duration:dur(WALK_OFF_BASE),onUpdate:()=>{const s=scaleForY(dog.y)*0.5;dog.setScale(s*(dog.dir||1),s);if(dog.heartEmoji) dog.heartEmoji.setPosition(dog.x,dog.y).setScale(scaleForY(dog.y)*0.8).setDepth(dog.depth);}});
+      scene.tweens.add({targets:dog,x:off,duration:dur(WALK_OFF_BASE),onUpdate:()=>{const s=scaleForY(dog.y)*0.4;dog.setScale(s*(dog.dir||1),s);if(dog.heartEmoji) dog.heartEmoji.setPosition(dog.x,dog.y).setScale(scaleForY(dog.y)*0.8*CUSTOMER_SCALE).setDepth(dog.depth);}});
       dog.offX=off;
     });
 
@@ -4177,7 +4177,7 @@ function dogsBarkAtFalcon(){
           onUpdate: () => {
             const s = scaleForY(dog.y) * 0.5;
             dog.setScale(s * (dog.dir || 1), s);
-            if (dog.heartEmoji) dog.heartEmoji.setPosition(dog.x, dog.y).setScale(scaleForY(dog.y) * 0.8).setDepth(dog.depth);
+            if (dog.heartEmoji) dog.heartEmoji.setPosition(dog.x, dog.y).setScale(scaleForY(dog.y) * 0.8 * CUSTOMER_SCALE).setDepth(dog.depth);
           },
           onComplete: () => {
             const bark = dogRefuseJumpBark.call(scene, dog, false);
@@ -4199,7 +4199,7 @@ function dogsBarkAtFalcon(){
           }
         });
         };
-        scene.tweens.add({targets:dog,x:tx,y:ty,duration:dur(800),delay:i*50,onUpdate:()=>{const s=scaleForY(dog.y)*0.5;dog.setScale(s*(dog.dir||1),s);},onComplete:harass});
+        scene.tweens.add({targets:dog,x:tx,y:ty,duration:dur(800),delay:i*50,onUpdate:()=>{const s=scaleForY(dog.y)*0.4;dog.setScale(s*(dog.dir||1),s);},onComplete:harass});
       });
     }
 
@@ -4349,7 +4349,7 @@ function dogsBarkAtFalcon(){
           x:dx,
           y:dy,
           duration:dur(600),
-          onUpdate:()=>{ const s=scaleForY(dog.y)*0.5; dog.setScale(s*(dog.dir||1),s); if(dog.heartEmoji) dog.heartEmoji.setPosition(dog.x,dog.y).setScale(scaleForY(dog.y)*0.8).setDepth(dog.depth); },
+          onUpdate:()=>{ const s=scaleForY(dog.y)*0.5; dog.setScale(s*(dog.dir||1),s); if(dog.heartEmoji) dog.heartEmoji.setPosition(dog.x,dog.y).setScale(scaleForY(dog.y)*0.8*CUSTOMER_SCALE).setDepth(dog.depth); },
           onComplete:()=>{ 
             const bark=dogRefuseJumpBark.call(scene,dog,false);
             if(bark){
@@ -4371,7 +4371,7 @@ function dogsBarkAtFalcon(){
         x:tx,
         y:ty,
         duration:dur(800),
-        onUpdate:()=>{ const s=scaleForY(dog.y)*0.5; dog.setScale(s*(dog.dir||1), s); },
+        onUpdate:()=>{ const s=scaleForY(dog.y)*0.4; dog.setScale(s*(dog.dir||1), s); },
         onComplete:harass
       });
     });
@@ -4554,7 +4554,7 @@ function dogsBarkAtFalcon(){
           const hy = c.sprite.y + c.sprite.displayHeight*0.30;
           c.heartEmoji
             .setPosition(c.sprite.x, hy)
-            .setScale(scaleForY(c.sprite.y)*0.8)
+            .setScale(scaleForY(c.sprite.y)*0.8*CUSTOMER_SCALE)
             .setDepth(c.sprite.depth+1);
         }
       };

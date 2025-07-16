@@ -114,6 +114,8 @@ export function resetAchievements() {
   GameState.achievementsRevealed = false;
   GameState.slotsRevealed = false;
   GameState.lastEndKey = null;
+  GameState.userName = null;
+  GameState.nickname = null;
   if (typeof window !== 'undefined' && window.localStorage) {
     try {
       window.localStorage.removeItem('coffeeGirlAchievements');

@@ -4605,14 +4605,16 @@ function dogsBarkAtFalcon(){
           const bottom = g.y + g.displayHeight/2;
           const targetY = bottom - c.sprite.displayHeight/2 - 2;
           const targetX = ORDER_X + Phaser.Math.Between(-20,20);
-          const shuffleDelay = GameState.zombieMode ? Phaser.Math.Between(1000,1500) : Phaser.Math.Between(300,600);
+          const shuffleDelay = GameState.zombieMode
+            ? Phaser.Math.Between(625,938) // 60% faster
+            : Phaser.Math.Between(300,600);
           const shuffle = this.time.addEvent({
             delay: shuffleDelay,
             loop:true,
             callback:()=>{
               if(!c.sprite || !c.sprite.scene){ shuffle.remove(false); return; }
               const off = GameState.zombieMode ? Phaser.Math.Between(-12,12) : Phaser.Math.Between(-6,6);
-              const stepDur = GameState.zombieMode ? dur(400) : dur(200);
+              const stepDur = GameState.zombieMode ? dur(250) : dur(200); // 60% faster when zombified
               this.tweens.add({targets:c.sprite,x:c.sprite.x+off,duration:stepDur,yoyo:true});
               emitHeart(c.sprite);
             }
@@ -4840,6 +4842,10 @@ function dogsBarkAtFalcon(){
     GameState.queue.forEach(addToCrowd);
     GameState.wanderers.forEach(addToCrowd);
     if(GameState.activeCustomer) addToCrowd(GameState.activeCustomer);
+    // Clear queue and wanderers once everyone joins the crowd
+    GameState.queue = [];
+    GameState.wanderers = [];
+    GameState.activeCustomer = null;
 
     // Do not spawn additional crowd members once the screen is covered
 

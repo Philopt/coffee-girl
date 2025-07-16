@@ -167,11 +167,15 @@ export function heartbeatDuration(level=1){
 
 export function pulseText(textObj, level=1){
   if(!textObj || !textObj.scene || !textObj.scene.tweens) return;
+  if(level <= 1) return; // Neutral level shouldn't pulse
   const scene=textObj.scene;
   const dur=heartbeatDuration(level);
+  let scale=1.05;
+  if(level>=4) scale=1.15;
+  else if(level>=3) scale=1.1;
   scene.tweens.add({
     targets:textObj,
-    scale:1.1,
+    scale:scale,
     duration:dur/2,
     yoyo:true,
     repeat:-1,

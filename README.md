@@ -36,11 +36,15 @@ an error if your Node version doesn't match `22.x`.
 
 - `src/game.js` bootstraps the Phaser scene and re-exports helpers from `src/main.js`.
 - `src/main.js` contains the bulk of the game logic.
-- `src/state.js` stores the shared game state.
+- `src/state.js` stores the shared game state. The object now includes a
+  `nickname` field used when a player leaves their name blank.
 - `src/entities/` holds modules like `customerQueue.js` and `dog.js`.
 - `assets/` stores images and other static files.
 - `src/entities/wanderers.js` – wanderer movement helpers.
 - `src/ui/helpers.js` – UI animation utilities.
+
+Players who skip entering a name are given a random nickname. The name text
+pulses in rhythm with the current love level.
 
 
 

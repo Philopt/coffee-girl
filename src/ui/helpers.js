@@ -179,4 +179,4 @@ export function pulseText(textObj, level=1){
   });
 }
 
-export { blinkButton as default, heartbeatDuration, pulseText };
+export default blinkButton;

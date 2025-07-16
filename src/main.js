@@ -3152,6 +3152,11 @@ function dogsBarkAtFalcon(){
     let firstAttack=true;
     let dogCheckActive=false;
     let attackTween=null;
+    function resetFalconScale(){
+      if(falcon && falcon.baseScaleX){
+        falcon.setScale(falcon.baseScaleX, falcon.baseScaleY);
+      }
+    }
       const endAttack=(force=false)=>{
         falconDeathStarted = false;
         if(finished && !force) return;
@@ -3197,6 +3202,8 @@ function dogsBarkAtFalcon(){
     falcon=scene.add.sprite(-40,-40,'lady_falcon',0)
       .setScale(1.4,1.68)
       .setDepth(20);
+    falcon.baseScaleX = falcon.scaleX;
+    falcon.baseScaleY = falcon.scaleY;
     GameState.falcon = falcon;
     falcon.anims.play('falcon_fly');
     const girlHpBar = createHpBar(scene, 40, 6, 10);
@@ -3527,7 +3534,11 @@ function dogsBarkAtFalcon(){
         y: dog.y - 20,
         duration: dur(300),
         ease: 'Cubic.easeIn',
+        onStart: () => {
+          falcon.setScale(falcon.baseScaleX * 1.1, falcon.baseScaleY * 1.1);
+        },
         onComplete: () => {
+          resetFalconScale();
           flashRed(scene, dog, 150);
           scene.time.delayedCall(dur(200), () => flashRed(scene, dog, 150), [], scene);
           scene.time.delayedCall(dur(400), () => flashRed(scene, dog, 150), [], scene);
@@ -3712,7 +3723,10 @@ function dogsBarkAtFalcon(){
             y:targetY,
             duration:dur(350),
             ease:'Cubic.easeIn',
-            onStart:()=>{/*if(firstAttack) startTrail();*/},
+            onStart:()=>{
+              /*if(firstAttack) startTrail();*/
+              falcon.setScale(falcon.baseScaleX * 1.1, falcon.baseScaleY * 1.1);
+            },
             onUpdate:()=>{
               GameState.activeBarks.forEach(b=>{
                 if(Phaser.Math.Distance.Between(falcon.x,falcon.y,b.x,b.y)<30){
@@ -3744,6 +3758,7 @@ function dogsBarkAtFalcon(){
                    onYoyo:()=>sprinkleBursts(scene)},'<');
           // No more feathers during the attack
           tl.setCallback('onComplete', () => {
+            resetFalconScale();
             // stopTrail();
             if(firstAttack){
               firstAttack=false;
@@ -3781,6 +3796,7 @@ function dogsBarkAtFalcon(){
 
       function stunFalcon(duration=1000, done){
         if(!falcon) { if(done) done(); return; }
+        resetFalconScale();
         if(falcon.stunTimer){ falcon.stunTimer.remove(false); falcon.stunTimer=null; }
         if(falcon.wobbleTween){ falcon.wobbleTween.stop(); falcon.wobbleTween=null; }
         GameState.falconStunned = true;

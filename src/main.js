@@ -1320,7 +1320,9 @@ export function setupGame(){
       dialogPriceContainer
         .setAngle(0)
         .setScale(1)
-        .setAlpha(1);
+        .setAlpha(1)
+        // ensure the price ticket starts above the truck next time
+        .setDepth(11);
     }
   }
 

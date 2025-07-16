@@ -25,6 +25,10 @@
         background: #fff;
         z-index: 200;
       }
+      #loading-screen.fade-out {
+        opacity: 0;
+        transition: opacity 0.5s ease-out;
+      }
       #loading-screen img {
         width: 160px;
         height: auto;
@@ -66,6 +70,7 @@
     window.hideLoadingScreen = function() {
       const el = document.getElementById('loading-screen');
       if (!el) return;
+      el.classList.add('fade-out');
       const img = el.querySelector('img');
       if (img) {
         img.classList.add('rocket');
@@ -73,7 +78,9 @@
           el.style.display = 'none';
         }, { once: true });
       } else {
-        el.style.display = 'none';
+        el.addEventListener('transitionend', () => {
+          el.style.display = 'none';
+        }, { once: true });
       }
     };
     function positionMiniGame() {

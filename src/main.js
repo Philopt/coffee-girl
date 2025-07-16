@@ -107,6 +107,7 @@ export function setupGame(){
     if(cloud){
       const cOrigY = cloud.y;
       scene.tweens.add({targets:cloud, y:cOrigY+by, duration:dur(moveDur), yoyo:true});
+      cloudExplosion(scene, cloud, 10);
     }
     let on=true;
     const flashes = isLove && !up ? 4 : 2;
@@ -242,37 +243,40 @@ export function setupGame(){
     if(cloudDollar) cloudDollar.clearTint();
   }
 
+  function createCloudPuff(scene, cx, cy){
+    const key = Math.random() < 0.5 ? 'cloudDollar' : 'cloudHeart';
+    const puff = scene.add.sprite(cx, cy, key, 4)
+      .setOrigin(0.5)
+      .setScale(0.6)
+      .setDepth(cloudDollar ? cloudDollar.depth + 1 : 1)
+      .setBlendMode(Phaser.BlendModes.SCREEN);
+    GameState.activeBursts.push(puff);
+    return puff;
+  }
+
+  function cloudExplosion(scene, cloud, count=8){
+    if(!scene || !cloud) return;
+    const cx = cloud.x + cloud.displayWidth/2;
+    const cy = cloud.y + cloud.displayHeight/2;
+    for(let i=0;i<count;i++){
+      const puff = createCloudPuff(scene, cx, cy);
+      const ang = Phaser.Math.FloatBetween(0, Math.PI*2);
+      const dist = Phaser.Math.Between(15, 40);
+      scene.tweens.add({
+        targets:puff,
+        x: cx + Math.cos(ang)*dist,
+        y: cy + Math.sin(ang)*dist,
+        angle: Phaser.Math.Between(-180,180),
+        alpha: 0,
+        duration: dur(700),
+        onComplete:()=>{ const idx=GameState.activeBursts.indexOf(puff); if(idx!==-1) GameState.activeBursts.splice(idx,1); puff.destroy(); }
+      });
+    }
+  }
+
   function emitMoneyEmoji(scene){
     if(!scene || !cloudDollar) return;
-    const cx = cloudDollar.x + cloudDollar.displayWidth/2;
-    const cy = cloudDollar.y + cloudDollar.displayHeight/2;
-    const txt = Math.random()<0.5 ? '💵' : '💨';
-    const t = scene.add.text(cx, cy, txt,{font:'16px sans-serif'})
-      .setOrigin(0.5)
-      .setDepth(cloudDollar.depth+1);
-    highMoneyEmojis.push(t);
-
-    const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
-    const dist = Phaser.Math.Between(20, 40);
-    const dx = Math.cos(angle) * dist;
-    const dy = Math.sin(angle) * dist;
-    const tweenProps = {
-      x: cx + dx,
-      y: cy + dy,
-      alpha: 0,
-      duration: dur(600),
-      onComplete: () => {
-        const i = highMoneyEmojis.indexOf(t);
-        if(i!==-1) highMoneyEmojis.splice(i,1);
-        t.destroy();
-      }
-    };
-    if(txt==='💵'){
-      tweenProps.angle = 360;
-    }else{
-      t.setAngle(Phaser.Math.RadToDeg(angle));
-    }
-    scene.tweens.add({targets:t, ...tweenProps});
+    cloudExplosion(scene, cloudDollar, 5);
   }
 
   function updateHighMoneyEffects(scene){

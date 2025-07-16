@@ -12,7 +12,7 @@ export function showVolumeSlider(value=1,onChange){
     slider.step='0.05';
     Object.assign(slider.style,{
       position:'absolute',
-      bottom:'60px',
+      bottom:'120px',
       left:'50%',
       transform:'translateX(-50%)',
       width:'120px',

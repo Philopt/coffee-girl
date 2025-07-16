@@ -302,32 +302,25 @@ function dropOpeningNumber(scene){
   openingNumber.setOrigin(0, 1);
   openingNumber.setPosition(bottomLeftX, bottomLeftY);
 
-  const fallTl = scene.tweens.createTimeline();
-  fallTl.add({ targets: openingNumber, angle: 45, duration: 400, ease: 'Sine.easeIn' });
-  fallTl.add({ targets: openingNumber, angle: 25, duration: 250, ease: 'Sine.easeOut' });
-  fallTl.add({ targets: openingNumber, angle: 55, duration: 250, ease: 'Sine.easeInOut' });
-  fallTl.add({ targets: openingNumber, angle: 35, duration: 250, ease: 'Sine.easeInOut' });
-  fallTl.add({ targets: openingNumber, angle: 70, duration: 300, ease: 'Sine.easeIn' });
-  fallTl.add({
+  scene.tweens.add({
     targets: openingNumber,
     y: scene.scale.height + openingNumber.displayHeight,
     angle: 90,
-    duration: 700,
-    ease: 'Cubic.easeIn'
-  });
-  fallTl.setCallback('onComplete', () => {
-    if(openingNumber){ openingNumber.destroy(); openingNumber = null; }
-    if(introFadeEvent) introFadeEvent.remove(false);
-    const targets = [openingTitle, openingDog].filter(Boolean);
-    if(targets.length){
-        scene.tweens.add({
-          targets,
-          alpha: 0,
-          duration: DROP_FADE_DURATION
-        });
+    duration: 2000,
+    ease: 'Cubic.easeIn',
+    onComplete: () => {
+      if(openingNumber){ openingNumber.destroy(); openingNumber = null; }
+      if(introFadeEvent) introFadeEvent.remove(false);
+      const targets = [openingTitle, openingDog].filter(Boolean);
+      if(targets.length){
+          scene.tweens.add({
+            targets,
+            alpha: 0,
+            duration: DROP_FADE_DURATION
+          });
+      }
     }
   });
-  fallTl.play();
 }
 
 function showStartScreen(scene, opts = {}){
@@ -1162,10 +1155,11 @@ function showStartScreen(scene, opts = {}){
 
 
     const defaultMsgs=[
-      [`u coming in${nameComma()}? 🤔`, `where u at${nameComma()}??`, 'mornin ☀️'],
-      ['better not still be in bed 😜', 'yo coffee girl ☕', `stop ghostin me${nameComma()}`],
+      ['u coming in? 🤔', 'where u at??', 'mornin ☀️'],
+      ['better not still be in bed 😜', 'yo coffee girl ☕', 'quit ghostin me!'],
       ['late night? 🥱💃', 'phone dead again? 🔋', 'omg wait till u hear about this guy 😏'],
-      ['u good?', 'hope everythin\'s chill', '…sry 😬']
+      ['u good?', "hope everythin's chill", '…sry 😬'],
+      ['bring me coffee asap', 'need my caffeine', 'wake up call pls']
 
     ];
 
@@ -1173,33 +1167,38 @@ function showStartScreen(scene, opts = {}){
       ['falc-a-doodle-doo?', `${nameBang()}wtf?!?`, '☕🩸🦅', 'skreeee 🦅', '**poke**'],
       ['what happened yesterday?', `angel saw falcons in the park last night`, 'elanor said the falcon got u!!', '🪶💥🪶 🪶💥🪶'],
       ['was that THE lady falcon?', 'is Lady Falcon... royalty?', "don't lose ALL the money", "...she's from another dimension"],
-      ['better keep an eye on the register', 'stop giving so much away, bruh', `at least have enough money${nameComma()}...`, 'balance, girl', "you're not a sparrow"]
+      ['better keep an eye on the register', 'stop giving so much away, bruh', `at least have enough money${nameComma()}...`, 'balance, girl', "you're not a sparrow"],
+      ['still seeing feathers around', 'falcon watch 24/7', 'keep your guard up']
     ];
 
     const victoryMsgs=[
       [`run it ur way${nameComma()} 🚚✨`],
       [`give every drink away if u want${nameComma()} ☕❤️`],
-      ['cash can drop negative, no worries 💸🤙']
+      ['cash can drop negative, no worries 💸🤙'],
+      ['victory lap when?', 'coffee queen vibes']
     ];
 
     const revoltMsgs=[
       [`they got the truck back${nameComma()}`, 'ppl been whisperin bout a revolt?', 'heard the crowd went wild', 'yeah...'],
       ['dude u pissed off the park', `everyone was mad yesterday${nameComma()}`, 'maybe chill a bit', 'word is u bailed on them'],
       ['try showin some love', 'remember when service mattered?', `hand out a few smiles${nameComma()}`, "don't treat folks like dirt"],
-      ['keep em happy or they\'ll riot again', 'learn and be chill next shift', 'better vibes or bust', `make ppl happy${nameComma()} or they won't be happy...`]
+      ['keep em happy or they\'ll riot again', 'learn and be chill next shift', 'better vibes or bust', `make ppl happy${nameComma()} or they won't be happy...`],
+      ['crowds still restless', 'maybe toss a freebie', 'smiles are free']
     ];
 
     const firedMsgs=[
       ['u really handed the corp all ur $$', 'overlord vibes much?', `did they at least say thx${nameComma()}?`, 'you got fired for making money?'],
       ['keep some of that cash for urself', 'stop feeding the corporate machine', `seriously did u ask for ur job back${nameComma()}?`, "can't just give away all ur worth"],
       ['capitalism 101: hoard ur coins', 'no more freebies 4 the boss', 'share the love?', `so, did they rehire u${nameComma()}?`],
-      ['remember ur value!', "don't let them take it all", `get that job back or bounce${nameComma()}`, "you're entitled to that job!"]
+      ['remember ur value!', "don't let them take it all", `get that job back or bounce${nameComma()}`, "you're entitled to that job!"],
+      ['maybe freelance barista life?', 'corporate who?', 'follow the beans']
     ];
 
     const loveMsgs=[
       [`everyone stan coffee girl${nameComma()} ❤️`, ' 💑💑💑', 'literally hearts 💕'],
       ['park gossip is all love songs', `u got the whole crowd cheering${nameComma()}`, 'love > money fr 😍'],
-      ['coffee tastes sweeter when ur in love ☕💖', `they keep asking about you${nameComma()} 💖`, 'ur trending']
+      ['coffee tastes sweeter when ur in love ☕💖', `they keep asking about you${nameComma()} 💖`, 'ur trending'],
+      ['spreadin love like latte foam', 'park hearts overflowin']
 
     ];
 

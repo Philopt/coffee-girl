@@ -569,6 +569,61 @@ function testStartButtonPlaysIntro() {
   console.log('start button triggers playIntro test passed');
 }
 
+function testShowStartScreenNickname() {
+  const match = readAndMatch(['intro.js', 'ui.js', 'main.js'], /(?:export\s+)?function showStartScreen\(scene\)[\s\S]*?\n\s*\}\);\n\s*\}/);
+  if (!match) throw new Error('showStartScreen not found');
+  function RectStub(x, y, w, h) {
+    return { x, y, width: w, height: h };
+  }
+  RectStub.Contains = () => true;
+  const context = {
+    Phaser: {
+      Geom: { Rectangle: RectStub },
+      Math: { Between: (min, max) => min },
+      Utils: { Array: { GetRandom: a => a[0] } }
+    },
+    debugLog() {}
+  };
+  loadGameState(context);
+  loadCustomerState(context);
+  vm.createContext(context);
+  context.fn = null;
+  vm.runInContext('let startOverlay,startButton,startMsgTimers=[],startMsgBubbles=[];const playIntro=()=>{};\n' + match[0] + '\nfn=showStartScreen;', context);
+  const showStartScreen = context.fn;
+
+  context.GameState.userName = null;
+  context.GameState.nickname = null;
+
+  const scene = {
+    add: {
+      rectangle() { return { setDepth() { return this; } }; },
+      text() { return { setOrigin() { return this; }, setDepth() { return this; }, width: 100, height: 40 }; },
+      graphics() { return { fillStyle() { return this; }, fillRoundedRect() { return this; } }; },
+      sprite() { return { setOrigin() { return this; }, setScale() { return this; }, setDepth() { return this; } }; },
+      zone() { return { setOrigin() { return this; }, setInteractive() { return this; }, on() { return this; } }; },
+      container() {
+        const obj = {
+          setSize() { return obj; },
+          setDepth() { return obj; },
+          setVisible() { return obj; },
+          setAlpha() { return obj; },
+          setInteractive() { obj.interactive = true; return obj; },
+          on() { return obj; },
+          add() { return obj; }
+        };
+        return obj;
+      }
+    }
+  };
+
+  showStartScreen.call(scene);
+
+  const currentName = () => context.GameState.userName || context.GameState.nickname || '';
+  assert.ok(context.GameState.nickname, 'nickname not assigned');
+  assert.strictEqual(currentName(), context.GameState.nickname, 'currentName mismatch');
+  console.log('showStartScreen nickname test passed');
+}
+
 function testShowDialogButtons() {
   const match = readAndMatch(['ui.js', 'main.js'], /(?:export\s+)?function showDialog\(\)[\s\S]*?tipText\.setVisible\(false\);[\s\S]*?\n\s*\}/);
   if (!match) throw new Error('showDialog not found');
@@ -1186,6 +1241,7 @@ async function run() {
     testHandleActionSell();
     testShowStartScreen();
     testStartButtonPlaysIntro();
+    testShowStartScreenNickname();
     testBlinkButton();
     testShowDialogButtons();
     testAnimateLoveChange();

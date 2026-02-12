@@ -8,9 +8,9 @@ export const baseConfig = {
   canvas,
   backgroundColor: '#f2e5d7',
   scale: {
-    // Fill the screen vertically on mobile and crop the sides
-    // instead of adding letterbox bars.
-    mode: Phaser.Scale.ENVELOP,
+    // Keep the entire game visible on all screen sizes so start-screen
+    // controls (like the phone "Clock In" button) never get cropped.
+    mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
     width: 480,
     height: 640

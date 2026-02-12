@@ -42,6 +42,7 @@ an error if your Node version doesn't match `22.x`.
 - `assets/` stores images and other static files.
 - `src/entities/wanderers.js` – wanderer movement helpers.
 - `src/ui/helpers.js` – UI animation utilities.
+- `docs/game-design.md` summarizes the story goals and ending logic so future changes stay on-theme.
 
 Players who skip entering a name are given a random nickname. The name text
 pulses in rhythm with the current love level.

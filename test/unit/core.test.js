@@ -86,6 +86,7 @@ function testEmojiFor() {
   assert.strictEqual(emojiFor('Hot Chocolate'), '🍫');
 }
 
+
 function runUnitTests() {
   testSpawnCustomer();
   testSpawnCustomerQueuesWhenEmpty();

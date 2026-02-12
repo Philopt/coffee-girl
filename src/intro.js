@@ -5,7 +5,7 @@ import { GameState, resetAchievements, saveVolume, savePlayerName } from './stat
 import { debugLog, DEBUG } from './debug.js';
 import { dur } from './ui.js';
 import { spawnSparrow, scatterSparrows } from './sparrow.js';
-import { createGrayscaleTexture, createGlowTexture, pulseText } from './ui/helpers.js';
+import { createGrayscaleTexture, createGlowTexture } from './ui/helpers.js';
 import { playSong, playBadgeSong, stopSong, setDrumVolume } from './music.js';
 import { showVolumeSlider, hideVolumeSlider } from './ui/volumeSlider.js';
 
@@ -1060,17 +1060,6 @@ function showStartScreen(scene, opts = {}){
       startMsgBubbles.push(bubble);
       startMsgY += bh + 10;
       scene.tweens.add({targets:bubble,alpha:1,duration:300,ease:'Cubic.easeOut'});
-      const name = currentName();
-      if(name && text.includes(name)){
-        const meas = scene.add.text(0,0,text.split(name)[0],{font:'20px sans-serif',wordWrap:{width:wrapWidth}}).setOrigin(0,0.5).setVisible(false);
-        const off = meas.width;
-        meas.destroy();
-        const pulse = scene.add.text(0,0,name,{font:'20px sans-serif',fill:textColor})
-          .setOrigin(0.5,0.5);
-        pulse.x = -bw/2 + pad + off + pulse.width/2;
-        bubble.add(pulse);
-        if(GameState.loveLevel > 1) pulseText(pulse, GameState.loveLevel);
-      }
       repositionMessages();
       return bubble;
     };

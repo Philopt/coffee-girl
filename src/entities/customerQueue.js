@@ -21,6 +21,7 @@ import { showDialog, Assets } from '../main.js';
 import { startWander, loopsForState } from './wanderers.js';
 import { DOG_TYPES, updateDog, scaleDog } from './dog.js';
 import { setDepthFromBottom } from '../ui/helpers.js';
+import { cycleMood } from '../domain/mood.js';
 
 
 
@@ -39,18 +40,6 @@ const HEART_EMOJIS = {
   [CustomerState.SPARKLING]: '💖',
   [CustomerState.ARROW]: '💘'
 };
-
-function cycleMood(state){
-  switch(state){
-    case CustomerState.BROKEN: return CustomerState.MENDING;
-    case CustomerState.MENDING: return CustomerState.NORMAL;
-    case CustomerState.NORMAL: return CustomerState.GROWING;
-    case CustomerState.GROWING: return CustomerState.SPARKLING;
-    case CustomerState.SPARKLING: return CustomerState.ARROW;
-    case CustomerState.ARROW: return CustomerState.BROKEN;
-    default: return CustomerState.NORMAL;
-  }
-}
 
 export function maxWanderers() {
   return customersMaxWanderers();
@@ -649,4 +638,3 @@ export function spawnCustomer() {
   // immediately pulled into line. The intro or queue logic will lure them when
   // they wander close enough.
 }
-

@@ -16,6 +16,7 @@ import { keys, requiredAssets, preload as preloadAssets, receipt, emojiFor } fro
 import { playOpening, showStartScreen, playIntro } from './intro.js';
 import { playSong, updateRevoltMusicVolume, updateMuseMusicVolume, fadeDrums, fadeOutCurrentSong } from './music.js';
 import DesaturatePipeline from './desaturatePipeline.js';
+import { advanceMood } from './domain/mood.js';
 
 export let Assets, Scene, Customers, config;
 export let showStartScreenFn, handleActionFn, spawnCustomerFn, scheduleNextSpawnFn, showDialogFn, animateLoveChangeFn, blinkButtonFn;
@@ -68,16 +69,7 @@ const UPSET_EMOJIS = ['😠','🤬','😡','😤','😭','😢','😱','😖','�
 // Returns the player's chosen name if available, falling back to a nickname
 const currentName = () => GameState.userName || GameState.nickname || '';
 
-export function nextMood(state){
-  switch(state){
-    case CustomerState.BROKEN: return CustomerState.MENDING;
-    case CustomerState.MENDING: return CustomerState.NORMAL;
-    case CustomerState.NORMAL: return CustomerState.GROWING;
-    case CustomerState.GROWING: return CustomerState.SPARKLING;
-    case CustomerState.SPARKLING: return CustomerState.ARROW;
-    default: return state;
-  }
-}
+export const nextMood = advanceMood;
 
 export function setupGame(){
   if (typeof debugLog === 'function') debugLog('main.js loaded');

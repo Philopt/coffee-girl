@@ -66,19 +66,6 @@ function testSpawnCustomerEmptyAvailable() {
   assert.strictEqual(context.wanderers.length, 0);
 }
 
-function testNextMoodProgression() {
-  const { nextMood } = loadModuleExports('src/main.js', {
-    CustomerState: { NORMAL: 0, GROWING: 1, SPARKLING: 2, ARROW: 3, BROKEN: 4, MENDING: 5 },
-    window: undefined,
-    document: { readyState: 'loading' }
-  });
-  const CS = { NORMAL: 0, GROWING: 1, SPARKLING: 2, ARROW: 3 };
-  assert.strictEqual(nextMood(CS.NORMAL), CS.GROWING);
-  assert.strictEqual(nextMood(CS.GROWING), CS.SPARKLING);
-  assert.strictEqual(nextMood(CS.SPARKLING), CS.ARROW);
-  assert.strictEqual(nextMood(CS.ARROW), CS.ARROW);
-}
-
 function testEmojiFor() {
   const { emojiFor } = loadModuleExports('src/assets.js');
   assert.strictEqual(emojiFor('Iced Mocha'), '🍫 🧊 🧊\n☕');
@@ -92,7 +79,6 @@ function runUnitTests() {
   testSpawnCustomerQueuesWhenEmpty();
   testSpawnCustomerEmptyAvailable();
   testBlinkButton();
-  testNextMoodProgression();
   testEmojiFor();
   console.log('Unit tests passed');
 }

@@ -5349,8 +5349,6 @@ function dogsBarkAtFalcon(){
       GameState.dogBarkEvent.remove(false);
       GameState.dogBarkEvent = null;
     }
-    GameState.userName = null;
-    GameState.nickname = null;
     GameState.falconActive = false;
     clearDialog.call(scene);
     dialogDrinkEmoji.attachedTo = null;

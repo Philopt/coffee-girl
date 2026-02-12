@@ -119,6 +119,7 @@ export function resetAchievements() {
   if (typeof window !== 'undefined' && window.localStorage) {
     try {
       window.localStorage.removeItem('coffeeGirlAchievements');
+      window.localStorage.removeItem('coffeeGirlPlayerName');
     } catch (err) {
       // ignore quota errors
     }
@@ -136,6 +137,32 @@ export function saveVolume() {
   if (typeof window === 'undefined' || !window.localStorage) return;
   try {
     window.localStorage.setItem('coffeeGirlVolume', String(GameState.volume));
+  } catch (err) {
+    // ignore quota errors
+  }
+}
+
+export function loadPlayerName() {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  try {
+    const raw = window.localStorage.getItem('coffeeGirlPlayerName');
+    if (typeof raw !== 'string') return;
+    const cleaned = raw.trim();
+    GameState.userName = cleaned || null;
+  } catch (err) {
+    // ignore malformed storage
+  }
+}
+
+export function savePlayerName() {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  try {
+    const cleaned = (GameState.userName || '').trim();
+    if (cleaned) {
+      window.localStorage.setItem('coffeeGirlPlayerName', cleaned);
+    } else {
+      window.localStorage.removeItem('coffeeGirlPlayerName');
+    }
   } catch (err) {
     // ignore quota errors
   }

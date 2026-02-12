@@ -119,9 +119,35 @@ export function resetAchievements() {
   if (typeof window !== 'undefined' && window.localStorage) {
     try {
       window.localStorage.removeItem('coffeeGirlAchievements');
+      window.localStorage.removeItem('coffeeGirlUserName');
     } catch (err) {
       // ignore quota errors
     }
+  }
+}
+
+export function loadUserName() {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  const raw = window.localStorage.getItem('coffeeGirlUserName');
+  if (!raw) return;
+  const value = raw.trim();
+  if (!value) return;
+  GameState.userName = value;
+}
+
+export function saveUserName(name) {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  try {
+    const value = typeof name === 'string' ? name.trim() : '';
+    if (value) {
+      window.localStorage.setItem('coffeeGirlUserName', value);
+      GameState.userName = value;
+      return;
+    }
+    window.localStorage.removeItem('coffeeGirlUserName');
+    GameState.userName = null;
+  } catch (err) {
+    // ignore quota errors
   }
 }
 

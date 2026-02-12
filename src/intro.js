@@ -1,7 +1,7 @@
 import { START_PHONE_W, START_PHONE_H } from './ui.js';
 import { lureNextWanderer, scheduleNextSpawn, queueLimit } from './entities/customerQueue.js';
 import { resumeWanderer } from './entities/wanderers.js';
-import { GameState, resetAchievements, saveVolume } from './state.js';
+import { GameState, resetAchievements, saveVolume, saveUserName } from './state.js';
 import { debugLog, DEBUG } from './debug.js';
 import { dur } from './ui.js';
 import { spawnSparrow, scatterSparrows } from './sparrow.js';
@@ -42,6 +42,7 @@ let iconSlots = [];
 let miniGameCup = null;
 let classicButton = null;
 let resetButton = null;
+let nameButton = null;
 let phoneMask = null;
 let phoneMaskShape = null;
 let flyingBadges = [];
@@ -76,6 +77,7 @@ function hideStartScreen(){
   if(miniGameCup) miniGameCup.setVisible(false);
   if(classicButton) classicButton.setVisible(false);
   if(resetButton) resetButton.setVisible(false);
+  if(nameButton) nameButton.setVisible(false);
   flyingBadges.forEach(b => b.setVisible(false));
   hideVolumeSlider();
 }
@@ -334,6 +336,7 @@ function showStartScreen(scene, opts = {}){
   if(startButton){ startButton.destroy(); startButton = null; }
   if(classicButton){ classicButton.destroy(); classicButton = null; }
   if(resetButton){ resetButton.destroy(); resetButton = null; }
+  if(nameButton){ nameButton.destroy(); nameButton = null; }
   flyingBadges.forEach(b => b.destroy());
   flyingBadges = [];
   if(phoneMaskShape){ phoneMaskShape.destroy(); phoneMaskShape = null; phoneMask = null; }
@@ -353,7 +356,12 @@ function showStartScreen(scene, opts = {}){
   let msgOptions = [];
   const extraObjects = [];
   const buttonTargets = [];
-  startOverlay = scene.add.rectangle(240,320,480,640,0x000000,0.75)
+  const sceneWidth = (scene.scale && scene.scale.width) ? scene.scale.width : 480;
+  const sceneHeight = (scene.scale && scene.scale.height) ? scene.scale.height : 640;
+  const sceneCenterX = sceneWidth / 2;
+  const sceneCenterY = sceneHeight / 2;
+
+  startOverlay = scene.add.rectangle(sceneCenterX, sceneCenterY, sceneWidth, sceneHeight, 0x000000, 0.75)
     .setDepth(13);
 
   const phoneW = (typeof START_PHONE_W === 'number') ? START_PHONE_W : 260;
@@ -383,21 +391,24 @@ function showStartScreen(scene, opts = {}){
   btnBg.fillRoundedRect(-bw/2,-bh/2,bw,bh,15);
   // Adjust for the reduced home area margin
   const offsetY = phoneH/2 - homeH/2 - 6;
-  const containerY = 320;
+  const containerY = sceneCenterY;
+  const phoneOuterW = phoneW + 20;
+  const phoneOuterH = phoneH + 20;
+  const phoneScale = Math.max(0.85, Math.min((sceneWidth - 40) / phoneOuterW, (sceneHeight - 40) / phoneOuterH));
   phoneContainer = scene.add
-    .container(240, containerY, [caseG, blackG, whiteG, homeG])
+    .container(sceneCenterX, containerY, [caseG, blackG, whiteG, homeG])
     .setDepth(20)
     .setVisible(true)
     .setAlpha(1)
-    .setSize(phoneW + 20, phoneH + 20)
+    .setSize(phoneOuterW, phoneOuterH)
     .setInteractive({ useHandCursor: true })
-    .setScale(2);
+    .setScale(phoneScale);
 
   phoneMaskShape = scene.add.graphics();
   phoneMaskShape.fillStyle(0xffffff,1);
   phoneMaskShape.fillRoundedRect(-phoneW/2+6,-phoneH/2+6,phoneW-12,phoneH-12,24);
-  phoneMaskShape.setPosition(240, containerY);
-  phoneMaskShape.setScale(2);
+  phoneMaskShape.setPosition(sceneCenterX, containerY);
+  phoneMaskShape.setScale(phoneScale);
   phoneMaskShape.setVisible(false);
   phoneMask = phoneMaskShape.createGeometryMask();
   if(scene.children && scene.children.bringToTop){
@@ -596,21 +607,38 @@ function showStartScreen(scene, opts = {}){
       }, 0x333333);
       volButton.setAlpha(0).setScale(0.3).setAngle(0);
 
+      nameButton = makeButton(cupSlot.x, 'Name', () => {
+        const current = GameState.userName || '';
+        const result = (typeof window !== 'undefined' && window.prompt)
+          ? window.prompt('Enter your name (leave blank to use random nicknames):', current)
+          : null;
+        if (result === null) return;
+        const trimmed = result.trim();
+        if (typeof saveUserName === 'function') saveUserName(trimmed);
+        if (!trimmed) GameState.nickname = null;
+        showStartScreen(scene);
+      }, 0x884400);
+      nameButton.setAlpha(0).setScale(0.3).setAngle(0);
+
       if(scene.tweens && scene.tweens.add){
         if(allEarned){
           scene.tweens.add({ targets: classicButton, x: topLeft.x, y: topLeft.y, angle:0, scale:1, alpha:1, duration:600, ease:'Cubic.easeOut' });
           scene.tweens.add({ targets: resetButton, x: topRight.x, y: topRight.y, angle:0, scale:1, alpha:1, duration:600, delay:100, ease:'Cubic.easeOut' });
           scene.tweens.add({ targets: volButton, x: topMid.x, y: topMid.y, angle:0, scale:1, alpha:1, duration:600, delay:200, ease:'Cubic.easeOut' });
+          scene.tweens.add({ targets: nameButton, x: cupSlot.x, y: cupSlot.y - 55, angle:0, scale:1, alpha:1, duration:600, delay:250, ease:'Cubic.easeOut' });
         } else {
-          scene.tweens.add({ targets: volButton, x: topMid.x, y: topMid.y, angle:0, scale:1, alpha:1, duration:600, ease:'Cubic.easeOut' });
+          scene.tweens.add({ targets: volButton, x: topLeft.x, y: topLeft.y, angle:0, scale:1, alpha:1, duration:600, ease:'Cubic.easeOut' });
+          scene.tweens.add({ targets: nameButton, x: topRight.x, y: topRight.y, angle:0, scale:1, alpha:1, duration:600, delay:100, ease:'Cubic.easeOut' });
         }
       } else {
         if(allEarned){
           classicButton.setPosition(topLeft.x, topLeft.y).setAngle(0).setScale(1).setAlpha(1);
           resetButton.setPosition(topRight.x, topRight.y).setAngle(0).setScale(1).setAlpha(1);
           volButton.setPosition(topMid.x, topMid.y).setAngle(0).setScale(1).setAlpha(1);
+          nameButton.setPosition(cupSlot.x, cupSlot.y - 55).setAngle(0).setScale(1).setAlpha(1);
         } else {
-          volButton.setPosition(topMid.x, topMid.y).setAngle(0).setScale(1).setAlpha(1);
+          volButton.setPosition(topLeft.x, topLeft.y).setAngle(0).setScale(1).setAlpha(1);
+          nameButton.setPosition(topRight.x, topRight.y).setAngle(0).setScale(1).setAlpha(1);
         }
       }
     };
@@ -1277,6 +1305,7 @@ function showStartScreen(scene, opts = {}){
       }
       if(classicButton){ classicButton.destroy(); classicButton=null; }
       if(resetButton){ resetButton.destroy(); resetButton=null; }
+      if(nameButton){ nameButton.destroy(); nameButton=null; }
       miniGameCup = null;
       GameState.phoneContainer = null;
       playIntro.call(scene);

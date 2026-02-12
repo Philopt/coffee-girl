@@ -68,7 +68,7 @@ const UPSET_EMOJIS = ['😠','🤬','😡','😤','😭','😢','😱','😖','�
 // Returns the player's chosen name if available, falling back to a nickname
 const currentName = () => GameState.userName || GameState.nickname || '';
 
-function nextMood(state){
+export function nextMood(state){
   switch(state){
     case CustomerState.BROKEN: return CustomerState.MENDING;
     case CustomerState.MENDING: return CustomerState.NORMAL;

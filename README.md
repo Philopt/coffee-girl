@@ -137,45 +137,44 @@ Customers can now order any of the following drinks:
 
 ## Running tests
 
-Before running `npm test`, **you must** install all dependencies. Run `npm ci`
-(or `npm install`) first, or execute `scripts/setup.sh` to do it automatically:
+Install dependencies first:
 
 ```bash
 npm ci
 ```
 
-This step installs all dev dependencies, including `eslint` and `puppeteer`.
-`eslint` is executed automatically via the `pretest` script and `puppeteer`
-drives a headless browser for the integration tests.
+Tests are split into two tiers:
 
-After installing the dependencies, run the automated check. `npm test` relies on
-`node_modules/.bin/http-server` to start a local server and verify the page
-responds without errors:
+- **Unit tests** (`npm run test:unit`): fast, no browser required. This is the
+  default local workflow and runs with `SKIP_PUPPETEER=1`.
+- **Integration tests** (`npm run test:integration`): Puppeteer/browser checks
+  that validate gameplay flow in a real canvas session.
+
+Run unit tests only (recommended during normal local development):
+
+```bash
+npm run test:unit
+```
+
+Run browser integration tests explicitly when needed:
+
+```bash
+npm run test:integration
+```
+
+Run the full suite (unit first, then integration). This is what CI should run:
 
 ```bash
 npm test
 ```
 
-The test runner automatically runs `npm run lint` as part of the `pretest`
-script before executing the tests.
-
-If you only want to run the quick unit tests, set `SKIP_PUPPETEER=1` or use the
-`test:unit` script. This skips the browser-based integration tests driven by
-Puppeteer:
-
-```bash
-SKIP_PUPPETEER=1 npm test
-# or
-npm run test:unit
-```
-
-Use this when running offline or on systems without a working browser.
+`npm run lint` still runs automatically via `pretest` before `npm test`.
 
 ## GitHub Actions
 
 This project runs a continuous integration workflow defined in
 [`.github/workflows/node.yml`](.github/workflows/node.yml). The workflow runs on
-pushes and pull requests, caches npm modules, then runs `npm ci` and `npm test`.
+pushes and pull requests, caches npm modules, then runs `npm ci`, unit tests, and integration tests in separate CI steps.
 
 ## License
 

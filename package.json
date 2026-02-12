@@ -7,9 +7,10 @@
     "preinstall": "node scripts/check-node-version.mjs",
     "start": "http-server -p 8080 -c-1",
     "pretest": "test -d node_modules || npm ci && npm run lint",
-    "test": "node test/test.js",
-    "test:unit": "SKIP_PUPPETEER=1 node test/test.js",
-    "lint": "eslint -c eslint.config.js src/*.js test/*.js"
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "SKIP_PUPPETEER=1 node test/run-unit.js",
+    "lint": "eslint -c eslint.config.js src/*.js test/**/*.js",
+    "test:integration": "node test/run-integration.js"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",

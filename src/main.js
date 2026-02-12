@@ -4096,7 +4096,7 @@ function dogsBarkAtFalcon(){
           c.sprite.setDepth(20); // keep attackers above the girl
           if(c.sprite.y < gatherStartY){
             c.sprite.setPosition(c.sprite.x, gatherStartY);
-            c.sprite.setScale(scaleForY(gatherStartY));
+            c.sprite.setScale(scaleForY(gatherStartY) * CUSTOMER_SCALE);
           }
           attackers.push(c.sprite);
           if(!c.sprite.heartEmoji){
@@ -4124,7 +4124,7 @@ function dogsBarkAtFalcon(){
           const sy = scene.scale.height + 40;
           const s = scene.add.sprite(sx, sy, key)
             .setDepth(20)
-            .setScale(scaleForY(sy));
+            .setScale(scaleForY(sy) * CUSTOMER_SCALE);
           attackers.push(s);
           const heart = scene.add.text(sx, sy, HEART_EMOJIS[CustomerState.BROKEN], {font:'28px sans-serif'})
             .setOrigin(0.5)
@@ -4296,7 +4296,7 @@ function dogsBarkAtFalcon(){
           targets:a,
           x:girl.x+Phaser.Math.Between(-5,5),
           y:girl.y+Phaser.Math.Between(-5,5),
-          scale:scaleForY(girl.y),
+          scale:scaleForY(girl.y) * CUSTOMER_SCALE,
           duration:dur(80),
           yoyo:true,
           onComplete:()=>{
@@ -4356,7 +4356,7 @@ function dogsBarkAtFalcon(){
         targets:a,
         x:tx,
         y:ty,
-        scale:scaleForY(ty),
+        scale:scaleForY(ty) * CUSTOMER_SCALE,
         duration:dur(800),
         onComplete:arrive
       });

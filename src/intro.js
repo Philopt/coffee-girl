@@ -946,26 +946,22 @@ function showStartScreen(scene, opts = {}){
         duration: 600,
         onComplete: () => {
           revealExtras();
-          if (GameState.currentSong !== 'lady_falcon_theme') {
-            scheduleStartMessages({
-              initialDelayMin: 1000,
-              initialDelayMax: 1000,
-              nextDelayMin: 1000,
-              nextDelayMax: 3000,
-            });
-          }
+          scheduleStartMessages({
+            initialDelayMin: 1000,
+            initialDelayMax: 1000,
+            nextDelayMin: 1000,
+            nextDelayMax: 3000,
+          });
         }
       });
     } else {
       revealExtras();
-      if (GameState.currentSong !== 'lady_falcon_theme') {
-        scheduleStartMessages({
-          initialDelayMin: 1000,
-          initialDelayMax: 1000,
-          nextDelayMin: 1000,
-          nextDelayMax: 3000,
-        });
-      }
+      scheduleStartMessages({
+        initialDelayMin: 1000,
+        initialDelayMax: 1000,
+        nextDelayMin: 1000,
+        nextDelayMax: 3000,
+      });
     }
   };
 

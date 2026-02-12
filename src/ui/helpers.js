@@ -158,6 +158,8 @@ export function createHpBar(scene, width=40, height=6, maxHp=10){
   return container;
 }
 
+
+
 export function heartbeatDuration(level=1){
   if(level>=4) return 400;
   if(level>=3) return 500;

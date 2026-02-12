@@ -495,7 +495,7 @@ export function spawnCustomer() {
   GameState.wanderers.forEach(cust => {
     if (cust.spriteKey) used.add(cust.spriteKey);
   });
-  const spriteKeys = (this && this.assets && this.assets.keys) || (Assets && Assets.keys) || (typeof keys !== 'undefined' ? keys : []);
+  const spriteKeys = (this && this.assets && this.assets.keys) || (Assets && Assets.keys) || [];
   let now = this.time ? this.time.now : Date.now();
   let available = spriteKeys.filter(k => {
     if (used.has(k)) return false;

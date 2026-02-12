@@ -9,7 +9,7 @@
     "pretest": "test -d node_modules || npm ci && npm run lint",
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "SKIP_PUPPETEER=1 node test/run-unit.js",
-    "lint": "eslint -c eslint.config.js src/*.js test/**/*.js",
+    "lint": "eslint -c eslint.config.js \"src/**/*.js\" \"test/**/*.js\"",
     "test:integration": "node test/run-integration.js"
   },
   "devDependencies": {
